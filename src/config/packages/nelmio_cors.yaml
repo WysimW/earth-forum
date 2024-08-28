@@ -1,0 +1,14 @@
+nelmio_cors:
+    defaults:
+        allow_origin: ['*']  # En développement, autorise tout. Restreindre en production.
+        allow_credentials: true
+        allow_headers: ['Content-Type', 'Authorization']
+        expose_headers: ['Authorization']
+        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        max_age: 3600
+    paths:
+        '^/api/':
+            allow_origin: ['http://localhost:3000']  # Spécifie ton domaine en production.
+            allow_headers: ['Content-Type', 'Authorization']
+            expose_headers: ['Authorization']
+            allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
