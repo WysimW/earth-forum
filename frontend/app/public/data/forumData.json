@@ -1,0 +1,86 @@
+{
+  "categories": [
+    {
+      "categoryName": "General Discussion",
+      "forums": [
+        {
+          "id": 1,
+          "name": "Introductions",
+          "description": "Introduce yourself to the community.",
+          "lastThread": {
+            "title": "Welcome to the New Members",
+            "author": "Admin",
+            "date": "2024-08-29",
+            "threadId": 1,
+            "avatar": "path/to/avatar1.jpg"
+          },
+          "subForums": [
+            {
+              "id": 11,
+              "name": "New Members",
+              "description": "Introduce yourself here.",
+              "lastThread": {
+                "title": "Say Hi!",
+                "author": "User123",
+                "date": "2024-08-29",
+                "threadId": 1
+              }
+            },
+            {
+              "id": 12,
+              "name": "Off-Topic",
+              "description": "Talk about anything unrelated.",
+              "lastThread": {
+                "title": "Random Thoughts",
+                "author": "User456",
+                "date": "2024-08-30",
+                "threadId": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "categoryName": "News and Announcements",
+      "forums": [
+        {
+          "id": 2,
+          "name": "News",
+          "description": "Stay updated with the latest news.",
+          "lastThread": {
+            "title": "Upcoming Changes",
+            "author": "Admin",
+            "date": "2024-08-28",
+            "threadId": 3,
+            "avatar": "path/to/avatar2.jpg"
+          },
+          "subForums": [
+            {
+              "id": 21,
+              "name": "Announcements",
+              "description": "Official updates.",
+              "lastThread": {
+                "title": "New Features",
+                "author": "Admin",
+                "date": "2024-08-28",
+                "threadId": 3
+              }
+            },
+            {
+              "id": 22,
+              "name": "Community News",
+              "description": "News from the community.",
+              "lastThread": {
+                "title": "Community Meetup",
+                "author": "Mod",
+                "date": "2024-08-29",
+                "threadId": 4
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

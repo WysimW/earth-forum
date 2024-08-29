@@ -1,0 +1,15 @@
+.thread-detail {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+}
+
+.posts ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.posts li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
