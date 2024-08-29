@@ -45,6 +45,9 @@ services:
           context: .
           dockerfile: docker/frontend/Dockerfile
         container_name: react_frontend
+        environment:
+          - NODE_ENV=development
+          - WATCHPACK_POLLING=true
         volumes:
           - ./frontend:/app
         ports:

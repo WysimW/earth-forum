@@ -11,23 +11,19 @@ const ThreadDetail = ({ threads }) => {
     }
 
     return (
-        <div className="thread-detail">
+        <div>
             <h2>{thread.title}</h2>
             <p><em>by {thread.author} on {thread.date}</em></p>
-            <div className="posts">
+            <div>
                 <h3>Posts</h3>
-                {thread.posts.length > 0 ? (
-                    <ul>
-                        {thread.posts.map(post => (
-                            <li key={post.id}>
-                                <p>{post.content}</p>
-                                <p><em>by {post.author} on {post.date}</em></p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No posts available</p>
-                )}
+                <ul>
+                    {thread.posts.map(post => (
+                        <li key={post.id}>
+                            <p>{post.content}</p>
+                            <p><em>by {post.author} on {post.date}</em></p>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );

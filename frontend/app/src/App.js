@@ -20,9 +20,10 @@ function App() {
     const allForums = categories.flatMap(category => category.forums);
     const allSubForums = allForums.flatMap(forum => forum.subForums);
     const allThreads = allForums.flatMap(forum => [
-        ...forum.threads || [],
-        ...forum.subForums.flatMap(subForum => subForum.threads || [])
+        ...(forum.threads || []),
+        ...forum.subForums.flatMap(subForum => subForum.lastThread ? [subForum.lastThread] : [])
     ]);
+    console.log('here')
 
     return (
         <Router>
