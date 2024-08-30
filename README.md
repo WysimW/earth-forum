@@ -17,3 +17,8 @@
 
 docker-compose down
 docker-compose up --build
+
+`php bin/console doctrine:fixtures:load`
+
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate

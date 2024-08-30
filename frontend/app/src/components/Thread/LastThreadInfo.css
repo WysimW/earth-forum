@@ -24,7 +24,7 @@
 }
 
 .last-thread-info:hover {
-    border : 2px solid var(--superman-yellow);
+    border : 2px solid var(--dc-white);
     transform: translateY(-3px);
 }
 
@@ -53,6 +53,6 @@
 }
 
 .last-thread-details a:hover {
-    color: var(--superman-yellow); /* Changement de couleur au survol */
+    color: var(--dc-white); /* Changement de couleur au survol */
     text-decoration: underline;
 }

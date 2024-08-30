@@ -17,25 +17,59 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ForumController extends AbstractController
 {    private $entityManager;
+    private $forumRepository;
+    private $categoryRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager,ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository) 
     {
         $this->entityManager = $entityManager;
+        $this->forumRepository = $forumRepository;
+        $this->categoryRepository = $categoryRepository;
     }
 
     #[Route('/api/forums/list', name: 'get_forum_list', methods: ['GET'])]
-    public function getForumList(): JsonResponse
+    public function getForumList(ForumRepository $forumRepository): JsonResponse
     {
-        $forums = $this->entityManager->getRepository(Forum::class)->createQueryBuilder('f')
-            ->select('f.id, f.name')
-            ->getQuery()
-            ->getArrayResult();
+        $forums = $forumRepository->findAll();
 
-        return new JsonResponse($forums);
+        $data = [];
+
+        foreach ($forums as $forum) {
+            $data[] = [
+                'id' => $forum->getId(),
+                'name' => $forum->getName(),
+                'description' => $forum->getDescription(),
+                'banner' => $forum->getBanner(),
+                'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
+                'parent_forum_id' => $forum->getForum() ? $forum->getForum()->getId() : null,
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/api/forums', name: 'get_all_forums', methods: ['GET'])]
+    public function getAllForums(ForumRepository $forumRepository): JsonResponse
+    {
+        $forums = $forumRepository->findAll();
+
+        $data = [];
+
+        foreach ($forums as $forum) {
+            $data[] = [
+                'id' => $forum->getId(),
+                'name' => $forum->getName(),
+                'description' => $forum->getDescription(),
+                'banner' => $forum->getBanner(),
+                
+            ];
+        }
+
+        return new JsonResponse($data);
     }
 
 
-#[Route('/api/forums/{id}', name: 'get_forum_detail', methods: ['GET'])]
+#[Route('/api/forums/{id}', name: 'get_forum_read', methods: ['GET'])]
 public function getForumDetail(Forum $forum): JsonResponse
 {
     $subForums = [];
@@ -93,6 +127,38 @@ public function getForumDetail(Forum $forum): JsonResponse
     return new JsonResponse($data);
 }
 
+
+#[Route('/api/forums/{id}/edit-data', name: 'get_forum_edit_data', methods: ['GET'])]
+public function getForumEditData(Forum $forum, ForumCategoryRepository $categoryRepository, ): JsonResponse
+{
+    // Get the list of categories
+    $categories = $this->categoryRepository->findAll();
+
+    // Get the list of forums for parent selection
+    $forums = $this->forumRepository->findAll();
+
+    // Prepare the data
+    $data = [
+        'forum' => [
+            'id' => $forum->getId(),
+            'name' => $forum->getName(),
+            'description' => $forum->getDescription(),
+            'banner' => $forum->getBanner(),
+            'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
+            'parent_forum_id' => $forum->getForum() ? $forum->getForum()->getId() : null,
+        ],
+        'categories' => array_map(function($category) {
+            return ['id' => $category->getId(), 'name' => $category->getName()];
+        }, $categories),
+        'forums' => array_map(function($forum) {
+            return ['id' => $forum->getId(), 'name' => $forum->getName()];
+        }, $forums),
+    ];
+
+    return new JsonResponse($data);
+}
+
+
     
 
     #[Route('/api/forums', name: 'create_forum', methods: ['POST'])]
@@ -129,4 +195,82 @@ public function getForumDetail(Forum $forum): JsonResponse
         return new JsonResponse(['status' => 'Forum or Subforum created'], JsonResponse::HTTP_CREATED);
     }
 
+
+    #[Route('/api/forums/{id}', name: 'update_forum', methods: ['PUT'])]
+    public function updateForum(Forum $forum, Request $request, EntityManagerInterface $entityManager, ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);    
+        if (!$forum) {
+            return new JsonResponse(['error' => 'Forum not found'], 404);
+        }
+    
+        // Update forum properties
+        $forum->setName($data['name'] ?? $forum->getName());
+        $forum->setDescription($data['description'] ?? $forum->getDescription());
+        $forum->setBanner($data['banner'] ?? $forum->getBanner());
+        $forum->setCategory(null);  // Disassociate existing category
+        $forum->setForum(null);  // Disassociate existing parent forum
+
+        // Remove existing category or subforum association
+        if (isset($data['category_id'])) {
+            $category = $categoryRepository->find($data['category_id']);
+            if ($category) {
+                $forum->setCategory($category);
+            } else {
+                return new JsonResponse(['error' => 'Category not found'], 404);
+            }
+        }
+    
+        if (isset($data['parent_forum_id'])) {
+            $parentForum = $forumRepository->find($data['parent_forum_id']);
+            if ($parentForum) {
+                $forum->setForum($parentForum);
+            } else {
+                return new JsonResponse(['error' => 'Parent forum not found'], 404);
+            }
+        }
+    
+        $entityManager->flush();
+    
+        return new JsonResponse(['status' => 'Forum updated successfully']);
+    }
+
+    #[Route('/api/forums/{id}', name: 'delete_forum', methods: ['DELETE'])]
+    public function deleteForum(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $forum = $entityManager->getRepository(Forum::class)->find($id);
+    
+        if (!$forum) {
+            return new JsonResponse(['message' => 'Forum not found'], 404);
+        }
+    
+        // Option 1: Déplacer les threads dans un forum d'archives
+        $archiveForum = $entityManager->getRepository(Forum::class)->findOneBy(['name' => 'Archives']);
+        
+        if ($archiveForum) {
+            foreach ($forum->getThreads() as $thread) {
+                $thread->setForum($archiveForum);
+                $entityManager->persist($thread);
+            }
+        } else {
+            // Option 2: Supprimer tous les threads associés
+            foreach ($forum->getThreads() as $thread) {
+                $entityManager->remove($thread);
+            }
+        }
+    
+        // Gérer les sous-forums (déplacement ou suppression)
+        foreach ($forum->getSubforums() as $subForum) {
+            $subForum->setForum(null);
+            $entityManager->persist($subForum);
+        }
+    
+        // Supprimer le forum
+        $entityManager->remove($forum);
+        $entityManager->flush();
+    
+        return new JsonResponse(['message' => 'Forum deleted successfully'], 200);
+    }
+    
+    
 }

@@ -6,6 +6,8 @@
     box-shadow: 0 4px 10px var(--shadow-color);
     position: relative;
     z-index: 1000;
+    background-image: url(https://2img.net/zupimages.net/up/22/35/efi9.png);
+
 }
 
 /* Header Container */
@@ -21,8 +23,8 @@
 /* Site Title */
 .site-title {
     font-size: 1.8rem; /* Smaller font size for the title */
-    font-family: 'Bangers', sans-serif;
-    color: var(--superman-yellow);
+    font-family: 'Futura PT', sans-serif;
+    color: var(--dc-white);
     margin: 0;
 }
 
@@ -53,7 +55,7 @@
 }
 
 .nav-list a:hover {
-    background-color: var(--superman-yellow);
+    background-color: var(--dc-white);
     color: var(--dc-blue-dark);
 }
 
@@ -115,11 +117,11 @@
 
 /* Swiper pagination and navigation buttons */
 .swiper-pagination-bullet {
-    background: var(--superman-yellow);
+    background: var(--dc-white);
 }
 
 .swiper-button-next, .swiper-button-prev {
-    color: var(--superman-yellow);
+    color: var(--dc-white);
 }
 
 /* Responsive Header */

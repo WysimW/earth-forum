@@ -5,7 +5,7 @@
     padding: 30px 0;
     box-shadow: 0 -4px 10px var(--shadow-color);
     margin-top: 40px;
-    border-top: 4px solid var(--superman-yellow);
+    border-top: 4px solid var(--dc-white);
 }
 
 .footer-container {
@@ -34,7 +34,7 @@
 .footer-card h3 {
     font-size: 1.4rem;
     margin-bottom: 15px;
-    color: var(--superman-yellow);
+    color: var(--dc-white);
 }
 
 /* Member List, Stats List */

@@ -7,6 +7,7 @@ const ForumPage = ({ categories }) => {
     if (!categories || categories.length === 0) {
         return <p>Loading forums...</p>;
     }
+    
 
     return (
         <div className="forum-page">
@@ -30,7 +31,7 @@ const ForumPage = ({ categories }) => {
                                         <Link to={`/forum/${forum.id}`} className="forum-link">{forum.name}</Link>
                                     </h3>
                                     <div className="forum-banner">
-                                        <img src={forum.bannerImage} alt={`${forum.name} banner`} className="forum-banner-image" />
+                                        <img src={forum.banner} alt={`${forum.name} banner`} className="forum-banner-image" />
                                     </div>
                                 </div>
                                 <div className="forum-stats-and-last-thread">
