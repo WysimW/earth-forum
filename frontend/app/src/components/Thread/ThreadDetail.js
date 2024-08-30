@@ -1,29 +1,47 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import './ThreadDetail.css';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import './Thread.css';
 
-const ThreadDetail = ({ threads }) => {
+const ThreadDetail = () => {
     const { id } = useParams();
-    const thread = threads.find(thread => thread.id === parseInt(id));
+    const [threadDetail, setThreadDetail] = useState(null);
 
-    if (!thread) {
-        return <p>Thread not found</p>;
+    useEffect(() => {
+        fetch(`http://localhost:8741/api/threads/${id}`)
+            .then(response => response.json())
+            .then(data => setThreadDetail(data))
+            .catch(error => console.error('Error fetching thread detail:', error));
+    }, [id]);
+
+    if (!threadDetail) {
+        return <p>Loading thread details...</p>;
     }
 
     return (
-        <div>
-            <h2>{thread.title}</h2>
-            <p><em>by {thread.author} on {thread.date}</em></p>
-            <div>
-                <h3>Posts</h3>
-                <ul>
-                    {thread.posts.map(post => (
-                        <li key={post.id}>
-                            <p>{post.content}</p>
-                            <p><em>by {post.author} on {post.date}</em></p>
-                        </li>
-                    ))}
-                </ul>
+        <div className="thread-detail">
+            <h2>{threadDetail.title}</h2>
+
+            {/* Breadcrumb */}
+            <div className="breadcrumb">
+                {threadDetail.breadcrumb.map((crumb, index) => (
+                    <span key={index}>
+                        <Link to={crumb.url}>{crumb.name}</Link>
+                        {index < threadDetail.breadcrumb.length - 1 && " > "}
+                    </span>
+                ))}
+            </div>
+
+            <div className="posts">
+                {threadDetail.posts.map(post => (
+                    <div key={post.postId} className="post">
+                        <div className="user-info">
+                            <img src={post.avatar} alt={`${post.author}'s avatar`} className="avatar" />
+                            <p><strong>{post.author}</strong></p>
+                            <p>{post.date}</p>
+                        </div>
+                        <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+                    </div>
+                ))}
             </div>
         </div>
     );

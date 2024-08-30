@@ -1,0 +1,28 @@
+{
+    "threadId": 1,
+    "title": "Welcome to the New Members",
+    "author": "Admin",
+    "date": "2024-08-29",
+    "breadcrumb": [
+      {"name": "Home", "url": "/"},
+      {"name": "Introduction", "url": "/forum/1"},
+      {"name": "New Members", "url": "/subforum/11"}
+    ],
+    "posts": [
+      {
+        "postId": 1,
+        "author": "Admin",
+        "avatar": "path/to/avatar1.jpg",
+        "date": "2024-08-29",
+        "content": "Welcome to the forum! Feel free to introduce yourself."
+      },
+      {
+        "postId": 2,
+        "author": "User123",
+        "avatar": "path/to/avatar2.jpg",
+        "date": "2024-08-30",
+        "content": "Hi everyone! I'm excited to be here."
+      }
+    ]
+  }
+  

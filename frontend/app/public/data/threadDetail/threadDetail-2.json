@@ -1,0 +1,28 @@
+{
+    "threadId": 1,
+    "title": "The Dark Night in Gotham",
+    "author": "Batman",
+    "date": "2024-09-01",
+    "breadcrumb": [
+      {"name": "Home", "url": "/"},
+      {"name": "DC Universe", "url": "/forum/1"},
+      {"name": "Gotham City", "url": "/subforum/11"}
+    ],
+    "posts": [
+      {
+        "postId": 1,
+        "author": "Batman",
+        "avatar": "https://i.ibb.co/x2f5B35/mia-robin.png",
+        "date": "2024-09-01",
+        "content": "<p>The night was dark, the moon barely visible behind the thick clouds.</p><p><em>'This city never sleeps,'</em> thought Batman as he watched over Gotham from the top of a skyscraper.</p><p>Suddenly, a scream pierced the silence. Without hesitation, Batman dove into the shadows, his cape billowing like the wings of a bat.</p><p>He landed in the alley just as the thug raised his knife. <strong>“Not tonight,”</strong> Batman growled, stepping out of the darkness.</p>"
+      },
+      {
+        "postId": 2,
+        "author": "Catwoman",
+        "avatar": "https://i.servimg.com/u/f89/13/39/76/94/starfi15.png",
+        "date": "2024-09-01",
+        "content": "<p>“Looks like I’m not the only one prowling the night,” Catwoman purred from a nearby rooftop.</p><p>She leapt down, landing gracefully beside Batman.</p><p><strong>“Care for some company?”</strong> she teased, her eyes glinting mischievously in the dim light.</p>"
+      }
+    ]
+  }
+  

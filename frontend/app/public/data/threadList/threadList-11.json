@@ -1,0 +1,49 @@
+{
+    "forumId": 11,
+    "forumName": "Gotham City",
+    "threads": [
+      {
+        "threadId": 1,
+        "title": "The Dark Night in Gotham",
+        "author": "Batman",
+        "date": "2024-09-01",
+        "lastPost": {
+          "author": "Catwoman",
+          "avatar": "https://2img.net/h/www.image-heberg.fr/files/17230594081290946733.jpg",
+          "date": "2024-09-01",
+          "excerpt": "Looks like I’m not the only one prowling the night...",
+          "threadId": 2
+
+        }
+      },
+      {
+        "threadId": 2,
+        "title": "Joker's Latest Scheme",
+        "author": "Joker",
+        "date": "2024-09-02",
+        "lastPost": {
+          "author": "Batman",
+          "avatar": "https://i.ebayimg.com/images/g/Gl0AAOSwDk1fbjV4/s-l1200.jpg",
+          "date": "2024-09-02",
+          "excerpt": "This time, you won't get away with it...",
+          "threadId": 1
+
+        }
+      },
+      {
+        "threadId": 3,
+        "title": "Gotham City Cleanup Initiative",
+        "author": "Commissioner Gordon",
+        "date": "2024-09-03",
+        "lastPost": {
+          "author": "Harvey Dent",
+          "avatar": "https://ih1.redbubble.net/image.4755178674.4046/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
+          "date": "2024-09-03",
+          "excerpt": "This city needs more than just cleaning...",
+          "threadId": 1
+
+        }
+      }
+    ]
+  }
+  

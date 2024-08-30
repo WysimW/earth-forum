@@ -1,0 +1,39 @@
+{
+  "forumId": 1,
+  "forumName": "DC Universe",
+  "description": "Discuss everything about the DC Universe, from heroes to villains.",
+  "bannerImage": "https://cdn.midjourney.com/fd8f7b1f-9cdb-4f13-9472-9679fb44ad0a/0_0.png",
+
+  "breadcrumb": [
+    {"name": "Home", "url": "/"},
+    {"name": "DC Universe", "url": "/forum/1"}
+  ],
+  "subForums": [
+    {
+      "id": 11,
+      "name": "Gotham City",
+      "description": "All discussions about Gotham City, Batman, and its villains.",
+      "bannerImage": "https://cdn.midjourney.com/a82cc9f3-09a9-4792-b423-c2af2112678a/0_3.png",
+
+      "lastThread": {
+        "title": "The Dark Night in Gotham",
+        "author": "Batman",
+        "date": "2024-09-01",
+        "threadId": 201
+      }
+    },
+    {
+      "id": 12,
+      "name": "Metropolis",
+      "description": "Everything related to Metropolis and Superman.",
+      "bannerImage": "https://cdn.midjourney.com/a82cc9f3-09a9-4792-b423-c2af2112678a/0_3.png",
+      "lastThread": {
+        "title": "Lex Luthor's Latest Plot",
+        "author": "Superman",
+        "date": "2024-09-02",
+        "threadId": 202
+      }
+    }
+  ],
+  "threads": []
+}

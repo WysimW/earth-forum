@@ -1,0 +1,32 @@
+{
+  "threads": [
+    {
+      "threadId": 1,
+      "title": "The Dark Knight Returns",
+      "author": "Batman",
+      "date": "2024-09-01",
+      "lastPost": {
+        "author": "Catwoman",
+        "avatar": "path/to/catwoman-avatar.jpg",
+        "date": "2024-09-01",
+        "excerpt": "Looks like I’m not the only one prowling the night...",
+        "threadId": 1
+
+      }
+    },
+    {
+      "threadId": 2,
+      "title": "Joker's Revenge",
+      "author": "Joker",
+      "date": "2024-09-02",
+      "lastPost": {
+        "author": "Batman",
+        "avatar": "path/to/batman-avatar.jpg",
+        "date": "2024-09-02",
+        "excerpt": "This time, you won't get away with it...",
+        "threadId": 1
+
+      }
+    }
+  ]
+}

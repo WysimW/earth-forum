@@ -13,6 +13,7 @@
 `docker exec -it CONTAINER_NAME bash`
 
 `docker exec -it react_frontend bash`
+`docker exec -it symfony bash`
 
 docker-compose down
 docker-compose up --build

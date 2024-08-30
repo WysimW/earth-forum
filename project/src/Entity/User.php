@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -54,11 +55,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'author')]
     private Collection $posts;
 
+    #[ORM\Column(length: 255)]
+    private ?string $pseudo = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $avatar = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLogin = null;
+
+    /**
+     * @var Collection<int, Role>
+     */
+    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'users')]
+    private Collection $playerRoles;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
         $this->threads = new ArrayCollection();
         $this->posts = new ArrayCollection();
+        $this->playerRoles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -222,6 +242,78 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $post->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPseudo(): ?string
+    {
+        return $this->pseudo;
+    }
+
+    public function setPseudo(string $pseudo): static
+    {
+        $this->pseudo = $pseudo;
+
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(string $avatar): static
+    {
+        $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getLastLogin(): ?\DateTimeInterface
+    {
+        return $this->lastLogin;
+    }
+
+    public function setLastLogin(?\DateTimeInterface $lastLogin): static
+    {
+        $this->lastLogin = $lastLogin;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Role>
+     */
+    public function getPlayerRoles(): Collection
+    {
+        return $this->playerRoles;
+    }
+
+    public function addPlayerRole(Role $playerRole): static
+    {
+        if (!$this->playerRoles->contains($playerRole)) {
+            $this->playerRoles->add($playerRole);
+        }
+
+        return $this;
+    }
+
+    public function removePlayerRole(Role $playerRole): static
+    {
+        $this->playerRoles->removeElement($playerRole);
 
         return $this;
     }

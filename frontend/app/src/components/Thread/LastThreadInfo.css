@@ -1,0 +1,58 @@
+/* Last Thread Info */
+.last-thread-link {
+    text-decoration: none; /* Supprime la décoration de texte par défaut */
+    color: inherit; /* Maintient la couleur du texte */
+    display: block;
+}
+
+.forum-last-thread {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Alignement du contenu à droite */
+    text-align: right;
+}
+
+.last-thread-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Assure l'alignement à droite */
+    gap: 15px;
+    padding: 10px;
+    background-color: var(--dc-white);
+    border : 2px solid var(--dc-blue);
+    transition: border var(--transition-speed), transform var(--transition-speed);
+}
+
+.last-thread-info:hover {
+    border : 2px solid var(--superman-yellow);
+    transform: translateY(-3px);
+}
+
+/* Avatar styling */
+.avatar {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border: 2px solid var(--dc-blue);
+}
+
+/* Info styling to be aligned to the left of avatar */
+.last-thread-details {
+    text-align: right; /* Assure que le texte est aligné à droite */
+    color: var(--dc-blue); /* Texte en bleu */
+}
+
+.last-thread-details p {
+    margin: 0;
+}
+
+.last-thread-details p {
+    color: var(--dc-blue);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.last-thread-details a:hover {
+    color: var(--superman-yellow); /* Changement de couleur au survol */
+    text-decoration: underline;
+}

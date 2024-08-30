@@ -1,0 +1,78 @@
+/* General form styling */
+.admin-panel-form {
+    background-color: #f4f7f6;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    font-family: 'Arial', sans-serif;
+}
+
+.admin-panel-form h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.admin-panel-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.admin-panel-form input[type="text"],
+.admin-panel-form input[type="email"],
+.admin-panel-form input[type="password"],
+.admin-panel-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+.admin-panel-form input[type="text"]:focus,
+.admin-panel-form input[type="email"]:focus,
+.admin-panel-form input[type="password"]:focus,
+.admin-panel-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.admin-panel-form textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+.admin-panel-form button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.admin-panel-form button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.admin-panel-form .error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.admin-panel-form .success-message {
+    color: green;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}

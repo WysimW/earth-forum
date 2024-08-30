@@ -41,7 +41,8 @@ class Univers
     private Collection $forums;
 
     public function __construct()
-    {
+    {   
+        $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
         $this->characters = new ArrayCollection();
         $this->forums = new ArrayCollection();
     }

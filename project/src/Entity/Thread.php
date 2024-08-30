@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\ThreadRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ThreadRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ThreadRepository::class)]
 class Thread
@@ -14,9 +15,11 @@ class Thread
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['forum_detail'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['forum_detail'])]
     private ?string $title = null;
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
@@ -24,7 +27,8 @@ class Thread
     private ?Forum $forum = null;
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['forum_detail'])]
     private ?User $author = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -36,11 +40,9 @@ class Thread
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'thread')]
     private Collection $posts;
 
-    #[ORM\ManyToOne(inversedBy: 'threads')]
-    private ?SubForum $subforum = null;
-
     public function __construct()
-    {
+    {  $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
+
         $this->posts = new ArrayCollection();
     }
 
@@ -127,15 +129,25 @@ class Thread
         return $this;
     }
 
-    public function getSubforum(): ?SubForum
+    public function getLastPostInfo(): ?array
     {
-        return $this->subforum;
+        $lastPost = $this->posts->last();
+    
+        if ($lastPost && !$lastPost instanceof Post) {
+            return null;
+        }
+    
+        if ($lastPost) {
+            return [
+                'id' => $lastPost->getId(),
+                'author' => $lastPost->getAuthor()->getPseudo(),
+                'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
+                'excerpt' => substr($lastPost->getContent(), 0, 50),
+                'avatar' => $lastPost->getAuthor()->getAvatar(),
+            ];
+        }
+    
+        return null;
     }
-
-    public function setSubforum(?SubForum $subforum): static
-    {
-        $this->subforum = $subforum;
-
-        return $this;
-    }
+    
 }

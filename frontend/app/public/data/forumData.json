@@ -7,6 +7,9 @@
           "id": 1,
           "name": "Introductions",
           "description": "Introduce yourself to the community.",
+          "bannerImage": "https://cdn.midjourney.com/a82cc9f3-09a9-4792-b423-c2af2112678a/0_3.png",
+          "numThreads": 12,
+          "numMessages": 150,
           "lastThread": {
             "title": "Welcome to the New Members",
             "author": "Admin",
@@ -19,6 +22,7 @@
               "id": 11,
               "name": "New Members",
               "description": "Introduce yourself here.",
+              "bannerImage": "https://example.com/path-to-subforum-image.jpg",
               "lastThread": {
                 "title": "Say Hi!",
                 "author": "User123",
@@ -30,6 +34,7 @@
               "id": 12,
               "name": "Off-Topic",
               "description": "Talk about anything unrelated.",
+              "bannerImage": "https://example.com/path-to-subforum-image.jpg",
               "lastThread": {
                 "title": "Random Thoughts",
                 "author": "User456",
@@ -48,6 +53,9 @@
           "id": 2,
           "name": "News",
           "description": "Stay updated with the latest news.",
+          "bannerImage": "https://cdn.midjourney.com/a0aa83bf-aab8-4a61-b237-ac4224b0b7e5/0_3.png",
+          "numThreads": 12,
+          "numMessages": 150,
           "lastThread": {
             "title": "Upcoming Changes",
             "author": "Admin",
@@ -60,6 +68,7 @@
               "id": 21,
               "name": "Announcements",
               "description": "Official updates.",
+              "bannerImage": "https://example.com/path-to-subforum-image.jpg",
               "lastThread": {
                 "title": "New Features",
                 "author": "Admin",
@@ -71,6 +80,7 @@
               "id": 22,
               "name": "Community News",
               "description": "News from the community.",
+              "bannerImage": "https://example.com/path-to-subforum-image.jpg",
               "lastThread": {
                 "title": "Community Meetup",
                 "author": "Mod",
