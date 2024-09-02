@@ -73,6 +73,25 @@ class ForumRepository extends ServiceEntityRepository
         ];
     }
 
+    public function isForumOrParentInCategoryType(Forum $forum, string $categoryType): bool
+    {
+        // Start with the current forum
+        while ($forum !== null) {
+            $category = $forum->getCategory();
+
+            // If the forum has a category and that category's type matches the specified type
+            if ($category && $category->getType() && $category->getType()->getName() === $categoryType) {
+                return true;
+            }
+
+            // Move to the parent forum if it exists
+            $forum = $forum->getForum();
+        }
+
+        // If we reach here, neither the forum nor any of its parents match the specified category type
+        return false;
+    }
+
     //    /**
     //     * @return Forum[] Returns an array of Forum objects
     //     */

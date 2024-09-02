@@ -73,6 +73,7 @@ class CategoryController extends AbstractController
                     'name' => $forum->getName(),
                     'description' => $forum->getDescription(),
                     'banner' => $forum->getBanner(),
+                    'heroLogo' => $forum->getHeroLogo(),
                     'lastThread' => $lastThreadData, // Method to retrieve last thread info
                     'stats' => $statsData,
                     'subforums' => $subForums,

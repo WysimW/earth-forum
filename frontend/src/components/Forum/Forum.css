@@ -6,7 +6,7 @@
 }
 
 /* Forum Category Section */
-.forum-category {
+.forum-category, .forum-detail__subforums {
     position: relative;
     display: flex;
     align-items: center;
@@ -88,6 +88,21 @@
     justify-content: center;
 }
 
+.forum-item__description {
+    display:none;
+}
+
+.subforum-item__separator {
+    display: none;
+}
+
+.subforum-item__icon {
+    display: none;
+}
+
+.category-hero-logo {
+    display: none;
+}
 
 /* Forum Item Layout */
 .forum-item {
@@ -112,23 +127,12 @@
     display: flex;
     position: absolute;
     top: var(--space-m);
-    right: var(--space-m);
     color: var(--dc-white);
     justify-content: end;
     align-items: flex-start;
     gap: 15px;
     justify-content: space-between;
     z-index: 10;
-}
-
-.forum-item__status-image {
-    flex: 0 0 100px;
-}
-
-.forum-item__status-image-img {
-    width: 80px;
-    height: auto;
-    object-fit: cover;
 }
 
 .forum-item__details {
@@ -182,6 +186,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
+    z-index:2;
 }
 
 .forum-item__stats {
@@ -242,7 +247,7 @@
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: 18px;
     width: 0;
     height: 1px;
     background-color: var(--dc-white);
@@ -251,7 +256,7 @@
 
 .subforum-item__link:hover::after {
     color: var(--dc-white);
-    width: 100%;
+    width: 85%;
 }
 
 .subforum-item__description {
@@ -335,7 +340,7 @@ font-size: 0.8rem;;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.37);
     /* Dark overlay with transparency */
     pointer-events: none;
     /* Allows interaction with underlying content */
@@ -345,14 +350,22 @@ font-size: 0.8rem;;
 .forum-item:hover .forum-item__banner-overlay {
     transform: translateX(0);
     /* Slide the overlay in from the left on hover */
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.183);
     /* Slightly darker on hover */
 }
 
+/* INFORMATION CATEGORY */
+.forum-category--information .forum-item__layout {
+    right:var(--space-m);
+}
+
 /* SPECIAL */
-/* Special Category */
 .forum-category--special {
     border-left: 5px solid var(--dc-blue-darker);
+}
+
+.forum-category--special .forum-item__layout {
+    right:var(--space-m);
 }
 
 .forum-category--special .forum-category__content {
@@ -365,7 +378,118 @@ font-size: 0.8rem;;
 }
 
 /* ROLEPLAY CATEGORY */
-.forum-category--roleplay {
+.forum-category--roleplay, .forum-detail__subforums {
     background-color: var(--dc-blue-dark);
     border-left: 5px solid var(--dc-blue-darker);
+}
+
+.forum-category--roleplay .forum-item__banner, .forum-detail__subforums .forum-item__banner{
+width:50%;
+}
+
+.forum-category--roleplay .forum-item__layout, .subforums--content .forum-item__layout  {
+    width: 45%;
+    display: flex;
+    position: absolute;
+    top: var(--space-m);
+    left: 50%;
+    color: var(--dc-white);
+    justify-content: start;
+    align-items: flex-start;
+    gap: 15px;
+    justify-content: space-between;
+    z-index: 10;
+    margin-left: 10px;
+}
+
+.forum-category--roleplay .forum-item__title, .subforums--content .forum-item__title  {
+    justify-content: start;
+    margin-left: 5px;
+}
+
+.forum-category--roleplay .forum-item__description, .subforums--content .forum-item__description  {
+    margin: 10px 0px;
+    display: block;
+    height:100px;
+    max-height: 150px; /* Set the maximum height for the block */
+    width: 100%;
+    overflow-y: auto;  /* Enable vertical scrolling */
+    padding: 10px;
+    background-color: var(--dc-black-rgba); /* Adjust background color as needed */
+    border: 1px solid var(--dc-blue-dark); /* Optional: Add a border for better visibility */
+}
+
+
+
+.forum-category--roleplay .forum-item__description p, .subforums--content .forum-item__description {
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.85rem;
+line-height: 1.1rem;
+}
+
+/* Optional: Add custom scrollbar styling */
+.forum-category--roleplay .forum-item__description::-webkit-scrollbar {
+    width: 8px;
+}
+
+ .forum-item__description::-webkit-scrollbar-track {
+    background: var(--dc-blue-darker);
+}
+
+.forum-item__description::-webkit-scrollbar-thumb {
+    background-color: var(--dc-blue-scroll); 
+    border-radius: 10px; 
+    border: 2px solid var(--dc-blue-darker); 
+}
+
+.forum-item__subforums-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;   
+    margin-left: 5px;
+
+}
+
+.forum-category--roleplay .subforum-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.forum-category--roleplay .subforum-item__icon, .forum-category--roleplay .subforum-item__icon  {
+    margin-right: 5px;
+    display: inline-block;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.forum-category--roleplay .subforum-item__link, .forum-category--roleplay .subforum-item__link  {
+    margin-right: 5px;
+    margin-bottom: 0;
+}
+
+.forum-category--roleplay .subforum-item__separator, .forum-category--roleplay .subforum-item__separator  {
+    margin-right: 5px;
+    display: inline-block;
+}
+
+/* Hover effect for the icon */
+.subforum-item__link:hover .subforum-item__icon {
+    animation: pulsate 01s ease-in-out infinite;
+    color: var(--dc-blue-light); /* Optional: change color on hover */
+}
+
+.forum-category--roleplay .category-hero-logo {
+    display: block;
+    position: absolute;
+    top: -12%;
+    right: 10%;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+.forum-category--roleplay .category-hero-logo img{
+    width: 350px;
+    transform: rotate(15deg);
 }

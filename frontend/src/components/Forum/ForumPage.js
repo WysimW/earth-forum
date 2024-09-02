@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import LastThreadInfo from "../Thread/LastThreadInfo";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'; // Import the location icon
 import "./Forum.css";
 
 const ForumPage = ({ categories }) => {
@@ -58,21 +60,22 @@ const ForumPage = ({ categories }) => {
                           {forum.name}
                         </Link>
                       </h3>
+                      
+                      <div className="forum-item__description">
+                      <p >{forum.description}</p>
+                      </div>
                       <div className="forum-item__subforums">
                         {forum.subforums &&
                           forum.subforums.length > 0 &&
                           <ul className="forum-item__subforums-list">
-                            {forum.subforums.map(subForum =>
+                            {forum.subforums.map((subForum, index) =>
                               <li key={subForum.id} className="subforum-item">
-                                <Link
-                                  to={`/forum/${subForum.id}`}
-                                  className="subforum-item__link"
-                                >
+                                <Link to={`/forum/${subForum.id}`} className="subforum-item__link">
+
+                              <FontAwesomeIcon icon={faMapMarkerAlt} className="subforum-item__icon" />
                                   {subForum.name}
-                                </Link>
-                                <p className="subforum-item__description">
-                                  {subForum.description}
-                                </p>
+                              </Link>
+                              {index < forum.subforums.length - 1 && <span className="subforum-item__separator"> | </span>}
                               </li>
                             )}
                           </ul>}
@@ -101,9 +104,15 @@ const ForumPage = ({ categories }) => {
                         <LastThreadInfo lastThread={forum.lastThread} />}
                     </div>
                   </div>
+                  <div className="category-hero-logo"> 
+                  {forum.heroLogo && <img src={forum.heroLogo} alt="Hero Logo" />}
+
+          </div>
                 </div>
+                
               )}
             </div>
+
           </div>
         );
       })}

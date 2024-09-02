@@ -63,6 +63,9 @@ class Forum
     #[Groups(['forum_detail'])]
     private Collection $subforums;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroLogo = null;
+
     public function __construct()
     {   $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
         $this->updatedAt = new \DateTime();  // Set the default value when the entity is created
@@ -241,6 +244,18 @@ class Forum
         }
 
         return null;
+    }
+
+    public function getHeroLogo(): ?string
+    {
+        return $this->heroLogo;
+    }
+
+    public function setHeroLogo(?string $heroLogo): static
+    {
+        $this->heroLogo = $heroLogo;
+
+        return $this;
     }
 
 }

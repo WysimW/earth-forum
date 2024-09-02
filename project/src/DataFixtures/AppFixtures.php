@@ -58,7 +58,7 @@ class AppFixtures extends Fixture
         $manager->flush();
 
 // Create Types
-$categoryTypes = ['special', 'general', 'archived'];
+$categoryTypes = ['special', 'general', 'archived', 'roleplay', 'information'];
 $categoryTypeEntities = [];
 
 foreach ($categoryTypes as $categoryTypeName) {
@@ -72,13 +72,14 @@ $manager->flush();
 
 // Create Categories
 $categories = [
-    ['name' => 'General Discussion', 'type' => 'general'],
-    ['name' => 'News and Announcements', 'type' => 'general'],
+    ['name' => 'Information', 'type' => 'information'],
+    ['name' => 'Personnages', 'type' => 'special'],
+    ['name' => 'Terre', 'type' => 'roleplay'],
     ['name' => 'Archives', 'type' => 'archived'],
 ];
 
 $categoryEntities = [];
-
+$o=1;
 foreach ($categories as $categoryData) {
     $category = new ForumCategory();
     $category->setName($categoryData['name']);
@@ -87,9 +88,11 @@ foreach ($categories as $categoryData) {
     // Set the associated CategoriesType
     $categoryType = $categoryTypeEntities[$categoryData['type']];
     $category->setType($categoryType);
+    $category->setHomeOrder($o);
     
     $manager->persist($category);
     $categoryEntities[] = $category;
+    $o++;
 }
 
 $manager->flush();

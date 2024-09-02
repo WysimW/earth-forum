@@ -36,7 +36,7 @@ const LastThreadInfo = ({ lastThread }) => {
             <div className="last-thread__info">
                 <div className="last-thread__details">
                     <p>{lastThread.date}</p>
-                    <p>Sujet : <em>{lastThread.title.length > maxChars ? `${lastThread.title.substring(0, maxChars)}...` : lastThread.title}</em></p>
+                    <p>Sujet : <em>{Array.isArray(lastThread.title) && lastThread.title.length > maxChars ? `${lastThread.title.substring(0, maxChars)}...` : lastThread.title}</em></p>
                     </div>
                 <div className="last-thread__author_details">
                 <img src={lastThread.avatar} alt={`${lastThread.author}'s avatar`} className="last-thread__avatar" />

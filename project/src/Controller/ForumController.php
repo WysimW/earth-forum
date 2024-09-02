@@ -14,17 +14,22 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\BreadcrumbService;
+
 
 class ForumController extends AbstractController
 {    private $entityManager;
     private $forumRepository;
     private $categoryRepository;
+    private $breadcrumbService;
 
-    public function __construct(EntityManagerInterface $entityManager,ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository) 
+    public function __construct(EntityManagerInterface $entityManager,ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository, BreadcrumbService $breadcrumbService) 
     {
         $this->entityManager = $entityManager;
         $this->forumRepository = $forumRepository;
         $this->categoryRepository = $categoryRepository;
+        $this->breadcrumbService = $breadcrumbService;
+
     }
 
     #[Route('/api/forumslist', name: 'get_forum_listing', methods: ['GET'])]
@@ -75,19 +80,28 @@ public function getForumDetail(Forum $forum): JsonResponse
     $subForums = [];
 
     foreach ($forum->getSubforums() as $subForum) {
-        $lastThread = $subForum->getLastPostInfo();
+        $id = $subForum->getID();
+        $latestThread = $this->forumRepository->findLatestThreadByRecentPostInForum($id);
+        if ($latestThread != null) {
+            $lastPostDate = $latestThread->getPosts()->last()->getCreatedAt()->format('H\hi \l\e d/m/y');
+            $formattedDate = 'Posté à ' . $lastPostDate;
+            $lastThreadData = [
+                'id' => $latestThread->getId(),
+                'title' => $latestThread->getTitle(),
+                'author' => $latestThread->getAuthor()->getPseudo(), // Assuming Thread entity has a relation to Author
+                'avatar' => $latestThread->getAuthor()->getAvatar(),
+                'date' => $formattedDate, // Get the date of the last post
+            ];
+        } else {
+            $lastThreadData = [];
+        };
+
         $subForums[] = [
             'id' => $subForum->getId(),
             'name' => $subForum->getName(),
             'description' => $subForum->getDescription(),
-            'bannerImage' => $subForum->getBanner(),
-            'lastThread' => $lastThread ? [
-                'id' => $lastThread['id'] ?? null,
-                'title' => $lastThread['title'] ?? null,
-                'author' => $lastThread['author'] ?? null,
-                'date' => $lastThread['date'] ?? null,
-                'threadId' => $lastThread['id'] ?? null,
-            ] : null,
+            'banner' => $subForum->getBanner(),
+            'lastThread' => $lastThreadData, // Method to retrieve last thread info
         ];
     }
 
@@ -108,18 +122,18 @@ public function getForumDetail(Forum $forum): JsonResponse
                 'excerpt' => $lastPost['excerpt'] ?? null,
             ] : null,
         ];
-    }
+    };
+
+    $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+    $breadcrumbs = $this->breadcrumbService->generateBreadcrumbs($forum);
 
     $data = [
         'forumId' => $forum->getId(),
         'forumName' => $forum->getName(),
         'description' => $forum->getDescription(),
         'bannerImage' => $forum->getBanner(),
-        'breadcrumb' => [
-            ['name' => 'Home', 'url' => '/'],
-            ['name' => 'DC Universe', 'url' => '/forum/1'],
-            ['name' => $forum->getName(), 'url' => "/forum/{$forum->getId()}"]
-        ],
+        'isRoleplay' => $isRoleplay,
+        'breadcrumb' => $breadcrumbs,
         'subForums' => $subForums,
         'threads' => $threads,
     ];
@@ -129,7 +143,7 @@ public function getForumDetail(Forum $forum): JsonResponse
 
 
 #[Route('/api/forums/{id}/edit-data', name: 'get_forum_edit_data', methods: ['GET'])]
-public function getForumEditData(Forum $forum, ForumCategoryRepository $categoryRepository, ): JsonResponse
+public function getForumEditData(Forum $forum, ForumCategoryRepository $categoryRepository ): JsonResponse
 {
     // Get the list of categories
     $categories = $this->categoryRepository->findAll();
