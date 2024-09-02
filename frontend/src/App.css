@@ -2,14 +2,16 @@
 
 :root {
     --dc-blue: #0476F2;
+    --dc-blue-rgba: rgba(29, 53, 87, 0.7);
     --dc-blue-light: #2A8FF7;
     --dc-blue-dark: #002036;
+    --dc-blue-darker: #011827;;
     --dc-white: #FFFFFF;
     --dc-white-dark: #002036;
-    --font-size-h1: 2.5em;
-    --font-size-h2: 2em;
-    --font-size-h3: 1.3em;
-    --font-size-h4: 1.2em;
+    --font-size-h1: 2rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.3rem;
+    --font-size-h4: 1.2rem;
     --transition-speed: 0.3s;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --hover-shadow-color: rgba(0, 0, 0, 0.2);
@@ -18,6 +20,11 @@
     --link-hover-color: var(--dc-white-dark);
     --background-color: var(--dc-blue-dark);
     --text-color: var(--dc-white);
+    --space-xs:5px;
+    --space-s:10px;
+    --space-m:20px;
+    --space-l:30px;
+    --space-xl:40px;
 }
 
 /* General Page Styling */
@@ -25,37 +32,11 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: var(--background-color);
     background-image: url(https://2img.net/zupimages.net/up/22/35/efi9.png);
-    background-attachment: scroll;
+    background-attachment: fixed;
+    background-repeat: no-repeat;  
     color: var(--text-color);
     margin: 0;
     padding: 0;
-}
-
-
-/* Header Styling */
-header {
-    background-color: var(--dc-blue);
-    color: var(--dc-white);
-    padding: 20px;
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 2em;
-}
-
-/* Forum Section */
-.forum-page, .forum-detail, .subforum-detail {
-    background-color: var(--dc-white);
-    color: var(--dc-blue);
-    border: 5px solid var(--dc-blue);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-}
-
-.forum h3, .forum-detail h2, .subforum-detail h2 {
-    color: var(--dc-blue);
-    text-shadow: 1px 1px var(--dc-white);
-    margin-bottom: 10px;
 }
 
 /* Apply font sizes */
@@ -86,3 +67,8 @@ h3 a:hover {
     color: var(--superman-yello);
     border-radius: 5px;
 }
+
+p {
+    font-size:1rem;
+}
+

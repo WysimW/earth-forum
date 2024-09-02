@@ -1,0 +1,83 @@
+/* Last Thread Info */
+.last-thread__link {
+    text-decoration: none;
+    /* Remove default text decoration */
+    color: inherit;
+    /* Maintain the text color */
+    display: block;
+}
+
+.forum__last-thread {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    /* Align content to the right */
+    text-align: right;
+}
+
+.last-thread__info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Ensure alignment to the right */
+    gap: 8px;
+    padding: 5px 10px;
+    background-color: var(--dc-blue-rgba);
+    transition: border var(--transition-speed), transform var(--transition-speed);
+}
+
+.last-thread__info:hover {
+    border: 2px solid var(--dc-white);
+    transform: translateY(-3px);
+}
+
+/* Avatar styling */
+.last-thread__avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border: 1px solid var(--dc-white);
+}
+
+/* Info styling aligned to the left of the avatar */
+.last-thread__details {
+    text-align: right;
+    /* Ensure text is aligned to the right */
+    color: var(--dc-white);
+    /* Blue text */
+}
+
+.last-thread__details p, .last-thread__author_details p {
+    font-size: 0.75rem;
+    margin: 0;
+    color: var(--dc-white);
+    /* Blue text */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.last-thread__details a:hover {
+    color: var(--dc-white);
+    /* Change color on hover */
+    text-decoration: underline;
+}
+
+.last-thread__details  {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    justify-content: end;
+    gap: var(--space-xs);
+}
+
+.last-thread__author_details  {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+}
+
+.last-thread__details p em {
+font-weight: bold;
+}

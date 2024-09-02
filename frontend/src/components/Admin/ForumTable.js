@@ -8,7 +8,7 @@ const ForumTable = () => {
     const [editingForum, setEditingForum] = useState(null);
 
     useEffect(() => {
-        fetch('http://localhost:8741/api/forums/list')
+        fetch('http://localhost:8741/api/forumslist')
             .then(response => response.json())
             .then(data => setForums(data))
             .catch(error => console.error('Error fetching forums:', error));
@@ -39,7 +39,7 @@ const ForumTable = () => {
     const handleFormSuccess = () => {
         setEditingForum(null);
         setIsModalOpen(false);
-        fetch('http://localhost:8741/api/forums/list')
+        fetch('http://localhost:8741/api/forumslist')
             .then(response => response.json())
             .then(data => setForums(data))
             .catch(error => console.error('Error fetching forums:', error));

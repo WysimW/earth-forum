@@ -27,7 +27,7 @@ class ForumController extends AbstractController
         $this->categoryRepository = $categoryRepository;
     }
 
-    #[Route('/api/forums/list', name: 'get_forum_list', methods: ['GET'])]
+    #[Route('/api/forumslist', name: 'get_forum_listing', methods: ['GET'])]
     public function getForumList(ForumRepository $forumRepository): JsonResponse
     {
         $forums = $forumRepository->findAll();
@@ -197,9 +197,20 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
 
 
     #[Route('/api/forums/{id}', name: 'update_forum', methods: ['PUT'])]
-    public function updateForum(Forum $forum, Request $request, EntityManagerInterface $entityManager, ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);    
+    public function updateForum(
+        Forum $forum,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ForumRepository $forumRepository,
+        ForumCategoryRepository $categoryRepository
+    ): JsonResponse {
+        // Decode the JSON payload
+        $data = json_decode($request->getContent(), true);
+    
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+        }
+    
         if (!$forum) {
             return new JsonResponse(['error' => 'Forum not found'], 404);
         }
@@ -208,10 +219,11 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         $forum->setName($data['name'] ?? $forum->getName());
         $forum->setDescription($data['description'] ?? $forum->getDescription());
         $forum->setBanner($data['banner'] ?? $forum->getBanner());
-        $forum->setCategory(null);  // Disassociate existing category
-        $forum->setForum(null);  // Disassociate existing parent forum
-
+    
         // Remove existing category or subforum association
+        $forum->setCategory(null);
+        $forum->setForum(null);
+    
         if (isset($data['category_id'])) {
             $category = $categoryRepository->find($data['category_id']);
             if ($category) {
@@ -230,6 +242,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
             }
         }
     
+        // Save changes
         $entityManager->flush();
     
         return new JsonResponse(['status' => 'Forum updated successfully']);

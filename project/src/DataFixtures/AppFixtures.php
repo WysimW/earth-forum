@@ -4,6 +4,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\CategoriesType;
 use App\Entity\User;
 use App\Entity\Role;
 use App\Entity\ForumCategory;
@@ -56,19 +57,43 @@ class AppFixtures extends Fixture
 
         $manager->flush();
 
-        // Create Categories
-        $categories = ['General Discussion', 'News and Announcements'];
-        $categoryEntities = [];
+// Create Types
+$categoryTypes = ['special', 'general', 'archived'];
+$categoryTypeEntities = [];
 
-        foreach ($categories as $categoryName) {
-            $category = new ForumCategory();
-            $category->setName($categoryName);
-            $category->setDescription("Description for $categoryName");
-            $manager->persist($category);
-            $categoryEntities[] = $category;
-        }
+foreach ($categoryTypes as $categoryTypeName) {
+    $categoryType = new CategoriesType();
+    $categoryType->setName($categoryTypeName);
+    $manager->persist($categoryType);
+    $categoryTypeEntities[$categoryTypeName] = $categoryType;
+}
 
-        $manager->flush();
+$manager->flush();
+
+// Create Categories
+$categories = [
+    ['name' => 'General Discussion', 'type' => 'general'],
+    ['name' => 'News and Announcements', 'type' => 'general'],
+    ['name' => 'Archives', 'type' => 'archived'],
+];
+
+$categoryEntities = [];
+
+foreach ($categories as $categoryData) {
+    $category = new ForumCategory();
+    $category->setName($categoryData['name']);
+    $category->setDescription("Description for {$categoryData['name']}");
+    
+    // Set the associated CategoriesType
+    $categoryType = $categoryTypeEntities[$categoryData['type']];
+    $category->setType($categoryType);
+    
+    $manager->persist($category);
+    $categoryEntities[] = $category;
+}
+
+$manager->flush();
+
 
         // Create Forums with their categories
         $forumEntities = [];

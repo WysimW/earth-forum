@@ -28,6 +28,12 @@ class ForumCategory
     #[ORM\OneToMany(targetEntity: Forum::class, mappedBy: 'category')]
     private Collection $forums;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $homeOrder = null;
+
+    #[ORM\ManyToOne(inversedBy: 'forumCategories')]
+    private ?CategoriesType $type = null;
+
     public function __construct()
     {
         $this->forums = new ArrayCollection();
@@ -88,6 +94,31 @@ class ForumCategory
                 $forum->setCategory(null);
             }
         }
+
+        return $this;
+    }
+
+
+    public function getHomeOrder(): ?int
+    {
+        return $this->homeOrder;
+    }
+
+    public function setHomeOrder(?int $homeOrder): static
+    {
+        $this->homeOrder = $homeOrder;
+
+        return $this;
+    }
+
+    public function getType(): ?CategoriesType
+    {
+        return $this->type;
+    }
+
+    public function setType(?CategoriesType $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }

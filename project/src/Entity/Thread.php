@@ -140,6 +140,7 @@ class Thread
         if ($lastPost) {
             return [
                 'id' => $lastPost->getId(),
+                'title'=> $this->getTitle(),
                 'author' => $lastPost->getAuthor()->getPseudo(),
                 'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
                 'excerpt' => substr($lastPost->getContent(), 0, 50),

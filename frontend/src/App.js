@@ -3,12 +3,14 @@ import './Reset.css';  // Import the reset CSS first
 import './App.css';  // Import the reset CSS first
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header/Header';
+import Hero from './components/Header/HeroSection';
 import Footer from './components/Footer/Footer';
 import ForumPage from './components/Forum/ForumPage';
 import ForumDetail from './components/Forum/ForumDetail';
 import ThreadDetail from './components/Thread/ThreadDetail';
 import AdminPanel from './components/Admin/AdminPanel'; // Import AdminPanel component
 import ThreadCreate from './components/Thread/ThreadCreate'; // Import the ThreadCreate component
+import HeroSection from './components/Header/HeroSection';
 
 const createThread = (threadData) => {
     const payload = {
@@ -40,11 +42,12 @@ function App() {
             .then(data => setCategories(data.categories))
             .catch(error => console.error('Error fetching forum data:', error));
     }, []);
-
+    console.log(categories)
     return (
         <Router>
             <Header />
-            <main style={{ padding: '20px' }}>
+            <HeroSection />
+            <main style={{ padding: '40px' }}>
                 <Routes>
                     <Route path="/" element={<ForumPage categories={categories} />} />
                     <Route path="/forum/:id" element={<ForumDetail />} />

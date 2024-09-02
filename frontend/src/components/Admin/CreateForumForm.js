@@ -18,7 +18,7 @@ const CreateForumForm = ({ onSubmit }) => {
             .then(data => setCategories(data))
             .catch(error => setError("Failed to load categories."));
 
-        fetch('http://localhost:8741/api/forums/list')
+        fetch('http://localhost:8741/api/forumslist')
             .then(response => response.json())
             .then(data => setForums(data))
             .catch(error => setError("Failed to load forums."));
