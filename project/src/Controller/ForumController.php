@@ -74,72 +74,113 @@ class ForumController extends AbstractController
     }
 
 
-#[Route('/api/forums/{id}', name: 'get_forum_read', methods: ['GET'])]
-public function getForumDetail(Forum $forum): JsonResponse
-{
-    $subForums = [];
-
-    foreach ($forum->getSubforums() as $subForum) {
-        $id = $subForum->getID();
-        $latestThread = $this->forumRepository->findLatestThreadByRecentPostInForum($id);
-        if ($latestThread != null) {
-            $lastPostDate = $latestThread->getPosts()->last()->getCreatedAt()->format('H\hi \l\e d/m/y');
-            $formattedDate = 'Posté à ' . $lastPostDate;
-            $lastThreadData = [
-                'id' => $latestThread->getId(),
-                'title' => $latestThread->getTitle(),
-                'author' => $latestThread->getAuthor()->getPseudo(), // Assuming Thread entity has a relation to Author
-                'avatar' => $latestThread->getAuthor()->getAvatar(),
-                'date' => $formattedDate, // Get the date of the last post
+    #[Route('/api/forums/{id}', name: 'get_forum_read', methods: ['GET'])]
+    public function getForumDetail(Forum $forum): JsonResponse
+    {
+        $subForums = [];
+    
+        foreach ($forum->getSubforums() as $subForum) {
+            $id = $subForum->getId();
+            $latestThread = $this->forumRepository->findLatestThreadByRecentPostInForum($id);
+            if ($latestThread != null) {
+                $lastPostDate = $latestThread->getPosts()->last()->getCreatedAt()->format('H\hi \l\e d/m/y');
+                $formattedDate = 'Posté à ' . $lastPostDate;
+                $lastThreadData = [
+                    'id' => $latestThread->getId(),
+                    'title' => $latestThread->getTitle(),
+                    'author' => $latestThread->getAuthor()->getPseudo(), // Assuming Thread entity has a relation to Author
+                    'avatar' => $latestThread->getAuthor()->getAvatar(),
+                    'date' => $formattedDate, // Get the date of the last post
+                ];
+            } else {
+                $lastThreadData = [];
+            }
+    
+            $stats = $this->forumRepository->countThreadsAndPostsInForum($id);
+            $statsData = [
+                'totalThreads' => $stats['totalThreads'],
+                'totalPosts' => $stats['totalPosts'],
             ];
-        } else {
-            $lastThreadData = [];
-        };
-
-        $subForums[] = [
-            'id' => $subForum->getId(),
-            'name' => $subForum->getName(),
-            'description' => $subForum->getDescription(),
-            'banner' => $subForum->getBanner(),
-            'lastThread' => $lastThreadData, // Method to retrieve last thread info
+    
+            $latestThreads = $this->forumRepository->findLatestThreads($id);
+            $latestThreadsData = [];
+            foreach ($latestThreads as $thread) {
+                $latestThreadsData[] = [
+                    'id' => $thread->getId(),
+                    'title' => $thread->getTitle(),
+                    'author' => $thread->getAuthor()->getPseudo(),
+                    'createdAt' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
+                    // Add more fields as necessary
+                ];
+            }
+    
+            $subForums[] = [
+                'id' => $subForum->getId(),
+                'name' => $subForum->getName(),
+                'description' => $subForum->getDescription(),
+                'banner' => $subForum->getBanner(),
+                'lastThread' => $lastThreadData,
+                'stats' => $statsData,
+                'latestThreads' => $latestThreadsData,
+            ];
+        }
+    
+        // Sort threads by the most recent post date
+        $threads = $forum->getThreads()->toArray();
+        usort($threads, function ($a, $b) {
+            $latestPostA = $a->getPosts()->last();
+            $latestPostB = $b->getPosts()->last();
+        
+            // If either thread has no posts, we consider them to be equal
+            if (!$latestPostA && !$latestPostB) {
+                return 0;
+            } elseif (!$latestPostA) {
+                return 1;  // No posts in A, so B is considered "newer"
+            } elseif (!$latestPostB) {
+                return -1;  // No posts in B, so A is considered "newer"
+            }
+        
+            // Compare the createdAt dates of the latest posts in each thread
+            return $latestPostB->getCreatedAt() <=> $latestPostA->getCreatedAt();
+        });
+        
+    
+        $threadsData = [];
+        foreach ($threads as $thread) {
+            $lastPost = $thread->getLastPostInfo();
+            $threadsData[] = [
+                'threadId' => $thread->getId(),
+                'title' => $thread->getTitle(),
+                'author' => $thread->getAuthor()->getPseudo(),
+                'authorAvatar' => $thread->getAuthor()->getAvatar(),
+                'createdAt' => $thread->getCreatedAt()->format('d/m/y'),
+                'lastPost' => $lastPost ? [
+                    'id' => $lastPost['id'] ?? null,
+                    'author' => $lastPost['author'] ?? null,
+                    'avatar' => $lastPost['avatar'] ?? null,
+                    'date' => $lastPost['date'] ?? null,
+                    'excerpt' => $lastPost['excerpt'] ?? null,
+                ] : null,
+            ];
+        }
+    
+        $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+        $breadcrumbs = $this->breadcrumbService->generateBreadcrumbs($forum);
+    
+        $data = [
+            'forumId' => $forum->getId(),
+            'forumName' => $forum->getName(),
+            'description' => $forum->getDescription(),
+            'bannerImage' => $forum->getBanner(),
+            'isRoleplay' => $isRoleplay,
+            'breadcrumb' => $breadcrumbs,
+            'subForums' => $subForums,
+            'threads' => $threadsData,
         ];
+    
+        return new JsonResponse($data);
     }
-
-    $threads = [];
-
-    foreach ($forum->getThreads() as $thread) {
-        $lastPost = $thread->getLastPostInfo();
-        $threads[] = [
-            'threadId' => $thread->getId(),
-            'title' => $thread->getTitle(),
-            'author' => $thread->getAuthor()->getPseudo(),
-            'date' => $thread->getCreatedAt()->format('Y-m-d'),
-            'lastPost' => $lastPost ? [
-                'id' => $lastPost['id'] ?? null,
-                'author' => $lastPost['author'] ?? null,
-                'avatar' => $lastPost['avatar'] ?? null,
-                'date' => $lastPost['date'] ?? null,
-                'excerpt' => $lastPost['excerpt'] ?? null,
-            ] : null,
-        ];
-    };
-
-    $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
-    $breadcrumbs = $this->breadcrumbService->generateBreadcrumbs($forum);
-
-    $data = [
-        'forumId' => $forum->getId(),
-        'forumName' => $forum->getName(),
-        'description' => $forum->getDescription(),
-        'bannerImage' => $forum->getBanner(),
-        'isRoleplay' => $isRoleplay,
-        'breadcrumb' => $breadcrumbs,
-        'subForums' => $subForums,
-        'threads' => $threads,
-    ];
-
-    return new JsonResponse($data);
-}
+    
 
 
 #[Route('/api/forums/{id}/edit-data', name: 'get_forum_edit_data', methods: ['GET'])]

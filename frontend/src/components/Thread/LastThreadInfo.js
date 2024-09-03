@@ -4,7 +4,9 @@ import './LastThreadInfo.css';
 
 const LastThreadInfo = ({ lastThread }) => {
     const [maxChars, setMaxChars] = useState(50); // Default value
-
+    const grpClasses = ['grp-staff', 'grp-hero', 'grp-villain', 'grp-civil'];
+    const randomGrpClass = grpClasses[Math.floor(Math.random() * grpClasses.length)];
+    
     useEffect(() => {
         const updateMaxChars = () => {
             const width = window.innerWidth;
@@ -16,6 +18,8 @@ const LastThreadInfo = ({ lastThread }) => {
                 setMaxChars(20); // Larger screens
             }
         };
+
+
 
         // Initial check
         updateMaxChars();
@@ -35,7 +39,7 @@ const LastThreadInfo = ({ lastThread }) => {
         <Link to={`/thread/${lastThread.id}`} className="last-thread__link">
             <div className="last-thread__info">
                 <div className="last-thread__details">
-                    <p>{lastThread.date}</p>
+                    <p>{lastThread.date} par <strong className={randomGrpClass}>{lastThread.author}</strong></p>
                     <p>Sujet : <em>{Array.isArray(lastThread.title) && lastThread.title.length > maxChars ? `${lastThread.title.substring(0, maxChars)}...` : lastThread.title}</em></p>
                     </div>
                 <div className="last-thread__author_details">

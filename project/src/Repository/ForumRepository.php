@@ -92,6 +92,41 @@ class ForumRepository extends ServiceEntityRepository
         return false;
     }
 
+    public function findLatestThreads(int $forumId): array
+    {
+        $forum = $this->find($forumId);
+        if (!$forum) {
+            throw new \Exception('Forum not found');
+        }
+
+        $threads = [];
+
+        // Get threads from the forum and its subforums
+        $this->gatherThreads($forum, $threads);
+
+        // Sort threads by creation date
+        usort($threads, function (Thread $a, Thread $b) {
+            return $b->getCreatedAt() <=> $a->getCreatedAt();
+        });
+
+        // Return only the latest 5 threads
+        return array_slice($threads, 0, 5);
+    }
+
+    private function gatherThreads(Forum $forum, array &$threads)
+    {
+        // Add forum's threads to the list
+        foreach ($forum->getThreads() as $thread) {
+            $threads[] = $thread;
+        }
+
+        // Recursively add subforum threads
+        foreach ($forum->getSubforums() as $subforum) {
+            $this->gatherThreads($subforum, $threads);
+        }
+    }
+
+
     //    /**
     //     * @return Forum[] Returns an array of Forum objects
     //     */

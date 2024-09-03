@@ -46,14 +46,6 @@
     text-align: right;
 }
 
-.forum-detail__create-button {
-
-}
-
-.forum-detail__create-button:hover {
-
-}
-
 .forum-detail__item {
     margin-bottom: 30px;
     padding: 20px;
@@ -118,3 +110,16 @@
     background-color: rgba(0, 0, 0, 0);
 }
 
+.subforums--content .subforum-item__no-thread {
+    margin-top: 0.8rem;
+    display: flex;
+    position: relative;
+    width: 100%;
+}
+
+.subforum-item__no-thread .subforum-item__link{
+    position: absolute;
+    top: 1.5rem;
+    left: 35%;
+    font-size: 1.2rem;
+}

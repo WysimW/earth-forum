@@ -1,6 +1,6 @@
 /* Footer Styling */
 .site-footer {
-    background-color: var(--dc-blue-dark);
+    background-color: var(--dc-blue-darker);
     color: var(--dc-white);
     padding: 30px 0;
     box-shadow: 0 -4px 10px var(--shadow-color);
@@ -19,9 +19,8 @@
 
 /* Footer Cards */
 .footer-card {
-    background-color: var(--dc-blue-light);
+    background-color: var(--dc-blue-dark);
     padding: 20px;
-    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -58,22 +57,21 @@
 }
 
 .role-card {
-    padding: 15px;
-    border-radius: 5px;
+    padding: 10px;
     color: var(--dc-white);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .role-card.heroes {
-    background-color: #1e90ff; /* Blue for Heroes */
+    background-color: var(--grp-hero-color); /* Blue for Heroes */
 }
 
 .role-card.villains {
-    background-color: #dc143c; /* Red for Villains */
+    background-color: var(--grp-villain-color); /* Red for Villains */
 }
 
 .role-card.civilians {
-    background-color: #32cd32; /* Green for Civilians */
+    background-color: var(--grp-civil-color); /* Green for Civilians */
 }
 
 .role-card h4 {

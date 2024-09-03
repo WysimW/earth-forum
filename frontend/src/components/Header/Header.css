@@ -6,10 +6,6 @@
     font-style: normal;
 }
 
-body {
-    font-family: 'MyCustomFont', sans-serif;
-}
-
 /* Base Header Styling */
 .header {
     background-color: var(--dc-blue-dark);

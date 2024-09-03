@@ -197,6 +197,7 @@
     color: var(--dc-blue-dark);
     margin-bottom: 10px;
     text-align: right;
+    z-index: 20;
 }
 
 .forum-item__stat {
@@ -220,6 +221,10 @@
     padding-left: 0;
 }
 
+.forum-category--information .forum-item__subforums-list,.forum-category--special .forum-item__subforums-list {
+    flex-direction: column;
+}
+
 .subforum-item {
     display: flex;
     flex-direction: column;
@@ -236,27 +241,15 @@
     text-decoration: none;
     display: block;
     margin-bottom: 5px;
+    text-decoration: underline 0.08em rgba(0, 0, 0, 0);
+    transition: text-decoration-color 300ms ease-in;
+
 }
 
 
 .subforum-item__link:hover {
+    text-decoration-color: rgb(255, 255, 255);
     color: var(--dc-white);
-}
-
-.subforum-item__link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 18px;
-    width: 0;
-    height: 1px;
-    background-color: var(--dc-white);
-    transition: width 0.3s ease-in-out;
-}
-
-.subforum-item__link:hover::after {
-    color: var(--dc-white);
-    width: 85%;
 }
 
 .subforum-item__description {
@@ -421,14 +414,14 @@ width:50%;
 
 
 
-.forum-category--roleplay .forum-item__description p, .subforums--content .forum-item__description {
+ .forum-item__description p, .subforums--content .forum-item__description {
     font-family: "Open Sans", sans-serif;
     font-size: 0.85rem;
 line-height: 1.1rem;
 }
 
 /* Optional: Add custom scrollbar styling */
-.forum-category--roleplay .forum-item__description::-webkit-scrollbar {
+.forum-item__description::-webkit-scrollbar {
     width: 8px;
 }
 
@@ -452,24 +445,24 @@ line-height: 1.1rem;
 
 }
 
-.forum-category--roleplay .subforum-item {
+.forum-category--roleplay .subforum-item, .subforums--content .subforum-item {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-.forum-category--roleplay .subforum-item__icon, .forum-category--roleplay .subforum-item__icon  {
+.forum-category--roleplay .subforum-item__icon, .subforums--content .subforum-item__icon  {
     margin-right: 5px;
     display: inline-block;
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.forum-category--roleplay .subforum-item__link, .forum-category--roleplay .subforum-item__link  {
+.forum-category--roleplay .subforum-item__link, .subforums--content .subforum-item__link  {
     margin-right: 5px;
     margin-bottom: 0;
 }
 
-.forum-category--roleplay .subforum-item__separator, .forum-category--roleplay .subforum-item__separator  {
+.forum-category--roleplay .subforum-item__separator, .subforums--content .subforum-item__separator  {
     margin-right: 5px;
     display: inline-block;
 }

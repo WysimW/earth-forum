@@ -5,7 +5,7 @@ import './ForumDetail.css';
 import ThreadList from '../Thread/ThreadList';
 import LastThreadInfo from '../Thread/LastThreadInfo';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMapMarkerAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPenNib, faPlus, faBookOpenReader } from '@fortawesome/free-solid-svg-icons';
 
 const ForumDetail = () => {
     const { id } = useParams();
@@ -25,6 +25,8 @@ const ForumDetail = () => {
                 setLoading(false);
             });
     }, [id]);
+
+    console.log(forum)
 
     if (loading) {
         return <p>Loading...</p>;
@@ -56,7 +58,7 @@ const ForumDetail = () => {
 
             <div className="forum-detail__create-thread">
                 <Link to={`/forum/${id}/create-thread`} className="forum-detail__create-button btn btn-primary">
-                <FontAwesomeIcon icon={faPlus} className='btn-icon'/> Create New Thread
+                    <FontAwesomeIcon icon={faPlus} className='btn-icon' /> Nouveau Sujet
                 </Link>
             </div>
 
@@ -75,46 +77,74 @@ const ForumDetail = () => {
                         <h3>Sous-Forums</h3>
                     </div>
                     <div className='subforums--content'>
-                    {subForums.map(subForum => (
-                        <div key={subForum.id} className="forum-item">
-                            <div className="forum-item__layout">
-                                <div className="forum-item__details">
-                                    <h4 className="forum-item__title">
-                                        <Link to={`/forum/${subForum.id}`} className="forum-item__link">
-                                            {subForum.name}
-                                        </Link>
-                                    </h4>
-                                    <p className="forum-item__description">{subForum.description}</p>
-                                    <div className="forum-item__subforums">
-                                        {subForum.subforums && subForum.subforums.length > 0 && (
-                                            <ul className="forum-item__subforums-list">
-                                                {subForum.subforums.map((nestedSubForum, index) => (
-                                                    <li key={nestedSubForum.id} className="subforum-item">
-                                                        <Link to={`/forum/${nestedSubForum.id}`} className="subforum-item__link">
-                                                            <FontAwesomeIcon icon={faMapMarkerAlt} className="subforum-item__icon" />
-                                                            {nestedSubForum.name}
+                        {subForums.map(subForum => (
+                            <div key={subForum.id} className="forum-item">
+                                <div className="forum-item__layout">
+                                    <div className="forum-item__details">
+                                        <h4 className="forum-item__title">
+                                            <Link to={`/forum/${subForum.id}`} className="forum-item__link">
+                                                {subForum.name}
+                                            </Link>
+                                        </h4>
+                                        <p className="forum-item__description">{subForum.description}</p>
+                                        <div className="forum-item__subforums">
+                                            {subForum.latestThreads && subForum.latestThreads.length > 0 && (
+                                                <ul className="forum-item__subforums-list">
+                                                    {subForum.latestThreads.map((latestThread, index) => {
+                                                        // Set the maximum number of characters allowed
+                                                        const maxLength = 20;
+
+                                                        // Truncate the title if it exceeds maxLength
+                                                        const truncatedTitle = latestThread.title.length > maxLength
+                                                            ? latestThread.title.slice(0, maxLength) + '...'
+                                                            : latestThread.title;
+
+                                                        return (
+                                                            <li key={latestThread.id} className="subforum-item">
+                                                                <Link to={`/thread/${latestThread.id}`} className="subforum-item__link">
+                                                                    <FontAwesomeIcon icon={faBookOpenReader} className="subforum-item__icon" />
+                                                                    {truncatedTitle}
+                                                                </Link>
+                                                                {index < subForum.latestThreads.length - 1 && <span className="subforum-item__separator"> | </span>}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            )}
+                                            {subForum.latestThreads && subForum.latestThreads.length == 0 && (
+                                                <ul className="forum-item__subforums-list">
+
+                                                    <li className="subforum-item subforum-item__no-thread">
+                                                    <p>Pas encore de sujet : </p>
+                                                        <Link to={`/forum/${subForum.id}/create-thread`} className="subforum-item__link">
+                                                            <FontAwesomeIcon icon={faPenNib} className="subforum-item__icon" />
+                                                            Rédiger le premier !
                                                         </Link>
-                                                        {index < subForum.subforums.length - 1 && <span className="subforum-item__separator"> | </span>}
                                                     </li>
-                                                ))}
-                                            </ul>
-                                        )}
+
+                                                </ul>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="forum-item__stats-and-last-thread">
                                 <div className="forum-item__stats">
-                                    <p className="forum-item__stat">{subForum.numThreads} Threads</p>
-                                    <p className="forum-item__stat">{subForum.numMessages} Messages</p>
+                                    <p className="forum-item__stat">
+                                        {subForum.stats.totalThreads} Sujets
+                                    </p>
+                                    <p className="forum-item__stat">
+                                        {subForum.stats.totalPosts} Messages
+                                    </p>
                                 </div>
-                                <div className="forum-item__last-thread">
-                                    {!Array.isArray(subForum.lastThread) && subForum.lastThread && (
-                                        <LastThreadInfo lastThread={subForum.lastThread} />
-                                    )}
-                                </div>
+                                <div className="forum-item__stats-and-last-thread">
 
-                            </div>
-                            <div
+                                    <div className="forum-item__last-thread">
+                                        {!Array.isArray(subForum.lastThread) && subForum.lastThread && (
+                                            <LastThreadInfo lastThread={subForum.lastThread} />
+                                        )}
+                                    </div>
+
+                                </div>
+                                <div
                                     className="forum-item__banner"
                                     style={{
                                         backgroundImage: `url(${subForum.banner})`,
@@ -122,14 +152,16 @@ const ForumDetail = () => {
                                 >
                                     <div className="forum-item__banner-overlay" />
                                 </div>
-                        </div>
-                    ))}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
 
             <div className="forum-detail__threads">
-                <h3>Threads</h3>
+            <div className="forum-detail__subforums--title">
+                        <h3>Liste des sujets</h3>
+                    </div>
                 <ThreadList forumId={forum.forumId} />
             </div>
         </div>

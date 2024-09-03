@@ -11,9 +11,21 @@
     --dc-blue-light: #2A8FF7;
     --dc-blue-btn: #134980;
     --dc-blue-dark: #002036;
+    --dc-blue-lessdark: #022842;
+    --dc-blue-lessdark-negative: #08273c;
     --dc-blue-darker: #011827;;
     --dc-white: #FFFFFF;
     --dc-white-dark: #002036;
+    --dc-warning: #53ab82;
+    --dc-highlight: #f28004;
+    --dc-highlight-light:#035EC1;
+    --text-color:white;
+
+    --grp-staff-color:#0099F7;
+    --grp-hero-color:#53ab82;
+    --grp-villain-color:#ab5dee;
+    --grp-civil-color:orange;
+
     --font-size-h1: 2rem;
     --font-size-h2: 1.5rem;
     --font-size-h3: 1.3rem;
@@ -49,7 +61,7 @@
 
 /* General Page Styling */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Lato', sans-serif;
     background-color: var(--background-color);
     background-image: url(https://2img.net/zupimages.net/up/22/35/efi9.png);
     background-attachment: fixed;
@@ -57,6 +69,20 @@ body {
     color: var(--text-color);
     margin: 0;
     padding: 0;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dc-blue-darker);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--dc-blue-scroll); 
+    border-radius: 10px; 
+    border: 2px solid var(--dc-blue-darker); 
 }
 
 /* Apply font sizes */
@@ -91,7 +117,9 @@ h3 a:hover {
 p {
     font-size:1rem;
 }
-
+strong {
+    font-weight: bold;
+}
 .btn {
     font-family: "Open Sans";
     text-transform: uppercase;
@@ -115,5 +143,21 @@ p {
 }
 
 .btn-ibon {
-    margin-right: var(--space-m);
+    margin-right: var(--space-m) !important;
+}
+
+.grp-staff {
+    color:var(--grp-staff-color)!important;
+}
+
+.grp-hero {
+    color:var(--grp-hero-color)!important;
+}
+
+.grp-villain {
+    color:var(--grp-villain-color) !important;
+}
+
+.grp-civil {
+    color:var(--grp-civil-color)!important;
 }

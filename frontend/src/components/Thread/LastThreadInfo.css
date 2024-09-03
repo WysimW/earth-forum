@@ -35,8 +35,9 @@
 .last-thread__avatar {
     width: 40px;
     height: 40px;
+    border-radius: 50%;
     object-fit: cover;
-    border: 1px solid var(--dc-white);
+    border: 1px solid var(--dc-blue-darker);
 }
 
 /* Info styling aligned to the left of the avatar */
@@ -80,4 +81,8 @@
 
 .last-thread__details p em {
 font-weight: bold;
+}
+
+.last-thread__details strong {
+    font-size: 1.2em;
 }
