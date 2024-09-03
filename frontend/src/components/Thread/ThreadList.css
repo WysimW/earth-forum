@@ -142,10 +142,7 @@ background-color: var(--dc-blue);
     opacity: 0.9;
 }
 
-.thread-item__last-post--infos .thread-item__avatar {
-    width: 60px;
-    height: 60px;
-}
+
 .thread-item__last-post--infos strong {
 font-weight: 800;
 }
@@ -213,6 +210,7 @@ font-weight: 800;
 }
 
 .thread-item__avatar {
+    object-fit: cover;
     width: 50px;
     height: 50px;
     border-radius: 50%;

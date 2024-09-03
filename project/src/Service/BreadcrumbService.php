@@ -2,6 +2,7 @@
 namespace App\Service;
 
 use App\Entity\Forum;
+use App\Entity\Thread;
 
 class BreadcrumbService
 {
@@ -26,5 +27,24 @@ class BreadcrumbService
 
         // The breadcrumbs need to be in the correct order, so we reverse the array
         return array_reverse($breadcrumbs);
+    }
+
+    public function generateBreadcrumbsForThread(Thread $thread): array
+    {
+        $breadcrumbs = [];
+
+        // Add the home link
+        $breadcrumbs[] = ['name' => 'Home', 'url' => '/'];
+
+        // Get the forum that this thread belongs to
+        $forum = $thread->getForum();
+
+        // Build the breadcrumb trail for the forum
+        $this->generateBreadcrumbs($forum, $breadcrumbs);
+
+        // Finally, add the current thread
+        $breadcrumbs[] = ['name' => $thread->getTitle(), 'url' => "/thread/{$thread->getId()}"];
+
+        return $breadcrumbs;
     }
 }

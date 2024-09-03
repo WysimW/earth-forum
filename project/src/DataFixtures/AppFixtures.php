@@ -40,11 +40,27 @@ class AppFixtures extends Fixture
 
         // Create Users
         $userEntities = [];
-        for ($i = 1; $i <= 10; $i++) {
+        $userPseudoTable = [
+            'Batman', 'Superman', 'Wonder Woman', 'Flash', 'Lex Luthor', 'Joker', 'Cheetah', 'Reverse-Flash', 'Lois Lane', 'Darkseid'
+        ];
+        $userAvatarTable = [
+            'https://i.postimg.cc/C57P5bxw/batfixture.png',
+            'https://i.postimg.cc/66Rq4YKH/supermanfixture.png',
+            'https://i.postimg.cc/BQTR9GCT/wwfixture.png',
+            'https://i.postimg.cc/Dwb5G9CW/flashfixture.png',
+            'https://i.postimg.cc/Px0hKpGb/Lexfixture.png',
+            'https://i.postimg.cc/ryBdhzMw/Jokerfixture.png',
+            'https://i.postimg.cc/WbTHDB4p/cheetahfixture.png',
+            'https://i.postimg.cc/MTRQ1ZDn/reverseflash.png',
+            'https://i.postimg.cc/XJRDggCn/loisfixture.png',
+            'https://i.postimg.cc/QthFK26D/darkseidfixture.png',
+        ];
+
+        for ($i = 0; $i <= 9; $i++) {
             $user = new User();
-            $user->setPseudo("User$i");
+            $user->setPseudo($userPseudoTable[$i]);
             $user->setEmail("user$i@example.com");
-            $user->setAvatar("https://example.com/avatar/user$i.png");
+            $user->setAvatar($userAvatarTable[$i]);
             $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
             $user->setCreatedAt(new \DateTimeImmutable());
 
@@ -78,6 +94,8 @@ $categories = [
     ['name' => 'Archives', 'type' => 'archived'],
 ];
 
+
+
 $categoryEntities = [];
 $o=1;
 foreach ($categories as $categoryData) {
@@ -96,24 +114,55 @@ foreach ($categories as $categoryData) {
 }
 
 $manager->flush();
-
-
+$forumBannerTable= [
+'https://cdn.midjourney.com/b7c38aa9-05ea-4d3f-b603-d6fbd28463fb/0_0.png',
+'https://cdn.midjourney.com/419cdf20-b270-4914-9108-5db993177def/0_2.png',
+'https://cdn.midjourney.com/d815adc1-b74d-481c-b685-6650e4811c0d/0_0.png',
+'https://cdn.midjourney.com/ed4b9a11-669b-48dd-808d-471bdd2058e3/0_0.png',
+'https://cdn.midjourney.com/c93cf31d-4666-4e9d-8b23-2005e084b258/0_0.png',
+'https://cdn.midjourney.com/a97af741-7652-4d31-9185-d46d9bd46863/0_1.png',
+'https://cdn.midjourney.com/34b06ed4-61c3-42fa-a769-8a11c86a607b/0_0.png',
+'https://cdn.midjourney.com/08a7a952-bf55-4465-b925-391897ca3030/0_2.png',
+'https://cdn.midjourney.com/06797d63-a94e-4f0f-92a0-b8a1cb70d72c/0_1.png',
+'https://cdn.midjourney.com/dd44c5b7-840a-41d3-a62a-9736b7b9faa3/0_0.png',
+'https://cdn.midjourney.com/f7e28784-4179-4d34-9109-fadc717335d4/0_0.png',
+'https://cdn.midjourney.com/2c63f29c-9baf-46ab-bfee-3390d5da0eb2/0_0.png',
+'https://cdn.midjourney.com/29d70ab8-1b55-4000-b942-64e3a5be893f/0_0.png',
+'https://cdn.midjourney.com/f234c244-07e0-4f1d-aed5-382651e382ae/0_0.png',
+];
+$forumNameTable= [
+    'Règlement',
+    'Informations',
+    'Aventures',
+    'Présentation',
+    'Demande au staff',
+    'Forum à supprimer',
+    'Métropolis',
+    'Gotham City',
+    'Central City',
+    'Archives',
+    'Forum',
+    'Forum',
+    'Forum',
+    'Forum',
+    ];
+$m=0;
         // Create Forums with their categories
         $forumEntities = [];
         foreach ($categoryEntities as $category) {
-            for ($i = 1; $i <= 2; $i++) {
+            for ($i = 1; $i <= 3; $i++) {
                 $forum = new Forum();
-                $forum->setName("Forum $i in " . $category->getName());
+                $forum->setName($forumNameTable[$m]);
                 $forum->setDescription("Description for Forum $i");
                 $forum->setCategory($category);
-                $forum->setBanner("https://example.com/banner/forum$i.png");
+                $forum->setBanner($forumBannerTable[$m]);
                 $forum->setCreatedAt(new \DateTimeImmutable());
 
                 $manager->persist($forum);
                 $forumEntities[] = $forum;
-
+                $m++;
                 // Create Threads for each main forum
-                for ($j = 1; $j <= 2; $j++) {
+                for ($j = 1; $j <= 20; $j++) {
                     $thread = new Thread();
                     $thread->setTitle("Thread $j in " . $forum->getName());
                     $thread->setForum($forum);
@@ -123,7 +172,7 @@ $manager->flush();
                     $manager->persist($thread);
 
                     // Create Posts for each Thread
-                    for ($k = 1; $k <= 3; $k++) {
+                    for ($k = 1; $k <= 20; $k++) {
                         $post = new Post();
                         $post->setContent("This is post $k in Thread $j in " . $forum->getName());
                         $post->setThread($thread);
@@ -151,7 +200,7 @@ $manager->flush();
                 $manager->persist($subForum);
 
                 // Create Threads for each Subforum
-                for ($n = 1; $n <= 2; $n++) {
+                for ($n = 1; $n <= 10; $n++) {
                     $thread = new Thread();
                     $thread->setTitle("Thread $n in " . $subForum->getName());
                     $thread->setForum($subForum);
@@ -161,7 +210,7 @@ $manager->flush();
                     $manager->persist($thread);
 
                     // Create Posts for each Thread
-                    for ($p = 1; $p <= 3; $p++) {
+                    for ($p = 1; $p <= 10; $p++) {
                         $post = new Post();
                         $post->setContent("This is post $p in Thread $n in " . $subForum->getName());
                         $post->setThread($thread);

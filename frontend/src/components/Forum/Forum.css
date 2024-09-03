@@ -128,11 +128,14 @@
     position: absolute;
     top: var(--space-m);
     color: var(--dc-white);
-    justify-content: end;
     align-items: flex-start;
     gap: 15px;
     justify-content: space-between;
     z-index: 10;
+}
+.forum-category--roleplay .forum-item__layout{
+    top: -2px;
+
 }
 
 .forum-item__details {
@@ -143,7 +146,6 @@
 
 .forum-item__title {
     display: flex;
-    justify-content: end;
     font-size: var(--font-size-h3);
     color: var(--dc-blue-dark);
 }
@@ -191,8 +193,8 @@
 
 .forum-item__stats {
     position: absolute;
-    top: var(--space-s);
-    left: var(--space-s);
+    bottom: 60px;
+    right: var(--space-s);
     font-size: 0.7rem;
     color: var(--dc-blue-dark);
     margin-bottom: 10px;
@@ -349,7 +351,7 @@ font-size: 0.8rem;;
 
 /* INFORMATION CATEGORY */
 .forum-category--information .forum-item__layout {
-    right:var(--space-m);
+    left:var(--space-m);
 }
 
 /* SPECIAL */
@@ -358,7 +360,7 @@ font-size: 0.8rem;;
 }
 
 .forum-category--special .forum-item__layout {
-    right:var(--space-m);
+    left:var(--space-m);
 }
 
 .forum-category--special .forum-category__content {
@@ -384,8 +386,7 @@ width:50%;
     width: 45%;
     display: flex;
     position: absolute;
-    top: var(--space-m);
-    left: 50%;
+    left: 51%;
     color: var(--dc-white);
     justify-content: start;
     align-items: flex-start;
@@ -397,7 +398,6 @@ width:50%;
 
 .forum-category--roleplay .forum-item__title, .subforums--content .forum-item__title  {
     justify-content: start;
-    margin-left: 5px;
 }
 
 .forum-category--roleplay .forum-item__description, .subforums--content .forum-item__description  {
@@ -441,7 +441,6 @@ line-height: 1.1rem;
     margin: 0;
     display: flex;
     flex-wrap: wrap;   
-    margin-left: 5px;
 
 }
 
