@@ -27,7 +27,6 @@ const ForumTable = () => {
 
             if (response.ok) {
                 setForums(forums.filter(forum => forum.id !== forumId));
-                console.log('Forum deleted successfully');
             } else {
                 console.error('Failed to delete forum');
             }

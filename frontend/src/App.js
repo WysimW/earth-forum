@@ -11,6 +11,8 @@ import ThreadDetail from './components/Thread/ThreadDetail';
 import AdminPanel from './components/Admin/AdminPanel'; // Import AdminPanel component
 import ThreadCreate from './components/Thread/ThreadCreate'; // Import the ThreadCreate component
 import HeroSection from './components/Header/HeroSection';
+import CreatePost from './components/Post/CreatePost';  // La nouvelle page CreatePost
+
 
 const createThread = (threadData) => {
     const payload = {
@@ -42,7 +44,6 @@ function App() {
             .then(data => setCategories(data.categories))
             .catch(error => console.error('Error fetching forum data:', error));
     }, []);
-    console.log(categories)
     return (
         <Router>
             <Header />
@@ -53,7 +54,9 @@ function App() {
                     <Route path="/forum/:id" element={<ForumDetail />} />
                     <Route path="/thread/:id" element={<ThreadDetail />} />
                     <Route path="/forum/:id/create-thread" element={<ThreadCreate onSubmit={createThread} />} />
+                    <Route path="/thread/:id/create-post" element={<CreatePost />} />
                     <Route path="/admin" element={<AdminPanel />} /> {/* Route for Admin Panel */}
+                    
                 </Routes>
             </main>
             <Footer />

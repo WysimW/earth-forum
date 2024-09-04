@@ -340,5 +340,21 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         return new JsonResponse(['message' => 'Forum deleted successfully'], 200);
     }
     
+    #[Route('/api/forums/{id}/breadcrumb', name: 'get_forum_breadcrumb', methods: ['GET'])]
+    public function getForumBreadcrumb(int $id, ForumRepository $forumRepository, BreadcrumbService $breadcrumbService): JsonResponse
+    {
+        // Trouver le forum par son ID
+        $forum = $forumRepository->find($id);
     
+        if (!$forum) {
+            return new JsonResponse(['error' => 'Forum not found'], 404);
+        }
+    
+        // Utiliser le service pour générer le fil d'Ariane
+        $breadcrumbs = $breadcrumbService->generateBreadcrumbs($forum);
+    
+        return new JsonResponse($breadcrumbs);
+    }
+    
+
 }

@@ -12,8 +12,6 @@ const EditForumForm = ({ forum, onSubmit }) => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
-    console.log(forum)
-
     useEffect(() => {
         // Fetch categories and forums from the backend
         fetch(`http://localhost:8741/api/forums/${forum.id}/edit-data`)

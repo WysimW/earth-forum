@@ -1,0 +1,97 @@
+/* ThreadDetail Styling */
+.thread-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: var(--dc-white);
+}
+
+.thread-detail__title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--dc-white);
+    font-family: 'Futura PT', sans-serif;
+}
+
+/* Posts Styling */
+.thread-detail__posts {
+    margin-top: 20px;
+}
+
+.post {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background-color: var(--dc-blue-dark-rgba);
+    margin-bottom: 20px;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* User Info */
+.post__user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.post__avatar {
+    width: 175px;
+    height: 300px;
+    object-fit: cover;
+    border: 2px solid var(--dc-white);
+    transition: border-color 0.3s ease;
+}
+
+.post__avatar:hover {
+    border-color: var(--dc-light);
+}
+
+.post__author {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.post__date {
+    font-size: 0.9rem;
+    color: var(--dc-light);
+}
+
+/* Post Content */
+.post__content {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: var(--dc-blue-darker);
+    color: var(--dc-white);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+
+.thread-detail__editor--title {
+padding: var(--space-m);
+display: flex;
+justify-content: center;
+}
+
+.thread-detail__editor--title h3 {
+    text-transform: uppercase;
+}
+
+.thread-detail__editor--button-list {
+    padding: var(--space-m) 0;
+    display: flex;
+    gap: var(--space-m);
+}
+
+.thread-detail__editor--button-list .btn { 
+    padding: 10px 20px;
+
+}

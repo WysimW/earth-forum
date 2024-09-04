@@ -3,14 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Editor } from '@tinymce/tinymce-react';
 import { plugins } from "../../constants/plugins";
 import { toolbars } from "../../constants/toolbars";
-import '../Post/CreatePost.css';
+import './CreatePost.css';
 import '../Forum/ForumDetail.css';
 
-
-const ThreadForm = () => {
-    const { id: forumId } = useParams();  // Récupérer l'ID du forum à partir de l'URL
-    const [title, setTitle] = useState('');  // Titre du sujet
-    const [content, setContent] = useState('');  // Contenu du sujet
+const CreatePost = () => {
+    const { id: threadId } = useParams();  // Récupérer l'ID du sujet (thread)
+    const [content, setContent] = useState('');  // Contenu du post
     const [error, setError] = useState(null);  // Gestion des erreurs
     const [success, setSuccess] = useState(null);  // Gestion du succès
     const [isHTMLView, setIsHTMLView] = useState(false);  // Basculer entre éditeur TinyMCE et éditeur HTML
@@ -45,7 +43,7 @@ const ThreadForm = () => {
 
         const fetchBreadcrumb = async () => {
             try {
-                const response = await fetch(`http://localhost:8741/api/forums/${forumId}/breadcrumb`);
+                const response = await fetch(`http://localhost:8741/api/threads/${threadId}/breadcrumb`);
                 if (response.ok) {
                     const breadcrumbData = await response.json();
                     setBreadcrumb(breadcrumbData);
@@ -60,9 +58,7 @@ const ThreadForm = () => {
 
         fetchUser();
         fetchBreadcrumb();
-    }, [forumId]);
-    console.log(breadcrumb)
-    
+    }, [threadId]);
 
     const handleEditorChange = (content) => {
         setContent(content); // Capture le contenu de l'éditeur
@@ -71,19 +67,18 @@ const ThreadForm = () => {
     const handlePostSubmit = async (e) => {
         e.preventDefault();
 
-        if (!title || !content) {
-            setError("Both title and content are required.");
+        if (!content) {
+            setError("Le contenu ne peut pas être vide.");
             return;
         }
 
         const payload = {
-            title,
             content,
-            forum_id: forumId,
+            thread_id: threadId,
         };
 
         try {
-            const response = await fetch(`http://localhost:8741/api/forums/${forumId}/threads`, {
+            const response = await fetch(`http://localhost:8741/api/threads/${threadId}/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -92,17 +87,16 @@ const ThreadForm = () => {
             });
 
             if (response.ok) {
-                setSuccess("Thread created successfully!");
-                setTitle('');
+                setSuccess("Post créé avec succès !");
                 setContent('');
                 setError(null);
-                navigate(`/forum/${forumId}`);  // Rediriger vers le forum après la création
+                navigate(`/thread/${threadId}`);  // Rediriger vers le sujet après la création du post
             } else {
-                setError("An error occurred while creating the thread.");
+                setError("Une erreur est survenue lors de la création du post.");
                 setSuccess(null);
             }
         } catch (err) {
-            setError("An error occurred while creating the thread.");
+            setError("Une erreur est survenue lors de la création du post.");
             setSuccess(null);
         }
     };
@@ -121,7 +115,7 @@ const ThreadForm = () => {
     };
 
     return (
-        <form onSubmit={handlePostSubmit} className="thread-form">
+        <form onSubmit={handlePostSubmit} className="create-post-form">
             {/* Fil d'Ariane */}
             <nav className="breadcrumb">
                 {breadcrumb.map((crumb, index) => (
@@ -132,24 +126,12 @@ const ThreadForm = () => {
                 ))}
             </nav>
 
-            <div className='thread-form__title'>
-                <h2>Créer un nouveau Sujet</h2>
+            <div className='create-post-form__header'>
+                <h2>Créer un nouveau Post</h2>
             </div>
 
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
-            <div className='thread_form__header'>
-            <label className='thread-form--title-label'>
-                Titre:
-                <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    placeholder="Enter the thread title"
-                    className='thread-form--title-input'
-                />
-            </label>
 
             <label>
                 {/* Bouton pour activer/désactiver l'éditeur HTML */}
@@ -183,8 +165,6 @@ const ThreadForm = () => {
                     />
                 )}
             </label>
-            </div>
-
 
             {/* Entrée pour les classes personnalisées */}
             {isHTMLView && (
@@ -200,24 +180,24 @@ const ThreadForm = () => {
                     </button>
                 </div>
             )}
-            <div className='thread-detail__editor--button-list'>
-            <button type="submit" className="btn btn-primary">Poster le Sujet</button>
 
+            <div className='create-post__button-list'>
+                <button type="submit" className="btn btn-primary">Poster</button>
 
-            {/* Bouton pour activer/désactiver la prévisualisation */}
-            <button
-                type="button"
-                onClick={() => setIsPreviewVisible(!isPreviewVisible)}
-                className="toggle-preview btn btn-secondary"
-            >
-                {isPreviewVisible ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
-            </button>
+                {/* Bouton pour activer/désactiver la prévisualisation */}
+                <button
+                    type="button"
+                    onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+                    className="toggle-preview btn btn-secondary"
+                >
+                    {isPreviewVisible ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
+                </button>
             </div>
 
             {/* Prévisualisation */}
             {isPreviewVisible && (
                 <div className="post-preview">
-                    <h3>Aperçu du sujet :</h3>
+                    <h3>Aperçu du Post :</h3>
 
                     <div className="post">
                         <div className="post__user-info">
@@ -235,9 +215,8 @@ const ThreadForm = () => {
                     </div>
                 </div>
             )}
-
         </form>
     );
 };
 
-export default ThreadForm;
+export default CreatePost;

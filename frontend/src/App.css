@@ -10,11 +10,11 @@
     --dc-black-rgba: rgba(0, 0, 0, 0.469);
     --dc-blue-light: #2A8FF7;
     --dc-blue-btn: #134980;
-    --dc-blue-dark: #002036;
+    --dc-blue-dark: #01253e;
     --dc-blue-dark-rgba: #002036b9;
     --dc-blue-lessdark: #022842;
     --dc-blue-lessdark-negative: #08273c;
-    --dc-blue-darker: #011827;;
+    --dc-blue-darker: #011f33;;
     --dc-white: #FFFFFF;
     --dc-white-dark: #002036;
     --dc-warning: #53ab82;
@@ -37,7 +37,7 @@
     --focus-border-color: var(--dc-blue-light);
     --link-color: var(--dc-blue);
     --link-hover-color: var(--dc-white-dark);
-    --background-color: var(--dc-blue-dark);
+    --background-color: #002843;
     --text-color: var(--dc-white);
     --space-xs:5px;
     --space-s:10px;
@@ -88,22 +88,25 @@ body {
 
 /* Apply font sizes */
 h3 {
-    font-family: 'Futura PT', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size-h3);
 }
 
 h2 {
-    font-family: 'Futura PT', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size-h2);
 }
 
 h1 {
-    font-family: 'Futura PT', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size-h1);
 }
 
 
 /* Links */
+a {
+    text-decoration: none;
+}
 h3 a {
     color: var(--dc-blue);
     text-decoration: none;
@@ -118,9 +121,11 @@ h3 a:hover {
 p {
     font-size:1rem;
 }
+
 strong {
     font-weight: bold;
 }
+
 .btn {
     font-family: "Open Sans";
     text-transform: uppercase;
@@ -129,10 +134,10 @@ strong {
     text-decoration: none;
     font-size: 1rem;
     transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;;
 }
 
 .btn-primary {
-
     background-color: var(--dc-white);
     color: var(--dc-blue-darker);
 }
@@ -142,6 +147,29 @@ strong {
     color: var(--dc-white);
 
 }
+
+.btn-secondary {
+    background-color: var(--dc-blue-darker);
+    color: var(--dc-white);
+}
+
+.btn-secondary:hover {
+    background-color: var(--dc-blue-btn);
+    color: var(--dc-white);
+}
+
+.btn-tertiary {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    background-color: var(--dc-blue-darker);
+    color: var(--dc-white);
+}
+
+.btn-tertiary:hover {
+    background-color: var(--dc-blue-btn);
+    color: var(--dc-white);
+}
+
 
 .btn-ibon {
     margin-right: var(--space-m) !important;
@@ -162,3 +190,36 @@ strong {
 .grp-civil {
     color:var(--grp-civil-color)!important;
 }
+
+/* Changer la couleur de fond de la barre d'outils */
+.tox .tox-toolbar {
+    background-color: #2C3E50;
+    border-bottom: 1px solid #34495E;
+  }
+  
+  /* Changer la couleur des icônes */
+  .tox .tox-tbtn {
+    color: #ECF0F1;
+  }
+  
+  /* Changer la couleur de fond des menus */
+  .tox .tox-menu {
+    background-color: #34495E;
+  }
+  
+  /* Changer la couleur des onglets */
+  .tox .tox-dialog__footer {
+    background-color: #2C3E50;
+    border-top: 1px solid #34495E;
+  }
+  
+  /* Changer la couleur du cadre */
+  .tox .tox-editor-header {
+    border-color: #34495E;
+  }
+  
+  input {
+    background-color: var(--dc-blue-dark);
+    border: var(--dc-blue-darker);
+    margin: 0 var(--space-m);
+  }

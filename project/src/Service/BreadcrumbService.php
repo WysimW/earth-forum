@@ -33,17 +33,17 @@ class BreadcrumbService
     {
         $breadcrumbs = [];
 
-        // Add the home link
-        $breadcrumbs[] = ['name' => 'Home', 'url' => '/'];
-
         // Get the forum that this thread belongs to
         $forum = $thread->getForum();
 
         // Build the breadcrumb trail for the forum
-        $this->generateBreadcrumbs($forum, $breadcrumbs);
+        $forumBreadcrumbs = $this->generateBreadcrumbs($forum);
+        foreach ($forumBreadcrumbs as $key => $forumBreadcrumb) {
+            $breadcrumbs[] = $forumBreadcrumb;
+        };
 
         // Finally, add the current thread
-        $breadcrumbs[] = ['name' => $thread->getTitle(), 'url' => "/thread/{$thread->getId()}"];
+        $breadcrumbs[] = ['name' => $thread->getTitle(),'url' => "/thread/{$thread->getId()}"];
 
         return $breadcrumbs;
     }

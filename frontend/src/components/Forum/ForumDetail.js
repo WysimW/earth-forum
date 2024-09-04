@@ -26,8 +26,6 @@ const ForumDetail = () => {
             });
     }, [id]);
 
-    console.log(forum)
-
     if (loading) {
         return <p>Loading...</p>;
     }

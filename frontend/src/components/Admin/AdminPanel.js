@@ -18,7 +18,6 @@ const AdminPanel = () => {
     };
 
     const handleEdit = async (payload) => {
-        console.log('Editing Forum:', payload);  // Should log the payload
     
         const url = `http://localhost:8741/api/forums/${payload.id}`;
         try {
@@ -28,7 +27,6 @@ const AdminPanel = () => {
                 body: JSON.stringify(payload),
             });
     
-            console.log('Response:', response);  // Should log the response object
     
             if (!response.ok) {
                 throw new Error('Failed to update forum');
