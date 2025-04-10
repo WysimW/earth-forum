@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}DC Earth{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🌍</text></svg>">
+        {% block stylesheets %}
+            <!-- Bootstrap CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            <!-- Font Awesome -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <!-- Google Fonts -->
+            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <!-- Custom styles -->
+            <link rel="stylesheet" href="{{ asset('css/components/variables.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/layout.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/typography.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/buttons.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/cards.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/forms.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/tables.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/forums.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/posts.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/utilities.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/animations.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/responsive.css') }}">
+        {% endblock %}
+    </head>
+    <body>
+        <div class="main-wrapper">
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-dark">
+                    <div class="container">
+                        <a class="navbar-brand" href="{{ path('app_roleplay') }}">
+                            <img src="{{ asset('images/logo-dc.png') }}" alt="DC Earth Logo" class="logo">
+                            DC Earth
+                        </a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarMain">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_roleplay') }}">Accueil</a>
+                                </li>
+                                {% if app.user %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a>
+                                    </li>
+                                {% endif %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="universeDropdown" role="button" data-bs-toggle="dropdown">
+                                        Univers
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ path('app_roleplay') }}">Tous les univers</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#">Gotham</a></li>
+                                        <li><a class="dropdown-item" href="#">Metropolis</a></li>
+                                        <li><a class="dropdown-item" href="#">Central City</a></li>
+                                        <li><a class="dropdown-item" href="#">Atlantis</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="navbar-nav ms-auto">
+                                <div class="nav-item me-2">
+                                    <a class="nav-link" href="{{ path('app_roleplay_search') }}" title="Rechercher">
+                                        <i class="fas fa-search"></i>
+                                    </a>
+                                </div>
+                                {% if app.user %}
+                                    <div class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-user-circle me-1"></i> {{ app.user.pseudo }}
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a></li>
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{{ path('app_admin') }}">Administration</a></li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                                    <a class="btn btn-primary ms-2" href="{{ path('app_register') }}">Inscription</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3 class="sidebar-title">Navigation</h3>
+                </div>
+                
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title">Navigation</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay') }}" class="sidebar-menu-link">
+                            <i class="fas fa-globe"></i> Accueil
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title"><i class="fas fa-theater-masks text-roleplay"></i> Roleplay</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_threads') }}" class="sidebar-menu-link rp-link">
+                            <i class="fas fa-theater-masks"></i> Scènes RP
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_threads_filter') }}?type=recent" class="sidebar-menu-link rp-link">
+                            <i class="fas fa-fire"></i> Scènes actives
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title"><i class="fas fa-comments text-hrp"></i> Hors Roleplay</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay') }}#hrp-forums" class="sidebar-menu-link hrp-link">
+                            <i class="fas fa-comments"></i> Forums HRP
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_search') }}?forum_type=hrp" class="sidebar-menu-link hrp-link">
+                            <i class="fas fa-search"></i> Recherche HRP
+                        </a>
+                    </li>
+                </ul>
+                
+                {% if app.user %}
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title">Vos contenus</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_dashboard') }}" class="sidebar-menu-link">
+                            <i class="fas fa-columns"></i> Tableau de bord
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_characters') }}" class="sidebar-menu-link">
+                            <i class="fas fa-user-astronaut"></i> Mes Personnages
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_threads_filter') }}?type=participating" class="sidebar-menu-link">
+                            <i class="fas fa-users"></i> Mes participations
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_roleplay_threads_filter') }}?type=created" class="sidebar-menu-link">
+                            <i class="fas fa-pen-fancy"></i> Mes scènes
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+                
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title">Univers</li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-building"></i> Gotham City
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-city"></i> Metropolis
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-bolt"></i> Central City
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-water"></i> Atlantis
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-island-tropical"></i> Themyscira
+                        </a>
+                    </li>
+                </ul>
+                
+                {% if is_granted('ROLE_ADMIN') %}
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title">Administration</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_admin') }}" class="sidebar-menu-link">
+                            <i class="fas fa-toolbox"></i> Panneau d'admin
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_admin') }}/users" class="sidebar-menu-link">
+                            <i class="fas fa-users-cog"></i> Gestion utilisateurs
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+            </aside>
+            
+            <button class="sidebar-collapse" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <main class="content">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                
+                {% block body %}{% endblock %}
+            </main>
+
+            <footer>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="title">DC Earth</h5>
+                            <p class="small">Une plateforme de roleplay textuel inspirée de l'univers DC Comics dans une vision cosmique et moderne.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="subtitle">Liens utiles</h5>
+                            <ul class="list-unstyled small">
+                                <li><a href="{{ path('app_roleplay') }}">Accueil</a></li>
+                                <li><a href="{{ path('app_roleplay_threads') }}"><i class="fas fa-theater-masks text-roleplay"></i> Scènes RP</a></li>
+                                <li><a href="{{ path('app_roleplay') }}#hrp-forums"><i class="fas fa-comments text-hrp"></i> Forums HRP</a></li>
+                                <li><a href="{{ path('app_roleplay_search') }}">Recherche</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="subtitle">Légal</h5>
+                            <ul class="list-unstyled small">
+                                <li><a href="#">Conditions d'utilisation</a></li>
+                                <li><a href="#">Politique de confidentialité</a></li>
+                                <li><a href="#">Crédits</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="text-center small">
+                        <p class="mb-0">&copy; 2025 DC Earth. Tous droits réservés.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        {% block javascripts %}
+            <!-- Bootstrap Bundle with Popper -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Custom JavaScript -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Enable Bootstrap tooltips
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl)
+                    });
+                    
+                    // Mobile sidebar toggle
+                    const sidebarToggle = document.getElementById('sidebarToggle');
+                    const sidebar = document.querySelector('.sidebar');
+                    
+                    if (sidebarToggle && sidebar) {
+                        sidebarToggle.addEventListener('click', function() {
+                            sidebar.classList.toggle('show');
+                        });
+                    }
+                    
+                    // Close sidebar when clicking outside on mobile
+                    document.addEventListener('click', function(event) {
+                        if (sidebar.classList.contains('show') && 
+                            !sidebar.contains(event.target) && 
+                            event.target !== sidebarToggle) {
+                            sidebar.classList.remove('show');
+                        }
+                    });
+                    
+                    // Add active class to current page in sidebar
+                    const currentPath = window.location.pathname;
+                    const sidebarLinks = document.querySelectorAll('.sidebar-menu-link');
+                    
+                    sidebarLinks.forEach(link => {
+                        const href = link.getAttribute('href');
+                        if (href === currentPath) {
+                            link.closest('.sidebar-menu-item').classList.add('active');
+                        }
+                    });
+
+                    // Add styles to sidebar links based on category
+                    document.querySelectorAll('.rp-link').forEach(link => {
+                        link.style.borderLeft = '3px solid var(--roleplay-primary)';
+                    });
+                    
+                    document.querySelectorAll('.hrp-link').forEach(link => {
+                        link.style.borderLeft = '3px solid var(--hrp-primary)';
+                    });
+                });
+            </script>
+        {% endblock %}
+    </body>
+</html>

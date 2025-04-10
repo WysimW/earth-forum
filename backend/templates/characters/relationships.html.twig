@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Relations de {{ character.name }}{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">Relations de {{ character.name }}</h1>
+                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au personnage
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if relations|length > 0 %}
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Personnage</th>
+                                <th>Type de relation</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for relation in relations %}
+                                {% set relatedCharacter = relation.sourceCharacter.id == character.id ? relation.targetCharacter : relation.sourceCharacter %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if relatedCharacter.avatar %}
+                                                <img src="{{ relatedCharacter.avatar }}" alt="{{ relatedCharacter.name }}" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div>{{ relatedCharacter.name }}</div>
+                                                {% if relatedCharacter.universe %}
+                                                    <span class="badge bg-primary">{{ relatedCharacter.universe.name }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-info">{{ relationTypes[relation.type] }}</span></td>
+                                    <td>{{ relation.description|nl2br }}</td>
+                                    <td>
+                                        <form method="post" action="{{ path('app_roleplay_character_relationship_delete', {'id': relation.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ relation.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Ce personnage n'a pas encore de relations définies.
+                </div>
+            {% endif %}
+
+            {% if availableCharacters|length > 0 %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Ajouter une relation</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ path('app_roleplay_character_relationship_add', {'id': character.id}) }}">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="target_character" class="form-label">Personnage</label>
+                                    <select name="target_character" id="target_character" class="form-select" required>
+                                        <option value="">Choisir un personnage...</option>
+                                        {% for targetCharacter in availableCharacters %}
+                                            <option value="{{ targetCharacter.id }}">
+                                                {{ targetCharacter.name }}
+                                                {% if targetCharacter.universe %}
+                                                    ({{ targetCharacter.universe.name }})
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="type" class="form-label">Type de relation</label>
+                                    <select name="type" id="type" class="form-select" required>
+                                        <option value="">Choisir un type...</option>
+                                        {% for value, label in relationTypes %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea name="description" id="description" class="form-control" rows="1" placeholder="Décrivez la relation..."></textarea>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Ajouter la relation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Vous n'avez pas d'autres personnages disponibles pour créer des relations.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

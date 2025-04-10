@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}DC Earth - Accueil du Forum{% endblock %}
+
+{% block body %}
+    <div class="roleplay-index">
+        <div class="hero-section glass-panel mb-4">
+            <h1 class="main-title">Bienvenue sur DC Earth</h1>
+            <p class="lead">Explorez les univers, participez à des discussions ou créez vos propres histoires roleplays.</p>
+            
+            {% if app.user %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="{{ path('app_roleplay_characters') }}" class="btn btn-primary">
+                    <i class="fas fa-user-astronaut me-2"></i> Mes personnages
+                </a>
+                <a href="{{ path('app_roleplay_threads_filter') }}?type=recent&status=open" class="btn btn-outline-primary">
+                    <i class="fas fa-theater-masks me-2"></i> Voir les scènes RP actives
+                </a>
+            </div>
+            {% else %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="{{ path('app_register') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i> Rejoindre la communauté
+                </a>
+                <a href="{{ path('app_login') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+        <div class="forums-container">
+            {# Afficher d'abord les forums roleplay (RP) #}
+            <div id="rp-forums" class="forum-section rp-forums mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-theater-masks text-roleplay"></i> Forums Roleplay
+                    <small class="text-muted">Incarnez vos personnages et créez vos histoires</small>
+                </h2>
+
+                <div class="forums-list">
+                    {% set displayedRpForums = false %}
+                    {% for forum in mainForums %}
+                        {% if forum.isRoleplay %}
+                            {% set displayedRpForums = true %}
+                            <div class="forum-card">
+                                <div class="forum-icon">
+                                    {% if forum.heroLogo %}
+                                        <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
+                                    {% else %}
+                                        <i class="fas fa-theater-masks"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="forum-info">
+                                    <h3 class="forum-title">
+                                        <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
+                                        <span class="badge bg-roleplay ms-2">RP</span>
+                                    </h3>
+                                    <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+                                    
+                                    {% set subforumCount = forum.subforums|length %}
+                                    {% set threadCount = forum.threads|length %}
+                                    
+                                    <div class="forum-stats">
+                                        <span><i class="fas fa-folder"></i> {{ subforumCount }} sous-forum(s)</span>
+                                        <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion(s)</span>
+                                    </div>
+                                    
+                                    {% if forum.lastPostInfo %}
+                                        <div class="forum-last-post">
+                                            <small>
+                                                <i class="fas fa-clock"></i> Dernière activité: 
+                                                {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                                                par 
+                                                {% if forum.lastPostInfo.character %}
+                                                    <span class="character-name">{{ forum.lastPostInfo.character }}</span>
+                                                {% else %}
+                                                    {{ forum.lastPostInfo.author }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="forum-action">
+                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm" style="background-color: var(--roleplay-primary); color: white;">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not displayedRpForums %}
+                        <div class="empty-state">
+                            <i class="fas fa-theater-masks fa-3x"></i>
+                            <p>Aucun forum roleplay n'est disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Ensuite afficher les forums hors-roleplay (HRP) #}
+            <div id="hrp-forums" class="forum-section hrp-forums">
+                <h2 class="section-title">
+                    <i class="fas fa-comments text-hrp"></i> Forums Hors-Roleplay
+                    <small class="text-muted">Discussions, informations et communauté</small>
+                </h2>
+
+                <div class="forums-list">
+                    {% set displayedHrpForums = false %}
+                    {% for forum in mainForums %}
+                        {% if not forum.isRoleplay %}
+                            {% set displayedHrpForums = true %}
+                            <div class="forum-card">
+                                <div class="forum-icon">
+                                    {% if forum.heroLogo %}
+                                        <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
+                                    {% else %}
+                                        <i class="fas fa-comments"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="forum-info">
+                                    <h3 class="forum-title">
+                                        <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
+                                        <span class="badge bg-hrp ms-2">HRP</span>
+                                    </h3>
+                                    <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+                                    
+                                    {% set subforumCount = forum.subforums|length %}
+                                    {% set threadCount = forum.threads|length %}
+                                    
+                                    <div class="forum-stats">
+                                        <span><i class="fas fa-folder"></i> {{ subforumCount }} sous-forum(s)</span>
+                                        <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion(s)</span>
+                                    </div>
+                                    
+                                    {% if forum.lastPostInfo %}
+                                        <div class="forum-last-post">
+                                            <small>
+                                                <i class="fas fa-clock"></i> Dernière activité: 
+                                                {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                                                par {{ forum.lastPostInfo.author }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="forum-action">
+                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm" style="background-color: var(--hrp-primary); color: white;">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not displayedHrpForums %}
+                        <div class="empty-state">
+                            <i class="fas fa-comments fa-3x"></i>
+                            <p>Aucun forum hors-roleplay n'est disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if app.user %}
+            <div class="quick-actions mt-5">
+                <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
+                <div class="action-buttons">
+                    <a href="{{ path('app_roleplay_characters') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-astronaut"></i> Mes personnages
+                    </a>
+                    <a href="{{ path('app_roleplay_threads_filter') }}?type=participating" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
+                        <i class="fas fa-users"></i> Mes participations RP
+                    </a>
+                    <a href="{{ path('app_roleplay_threads_filter') }}?type=recent" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
+                        <i class="fas fa-fire"></i> Scènes RP actives
+                    </a>
+                    <a href="{{ path('app_roleplay') }}#hrp-forums" class="btn" style="color: var(--hrp-accent); border: 1px solid var(--hrp-accent);">
+                        <i class="fas fa-comments"></i> Forums HRP
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="join-community mt-5">
+                <h3><i class="fas fa-users"></i> Rejoignez la communauté</h3>
+                <p>Pour participer aux discussions et créer vos propres histoires, inscrivez-vous dès maintenant.</p>
+                <div class="d-flex gap-2 mt-3 justify-content-center">
+                    <a href="{{ path('app_register') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i> S'inscrire
+                    </a>
+                    <a href="{{ path('app_login') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

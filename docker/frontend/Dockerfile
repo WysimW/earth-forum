@@ -11,4 +11,4 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 EXPOSE 3000
 
 # Lancer un shell dans le conteneur pour que vous puissiez interagir avec
-CMD ["sh", "-c", "while :; do sleep 1; done", "npm start"]
+CMD ["npm", "start"]

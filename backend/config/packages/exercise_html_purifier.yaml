@@ -1,0 +1,92 @@
+exercise_html_purifier:
+    default_cache_serializer_path: '%kernel.project_dir%/var/cache/htmlpurifier'
+
+    html_profiles:
+        default:
+            config:
+                # the charset used by the original contents
+                Core.Encoding: 'UTF-8'
+                # full configuration reference: http://htmlpurifier.org/live/configdoc/plain.html
+
+# Read the https://github.com/Exercise/HTMLPurifierBundle/blob/master/README.md file
+# to know how to whitelist elements
+
+#            # whitelist attributes by tag
+#            attributes: []
+
+#            # whitelist elements by name
+#            elements: []
+
+#            # list of elements that cannot have attributes
+#            blank_elements: []
+
+        roleplay:
+            config:
+                # Configuration générale
+                Core.Encoding: 'UTF-8'
+                Cache.SerializerPath: '%kernel.project_dir%/var/cache/htmlpurifier'
+                HTML.Doctype: 'HTML 4.01 Transitional'
+                
+                # Autorise les classes CSS
+                CSS.AllowedProperties:
+                    - 'color'
+                    - 'text-align'
+                    - 'font-weight'
+                    - 'font-style'
+                    - 'text-decoration'
+                    - 'margin'
+                    - 'padding'
+                
+                # Balises autorisées
+                HTML.AllowedElements:
+                    - 'p'
+                    - 'br'
+                    - 'strong'
+                    - 'em'
+                    - 'u'
+                    - 'strike'
+                    - 'blockquote'
+                    - 'pre'
+                    - 'ul'
+                    - 'ol'
+                    - 'li'
+                    - 'span'
+                    - 'div'
+                    - 'h1'
+                    - 'h2'
+                    - 'h3'
+                    - 'h4'
+                    - 'h5'
+                    - 'h6'
+                    - 'table'
+                    - 'thead'
+                    - 'tbody'
+                    - 'tr'
+                    - 'td'
+                    - 'th'
+                    - 'hr'
+                    - 'img'
+                
+                # Attributs autorisés
+                HTML.AllowedAttributes:
+                    - 'class'
+                    - 'id'
+                    - 'style'
+                    - 'src'
+                    - 'alt'
+                    - 'title'
+                    - 'width'
+                    - 'height'
+                    - 'align'
+                
+                # Configuration des liens
+                HTML.Allowed: 'true'
+                HTML.SafeIframe: 'true'
+                URI.AllowedSchemes:
+                    http: true
+                    https: true
+                    mailto: true
+                    ftp: true
+                    nntp: true
+                    news: true
+                    tel: true

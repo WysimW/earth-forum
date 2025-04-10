@@ -8,16 +8,29 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenNib, faPlus, faBookOpenReader } from '@fortawesome/free-solid-svg-icons';
 
 const ForumDetail = () => {
-    const { id } = useParams();
+    const { id } = useParams(); 
     const [forum, setForum] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [subForums, setSubForums] = useState([]);
     const location = useLocation();
+    const forumDetailClass = "forum-detail";
+    
+    // Define breadcrumb data
+    const breadcrumb = [
+        { name: "Accueil", url: "/" },
+        { name: "Forums", url: "/forums" },
+        { name: forum?.forumName || "Forum", url: `/forum/${id}` }
+    ];
 
     useEffect(() => {
         fetch(`http://localhost:8741/api/forums/${id}`)
             .then(response => response.json())
             .then(data => {
                 setForum(data);
+                // If the forum has subForums property, set it
+                if (data.subForums) {
+                    setSubForums(data.subForums);
+                }
                 setLoading(false);
             })
             .catch(error => {
@@ -35,11 +48,7 @@ const ForumDetail = () => {
     if (!forum) {
         return <p>Forum not found</p>;
     }
-
-    const { subForums = [], breadcrumb = [], threads = [] } = forum;
-
-    const forumDetailClass = forum.isRoleplay ? "forum-detail forum-detail--roleplay" : "forum-detail";
-
+    
     return (
         <div className={forumDetailClass}>
             <nav className="breadcrumb">

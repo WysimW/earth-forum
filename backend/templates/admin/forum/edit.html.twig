@@ -1,0 +1,93 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier Forum | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Modifier le forum</h1>
+        <div>
+            <a href="{{ path('admin_forum_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_forum_show', {'id': forum.id}) }}" class="btn btn-info"><i class="bi bi-eye"></i> Voir détails</a>
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name) }}
+                    {{ form_errors(form.name) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="mb-3 form-check">
+    {{ form_widget(form.isRoleplay) }}
+    {{ form_label(form.isRoleplay) }}
+    {{ form_errors(form.isRoleplay) }}
+</div>
+
+                
+                <div class="mb-3">
+                    {{ form_label(form.banner) }}
+                    {{ form_widget(form.banner) }}
+                    {{ form_errors(form.banner) }}
+                    <div class="form-text">Entrez l'URL complète d'une image pour la bannière du forum</div>
+                </div>
+                
+                {% if forum.banner %}
+                    <div class="mb-3">
+                        <div class="card">
+                            <div class="card-header">Bannière actuelle</div>
+                            <div class="card-body">
+                                <img src="{{ forum.banner }}" alt="Bannière" class="img-fluid" style="max-height: 150px;">
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-light p-3">
+                            <div class="card-title fw-bold">Option 1: Forum principal</div>
+                            {{ form_label(form.category) }}
+                            {{ form_widget(form.category) }}
+                            {{ form_errors(form.category) }}
+                            <div class="form-text">Sélectionnez une catégorie pour un forum principal</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light p-3">
+                            <div class="card-title fw-bold">Option 2: Sous-forum</div>
+                            {{ form_label(form.parent) }}
+                            {{ form_widget(form.parent) }}
+                            {{ form_errors(form.parent) }}
+                            <div class="form-text">Sélectionnez un forum parent pour créer un sous-forum</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Un forum doit être soit un forum principal (rattaché à une catégorie), 
+                    soit un sous-forum (rattaché à un autre forum). Il ne peut pas être les deux à la fois.
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer les modifications</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,400 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\CharacterRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Interface\TimestampableInterface;
+use App\Entity\Trait\TimestampableTrait;
+
+#[ORM\Entity(repositoryClass: CharacterRepository::class)]
+#[ORM\Table(name: '`character`')]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
+class Character implements TimestampableInterface
+{
+    use TimestampableTrait;
+    
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_VALIDATED = 'validated';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_ABANDONED = 'abandoned';
+    public const STATUS_EDITING = 'editing';
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
+
+    #[ORM\ManyToOne(inversedBy: 'characters')]
+    private ?Univers $universe = null;
+
+    #[ORM\ManyToOne(inversedBy: 'characters')]
+    private ?User $user = null;
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatar = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $biography = null;
+    
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $alias = null;
+    
+    #[ORM\Column(length: 20)]
+    private string $status = self::STATUS_DRAFT;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $personality = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $appearance = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $abilities = null;
+    
+    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'character')]
+    private Collection $posts;
+    
+    #[ORM\OneToMany(targetEntity: Thread::class, mappedBy: 'characterCreator')]
+    private Collection $threads;
+
+    #[ORM\OneToMany(targetEntity: Thread::class, mappedBy: 'characterSheet')]
+    private Collection $characterSheetThread;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $validatedAt = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $statusMessage = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $moderationNote = null;
+    
+    public function __construct()
+    {
+        $this->posts = new ArrayCollection();
+        $this->threads = new ArrayCollection();
+        $this->characterSheetThread = new ArrayCollection();
+        $this->status = self::STATUS_DRAFT;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getUniverse(): ?Univers
+    {
+        return $this->universe;
+    }
+
+    public function setUniverse(?Univers $universe): static
+    {
+        $this->universe = $universe;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+    
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+    
+    public function setAvatar(?string $avatar): static
+    {
+        $this->avatar = $avatar;
+        
+        return $this;
+    }
+    
+    public function getBiography(): ?string
+    {
+        return $this->biography;
+    }
+    
+    public function setBiography(?string $biography): static
+    {
+        $this->biography = $biography;
+        
+        return $this;
+    }
+    
+    public function getAlias(): ?string
+    {
+        return $this->alias;
+    }
+    
+    public function setAlias(?string $alias): static
+    {
+        $this->alias = $alias;
+        
+        return $this;
+    }
+    
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+    
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        
+        return $this;
+    }
+    
+    public function getPersonality(): ?string
+    {
+        return $this->personality;
+    }
+    
+    public function setPersonality(?string $personality): static
+    {
+        $this->personality = $personality;
+        
+        return $this;
+    }
+    
+    public function getAppearance(): ?string
+    {
+        return $this->appearance;
+    }
+    
+    public function setAppearance(?string $appearance): static
+    {
+        $this->appearance = $appearance;
+        
+        return $this;
+    }
+    
+    public function getAbilities(): ?string
+    {
+        return $this->abilities;
+    }
+    
+    public function setAbilities(?string $abilities): static
+    {
+        $this->abilities = $abilities;
+        
+        return $this;
+    }
+    
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+
+
+    public function getValidatedAt(): ?\DateTimeImmutable
+    {
+        return $this->validatedAt;
+    }
+
+    public function setValidatedAt(?\DateTimeImmutable $validatedAt): static
+    {
+        $this->validatedAt = $validatedAt;
+
+        return $this;
+    }
+
+    public function getStatusMessage(): ?string
+    {
+        return $this->statusMessage;
+    }
+
+    public function setStatusMessage(?string $statusMessage): static
+    {
+        $this->statusMessage = $statusMessage;
+
+        return $this;
+    }
+
+    public function getModerationNote(): ?string
+    {
+        return $this->moderationNote;
+    }
+
+    public function setModerationNote(?string $moderationNote): static
+    {
+        $this->moderationNote = $moderationNote;
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->initializeTimestamps();
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updateTimestamps();
+    }
+
+    public function isValidated(): bool
+    {
+        return $this->status === self::STATUS_VALIDATED;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === self::STATUS_DRAFT;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
+    }
+
+    public function isAbandoned(): bool
+    {
+        return $this->status === self::STATUS_ABANDONED;
+    }
+
+    public function isEditing(): bool
+    {
+        return $this->status === self::STATUS_EDITING;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+    
+    public function addPost(Post $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setCharacter($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removePost(Post $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            // set the owning side to null (unless already changed)
+            if ($post->getCharacter() === $this) {
+                $post->setCharacter(null);
+            }
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return Collection<int, Thread>
+     */
+    public function getThreads(): Collection
+    {
+        return $this->threads;
+    }
+    
+    public function addThread(Thread $thread): static
+    {
+        if (!$this->threads->contains($thread)) {
+            $this->threads->add($thread);
+            $thread->setCharacterCreator($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removeThread(Thread $thread): static
+    {
+        if ($this->threads->removeElement($thread)) {
+            // set the owning side to null (unless already changed)
+            if ($thread->getCharacterCreator() === $this) {
+                $thread->setCharacterCreator(null);
+            }
+        }
+        
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Thread>
+     */
+    public function getCharacterSheetThread(): Collection
+    {
+        return $this->characterSheetThread;
+    }
+    
+    public function addCharacterSheetThread(Thread $thread): static
+    {
+        if (!$this->characterSheetThread->contains($thread)) {
+            $this->characterSheetThread->add($thread);
+            $thread->setCharacterSheet($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removeCharacterSheetThread(Thread $thread): static
+    {
+        if ($this->characterSheetThread->removeElement($thread)) {
+            // set the owning side to null (unless already changed)
+            if ($thread->getCharacterSheet() === $this) {
+                $thread->setCharacterSheet(null);
+            }
+        }
+        
+        return $this;
+    }
+    
+    public function getMainCharacterSheetThread(): ?Thread
+    {
+        return $this->characterSheetThread->isEmpty() ? null : $this->characterSheetThread->first();
+    }
+}

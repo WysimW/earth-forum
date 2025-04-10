@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Créer un compte</h1>
+                </div>
+                <div class="card-body">
+                    {{ form_start(registrationForm) }}
+                        {{ form_errors(registrationForm) }}
+                        
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.pseudo) }}
+                            {{ form_widget(registrationForm.pseudo) }}
+                            <div class="form-text">
+                                {{ form_help(registrationForm.pseudo) }}
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.pseudo) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.email) }}
+                            {{ form_widget(registrationForm.email) }}
+                            <div class="form-text">
+                                {{ form_help(registrationForm.email) }}
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.email) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.plainPassword) }}
+                            {{ form_widget(registrationForm.plainPassword) }}
+                            <div class="form-text">
+                                Minimum 6 caractères
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.plainPassword) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form_widget(registrationForm.agreeTerms) }}
+                            {{ form_label(registrationForm.agreeTerms) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.agreeTerms) }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">S'inscrire</button>
+                        </div>
+                    {{ form_end(registrationForm) }}
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <p class="mb-0">Déjà inscrit ? <a href="{{ path('app_login') }}">Se connecter</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des discussions - DC Earth{% endblock %}
+
+{% block body %}
+<div class="thread-index container my-4">
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Discussions</h1>
+        
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_forum_new_thread') }}" class="btn bg-roleplay text-white">
+                <i class="fas fa-plus-circle me-2"></i>Nouvelle discussion
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light p-3">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="btn-group" role="group">
+                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-clock me-1"></i>Récentes
+                        </a>
+                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-users me-1"></i>Mes participations
+                        </a>
+                        <a href="{{ path('app_roleplay_threads_filter', {'status': 'open'}) }}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-door-open me-1"></i>Ouvertes
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <form class="d-flex" action="{{ path('app_roleplay_search') }}" method="get">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Rechercher..." name="q">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-group list-group-flush">
+            {% for thread in threads %}
+                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" 
+                   class="list-group-item list-group-item-action p-3 {% if thread.sticky %}bg-light{% endif %}">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="thread-main flex-grow-1">
+                            <div class="d-flex align-items-center mb-1">
+                                <h5 class="mb-0 me-2">{{ thread.title }}</h5>
+                                {% if thread.sticky %}
+                                    <span class="badge bg-warning" title="Épinglé">
+                                        <i class="fas fa-thumbtack"></i>
+                                    </span>
+                                {% endif %}
+                                {% if thread.type == 'roleplay' %}
+                                    <span class="badge bg-roleplay ms-2">RP</span>
+                                {% else %}
+                                    <span class="badge bg-hrp ms-2">HRP</span>
+                                {% endif %}
+                                {% if thread.status != 'open' %}
+                                    <span class="badge bg-secondary ms-2">
+                                        <i class="fas fa-lock"></i> Fermé
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="thread-excerpt text-muted mb-1">
+                                {{ thread.description|striptags|u.truncate(150, '...') }}
+                            </p>
+                            <div class="thread-meta small text-muted">
+                                <span class="me-3">
+                                    <i class="fas fa-user me-1"></i>
+                                    {% if thread.type == 'roleplay' and thread.characterCreator %}
+                                        <span class="character-name">{{ thread.characterCreator.name }}</span>
+                                    {% else %}
+                                        {{ thread.author.pseudo }}
+                                    {% endif %}
+                                </span>
+                                {% if thread.forum %}
+                                    <span class="me-3">
+                                        <i class="fas fa-folder me-1"></i>
+                                        {{ thread.forum.name }}
+                                    </span>
+                                {% endif %}
+                                {% if thread.location %}
+                                    <span class="me-3">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ thread.location.name }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="thread-stats text-end ms-3">
+                            <div class="mb-1">
+                                <span class="badge bg-light text-dark" title="Réponses">
+                                    <i class="fas fa-comments me-1"></i>{{ thread.posts|length - 1 }}
+                                </span>
+                            </div>
+                            {% if thread.type == 'roleplay' %}
+                                <div>
+                                    <span class="badge bg-light text-dark" title="Participants">
+                                        <i class="fas fa-users me-1"></i>
+                                        {% if thread.maxParticipants %}
+                                            {{ thread.participants|length }}/{{ thread.maxParticipants }}
+                                        {% else %}
+                                            {{ thread.participants|length }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            <small class="text-muted d-block mt-1" title="Dernière activité">
+                                {{ thread.updatedAt|date('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                </a>
+            {% else %}
+                <div class="text-center p-5">
+                    <div class="empty-state">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h3>Aucune discussion trouvée</h3>
+                        <p class="text-muted">Il n'y a pas encore de discussions dans cette section.</p>
+                        {% if is_granted('ROLE_USER') %}
+                            <a href="{{ path('app_forum_new_thread') }}" class="btn btn-primary mt-2">
+                                <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle discussion
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.thread-excerpt {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+.thread-meta {
+    font-size: 0.85rem;
+}
+.thread-stats {
+    min-width: 100px;
+}
+.empty-state {
+    color: #6c757d;
+}
+.character-name {
+    color: var(--roleplay-primary);
+    font-weight: bold;
+}
+</style>
+{% endblock %}

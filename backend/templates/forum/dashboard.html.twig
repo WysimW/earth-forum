@@ -1,0 +1,217 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord Roleplay{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    <h1 class="mb-4">Tableau de bord Roleplay</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="card-title h5 mb-0">Mes personnages</h2>
+                    <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-plus"></i> Nouveau
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if characters|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for character in characters %}
+                                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                                    {% if character.avatar %}
+                                        <img src="{{ character.avatar }}" alt="{{ character.name }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ character.name }}</strong>
+                                        <span class="character-status status-{{ character.status }} ms-2">
+                                            {% if character.status == 'pending' %}
+                                                En attente
+                                            {% elseif character.status == 'validated' %}
+                                                Validé
+                                            {% else %}
+                                                Refusé
+                                            {% endif %}
+                                        </span>
+                                        {% if character.universe %}
+                                            <span class="badge bg-primary ms-2">{{ character.universe.name }}</span>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer bg-light text-end">
+                            <a href="{{ path('app_roleplay_characters') }}" class="btn btn-sm btn-outline-primary">
+                                Voir tous mes personnages <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-circle fa-3x text-muted mb-3"></i>
+                            <h3 class="h5">Vous n'avez pas encore créé de personnage</h3>
+                            <p class="text-muted mb-3">Créez votre premier personnage pour participer aux scènes de roleplay</p>
+                            <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Créer mon premier personnage
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h2 class="card-title h5 mb-0">Mes participations récentes</h2>
+                </div>
+                <div class="card-body p-0">
+                    {% if participatingThreads|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for thread in participatingThreads %}
+                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ thread.title }}</h5>
+                                        <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ thread.status == 'open' ? 'Ouvert' : (thread.status == 'closed' ? 'Fermé' : 'Archivé') }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <span class="me-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                        <span><i class="fas fa-clock"></i> {{ thread.updatedAt|date('d/m/Y') }}</span>
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer bg-light text-end">
+                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
+                                Voir toutes mes participations <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                            <h3 class="h5">Vous ne participez à aucune scène</h3>
+                            <p class="text-muted mb-3">Rejoignez une scène existante ou créez-en une nouvelle</p>
+                            <a href="{{ path('app_roleplay_threads') }}" class="btn btn-success">
+                                <i class="fas fa-search"></i> Explorer les scènes
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h2 class="card-title h5 mb-0">Mes créations</h2>
+                    <a href="{{ path('app_forum_new_thread') }}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-plus"></i> Nouvelle
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if createdThreads|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for thread in createdThreads %}
+                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-0">{{ thread.title }}</h6>
+                                        <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %} rounded-pill">
+                                            {{ thread.posts|length }} posts
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ thread.updatedAt|date('d/m/Y') }}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer bg-light text-end">
+                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'created'}) }}" class="btn btn-sm btn-outline-info">
+                                Voir toutes mes créations <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-pencil-alt fa-3x text-muted mb-3"></i>
+                            <h3 class="h5">Vous n'avez pas encore créé de scène</h3>
+                            <p class="text-muted mb-3">Lancez votre première histoire</p>
+                            <a href="{{ path('app_forum_new_thread') }}" class="btn btn-info text-white">
+                                <i class="fas fa-plus"></i> Créer une scène
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="card-title h5 mb-0">Scènes récentes</h2>
+                </div>
+                <div class="card-body p-0">
+                    {% if recentThreads|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for thread in recentThreads %}
+                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-0">{{ thread.title }}</h6>
+                                        <small class="text-muted">{{ thread.updatedAt|date('d/m/Y') }}</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        <span class="me-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                        {% if thread.universe %}
+                                            <span><i class="fas fa-globe-europe"></i> {{ thread.universe.name }}</span>
+                                        {% endif %}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer bg-light text-end">
+                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" class="btn btn-sm btn-outline-secondary">
+                                Explorer plus de scènes <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-theater-masks fa-3x text-muted mb-3"></i>
+                            <h3 class="h5">Aucune scène récente</h3>
+                            <p class="text-muted mb-3">Soyez le premier à créer une scène</p>
+                            <a href="{{ path('app_forum_new_thread') }}" class="btn btn-secondary">
+                                <i class="fas fa-plus"></i> Créer une scène
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h2 class="card-title h5 mb-0">Actions rapides</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus"></i> Créer un personnage
+                        </a>
+                        <a href="{{ path('app_forum_new_thread') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus-circle"></i> Créer une scène
+                        </a>
+                        <a href="{{ path('app_roleplay_threads') }}" class="btn btn-outline-info">
+                            <i class="fas fa-list"></i> Toutes les scènes
+                        </a>
+                        <a href="{{ path('app_roleplay_search') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i> Recherche avancée
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

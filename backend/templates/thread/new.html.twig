@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if forum.isRoleplay %}
+        Nouvelle scène RP - {{ forum.name }}
+    {% else %}
+        Nouvelle discussion - {{ forum.name }}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    <div class="card shadow-sm">
+        <div class="card-header {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+            <h1 class="h3 mb-0">
+                {% if forum.isRoleplay %}
+                    <i class="fas fa-theater-masks me-2"></i>Nouvelle scène RP
+                {% else %}
+                    <i class="fas fa-comments me-2"></i>Nouvelle discussion
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+
+                {% if forum.isRoleplay %}
+                    <div class="mb-3">
+                        {{ form_label(form.characterCreator) }}
+                        {{ form_widget(form.characterCreator, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.characterCreator) }}
+                        
+                        {% if not hasValidatedCharacters %}
+                            <div class="alert alert-warning mt-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% if user.characters|length > 0 %}
+                                    Vous n'avez pas encore de personnage validé. 
+                                    Vos personnages doivent être validés par un modérateur avant de pouvoir créer une scène RP.
+                                {% else %}
+                                    Vous n'avez pas encore créé de personnage. 
+                                    <a href="{{ path('app_roleplay_character_new') }}" class="alert-link">
+                                        Créer un personnage
+                                    </a> pour créer une scène RP.
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.maxParticipants) }}
+                        {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control', 'min': '2'}}) }}
+                        {{ form_errors(form.maxParticipants) }}
+                        <small class="form-text text-muted">
+                            Laissez vide pour un nombre illimité de participants
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.location) }}
+                        {{ form_widget(form.location, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.location) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_widget(form.visibleToCharactersOnly, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.visibleToCharactersOnly, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {{ form_errors(form.visibleToCharactersOnly) }}
+                        <small class="form-text text-muted d-block">
+                            Si activé, seuls les personnages participants pourront voir cette scène
+                        </small>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Description initiale') }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control wysiwyg-editor',
+                            'rows': 10,
+                            'data-type': forum.isRoleplay ? 'roleplay' : 'hrp'
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+                    <small class="form-text text-muted">
+                        {% if forum.isRoleplay %}
+                            Décrivez le contexte et la situation initiale de votre scène
+                        {% else %}
+                            Présentez le sujet de votre discussion
+                        {% endif %}
+                    </small>
+                </div>
+
+                {% if is_granted('ROLE_MODERATOR') %}
+                    <div class="mb-3">
+                        {{ form_widget(form.sticky, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.sticky, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                    <button type="submit" class="btn {% if forum.isRoleplay %}btn-roleplay{% else %}btn-hrp{% endif %}">
+                        <i class="fas fa-save me-2"></i>Créer la discussion
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-roleplay {
+    background-color: var(--roleplay-primary);
+    color: white;
+}
+.btn-roleplay:hover {
+    background-color: var(--roleplay-accent);
+    color: white;
+}
+.btn-hrp {
+    background-color: var(--hrp-primary);
+    color: white;
+}
+.btn-hrp:hover {
+    background-color: var(--hrp-accent);
+    color: white;
+}
+</style>
+{% endblock %}

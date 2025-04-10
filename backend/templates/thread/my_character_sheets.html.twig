@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes fiches de personnage{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    {{ breadcrumbs|raw }}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Mes fiches de personnage</h1>
+        <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer un nouveau personnage
+        </a>
+    </div>
+    
+    {% if characterSheets|length > 0 %}
+        {% for thread in characterSheets %}
+            {% set character = thread.characterSheet %}
+            {% set statusClasses = {
+                'draft': 'bg-secondary',
+                'pending': 'bg-warning text-dark',
+                'validated': 'bg-success',
+                'rejected': 'bg-danger',
+                'abandoned': 'bg-secondary',
+                'editing': 'bg-info'
+            } %}
+            
+            <div class="character-sheet-item">
+                <div class="character-sheet-header">
+                    <div class="character-sheet-header-left">
+                        {% if character.avatar %}
+                            <img src="{{ character.avatar }}" alt="{{ character.name }}" class="character-sheet-avatar">
+                        {% else %}
+                            <div class="character-sheet-avatar-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+                        <div class="character-sheet-title">{{ thread.title }}</div>
+                    </div>
+                    <div>
+                        <span class="character-sheet-status-badge {{ statusClasses[character.status] }}">
+                            <i class="fas {% if character.status == 'validated' %}fa-check-circle
+                            {% elseif character.status == 'rejected' %}fa-times-circle
+                            {% elseif character.status == 'abandoned' %}fa-trash-alt
+                            {% elseif character.status == 'editing' %}fa-pencil-alt
+                            {% else %}fa-clock{% endif %}"></i>
+                            {{ {
+                                'draft': 'Brouillon',
+                                'pending': 'En attente de validation',
+                                'validated': 'Validé',
+                                'rejected': 'Refusé',
+                                'abandoned': 'Abandonné',
+                                'editing': 'En cours d\'édition'
+                            }[character.status] }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="character-sheet-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if character.universe %}
+                                <div class="mb-2">
+                                    <i class="fas fa-globe"></i> <strong>Univers:</strong> {{ character.universe.name }}
+                                </div>
+                            {% endif %}
+                            <div class="mb-2">
+                                <i class="fas fa-calendar-alt"></i> Créé le {{ character.createdAt|date('d/m/Y') }}
+                            </div>
+                            {% if character.validatedAt %}
+                                <div class="mb-2 text-success">
+                                    <i class="fas fa-check-circle"></i> Validé le {{ character.validatedAt|date('d/m/Y') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if character.statusMessage %}
+                                <div class="mb-2">
+                                    <i class="fas fa-info-circle"></i> {{ character.statusMessage }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="character-sheet-footer">
+                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> Voir la fiche
+                    </a>
+                    {% if character.status != 'validated' and character.status != 'abandoned' %}
+                        <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="character-sheet-empty-state">
+            <i class="fas fa-user-circle fa-3x mb-3"></i>
+            <h3>Vous n'avez pas encore créé de fiche de personnage</h3>
+            <p class="text-muted">Commencez par créer votre premier personnage pour participer aux scènes de roleplay</p>
+            <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer mon premier personnage
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

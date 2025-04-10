@@ -1,0 +1,413 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ thread.title }} - DC Earth{% endblock %}
+
+{% block body %}
+<div class="thread-show container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    {# En-tête du thread #}
+    <div class="thread-header {% if thread.type == 'roleplay' %}roleplay-bg{% else %}hrp-bg{% endif %} glass-panel mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h1 class="thread-title mb-0">{{ thread.title }}</h1>
+            <div class="thread-badges">
+                {% if thread.sticky %}
+                    <span class="badge bg-warning" title="Épinglé">
+                        <i class="fas fa-thumbtack"></i> Épinglé
+                    </span>
+                {% endif %}
+                
+                {% if thread.status == 'closed' %}
+                    <span class="badge bg-secondary" title="Fermé">
+                        <i class="fas fa-lock"></i> Fermé
+                    </span>
+                {% endif %}
+                
+                <span class="badge {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %}" title="Type de discussion">
+                    {% if thread.type == 'roleplay' %}
+                        <i class="fas fa-theater-masks"></i> RP
+                    {% else %}
+                        <i class="fas fa-comments"></i> HRP
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="thread-metadata mb-3">
+            <div class="row small">
+                <div class="col-md-7">
+                    <span class="me-3">
+                        <i class="fas fa-user me-1"></i> Créée par: 
+                        {% if thread.type == 'roleplay' and thread.characterCreator %}
+                            <span class="character-name">{{ thread.characterCreator.name }}</span> ({{ thread.author.pseudo }})
+                        {% else %}
+                            {{ thread.author.pseudo }}
+                        {% endif %}
+                    </span>
+                    <span class="me-3">
+                        <i class="fas fa-calendar me-1"></i> {{ thread.createdAt|date('d/m/Y H:i') }}
+                    </span>
+                </div>
+                <div class="col-md-5 text-md-end">
+                    <span class="me-3">
+                        <i class="fas fa-comments me-1"></i> {{ thread.posts|length }} réponses
+                    </span>
+                    <span>
+                        <i class="fas fa-eye me-1"></i> {{ thread.viewCount ?? 0 }} vues
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        {% if thread.description %}
+        <div class="thread-description mb-2">
+            {{ thread.description|raw }}
+        </div>
+        {% endif %}
+        
+        <div class="thread-details">
+
+            
+            {% if thread.location %}
+                <span class="badge bg-info me-2" title="Lieu">
+                    <i class="fas fa-map-marker-alt me-1"></i> {{ thread.location.name }}
+                </span>
+            {% endif %}
+            
+            {% if thread.type == 'roleplay' and thread.visibleToCharactersOnly %}
+                <span class="badge bg-dark" title="Visibilité">
+                    <i class="fas fa-user-shield me-1"></i> Visible uniquement par les personnages participants
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Actions rapides #}
+    <div class="thread-actions d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ path('app_forum_show', {'id': thread.forum.id}) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour au forum
+            </a>
+            
+            {% if canReply %}
+                <a href="#replyForm" class="btn {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white ms-2">
+                    <i class="fas fa-reply me-1"></i> Répondre
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="btn-group">
+            {% if is_granted('EDIT', thread) %}
+                <a href="{{ path('app_thread_edit', {'id': thread.id}) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+            {% endif %}
+            
+            {% if is_granted('DELETE', thread) %}
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteThreadModal">
+                    <i class="fas fa-trash-alt me-1"></i> Supprimer
+                </button>
+            {% endif %}
+            
+            {% if is_granted('MANAGE', thread) %}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog me-1"></i> Gérer
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% if thread.status == 'open' %}
+                            <li>
+                                <a href="{{ path('app_thread_close', {'id': thread.id}) }}" class="dropdown-item">
+                                    <i class="fas fa-lock me-1"></i> Fermer la discussion
+                                </a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <a href="{{ path('app_thread_open', {'id': thread.id}) }}" class="dropdown-item">
+                                    <i class="fas fa-lock-open me-1"></i> Rouvrir la discussion
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% if thread.sticky %}
+                            <li>
+                                <a href="{{ path('app_thread_unstick', {'id': thread.id}) }}" class="dropdown-item">
+                                    <i class="fas fa-thumbtack fa-rotate-90 me-1"></i> Désépingler
+                                </a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <a href="{{ path('app_thread_stick', {'id': thread.id}) }}" class="dropdown-item">
+                                    <i class="fas fa-thumbtack me-1"></i> Épingler
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a href="{{ path('app_thread_move', {'id': thread.id}) }}" class="dropdown-item">
+                                <i class="fas fa-exchange-alt me-1"></i> Déplacer
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Liste des posts #}
+    <div class="posts-container" id="posts">
+        {# Affichage du premier post (message initial) #}
+        {% for post in posts %}
+            <div class="post-anchor" id="post-{{ post.id }}"></div>
+            <div class="post-container {% if post.isRoleplay %}roleplay-post{% else %}hrp-post{% endif %} mb-4 {% if app.request.get('highlight') == post.id %}highlighted-post{% endif %}">
+                <div class="post-sidebar">
+                    {% if post.isRoleplay and post.character %}
+                        <div class="character-avatar">
+                            {% if post.character.avatar %}
+                                <img src="{{ post.character.avatar }}" alt="{{ post.character.name }}">
+                            {% else %}
+                                <div class="default-avatar">
+                                    <i class="fas fa-user-astronaut"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="character-info">
+                            <div class="character-name">{{ post.character.name }}</div>
+                            {% if post.character.alias %}
+                                <div class="character-alias">{{ post.character.alias }}</div>
+                            {% endif %}
+                            <div class="player-name">
+                                <small>{{ post.author.pseudo }}</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="user-avatar">
+                            <div class="default-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="user-info">
+                            <div class="pseudo">{{ post.author.pseudo }}</div>
+                            <div class="user-details">
+                                <small>Membre depuis {{ post.author.createdAt|date('d/m/Y') }}</small>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="post-main">
+                    <div class="post-header">
+                        <div class="post-meta">
+                            <span class="post-date">
+                                <i class="fas fa-clock"></i> {{ post.createdAt|date('d/m/Y H:i') }}
+                            </span>
+                            <span class="post-number">#{{ loop.index }}</span>
+                        </div>
+                        
+                        <div class="post-actions">
+                            {% if app.user %}
+                                <a href="#replyForm" class="btn btn-sm btn-outline-secondary quote-btn" data-post-id="{{ post.id }}">
+                                    <i class="fas fa-quote-right"></i>
+                                </a>
+                            {% endif %}
+                            
+                            {% if is_granted('EDIT', post) %}
+                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+                            
+                            {% if is_granted('DELETE', post) and not loop.first %}
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{ post.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        {{ post.content|raw }}
+                    </div>
+                    
+                    {% if post.editedAt and post.editedAt != post.createdAt %}
+                        <div class="post-edited">
+                            <small class="text-muted">
+                                <i class="fas fa-pen-fancy"></i> Modifié le {{ post.editedAt|date('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Formulaire de réponse #}
+    {% if canReply %}
+        <div id="replyForm" class="reply-form mt-5">
+            <h3 class="reply-title {% if thread.type == 'roleplay' %}text-roleplay{% else %}text-hrp{% endif %}">
+                {% if thread.type == 'roleplay' %}
+                    <i class="fas fa-theater-masks"></i> Répondre en tant que personnage
+                {% else %}
+                    <i class="fas fa-comments"></i> Répondre à la discussion
+                {% endif %}
+            </h3>
+            
+            {{ form_start(form) }}
+                {% if thread.type == 'roleplay' %}
+                    <div class="mb-3">
+                        {{ form_label(form.character) }}
+                        {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.character) }}
+                        
+                        {% if not userHasCharacters %}
+                            <div class="alert alert-warning mt-2">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Vous n'avez pas encore créé de personnage. 
+                                <a href="{{ path('app_roleplay_character_new') }}">Créer un personnage</a> pour participer à cette scène.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                {% if form is defined and form is not null %}
+                    <div class="mb-3">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': 8}}) }}
+                        {{ form_errors(form.content) }}
+                    </div>
+                                        
+                    <div class="mb-3 d-flex justify-content-between">
+                        {% if not isRoleplay %}
+                            {{ form_row(form.type, {'attr': {'class': 'roleplay-toggle'}}) }}
+                        {% endif %}
+                        <button type="submit" class="btn {% if isRoleplay or (form.type is defined and form.type.vars.data == 'roleplay') %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+                            <i class="fas fa-paper-plane me-1"></i> Publier
+                        </button>
+                    </div>
+                {% endif %}
+            {{ form_end(form) }}
+        </div>
+    {% elseif not is_granted('IS_AUTHENTICATED_FULLY') %}
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle me-2"></i>
+            <a href="{{ path('app_login') }}">Connectez-vous</a> pour participer à cette discussion.
+        </div>
+    {% elseif thread.status == 'closed' %}
+        <div class="alert alert-warning mt-4">
+            <i class="fas fa-lock me-2"></i>
+            Cette discussion est fermée et n'accepte plus de nouvelles réponses.
+        </div>
+    {% endif %}
+
+    {# Modal de confirmation de suppression #}
+    <div class="modal fade" id="deleteThreadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cette discussion? Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <a href="{{ path('app_thread_delete', {'id': thread.id}) }}" class="btn btn-danger">Supprimer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Modal de confirmation de suppression d'un post #}
+    <div class="modal fade" id="deletePostModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer ce message? Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form id="deletePostForm" action="" method="POST">
+                        <input type="hidden" name="token" value="{{ csrf_token('delete_post') }}">
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .roleplay-bg {
+        border-left: 5px solid var(--roleplay-primary);
+    }
+    .hrp-bg {
+        border-left: 5px solid var(--hrp-primary);
+    }
+</style>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight post if URL has an anchor
+            if (window.location.hash && window.location.hash.startsWith('#post-')) {
+                const postId = window.location.hash.substring(6);
+                const postElement = document.getElementById('post-' + postId);
+                if (postElement) {
+                    postElement.scrollIntoView();
+                    postElement.nextElementSibling.classList.add('highlighted-post');
+                }
+            }
+
+            // Setup quote buttons
+            document.querySelectorAll('.quote-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const postId = this.getAttribute('data-post-id');
+                    // Here we would fetch the post content and add it to the editor
+                    // This is a placeholder for the actual quote functionality
+                    const editor = document.querySelector('.wysiwyg-editor');
+                    if (editor) {
+                        editor.value += `\n\n[quote]Contenu du post #${postId}[/quote]\n\n`;
+                    }
+                });
+            });
+
+            // Setup delete post buttons
+            document.querySelectorAll('.delete-post-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    const deletePostForm = document.getElementById('deletePostForm');
+                    deletePostForm.action = `/post/${postId}/delete`;
+                    const deletePostModal = new bootstrap.Modal(document.getElementById('deletePostModal'));
+                    deletePostModal.show();
+                });
+            });
+            
+            // Roleplay post toggle style
+            const roleplayToggle = document.querySelector('.roleplay-toggle');
+            if (roleplayToggle) {
+                roleplayToggle.addEventListener('change', function() {
+                    const submitBtn = document.querySelector('button[type="submit"]');
+                    if (this.checked) {
+                        submitBtn.classList.remove('bg-hrp');
+                        submitBtn.classList.add('bg-roleplay');
+                    } else {
+                        submitBtn.classList.remove('bg-roleplay');
+                        submitBtn.classList.add('bg-hrp');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,170 @@
+<div class="character-sheet-container">
+    <div class="character-sheet-section">
+        <div class="character-sheet-section-header">
+            <div class="character-sheet-status-badge {% if character.status == 'validated' %}badge bg-success{% elseif character.status == 'rejected' %}badge bg-danger{% elseif character.status == 'abandoned' %}badge bg-secondary{% else %}badge bg-warning{% endif %} mb-3">
+                <i class="fas {% if character.status == 'validated' %}fa-check-circle{% elseif character.status == 'rejected' %}fa-times-circle{% elseif character.status == 'abandoned' %}fa-trash-alt{% elseif character.status == 'editing' %}fa-pencil-alt{% else %}fa-clock{% endif %}"></i> 
+                {{ {
+                    'draft': 'Brouillon',
+                    'pending': 'En attente de validation',
+                    'validated': 'Validé',
+                    'rejected': 'Refusé',
+                    'abandoned': 'Abandonné',
+                    'editing': 'En cours d\'édition'
+                }[character.status] }}
+                {% if character.statusMessage %} - {{ character.statusMessage }}{% endif %}
+            </div>
+        </div>
+
+        <div class="character-sheet-profile-header">
+            <div class="character-sheet-info-grid">
+                <div class="character-sheet-info-item">
+                    <div class="character-sheet-info-label">Nom</div>
+                    <div class="character-sheet-info-value">{{ character.name }}</div>
+                </div>
+                {% if character.alias %}
+                    <div class="character-sheet-info-item">
+                        <div class="character-sheet-info-label">Alias</div>
+                        <div class="character-sheet-info-value">{{ character.alias }}</div>
+                    </div>
+                {% endif %}
+                {% if character.universe %}
+                    <div class="character-sheet-info-item">
+                        <div class="character-sheet-info-label">Univers</div>
+                        <div class="character-sheet-info-value">
+                            <i class="fas fa-globe-americas"></i> {{ character.universe.name }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if character.avatar %}
+                <div class="character-sheet-avatar-large">
+                    <img src="{{ character.avatar }}" alt="{{ character.name }}">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="character-sheet-section">
+        <div class="character-sheet-section-header">
+            <i class="fas fa-book-open"></i>
+            <h3>Biographie</h3>
+        </div>
+        <div class="character-sheet-section-content">
+            <div class="character-sheet-description">
+                {{ character.biography|raw }}
+            </div>
+        </div>
+    </div>
+
+    <div class="character-sheet-section">
+        <div class="character-sheet-section-header">
+            <i class="fas fa-user"></i>
+            <h3>Apparence</h3>
+        </div>
+        <div class="character-sheet-section-content">
+            <div class="character-sheet-description">
+                {{ character.appearance|raw }}
+            </div>
+        </div>
+    </div>
+
+    <div class="character-sheet-section">
+        <div class="character-sheet-section-header">
+            <i class="fas fa-brain"></i>
+            <h3>Personnalité</h3>
+        </div>
+        <div class="character-sheet-section-content">
+            <div class="character-sheet-description">
+                {{ character.personality|raw }}
+            </div>
+        </div>
+    </div>
+
+    <div class="character-sheet-section">
+        <div class="character-sheet-section-header">
+            <i class="fas fa-bolt"></i>
+            <h3>Capacités</h3>
+        </div>
+        <div class="character-sheet-section-content">
+            <div class="character-sheet-description">
+                {{ character.abilities|raw }}
+            </div>
+        </div>
+    </div>
+
+    {% if character.validatedAt %}
+        <div class="character-sheet-validation-info text-end mt-3">
+            <small class="text-muted">
+                <i class="fas fa-check-circle text-success"></i> Validé le {{ character.validatedAt|date('d/m/Y') }}
+            </small>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.character-sheet-container {
+    font-family: 'Roboto', sans-serif;
+}
+
+.character-sheet-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.character-sheet-info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.character-sheet-info-item {
+    flex: 2;
+    min-width: 300px;
+}
+
+.character-sheet-avatar-large {
+    flex: 1;
+    max-width: 250px;
+    min-width: 150px;
+    margin-left: 1rem;
+}
+
+.character-sheet-avatar-large img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.character-sheet-status-badge {
+    position: absolute;
+    top: -15px;
+    left: 0;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.character-sheet-description {
+    line-height: 1.6;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make the first tab active
+    var firstTabTrigger = document.querySelector('#characterSheetTabs button:first-child');
+    if (firstTabTrigger) {
+        var tab = new bootstrap.Tab(firstTabTrigger);
+        tab.show();
+    }
+});
+</script>

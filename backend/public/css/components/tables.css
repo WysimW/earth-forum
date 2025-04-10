@@ -1,0 +1,193 @@
+/* Styles des tableaux */
+.table {
+    color: var(--text-white);
+    border-collapse: separate;
+    border-spacing: 0 5px;
+    width: 100%;
+}
+
+.table thead th {
+    background-color: rgba(10, 10, 10, 0.5);
+    border-bottom: none;
+    padding: 1rem;
+    font-family: var(--font-special);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--light-gray);
+}
+
+.table tbody tr {
+    background-color: rgba(12, 45, 72, 0.6);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(20, 93, 160, 0.4);
+    transform: scale(1.01);
+}
+
+.table td {
+    padding: 1rem;
+    border-top: none;
+    vertical-align: middle;
+}
+
+/* Tableaux spécifiques RP/HRP */
+.table.roleplay tbody tr {
+    background-color: rgba(92, 45, 145, 0.15);
+}
+
+.table.roleplay tbody tr:hover {
+    background-color: rgba(92, 45, 145, 0.3);
+}
+
+.table.hrp tbody tr {
+    background-color: rgba(44, 110, 73, 0.15);
+}
+
+.table.hrp tbody tr:hover {
+    background-color: rgba(44, 110, 73, 0.3);
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    margin: 2rem 0;
+    padding-left: 3rem;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(to bottom, var(--primary-medium), var(--accent-green));
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 3rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -3.3rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--accent-green);
+    border: 3px solid var(--primary-dark);
+    box-shadow: 0 0 10px var(--glow-green);
+}
+
+.timeline-date {
+    font-family: var(--font-special);
+    font-size: 0.9rem;
+    color: var(--light-gray);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-content {
+    background-color: rgba(12, 45, 72, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(220, 225, 227, 0.1);
+    padding: 1.5rem;
+    position: relative;
+}
+
+.timeline-content:before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 15px;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(12, 45, 72, 0.6);
+    transform: rotate(45deg);
+    border-left: 1px solid rgba(220, 225, 227, 0.1);
+    border-bottom: 1px solid rgba(220, 225, 227, 0.1);
+}
+
+.timeline-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Timeline RP/HRP */
+.timeline.roleplay:before {
+    background: linear-gradient(to bottom, var(--roleplay-primary), var(--roleplay-accent));
+}
+
+.timeline.roleplay .timeline-dot {
+    background-color: var(--roleplay-accent);
+    border-color: var(--roleplay-primary);
+    box-shadow: 0 0 10px var(--roleplay-glow);
+}
+
+.timeline.hrp:before {
+    background: linear-gradient(to bottom, var(--hrp-primary), var(--hrp-accent));
+}
+
+.timeline.hrp .timeline-dot {
+    background-color: var(--hrp-accent);
+    border-color: var(--hrp-primary);
+    box-shadow: 0 0 10px var(--hrp-glow);
+}
+
+/* Grids pour listes */
+.grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.grid-list.compact {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.grid-list.wide {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* Listes de statistiques */
+.stats-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-item {
+    background-color: rgba(12, 45, 72, 0.4);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-family: var(--font-special);
+    font-size: 1.5rem;
+    color: var(--text-white);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--light-gray);
+    text-transform: uppercase;
+}

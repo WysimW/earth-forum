@@ -1,0 +1,217 @@
+/* Styles typographiques de base */
+body {
+    font-family: var(--font-main);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-white);
+}
+
+/* Titres */
+h1, h2, h3, h4, h5, h6, .title {
+    font-family: var(--font-title);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-white);
+    margin-top: 0;
+    line-height: 1.2;
+}
+
+h1, .h1 { font-size: 2.5rem; margin-bottom: 1.5rem; }
+h2, .h2 { font-size: 2rem; margin-bottom: 1.25rem; }
+h3, .h3 { font-size: 1.75rem; margin-bottom: 1rem; }
+h4, .h4 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+h5, .h5 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+h6, .h6 { font-size: 1rem; margin-bottom: 0.5rem; }
+
+/* Éléments spéciaux */
+.subtitle {
+    font-family: var(--font-special);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    color: var(--light-gray);
+    margin-bottom: 1rem;
+}
+
+.special-text {
+    font-family: var(--font-special);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Texte RP vs HRP */
+.text-roleplay {
+    color: var(--roleplay-accent);
+}
+
+.text-hrp {
+    color: var(--hrp-accent);
+}
+
+/* Liens */
+a {
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--text-white);
+    text-shadow: 0 0 10px var(--glow-blue);
+}
+
+.link-roleplay {
+    color: var(--roleplay-accent);
+}
+
+.link-roleplay:hover {
+    color: var (--roleplay-secondary);
+    text-shadow: 0 0 10px var(--roleplay-glow);
+}
+
+.link-hrp {
+    color: var(--hrp-accent);
+}
+
+.link-hrp:hover {
+    color: var(--hrp-secondary);
+    text-shadow: 0 0 10px var(--hrp-glow);
+}
+
+/* Styles de texte */
+.text-small {
+    font-size: 0.875rem;
+}
+
+.text-large {
+    font-size: 1.125rem;
+}
+
+.text-muted {
+    color: var(--light-gray) !important;
+    opacity: 0.8;
+}
+
+.text-success {
+    color: var(--accent-green);
+}
+
+.text-warning {
+    color: var(--warning);
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+/* Styles de mise en forme */
+.text-uppercase {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.text-bold {
+    font-weight: 700;
+}
+
+.text-italic {
+    font-style: italic;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Citations et blocs de texte */
+blockquote {
+    border-left: 4px solid var(--primary-medium);
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    font-style: italic;
+    background-color: rgba(12, 45, 72, 0.3);
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+blockquote.roleplay {
+    border-left-color: var(--roleplay-accent);
+    background-color: rgba(92, 45, 145, 0.1);
+}
+
+blockquote.hrp {
+    border-left-color: var(--hrp-accent);
+    background-color: rgba(44, 110, 73, 0.1);
+}
+
+code {
+    font-family: monospace;
+    background-color: rgba(10, 10, 10, 0.5);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    font-size: 0.875em;
+}
+
+pre {
+    background-color: rgba(10, 10, 10, 0.5);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    border: 1px solid rgba(220, 225, 227, 0.1);
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* Listes */
+ul.styled-list,
+ol.styled-list {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+ul.styled-list li,
+ol.styled-list li {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+ul.styled-list {
+    list-style: none;
+}
+
+ul.styled-list li:before {
+    content: '•';
+    color: var(--primary-medium);
+    position: absolute;
+    left: -1.5rem;
+    top: 0;
+}
+
+/* Badges de texte */
+.badge-text {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    background-color: var(--primary-medium);
+    color: var(--text-white);
+}
+
+/* Texte avec dégradé */
+.gradient-text {
+    background: linear-gradient(90deg, var(--primary-medium), var(--accent-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}

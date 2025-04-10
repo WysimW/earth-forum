@@ -1,0 +1,42 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau Thread | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Créer un nouveau thread</h1>
+        <a href="{{ path('admin_thread_index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.forum) }}
+                    {{ form_widget(form.forum) }}
+                    {{ form_errors(form.forum) }}
+                    <div class="form-text">Sélectionnez le forum où le thread sera créé.</div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.author) }}
+                    {{ form_widget(form.author) }}
+                    {{ form_errors(form.author) }}
+                    <div class="form-text">Sélectionnez l'auteur du thread.</div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Pour créer un nouveau thread avec un premier message, utilisez cette interface uniquement pour créer le thread, puis ajoutez un premier message depuis la page de détails.
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

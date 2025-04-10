@@ -1,0 +1,246 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiches de personnage{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    {{ breadcrumbs|raw }}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Fiches de personnage</h1>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="characterSheetTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="validated-tab" data-bs-toggle="tab" data-bs-target="#validated" type="button" role="tab">
+                Validées
+                <span class="character-sheet-count-badge badge bg-success">{{ validatedSheets|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                En attente
+                <span class="character-sheet-count-badge badge bg-warning">{{ pendingSheets|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
+                Refusées/Abandonnées
+                <span class="character-sheet-count-badge badge bg-danger">{{ rejectedSheets|length }}</span>
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="characterSheetTabContent">
+        <div class="tab-pane fade show active" id="validated" role="tabpanel">
+            {% if validatedSheets|length > 0 %}
+                <div class="row">
+                    {% for thread in validatedSheets %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="character-sheet-card">
+                                <div class="character-sheet-card-header bg-success">
+                                    <div class="d-flex align-items-center">
+                                        {% if thread.characterSheet.avatar %}
+                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+                                        {% else %}
+                                            <i class="fas fa-user-circle fa-2x"></i>
+                                        {% endif %}
+                                        <div class="character-sheet-name">{{ thread.title }}</div>
+                                    </div>
+                                </div>
+                                <div class="character-sheet-card-body">
+                                    <div class="character-sheet-meta">
+                                        {% if thread.characterSheet.universe %}
+                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
+                                        {% endif %}
+                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                        <div class="mt-1">
+                                            <i class="fas fa-check-circle text-success"></i> Validé le {{ thread.characterSheet.validatedAt|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-success btn-sm mt-3">
+                                        <i class="fas fa-eye"></i> Voir la fiche
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="character-sheet-empty-state">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p>Aucune fiche validée pour le moment.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="pending" role="tabpanel">
+            {% if pendingSheets|length > 0 %}
+                <div class="row">
+                    {% for thread in pendingSheets %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="character-sheet-card">
+                                <div class="character-sheet-card-header bg-warning">
+                                    <div class="d-flex align-items-center">
+                                        {% if thread.characterSheet.avatar %}
+                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+                                        {% else %}
+                                            <i class="fas fa-user-circle fa-2x"></i>
+                                        {% endif %}
+                                        <div class="character-sheet-name">{{ thread.title }}</div>
+                                    </div>
+                                </div>
+                                <div class="character-sheet-card-body">
+                                    <div class="character-sheet-meta">
+                                        {% if thread.characterSheet.universe %}
+                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
+                                        {% endif %}
+                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                        <div class="mt-1">
+                                            <i class="fas fa-clock"></i> {{ thread.characterSheet.status == 'pending' ? 'En attente' : 'En édition' }}
+                                            {% if thread.characterSheet.statusMessage %}
+                                                - {{ thread.characterSheet.statusMessage }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-warning btn-sm mt-3">
+                                        <i class="fas fa-eye"></i> Voir la fiche
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="character-sheet-empty-state">
+                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                    <p>Aucune fiche en attente de validation.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="rejected" role="tabpanel">
+            {% if rejectedSheets|length > 0 %}
+                <div class="row">
+                    {% for thread in rejectedSheets %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="character-sheet-card">
+                                <div class="character-sheet-card-header {{ thread.characterSheet.status == 'rejected' ? 'bg-danger' : 'bg-secondary' }}">
+                                    <div class="d-flex align-items-center">
+                                        {% if thread.characterSheet.avatar %}
+                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+                                        {% else %}
+                                            <i class="fas fa-user-circle fa-2x"></i>
+                                        {% endif %}
+                                        <div class="character-sheet-name">{{ thread.title }}</div>
+                                    </div>
+                                </div>
+                                <div class="character-sheet-card-body">
+                                    <div class="character-sheet-meta">
+                                        {% if thread.characterSheet.universe %}
+                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
+                                        {% endif %}
+                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                        <div class="mt-1">
+                                            <i class="fas fa-times-circle"></i>
+                                            {{ thread.characterSheet.status == 'rejected' ? 'Refusé' : 'Abandonné' }}
+                                            {% if thread.characterSheet.statusMessage %}
+                                                - {{ thread.characterSheet.statusMessage }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-secondary btn-sm mt-3">
+                                        <i class="fas fa-eye"></i> Voir la fiche
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="character-sheet-empty-state">
+                    <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                    <p>Aucune fiche refusée ou abandonnée.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .character-sheet-count-badge {
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+        vertical-align: middle;
+    }
+
+    .character-sheet-card {
+        margin-bottom: 1.5rem;
+        background-color: var(--bs-white);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .character-sheet-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .character-sheet-card-header {
+        padding: 1rem;
+        color: var(--bs-white);
+    }
+
+    .character-sheet-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+    }
+
+    .character-sheet-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .character-sheet-card-body {
+        padding: 1rem;
+    }
+
+    .character-sheet-meta {
+        font-size: 0.9rem;
+        color: var(--bs-gray-600);
+    }
+
+    .character-sheet-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: var(--bs-light);
+        border-radius: var(--border-radius-md);
+        color: var(--bs-gray-600);
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--bs-gray-700);
+    }
+
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#characterSheetTabs button'));
+    triggerTabList.forEach(function(triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        triggerEl.addEventListener('click', function(event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+});
+</script>
+{% endblock %}

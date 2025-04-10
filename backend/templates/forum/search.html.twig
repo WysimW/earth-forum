@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche de scènes RP{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    <h1 class="mb-4">Recherche de scènes</h1>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="keyword" class="form-label">Mot-clé</label>
+                        <input type="text" class="form-control" id="keyword" name="keyword" value="{{ keyword }}" placeholder="Titre, description...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Statut</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="" {% if status == '' %}selected{% endif %}>Tous</option>
+                            <option value="open" {% if status == 'open' %}selected{% endif %}>Ouvert</option>
+                            <option value="closed" {% if status == 'closed' %}selected{% endif %}>Fermé</option>
+                            <option value="archived" {% if status == 'archived' %}selected{% endif %}>Archivé</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="universe" class="form-label">Univers</label>
+                        <select class="form-select" id="universe" name="universe">
+                            <option value="">Tous</option>
+                            {% for universe in app.request.attributes.get('_controller')|split('::')|first|split('\\')|last == 'RoleplayController' ? universes|default([]) : [] %}
+                                <option value="{{ universe.id }}" {% if universe is defined and universe.id == universe %}selected{% endif %}>{{ universe.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            {% if keyword or status or universe or location %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Résultats de recherche 
+                    {% if keyword %}
+                        pour "<strong>{{ keyword }}</strong>"
+                    {% endif %}
+                    {% if status %}
+                        avec statut "<strong>{{ status }}</strong>"
+                    {% endif %}
+                    {% if universe %}
+                        dans l'univers sélectionné
+                    {% endif %}
+                    {% if location %}
+                        au lieu sélectionné
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if threads|length > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h2 class="h5 mb-0">{{ threads|length }} résultat(s) trouvé(s)</h2>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for thread in threads %}
+                        <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ thread.title }}</h5>
+                                <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ thread.status == 'open' ? 'Ouvert' : (thread.status == 'closed' ? 'Fermé' : 'Archivé') }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="mb-1 text-truncate" style="max-width: 70%;">{{ thread.description|striptags|u.truncate(120, '...') }}</p>
+                                <div class="text-end">
+                                    <span class="badge bg-light text-dark me-1">
+                                        <i class="fas fa-comments"></i> {{ thread.posts|length }}
+                                    </span>
+                                    {% if thread.maxParticipants > 0 %}
+                                        <span class="badge bg-light text-dark" title="Participants">
+                                            <i class="fas fa-users"></i> {{ thread.participants|length }}/{{ thread.maxParticipants }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark" title="Participants">
+                                            <i class="fas fa-users"></i> {{ thread.participants|length }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                <span class="me-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
+                                {% if thread.universe %}
+                                    <span class="me-2"><i class="fas fa-globe-europe"></i> {{ thread.universe.name }}</span>
+                                {% endif %}
+                                {% if thread.location %}
+                                    <span class="me-2"><i class="fas fa-map-marker-alt"></i> {{ thread.location.name }}</span>
+                                {% endif %}
+                                <span><i class="fas fa-clock"></i> {{ thread.updatedAt|date('d/m/Y H:i') }}</span>
+                            </small>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h3>Aucun résultat trouvé</h3>
+                <p class="text-muted">
+                    {% if keyword or status or universe or location %}
+                        Aucune scène RP ne correspond à vos critères de recherche.
+                    {% else %}
+                        Utilisez les filtres ci-dessus pour rechercher des scènes de roleplay.
+                    {% endif %}
+                </p>
+                {% if app.user %}
+                    <a href="{{ path('app_forum_new_thread') }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus"></i> Créer une nouvelle scène
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{{ path('app_roleplay') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

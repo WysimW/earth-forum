@@ -1,0 +1,102 @@
+/* Importation des polices */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Variables CSS */
+:root {
+    /* Couleurs principales */
+    --primary-dark: #0C2D48;
+    --primary-medium: #145DA0;
+    --primary-light: #2980b9;
+    --deep-black: #0A0A0A;
+    --light-gray: #DCE1E3;
+    --text-white: #FFFFFF;
+
+    /* Accents et états */
+    --accent-green: #00A86B;
+    --accent-light: #2ecc71;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --info: #3498db;
+
+    /* Couleurs RP */
+    --roleplay-primary: #5c2d91;
+    --roleplay-secondary: #7048b6;
+    --roleplay-accent: #9c55d3;
+    --roleplay-light: #b76ee3;
+    --roleplay-glow: rgba(92, 45, 145, 0.6);
+
+    /* Couleurs HRP */
+    --hrp-primary: #2c6e49;
+    --hrp-secondary: #3a8a5f;
+    --hrp-accent: #4c956c;
+    --hrp-light: #64ad84;
+    --hrp-glow: rgba(44, 110, 73, 0.6);
+
+    /* Effets de lueur */
+    --glow-blue: rgba(20, 93, 160, 0.6);
+    --glow-green: rgba(0, 168, 107, 0.6);
+
+    /* Polices */
+    --font-main: 'Inter', sans-serif;
+    --font-title: 'Bebas Neue', sans-serif;
+    --font-special: 'Roboto Mono', sans-serif;
+
+    /* Espacements */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+
+    /* Rayons de bordure */
+    --border-radius-sm: 0.25rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 1rem;
+    --border-radius-xl: 2rem;
+    --border-radius-circle: 50%;
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Z-index */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal: 1040;
+    --z-popover: 1050;
+    --z-tooltip: 1060;
+
+    /* Breakpoints */
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+
+    /* Ombres */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 15px 45px rgba(0, 0, 0, 0.4);
+
+    /* Opacités */
+    --opacity-light: 0.8;
+    --opacity-medium: 0.5;
+    --opacity-dim: 0.3;
+
+    /* Largeurs de bordure */
+    --border-width-sm: 1px;
+    --border-width-md: 2px;
+    --border-width-lg: 3px;
+
+    /* Variables composées */
+    --header-height: 72px;
+    --sidebar-width: 250px;
+    --card-padding: var(--spacing-lg);
+    --section-margin: var(--spacing-xxl);
+}

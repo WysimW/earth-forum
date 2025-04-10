@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Modifier {{ thread.title }}
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    <div class="card shadow-sm">
+        <div class="card-header {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+            <h1 class="h3 mb-0">
+                {% if thread.type == 'roleplay' %}
+                    <i class="fas fa-theater-masks me-2"></i>Modifier la scène
+                {% else %}
+                    <i class="fas fa-edit me-2"></i>Modifier la discussion
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+
+                {% if thread.type == 'roleplay' %}
+                    <div class="mb-3">
+                        {{ form_label(form.maxParticipants) }}
+                        {{ form_widget(form.maxParticipants, {
+                            'attr': {
+                                'class': 'form-control',
+                                'min': thread.participants|length
+                            }
+                        }) }}
+                        {{ form_errors(form.maxParticipants) }}
+                        <small class="form-text text-muted">
+                            {% if thread.participants|length > 0 %}
+                                Minimum : {{ thread.participants|length }} (participants actuels)
+                            {% endif %}
+                            Laissez vide pour un nombre illimité de participants
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.location) }}
+                        {{ form_widget(form.location, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.location) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_widget(form.visibleToCharactersOnly, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.visibleToCharactersOnly, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {{ form_errors(form.visibleToCharactersOnly) }}
+                        <small class="form-text text-muted d-block">
+                            Si activé, seuls les personnages participants pourront voir cette scène
+                        </small>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Description') }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control wysiwyg-editor',
+                            'rows': 10,
+                            'data-type': thread.type
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                {% if is_granted('ROLE_MODERATOR') %}
+                    <div class="mb-3">
+                        {{ form_widget(form.sticky, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.sticky, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.status) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </a>
+                        {% if is_granted('DELETE', thread) %}
+                            <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteThreadModal">
+                                <i class="fas fa-trash-alt me-2"></i>Supprimer
+                            </button>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn {% if thread.type == 'roleplay' %}btn-roleplay{% else %}btn-hrp{% endif %}">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {% if is_granted('DELETE', thread) %}
+        <div class="modal fade" id="deleteThreadModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible et supprimera tous les messages associés.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <form action="{{ path('app_thread_delete', {'id': thread.id}) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="token" value="{{ csrf_token('delete_thread') }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.btn-roleplay {
+    background-color: var(--roleplay-primary);
+    color: white;
+}
+.btn-roleplay:hover {
+    background-color: var(--roleplay-accent);
+    color: white;
+}
+.btn-hrp {
+    background-color: var(--hrp-primary);
+    color: white;
+}
+.btn-hrp:hover {
+    background-color: var(--hrp-accent);
+    color: white;
+}
+</style>
+{% endblock %}

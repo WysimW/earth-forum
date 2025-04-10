@@ -1,0 +1,84 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails Catégorie | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Détails de la catégorie</h1>
+        <div>
+            <a href="{{ path('admin_category_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_category_edit', {'id': category.id}) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Modifier</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Informations générales
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th width="200">ID</th>
+                        <td>{{ category.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nom</th>
+                        <td>{{ category.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ category.description }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type</th>
+                        <td>{{ category.type ? category.type.name : 'Non défini' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ordre d'affichage</th>
+                        <td>{{ category.homeOrder }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            Forums dans cette catégorie
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for forum in category.forums %}
+                            <tr>
+                                <td>{{ forum.id }}</td>
+                                <td>{{ forum.name }}</td>
+                                <td>{{ forum.description }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                        <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4">Aucun forum dans cette catégorie</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

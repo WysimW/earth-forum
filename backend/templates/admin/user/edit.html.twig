@@ -1,0 +1,67 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier Utilisateur | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Modifier l'utilisateur</h1>
+        <div>
+            <a href="{{ path('admin_user_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="btn btn-info"><i class="bi bi-eye"></i> Voir détails</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.pseudo) }}
+                    {{ form_widget(form.pseudo) }}
+                    {{ form_errors(form.pseudo) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.avatar) }}
+                    {{ form_widget(form.avatar) }}
+                    {{ form_errors(form.avatar) }}
+                    <div class="form-text">URL d'une image à utiliser comme avatar.</div>
+                </div>
+                
+                {% if user.avatar %}
+                    <div class="mb-3">
+                        <div class="card">
+                            <div class="card-header">Avatar actuel</div>
+                            <div class="card-body text-center">
+                                <img src="{{ user.avatar }}" alt="{{ user.pseudo }}" class="rounded-circle" style="max-height: 100px;">
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Rôles</label>
+                    <div class="card">
+                        <div class="card-body">
+                            {{ form_widget(form.playerRoles) }}
+                            {{ form_errors(form.playerRoles) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Pour modifier le mot de passe, utilisez le bouton dédié dans la page de détails ou dans la liste des utilisateurs.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer les modifications</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

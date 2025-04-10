@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des Forums | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des forums</h1>
+        <a href="{{ path('admin_forum_new') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Nouveau forum</a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Catégorie/Forum parent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for forum in forums %}
+                            <tr>
+                                <td>{{ forum.id }}</td>
+                                <td>{{ forum.name }}</td>
+                                <td>{{ forum.description }}</td>
+                                <td>
+                                    {% if forum.category %}
+                                        <span class="badge bg-primary">Forum principal</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Indéfini</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if forum.category %}
+                                        <span class="badge bg-success">{{ forum.category.name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('admin_forum_show', {'id': forum.id}) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                        <a href="{{ path('admin_forum_edit', {'id': forum.id}) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                        <form method="post" action="{{ path('admin_forum_delete', {'id': forum.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce forum?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ forum.id) }}">
+                                            <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6">Aucun forum trouvé</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

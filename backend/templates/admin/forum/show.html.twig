@@ -1,0 +1,147 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails Forum | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Détails du forum</h1>
+        <div>
+            <a href="{{ path('admin_forum_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_forum_edit', {'id': forum.id}) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Modifier</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Informations générales
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="200">ID</th>
+                                <td>{{ forum.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ forum.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ forum.description }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>
+                                    {% if forum.category %}
+                                        <span class="badge bg-primary">Forum principal</span>
+                                        dans la catégorie <span class="badge bg-success">{{ forum.category.name }}</span>
+                                    {% elseif forum.forum %}
+                                        <span class="badge bg-info">Sous-forum</span>
+                                        du forum <span class="badge bg-warning">{{ forum.forum.name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non défini</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    {% if forum.banner %}
+                        <div class="card">
+                            <div class="card-header">Bannière</div>
+                            <div class="card-body text-center">
+                                <img src="{{ forum.banner }}" alt="Bannière" class="img-fluid">
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <i class="bi bi-image"></i> Pas de bannière définie
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if forum.subForums and forum.subForums|length > 0 %}
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            Sous-forums
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subforum in forum.subForums %}
+                            <tr>
+                                <td>{{ subforum.id }}</td>
+                                <td>{{ subforum.name }}</td>
+                                <td>{{ subforum.description }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('admin_forum_show', {'id': subforum.id}) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                        <a href="{{ path('admin_forum_edit', {'id': subforum.id}) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            Threads dans ce forum
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Auteur</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for thread in forum.threads %}
+                            <tr>
+                                <td>{{ thread.id }}</td>
+                                <td>{{ thread.title }}</td>
+                                <td>{{ thread.author.pseudo }}</td>
+                                <td>{{ thread.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                        <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5">Aucun thread dans ce forum</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

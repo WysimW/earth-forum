@@ -1,0 +1,141 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dashboard Admin | Earth Forum{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Tableau de bord administratif</h1>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-people fs-1 me-3"></i>
+                        <div>
+                            <h5 class="card-title">Utilisateurs</h5>
+                            <p class="card-text fs-2">{{ userCount }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-diagram-3 fs-1 me-3"></i>
+                        <div>
+                            <h5 class="card-title">Forums</h5>
+                            <p class="card-text fs-2">{{ forumCount }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-chat-dots fs-1 me-3"></i>
+                        <div>
+                            <h5 class="card-title">Threads</h5>
+                            <p class="card-text fs-2">{{ threadCount }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-chat-square-text fs-1 me-3"></i>
+                        <div>
+                            <h5 class="card-title">Posts</h5>
+                            <p class="card-text fs-2">{{ postCount }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-tags fs-1 me-3"></i>
+                        <div>
+                            <h5 class="card-title">Catégories</h5>
+                            <p class="card-text fs-2">{{ categoryCount }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Derniers utilisateurs -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-people"></i> Derniers utilisateurs
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                    {% for user in latestUsers %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ user.avatar }}" alt="{{ user.pseudo }}" class="rounded-circle me-2" width="40">
+                                {{ user.pseudo }}
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ user.createdAt|date('d/m/Y') }}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Derniers threads -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-chat-dots"></i> Derniers threads
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                    {% for thread in latestThreads %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ thread.title }}
+                            <span class="badge bg-success rounded-pill">{{ thread.createdAt|date('d/m/Y') }}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Derniers posts -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-chat-square-text"></i> Derniers posts
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                    {% for post in latestPosts %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">{{ post.author.pseudo }}</small><br>
+                                {{ post.content|length > 30 ? post.content|slice(0, 30) ~ '...' : post.content }}
+                            </div>
+                            <span class="badge bg-info rounded-pill">{{ post.createdAt|date('d/m/Y') }}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

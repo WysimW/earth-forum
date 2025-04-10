@@ -1,0 +1,245 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche de {{ character.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for item in breadcrumbs %}
+                {% if item.url is defined %}
+                    <li class="breadcrumb-item"><a href="{{ item.url }}">{{ item.name }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ item }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+    
+    <div class="character-sheet-container">
+        <div class="character-sheet-header">
+            <div class="container">
+                <div class="character-sheet-main-info">
+                    <h1>{{ thread.title }}</h1>
+                    <div class="character-sheet-subtitle">
+                        {% if character.universe %}
+                            <i class="fas fa-globe"></i> {{ character.universe.name }}
+                        {% endif %}
+                        <i class="fas fa-user"></i> {{ character.user.pseudo }}
+                    </div>
+                </div>
+                
+                <div class="character-sheet-header-status">
+                    <div class="character-sheet-status-indicator">
+                        <i class="fas {% if character.status == 'validated' %}fa-check-circle
+                        {% elseif character.status == 'rejected' %}fa-times-circle
+                        {% elseif character.status == 'abandoned' %}fa-trash-alt
+                        {% elseif character.status == 'editing' %}fa-pencil-alt
+                        {% else %}fa-clock{% endif %}"></i>
+                        <span class="character-sheet-status-{{ character.status }}">
+                            {{ {
+                                'draft': 'Brouillon',
+                                'pending': 'En attente de validation',
+                                'validated': 'Validé',
+                                'rejected': 'Refusé',
+                                'abandoned': 'Abandonné',
+                                'editing': 'En cours d\'édition'
+                            }[character.status] }}
+                        </span>
+                    </div>
+                    
+                    {% if character.statusMessage %}
+                        <div class="character-sheet-quick-info">
+                            <div class="character-sheet-quick-info-item">
+                                <i class="fas fa-info-circle"></i>
+                                {{ character.statusMessage }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if isOwner or isModerator %}
+                    <div class="character-sheet-header-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light dropdown-toggle" type="button" id="threadActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog"></i> Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="threadActionsDropdown">
+                                {% if isOwner and character.status != 'validated' and character.status != 'abandoned' %}
+                                    <li>
+                                        <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="dropdown-item">
+                                            <i class="fas fa-edit"></i> Modifier la fiche
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% if isModerator %}
+                                    <li>
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#characterValidationModal">
+                                            <i class="fas fa-check-circle text-success"></i> Valider le personnage
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#characterRejectionModal">
+                                            <i class="fas fa-times-circle text-danger"></i> Refuser le personnage
+                                        </button>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+            
+        {% if isOwner and character.status != 'validated' and character.status != 'abandoned' %}
+            <div class="character-sheet-status-actions">
+                <h5>Modifier le statut de votre fiche</h5>
+                <form action="{{ path('app_thread_update_character_status', {'id': thread.id}) }}" method="post">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Statut</label>
+                        <select name="status" id="status" class="form-select">
+                            {% if character.status == 'draft' %}
+                                <option value="pending">Soumettre pour validation</option>
+                            {% endif %}
+                            {% if character.status == 'rejected' or character.status == 'editing' %}
+                                <option value="pending">Soumettre à nouveau</option>
+                            {% endif %}
+                            <option value="abandoned">Abandonner la fiche</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status_message" class="form-label">Message de statut (facultatif)</label>
+                        <input type="text" name="status_message" id="status_message" class="form-control" placeholder="Ex: En attente de validation">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Mettre à jour le statut</button>
+                </form>
+            </div>
+        {% endif %}
+        
+        {% if isModerator and character.status != 'validated' and character.status != 'abandoned' %}
+            <div class="character-sheet-validation-controls">
+                <h5>Actions de modération</h5>
+                <div class="btn-group-validation">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#characterValidationModal">
+                        <i class="fas fa-check-circle"></i> Valider
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#characterRejectionModal">
+                        <i class="fas fa-times-circle"></i> Refuser
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="character-sheet-display">
+            {% if thread.posts.first %}
+                {{ thread.posts.first.content|raw }}
+            {% endif %}
+        </div>
+        
+        {% if character.moderationNote and (isModerator or isOwner) %}
+            <div class="character-sheet-moderation-note">
+                <h5><i class="fas fa-info-circle"></i> Note de modération</h5>
+                {{ character.moderationNote|nl2br }}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="character-sheet-comments">
+        <div class="character-sheet-comments-header">
+            <h3>Commentaires</h3>
+        </div>
+        <div class="card-body">
+            {% if posts|length > 1 %}
+                {% for post in posts %}
+                    {% if not loop.first %}
+                        <div class="character-sheet-post-item">
+                            <div class="character-sheet-post-header">
+                                <div>
+                                    <strong>{{ post.author.pseudo }}</strong>
+                                    <small class="text-muted ms-2">{{ post.createdAt|date('d/m/Y H:i') }}</small>
+                                </div>
+                            </div>
+                            <div class="post-content">
+                                {{ post.content|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted fst-italic">Aucun commentaire pour l'instant.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if canReply and app.user %}
+        <div class="character-sheet-comment-form">
+            <h3>Ajouter un commentaire</h3>
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <button type="submit" class="btn btn-primary mt-3">Envoyer</button>
+            {{ form_end(form) }}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal de validation du personnage -->
+{% if isModerator %}
+    <div class="modal fade" id="characterValidationModal" tabindex="-1" aria-labelledby="characterValidationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="characterValidationModalLabel">Valider le personnage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form action="{{ path('app_roleplay_character_validate', {'id': character.id}) }}" method="post">
+                    <div class="modal-body">
+                        <p>Vous êtes sur le point de valider le personnage "<strong>{{ character.name }}</strong>".</p>
+                        <div class="mb-3">
+                            <label for="moderation_note" class="form-label">Note de modération (facultatif)</label>
+                            <textarea name="moderation_note" id="moderation_note" class="form-control" rows="3" placeholder="Ajoutez une note ou des commentaires..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="characterRejectionModal" tabindex="-1" aria-labelledby="characterRejectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="characterRejectionModalLabel">Refuser le personnage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form action="{{ path('app_roleplay_character_reject', {'id': character.id}) }}" method="post">
+                    <div class="modal-body">
+                        <p>Vous êtes sur le point de refuser le personnage "<strong>{{ character.name }}</strong>".</p>
+                        <div class="mb-3">
+                            <label for="moderation_note" class="form-label">Raison du refus</label>
+                            <textarea name="moderation_note" id="moderation_note" class="form-control" rows="3" placeholder="Expliquez pourquoi la fiche est refusée..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Refuser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

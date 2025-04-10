@@ -1,0 +1,131 @@
+/* Animations de base */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation de pulsation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(20, 93, 160, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(20, 93, 160, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(20, 93, 160, 0);
+    }
+}
+
+/* Animation de secousse */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Animation de surlignage */
+@keyframes highlight-fade {
+    0% { 
+        box-shadow: inset 0 0 0 3px var(--primary-medium);
+        background-color: rgba(20, 93, 160, 0.2);
+    }
+    100% { 
+        box-shadow: inset 0 0 0 0 transparent;
+        background-color: transparent;
+    }
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(255, 193, 7, 0.3); }
+    100% { background-color: transparent; }
+}
+
+/* Animation de lueur */
+@keyframes glow {
+    0% { box-shadow: 0 0 5px var(--glow-blue); }
+    50% { box-shadow: 0 0 20px var(--glow-blue), 0 0 30px var(--glow-blue); }
+    100% { box-shadow: 0 0 5px var(--glow-blue); }
+}
+
+/* Animation de rotation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Classes d'animation utilitaires */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+.animate-slide-left {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.animate-glow {
+    animation: glow 2s infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Classes pour différer les animations */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+
+/* Classes pour les durées d'animation */
+.duration-slow { animation-duration: 1s; }
+.duration-normal { animation-duration: 0.5s; }
+.duration-fast { animation-duration: 0.3s; }
+
+/* Préférences de réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

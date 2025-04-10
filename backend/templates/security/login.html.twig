@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Connexion</h1>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% if error %}
+                            <div class="alert alert-danger">
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                            </div>
+                        {% endif %}
+
+                        {% if app.user %}
+                            <div class="mb-3">
+                                Vous êtes connecté(e) en tant que {{ app.user.pseudo }}, <a href="{{ path('app_logout') }}">Se déconnecter</a>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" value="" name="email" id="email" class="form-control" autocomplete="email" required autofocus>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" name="password" id="password" class="form-control" autocomplete="current-password" required>
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="_remember_me" checked>
+                            <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="submit">
+                                Se connecter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <p class="mb-0">Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

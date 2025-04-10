@@ -1,0 +1,99 @@
+/* Styles des formulaires */
+.form-control, .form-select {
+    background-color: rgba(10, 10, 10, 0.5);
+    border: 1px solid rgba(220, 225, 227, 0.2);
+    border-radius: 0.3rem;
+    color: var(--text-white);
+    padding: 0.8rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(10, 10, 10, 0.7);
+    border-color: var(--primary-medium);
+    box-shadow: 0 0 0 3px rgba(20, 93, 160, 0.3);
+    color: var(--text-white);
+}
+
+.form-label {
+    font-family: var(--font-special);
+    font-weight: 500;
+    color: var(--light-gray);
+    margin-bottom: 0.5rem;
+}
+
+.form-text {
+    color: var(--light-gray);
+    opacity: 0.7;
+}
+
+.form-check-input {
+    background-color: rgba(10, 10, 10, 0.5);
+    border: 1px solid rgba(220, 225, 227, 0.3);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-medium);
+    border-color: var(--primary-medium);
+}
+
+/* Validation styles */
+.form-control.is-valid,
+.form-control.is-invalid {
+    background-position: right calc(0.375em + 0.6rem) center;
+    background-size: calc(0.75em + 0.4rem) calc(0.75em + 0.4rem);
+}
+
+.form-control.is-valid {
+    border-color: var(--accent-green);
+    background-color: rgba(0, 168, 107, 0.1);
+}
+
+.form-control.is-valid:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 0.25rem rgba(0, 168, 107, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger);
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.form-control.is-invalid:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 0.25rem rgba(231, 76, 60, 0.25);
+}
+
+.valid-feedback {
+    color: var(--accent-green);
+}
+
+.invalid-feedback {
+    color: var(--danger);
+}
+
+/* Input groups */
+.input-group-text {
+    background-color: rgba(10, 10, 10, 0.6);
+    border: 1px solid rgba(220, 225, 227, 0.2);
+    color: var(--light-gray);
+}
+
+/* Custom file input */
+.form-control[type="file"] {
+    padding: 0.5rem;
+}
+
+.form-control[type="file"]::-webkit-file-upload-button {
+    padding: 0.5rem 1rem;
+    margin: -0.5rem 1rem -0.5rem -0.5rem;
+    background-color: var(--primary-medium);
+    color: var(--text-white);
+    border: none;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.form-control[type="file"]::-webkit-file-upload-button:hover {
+    background-color: var(--primary-dark);
+}
