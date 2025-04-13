@@ -53,8 +53,7 @@ class PostController extends AbstractController
         
         if ($isRpThread) {
             // Pour les posts dans un thread roleplay, définir le type comme roleplay
-            $post->setType('roleplay');
-            $post->setPostType('ic'); // Par défaut, un post dans un thread RP est "in-character"
+            $post->setType('ic'); // Par défaut, un post dans un thread RP est "in-character"
             
             // For roleplay threads, get valid characters for the current user
             if ($thread->isOpen()) {
@@ -141,8 +140,7 @@ class PostController extends AbstractController
         // Pour les threads RP
         if ($thread->isRoleplay()) {
             // Définir le type de post comme roleplay
-            $post->setType('roleplay');
-            $post->setPostType('ic'); // Par défaut, un post dans un thread RP est "in-character"
+            $post->setType('ic'); // Par défaut, un post dans un thread RP est "in-character"
             
             $characterId = $request->request->get('character_id');
             
@@ -216,13 +214,8 @@ class PostController extends AbstractController
         // Assurez-vous que le type de post est correctement défini pour les threads RP
         if ($isRpThread) {
             // Définir le type de post comme roleplay si ce n'est pas déjà le cas
-            if ($post->getType() !== 'roleplay') {
-                $post->setType('roleplay');
-            }
-            
-            // Définir le postType comme "ic" (in-character) s'il n'est pas déjà défini
-            if (!$post->getPostType()) {
-                $post->setPostType('ic');
+            if ($post->getType() !== 'ic' && $post->getType() !== 'ooc') {
+                $post->setType('ic');
             }
             
             $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);

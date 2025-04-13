@@ -4,7 +4,7 @@
         {% if forum.heroLogo %}
             <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
         {% else %}
-            <i class="fas fa-{% if forum.isRoleplay %}theater-masks{% else %}comments{% endif %}"></i>
+            <i class="fas fa-{% if forum.isRoleplay %}dice-d20{% else %}comments{% endif %}"></i>
         {% endif %}
     </div>
     <div class="forum-info">
@@ -34,7 +34,7 @@
                 <div class="sub-forum-links">
                     {% for subforum in forum.subforums|slice(0, 5) %}
                         <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
-                            <i class="fas fa-{% if subforum.isRoleplay %}theater-masks{% else %}comments{% endif %} me-1"></i>
+                            <i class="fas fa-{% if subforum.isRoleplay %}dice-d20{% else %}comments{% endif %} me-1"></i>
                             {{ subforum.name }}
                         </a>
                     {% endfor %}
@@ -67,7 +67,7 @@
                         <small class="d-block">
                             <strong>Par :</strong>
                             {% if forum.lastPostInfo.character %}
-                                <span class="character-name">{{ forum.lastPostInfo.character }}</span>
+                                <span class="forum-card-character-name">{{ forum.lastPostInfo.character }}</span>
                             {% else %}
                                 {{ forum.lastPostInfo.author }}
                             {% endif %}

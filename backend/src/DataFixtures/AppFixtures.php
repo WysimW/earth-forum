@@ -245,9 +245,7 @@ class AppFixtures extends Fixture
             $forum->setDescription($data['description']);
             $forum->setCategory($this->forumCategories[$data['category']]);
             $forum->setIsRoleplay($data['isRoleplay']);
-            if (isset($data['location'])) {
-                $forum->setLocation($this->locations[$data['location']]);
-            }
+
             $forum->setStatus('open');
             $forum->setSlug($data['slug']);
             $forum->setCreatedAt(new \DateTimeImmutable());
@@ -424,7 +422,7 @@ class AppFixtures extends Fixture
             $post->setAuthor($this->users[$data['author']]);
             $post->setCharacter($this->characters[$data['character']]);
             $post->setContent($data['content']);
-            $post->setPostType('ic');
+            $post->setType('ic');
             $post->setCreatedAt($now);
             $manager->persist($post);
         }

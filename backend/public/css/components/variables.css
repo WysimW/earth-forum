@@ -28,11 +28,11 @@
     --roleplay-glow: rgba(4, 118, 242, 0.6);
 
     /* Couleurs HRP */
-    --hrp-primary: #282E3C;
-    --hrp-secondary: #323847;
-    --hrp-accent: #3D4454;
-    --hrp-light: #4A5163;
-    --hrp-glow: rgba(40, 46, 60, 0.6);
+    --hrp-primary: #015f40;
+    --hrp-secondary: #01734d;
+    --hrp-accent: #01885a;
+    --hrp-light: #01a067;
+    --hrp-glow: rgba(1, 95, 64, 0.6);
 
     /* Effets de lueur */
     --glow-blue: rgba(20, 93, 160, 0.6);

@@ -38,10 +38,7 @@ class Post implements TimestampableInterface
     private ?Character $character = null;
 
     #[ORM\Column(length: 20)]
-    private string $type = 'normal'; // normal, roleplay, announcement, etc.
-    
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $postType = 'normal';  // normal, ic (in-character), ooc (out-of-character), etc.
+    private string $type = 'normal'; // normal, roleplay, announcement, ic (in-character), ooc (out-of-character), etc.
     
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isDraft = false;
@@ -111,26 +108,14 @@ class Post implements TimestampableInterface
         return $this;
     }
     
-    public function getPostType(): ?string
-    {
-        return $this->postType;
-    }
-    
-    public function setPostType(?string $postType): static
-    {
-        $this->postType = $postType;
-        
-        return $this;
-    }
-    
     public function isInCharacter(): bool
     {
-        return $this->postType === 'ic';
+        return $this->type === 'ic';
     }
     
     public function isOutOfCharacter(): bool
     {
-        return $this->postType === 'ooc';
+        return $this->type === 'ooc';
     }
 
     /**
