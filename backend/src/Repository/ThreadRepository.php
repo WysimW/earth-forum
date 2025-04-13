@@ -183,4 +183,21 @@ class ThreadRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Compte le nombre de threads dans une liste de forums
+     */
+    public function countThreadsInForums(array $forumIds): int
+    {
+        if (empty($forumIds)) {
+            return 0;
+        }
+
+        $qb = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.forum IN (:forumIds)')
+            ->setParameter('forumIds', $forumIds);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 }

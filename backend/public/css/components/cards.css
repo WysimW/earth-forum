@@ -12,7 +12,7 @@
 }
 
 .card:hover {
-    transform: translateY(-5px);
+    /* transform: translateY(-5px); */
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px var(--glow-blue);
 }
 
@@ -442,7 +442,7 @@
 
 .list-group-item-action:hover {
     background-color: rgba(20, 93, 160, 0.4);
-    transform: translateX(5px);
+   /* transform: translateX(5px); */
 }
 
 /* Breadcrumbs */

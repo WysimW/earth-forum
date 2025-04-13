@@ -33,6 +33,45 @@ class Character implements TimestampableInterface
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
+    
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $firstName = null;
+    
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastName = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $pseudonyms = null;
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $actualPseudo = null;
+    
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $gender = null;
+    
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $sexualOrientation = null;
+    
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $moralAffiliation = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $factions = null;
+    
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $civilStatus = null;
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $occupation = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $equipment = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $weaknesses = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $age = null;
 
     #[ORM\ManyToOne(inversedBy: 'characters')]
     private ?Univers $universe = null;
@@ -101,6 +140,162 @@ class Character implements TimestampableInterface
     {
         $this->name = $name;
 
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+    
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
+        
+        return $this;
+    }
+    
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+    
+    public function setLastName(?string $lastName): static
+    {
+        $this->lastName = $lastName;
+        
+        return $this;
+    }
+    
+    public function getPseudonyms(): ?string
+    {
+        return $this->pseudonyms;
+    }
+    
+    public function setPseudonyms(?string $pseudonyms): static
+    {
+        $this->pseudonyms = $pseudonyms;
+        
+        return $this;
+    }
+    
+    public function getActualPseudo(): ?string
+    {
+        return $this->actualPseudo;
+    }
+    
+    public function setActualPseudo(?string $actualPseudo): static
+    {
+        $this->actualPseudo = $actualPseudo;
+        
+        return $this;
+    }
+    
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+    
+    public function setGender(?string $gender): static
+    {
+        $this->gender = $gender;
+        
+        return $this;
+    }
+    
+    public function getSexualOrientation(): ?string
+    {
+        return $this->sexualOrientation;
+    }
+    
+    public function setSexualOrientation(?string $sexualOrientation): static
+    {
+        $this->sexualOrientation = $sexualOrientation;
+        
+        return $this;
+    }
+    
+    public function getMoralAffiliation(): ?string
+    {
+        return $this->moralAffiliation;
+    }
+    
+    public function setMoralAffiliation(?string $moralAffiliation): static
+    {
+        $this->moralAffiliation = $moralAffiliation;
+        
+        return $this;
+    }
+    
+    public function getFactions(): ?string
+    {
+        return $this->factions;
+    }
+    
+    public function setFactions(?string $factions): static
+    {
+        $this->factions = $factions;
+        
+        return $this;
+    }
+    
+    public function getCivilStatus(): ?string
+    {
+        return $this->civilStatus;
+    }
+    
+    public function setCivilStatus(?string $civilStatus): static
+    {
+        $this->civilStatus = $civilStatus;
+        
+        return $this;
+    }
+    
+    public function getOccupation(): ?string
+    {
+        return $this->occupation;
+    }
+    
+    public function setOccupation(?string $occupation): static
+    {
+        $this->occupation = $occupation;
+        
+        return $this;
+    }
+    
+    public function getEquipment(): ?string
+    {
+        return $this->equipment;
+    }
+    
+    public function setEquipment(?string $equipment): static
+    {
+        $this->equipment = $equipment;
+        
+        return $this;
+    }
+    
+    public function getWeaknesses(): ?string
+    {
+        return $this->weaknesses;
+    }
+    
+    public function setWeaknesses(?string $weaknesses): static
+    {
+        $this->weaknesses = $weaknesses;
+        
+        return $this;
+    }
+
+    public function getAge(): ?string
+    {
+        return $this->age;
+    }
+    
+    public function setAge(?string $age): static
+    {
+        $this->age = $age;
+        
         return $this;
     }
 

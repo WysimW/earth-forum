@@ -7,238 +7,667 @@
     {{ breadcrumbs|raw }}
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Fiches de personnage</h1>
+        <h1 class="character-sheets-title">Fiches de personnage</h1>
+        
+        {% if is_granted('ROLE_USER') %}
+        <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary btn-create-character">
+            <i class="fas fa-plus"></i> Créer un personnage
+        </a>
+        {% endif %}
     </div>
 
-    <ul class="nav nav-tabs mb-4" id="characterSheetTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="validated-tab" data-bs-toggle="tab" data-bs-target="#validated" type="button" role="tab">
-                Validées
-                <span class="character-sheet-count-badge badge bg-success">{{ validatedSheets|length }}</span>
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
-                En attente
-                <span class="character-sheet-count-badge badge bg-warning">{{ pendingSheets|length }}</span>
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
-                Refusées/Abandonnées
-                <span class="character-sheet-count-badge badge bg-danger">{{ rejectedSheets|length }}</span>
-            </button>
-        </li>
-    </ul>
-    
-    <div class="tab-content" id="characterSheetTabContent">
-        <div class="tab-pane fade show active" id="validated" role="tabpanel">
-            {% if validatedSheets|length > 0 %}
-                <div class="row">
-                    {% for thread in validatedSheets %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="character-sheet-card">
-                                <div class="character-sheet-card-header bg-success">
-                                    <div class="d-flex align-items-center">
-                                        {% if thread.characterSheet.avatar %}
-                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+    <div class="character-sheets-container">
+        <ul class="character-tabs-navigation" id="characterSheetTabs" role="tablist">
+            <li class="character-tab-item" role="presentation">
+                <button class="character-tab-link active" id="validated-tab" data-bs-toggle="tab" data-bs-target="#validated" type="button" role="tab">
+                    <i class="fas fa-check-circle"></i> Validées
+                    <span class="character-tab-count">{{ validatedSheets|length }}</span>
+                </button>
+            </li>
+            <li class="character-tab-item" role="presentation">
+                <button class="character-tab-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    <i class="fas fa-clock"></i> En attente
+                    <span class="character-tab-count pending">{{ pendingSheets|length }}</span>
+                </button>
+            </li>
+            <li class="character-tab-item" role="presentation">
+                <button class="character-tab-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
+                    <i class="fas fa-times-circle"></i> Refusées/Abandonnées
+                    <span class="character-tab-count rejected">{{ rejectedSheets|length }}</span>
+                </button>
+            </li>
+        </ul>
+        
+        <div class="character-tabs-content glass-panel" id="characterSheetTabContent">
+            <!-- Onglet des fiches validées -->
+            <div class="character-tab-pane fade show active" id="validated" role="tabpanel">
+                {% if validatedSheets|length > 0 %}
+                    <div class="character-sheets-grid">
+                        {% for thread in validatedSheets %}
+                            {% set character = thread.characterSheet %}
+                            <div class="character-card validated-card">
+                                <div class="character-card-header">
+                                    <div class="character-card-header-content">
+                                        {% if character.avatar %}
+                                            <div class="character-avatar">
+                                                <img src="{{ character.avatar }}" alt="{{ character.name }}">
+                                            </div>
                                         {% else %}
-                                            <i class="fas fa-user-circle fa-2x"></i>
+                                            <div class="character-avatar character-avatar-placeholder">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
                                         {% endif %}
-                                        <div class="character-sheet-name">{{ thread.title }}</div>
-                                    </div>
-                                </div>
-                                <div class="character-sheet-card-body">
-                                    <div class="character-sheet-meta">
-                                        {% if thread.characterSheet.universe %}
-                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
-                                        {% endif %}
-                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
-                                        <div class="mt-1">
-                                            <i class="fas fa-check-circle text-success"></i> Validé le {{ thread.characterSheet.validatedAt|date('d/m/Y') }}
+                                        
+                                        <div class="character-card-title">
+                                            <h3>{{ thread.title }}</h3>
+                                            <div class="character-card-badges">
+                                                {% if character.universe %}
+                                                    <span class="universe-badge">
+                                                        <i class="fas fa-globe-americas"></i> {{ character.universe.name }}
+                                                    </span>
+                                                {% endif %}
+                                                {% if character.moralAffiliation %}
+                                                    <span class="affiliation-badge 
+                                                        {% if character.moralAffiliation == 'Super-héros' %}hero-badge
+                                                        {% elseif character.moralAffiliation == 'Super-vilain' %}villain-badge
+                                                        {% elseif character.moralAffiliation == 'Anti-héros' %}anti-badge
+                                                        {% elseif character.moralAffiliation == 'Vigilante' %}vigilante-badge
+                                                        {% endif %}">
+                                                        <i class="fas 
+                                                            {% if character.moralAffiliation == 'Super-héros' %}fa-mask
+                                                            {% elseif character.moralAffiliation == 'Super-vilain' %}fa-skull
+                                                            {% elseif character.moralAffiliation == 'Anti-héros' %}fa-balance-scale
+                                                            {% elseif character.moralAffiliation == 'Vigilante' %}fa-shield-alt
+                                                            {% else %}fa-user-secret{% endif %}"></i>
+                                                        {{ character.moralAffiliation }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-success btn-sm mt-3">
-                                        <i class="fas fa-eye"></i> Voir la fiche
-                                    </a>
+                                </div>
+                                
+                                <div class="character-card-body">
+                                    <div class="character-card-info">
+                                        <div class="character-card-owner">
+                                            <i class="fas fa-user"></i>
+                                            <span>{{ thread.author.pseudo }}</span>
+                                        </div>
+                                        
+                                        <div class="character-card-validation">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Validé le {{ character.validatedAt|date('d/m/Y') }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="character-card-actions">
+                                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-success btn-view">
+                                            <i class="fas fa-eye"></i> Voir la fiche
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="character-empty-state">
+                        <div class="character-empty-icon">
+                            <i class="fas fa-check-circle"></i>
                         </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="character-sheet-empty-state">
-                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                    <p>Aucune fiche validée pour le moment.</p>
-                </div>
-            {% endif %}
-        </div>
+                        <p>Aucune fiche validée pour le moment.</p>
+                    </div>
+                {% endif %}
+            </div>
 
-        <div class="tab-pane fade" id="pending" role="tabpanel">
-            {% if pendingSheets|length > 0 %}
-                <div class="row">
-                    {% for thread in pendingSheets %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="character-sheet-card">
-                                <div class="character-sheet-card-header bg-warning">
-                                    <div class="d-flex align-items-center">
-                                        {% if thread.characterSheet.avatar %}
-                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+            <!-- Onglet des fiches en attente -->
+            <div class="character-tab-pane fade" id="pending" role="tabpanel">
+                {% if pendingSheets|length > 0 %}
+                    <div class="character-sheets-grid">
+                        {% for thread in pendingSheets %}
+                            {% set character = thread.characterSheet %}
+                            <div class="character-card pending-card">
+                                <div class="character-card-header">
+                                    <div class="character-card-header-content">
+                                        {% if character.avatar %}
+                                            <div class="character-avatar">
+                                                <img src="{{ character.avatar }}" alt="{{ character.name }}">
+                                            </div>
                                         {% else %}
-                                            <i class="fas fa-user-circle fa-2x"></i>
+                                            <div class="character-avatar character-avatar-placeholder">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
                                         {% endif %}
-                                        <div class="character-sheet-name">{{ thread.title }}</div>
-                                    </div>
-                                </div>
-                                <div class="character-sheet-card-body">
-                                    <div class="character-sheet-meta">
-                                        {% if thread.characterSheet.universe %}
-                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
-                                        {% endif %}
-                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
-                                        <div class="mt-1">
-                                            <i class="fas fa-clock"></i> {{ thread.characterSheet.status == 'pending' ? 'En attente' : 'En édition' }}
-                                            {% if thread.characterSheet.statusMessage %}
-                                                - {{ thread.characterSheet.statusMessage }}
-                                            {% endif %}
+                                        
+                                        <div class="character-card-title">
+                                            <h3>{{ thread.title }}</h3>
+                                            <div class="character-card-badges">
+                                                <span class="status-badge pending-badge">
+                                                    <i class="fas {% if character.status == 'editing' %}fa-pencil-alt{% else %}fa-clock{% endif %}"></i>
+                                                    {{ character.status == 'pending' ? 'En attente' : 'En édition' }}
+                                                </span>
+                                                {% if character.universe %}
+                                                    <span class="universe-badge">
+                                                        <i class="fas fa-globe-americas"></i> {{ character.universe.name }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-warning btn-sm mt-3">
-                                        <i class="fas fa-eye"></i> Voir la fiche
-                                    </a>
+                                </div>
+                                
+                                <div class="character-card-body">
+                                    <div class="character-card-info">
+                                        <div class="character-card-owner">
+                                            <i class="fas fa-user"></i>
+                                            <span>{{ thread.author.pseudo }}</span>
+                                        </div>
+                                        
+                                        {% if character.statusMessage %}
+                                            <div class="character-card-status-message">
+                                                <i class="fas fa-info-circle"></i>
+                                                <span>{{ character.statusMessage }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="character-card-actions">
+                                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-warning btn-view">
+                                            <i class="fas fa-eye"></i> Voir la fiche
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="character-empty-state">
+                        <div class="character-empty-icon pending">
+                            <i class="fas fa-clock"></i>
                         </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="character-sheet-empty-state">
-                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
-                    <p>Aucune fiche en attente de validation.</p>
-                </div>
-            {% endif %}
-        </div>
+                        <p>Aucune fiche en attente de validation.</p>
+                    </div>
+                {% endif %}
+            </div>
 
-        <div class="tab-pane fade" id="rejected" role="tabpanel">
-            {% if rejectedSheets|length > 0 %}
-                <div class="row">
-                    {% for thread in rejectedSheets %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="character-sheet-card">
-                                <div class="character-sheet-card-header {{ thread.characterSheet.status == 'rejected' ? 'bg-danger' : 'bg-secondary' }}">
-                                    <div class="d-flex align-items-center">
-                                        {% if thread.characterSheet.avatar %}
-                                            <img src="{{ thread.characterSheet.avatar }}" alt="{{ thread.characterSheet.name }}" class="character-sheet-avatar">
+            <!-- Onglet des fiches refusées -->
+            <div class="character-tab-pane fade" id="rejected" role="tabpanel">
+                {% if rejectedSheets|length > 0 %}
+                    <div class="character-sheets-grid">
+                        {% for thread in rejectedSheets %}
+                            {% set character = thread.characterSheet %}
+                            <div class="character-card rejected-card">
+                                <div class="character-card-header">
+                                    <div class="character-card-header-content">
+                                        {% if character.avatar %}
+                                            <div class="character-avatar">
+                                                <img src="{{ character.avatar }}" alt="{{ character.name }}">
+                                            </div>
                                         {% else %}
-                                            <i class="fas fa-user-circle fa-2x"></i>
+                                            <div class="character-avatar character-avatar-placeholder">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
                                         {% endif %}
-                                        <div class="character-sheet-name">{{ thread.title }}</div>
-                                    </div>
-                                </div>
-                                <div class="character-sheet-card-body">
-                                    <div class="character-sheet-meta">
-                                        {% if thread.characterSheet.universe %}
-                                            <span class="badge bg-primary"><i class="fas fa-globe"></i> {{ thread.characterSheet.universe.name }}</span>
-                                        {% endif %}
-                                        <span class="ms-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
-                                        <div class="mt-1">
-                                            <i class="fas fa-times-circle"></i>
-                                            {{ thread.characterSheet.status == 'rejected' ? 'Refusé' : 'Abandonné' }}
-                                            {% if thread.characterSheet.statusMessage %}
-                                                - {{ thread.characterSheet.statusMessage }}
-                                            {% endif %}
+                                        
+                                        <div class="character-card-title">
+                                            <h3>{{ thread.title }}</h3>
+                                            <div class="character-card-badges">
+                                                <span class="status-badge {{ character.status == 'rejected' ? 'rejected-badge' : 'abandoned-badge' }}">
+                                                    <i class="fas {% if character.status == 'rejected' %}fa-times-circle{% else %}fa-trash-alt{% endif %}"></i>
+                                                    {{ character.status == 'rejected' ? 'Refusé' : 'Abandonné' }}
+                                                </span>
+                                                {% if character.universe %}
+                                                    <span class="universe-badge">
+                                                        <i class="fas fa-globe-americas"></i> {{ character.universe.name }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-secondary btn-sm mt-3">
-                                        <i class="fas fa-eye"></i> Voir la fiche
-                                    </a>
+                                </div>
+                                
+                                <div class="character-card-body">
+                                    <div class="character-card-info">
+                                        <div class="character-card-owner">
+                                            <i class="fas fa-user"></i>
+                                            <span>{{ thread.author.pseudo }}</span>
+                                        </div>
+                                        
+                                        {% if character.statusMessage %}
+                                            <div class="character-card-status-message">
+                                                <i class="fas fa-info-circle"></i>
+                                                <span>{{ character.statusMessage }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="character-card-actions">
+                                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn {% if character.status == 'rejected' %}btn-danger{% else %}btn-secondary{% endif %} btn-view">
+                                            <i class="fas fa-eye"></i> Voir la fiche
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="character-empty-state">
+                        <div class="character-empty-icon rejected">
+                            <i class="fas fa-times-circle"></i>
                         </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="character-sheet-empty-state">
-                    <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
-                    <p>Aucune fiche refusée ou abandonnée.</p>
-                </div>
-            {% endif %}
+                        <p>Aucune fiche refusée ou abandonnée.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    .character-sheet-count-badge {
-        margin-left: 0.5rem;
-        font-size: 0.8rem;
-        vertical-align: middle;
+    /* Styles pour l'en-tête */
+    .character-sheets-title {
+        font-family: var(--font-title);
+        color: var(--text-white);
+        margin-bottom: 1rem;
+        font-size: 2.2rem;
     }
-
-    .character-sheet-card {
-        margin-bottom: 1.5rem;
-        background-color: var(--bs-white);
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--shadow-sm);
+    
+    .btn-create-character {
+        background: linear-gradient(135deg, var(--roleplay-primary), var(--roleplay-secondary));
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--border-radius-lg);
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(156, 85, 211, 0.3);
+    }
+    
+    .btn-create-character:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(156, 85, 211, 0.4);
+    }
+    
+    /* Styles pour les onglets */
+    .character-sheets-container {
+        margin-bottom: 3rem;
+    }
+    
+    .character-tabs-navigation {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
         overflow: hidden;
-        transition: transform 0.2s;
     }
-
-    .character-sheet-card:hover {
-        transform: translateY(-3px);
+    
+    .character-tab-item {
+        flex: 1;
     }
-
-    .character-sheet-card-header {
-        padding: 1rem;
-        color: var(--bs-white);
+    
+    .character-tab-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        background: rgba(20, 20, 20, 0.4);
+        border: none;
+        padding: 1rem 1.5rem;
+        color: var(--light-gray);
+        font-family: var(--font-special);
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
-
-    .character-sheet-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: 1rem;
+    
+    .character-tab-link::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: transparent;
+        transition: all 0.3s ease;
     }
-
-    .character-sheet-name {
-        font-weight: bold;
+    
+    .character-tab-link i {
         font-size: 1.1rem;
     }
-
-    .character-sheet-card-body {
-        padding: 1rem;
+    
+    .character-tab-link:hover {
+        background: rgba(60, 60, 60, 0.4);
     }
-
-    .character-sheet-meta {
+    
+    .character-tab-link.active {
+        background: rgba(156, 85, 211, 0.15);
+        color: white;
+    }
+    
+    .character-tab-link.active::before {
+        background: var(--roleplay-accent);
+    }
+    
+    #validated-tab.active::before {
+        background: var(--success);
+    }
+    
+    #pending-tab.active::before {
+        background: var(--warning);
+    }
+    
+    #rejected-tab.active::before {
+        background: var(--danger);
+    }
+    
+    .character-tab-count {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.8rem;
+        min-width: 24px;
+        text-align: center;
+    }
+    
+    .character-tab-count.pending {
+        background: rgba(255, 193, 7, 0.3);
+    }
+    
+    .character-tab-count.rejected {
+        background: rgba(220, 53, 69, 0.3);
+    }
+    
+    .character-tabs-content {
+        border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+        padding: 2rem;
+    }
+    
+    .character-tab-pane {
+        display: none;
+    }
+    
+    .character-tab-pane.show {
+        display: block;
+    }
+    
+    /* Styles de la grille */
+    .character-sheets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-gap: 1.5rem;
+    }
+    
+    /* Styles des cartes */
+    .character-card {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        border-radius: var(--border-radius-lg);
+        background: rgba(30, 30, 30, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .character-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .character-card-header {
+        padding: 1.5rem;
+        position: relative;
+        background-position: center;
+        background-size: cover;
+    }
+    
+    .validated-card .character-card-header {
+        background: linear-gradient(45deg, rgba(40, 167, 69, 0.8), rgba(40, 167, 69, 0.2));
+    }
+    
+    .pending-card .character-card-header {
+        background: linear-gradient(45deg, rgba(255, 193, 7, 0.8), rgba(255, 193, 7, 0.2));
+    }
+    
+    .rejected-card .character-card-header {
+        background: linear-gradient(45deg, rgba(220, 53, 69, 0.8), rgba(100, 53, 69, 0.2));
+    }
+    
+    .character-card-header-content {
+        display: flex;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .character-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        border: 3px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+    }
+    
+    .character-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .character-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    
+    .character-avatar-placeholder i {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .character-card-title {
+        color: white;
+    }
+    
+    .character-card-title h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    .character-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .status-badge, .universe-badge, .affiliation-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .status-badge {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .pending-badge {
+        background: rgba(255, 193, 7, 0.7);
+        color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .rejected-badge {
+        background: rgba(220, 53, 69, 0.7);
+    }
+    
+    .abandoned-badge {
+        background: rgba(108, 117, 125, 0.7);
+    }
+    
+    .universe-badge {
+        background: rgba(13, 110, 253, 0.7);
+    }
+    
+    .affiliation-badge {
+        background: rgba(108, 117, 125, 0.7);
+    }
+    
+    .hero-badge {
+        background: rgba(13, 110, 253, 0.7);
+    }
+    
+    .villain-badge {
+        background: rgba(220, 53, 69, 0.7);
+    }
+    
+    .anti-badge {
+        background: rgba(255, 193, 7, 0.7);
+        color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .vigilante-badge {
+        background: rgba(23, 162, 184, 0.7);
+    }
+    
+    .character-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .character-card-info {
+        margin-bottom: 1rem;
+    }
+    
+    .character-card-owner, .character-card-validation, .character-card-status-message {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
         font-size: 0.9rem;
-        color: var(--bs-gray-600);
     }
-
-    .character-sheet-empty-state {
+    
+    .character-card-owner i, .character-card-validation i, .character-card-status-message i {
+        width: 20px;
+        margin-right: 10px;
+        color: var(--roleplay-light);
+    }
+    
+    .character-card-validation i {
+        color: var(--success);
+    }
+    
+    .character-card-actions {
+        display: flex;
+    }
+    
+    .btn-view {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    /* État vide */
+    .character-empty-state {
         text-align: center;
         padding: 3rem 1rem;
-        background-color: var(--bs-light);
-        border-radius: var(--border-radius-md);
-        color: var(--bs-gray-600);
+        color: var(--light-gray);
     }
-
-    .nav-tabs .nav-link {
-        color: var(--bs-gray-700);
+    
+    .character-empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--success);
     }
-
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
+    
+    .character-empty-icon.pending {
+        color: var(--warning);
+    }
+    
+    .character-empty-icon.rejected {
+        color: var(--danger);
+    }
+    
+    @media (max-width: 768px) {
+        .character-sheets-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+        
+        .character-tabs-navigation {
+            flex-direction: column;
+        }
+        
+        .character-tab-link {
+            border-radius: 0;
+            justify-content: flex-start;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .character-card-header-content {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .character-avatar {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .character-card-badges {
+            justify-content: center;
+        }
+        
+        .character-card-owner, .character-card-validation, .character-card-status-message {
+            justify-content: center;
+        }
     }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var triggerTabList = [].slice.call(document.querySelectorAll('#characterSheetTabs button'));
-    triggerTabList.forEach(function(triggerEl) {
-        var tabTrigger = new bootstrap.Tab(triggerEl);
-        triggerEl.addEventListener('click', function(event) {
-            event.preventDefault();
-            tabTrigger.show();
+    // Gestion des onglets
+    var tabs = document.querySelectorAll('.character-tab-link');
+    var panes = document.querySelectorAll('.character-tab-pane');
+    
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Supprimer la classe active de tous les onglets
+            tabs.forEach(function(t) {
+                t.classList.remove('active');
+            });
+            
+            // Ajouter la classe active à l'onglet cliqué
+            this.classList.add('active');
+            
+            // Cacher tous les panneaux
+            panes.forEach(function(pane) {
+                pane.classList.remove('show');
+                pane.classList.remove('active');
+            });
+            
+            // Afficher le panneau correspondant
+            var target = document.querySelector(this.getAttribute('data-bs-target'));
+            target.classList.add('show');
+            target.classList.add('active');
         });
     });
 });

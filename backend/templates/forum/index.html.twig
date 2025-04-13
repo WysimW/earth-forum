@@ -14,7 +14,7 @@
                     <i class="fas fa-user-astronaut me-2"></i> Mes personnages
                 </a>
                 <a href="{{ path('app_roleplay_threads_filter') }}?type=recent&status=open" class="btn btn-outline-primary">
-                    <i class="fas fa-theater-masks me-2"></i> Voir les scènes RP actives
+                    <i class="fa-solid fa-dice-d20 me-2"></i> Voir les scènes RP actives
                 </a>
             </div>
             {% else %}
@@ -35,7 +35,7 @@
             {# Afficher d'abord les forums roleplay (RP) #}
             <div id="rp-forums" class="forum-section rp-forums mb-5">
                 <h2 class="section-title">
-                    <i class="fas fa-theater-masks text-roleplay"></i> Forums Roleplay
+                    <i class="fa-solid fa-dice-d20 text-roleplay"></i> Forums Roleplay
                     <small class="text-muted">Incarnez vos personnages et créez vos histoires</small>
                 </h2>
 
@@ -44,56 +44,13 @@
                     {% for forum in mainForums %}
                         {% if forum.isRoleplay %}
                             {% set displayedRpForums = true %}
-                            <div class="forum-card">
-                                <div class="forum-icon">
-                                    {% if forum.heroLogo %}
-                                        <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
-                                    {% else %}
-                                        <i class="fas fa-theater-masks"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="forum-info">
-                                    <h3 class="forum-title">
-                                        <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
-                                        <span class="badge bg-roleplay ms-2">RP</span>
-                                    </h3>
-                                    <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
-                                    
-                                    {% set subforumCount = forum.subforums|length %}
-                                    {% set threadCount = forum.threads|length %}
-                                    
-                                    <div class="forum-stats">
-                                        <span><i class="fas fa-folder"></i> {{ subforumCount }} sous-forum(s)</span>
-                                        <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion(s)</span>
-                                    </div>
-                                    
-                                    {% if forum.lastPostInfo %}
-                                        <div class="forum-last-post">
-                                            <small>
-                                                <i class="fas fa-clock"></i> Dernière activité: 
-                                                {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
-                                                par 
-                                                {% if forum.lastPostInfo.character %}
-                                                    <span class="character-name">{{ forum.lastPostInfo.character }}</span>
-                                                {% else %}
-                                                    {{ forum.lastPostInfo.author }}
-                                                {% endif %}
-                                            </small>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="forum-action">
-                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm" style="background-color: var(--roleplay-primary); color: white;">
-                                        <i class="fas fa-arrow-right"></i>
-                                    </a>
-                                </div>
-                            </div>
+                            {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
                         {% endif %}
                     {% endfor %}
                     
                     {% if not displayedRpForums %}
                         <div class="empty-state">
-                            <i class="fas fa-theater-masks fa-3x"></i>
+                            <i class="fa-solid fa-dice-d20 fa-3x"></i>
                             <p>Aucun forum roleplay n'est disponible pour le moment.</p>
                         </div>
                     {% endif %}
@@ -112,45 +69,7 @@
                     {% for forum in mainForums %}
                         {% if not forum.isRoleplay %}
                             {% set displayedHrpForums = true %}
-                            <div class="forum-card">
-                                <div class="forum-icon">
-                                    {% if forum.heroLogo %}
-                                        <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
-                                    {% else %}
-                                        <i class="fas fa-comments"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="forum-info">
-                                    <h3 class="forum-title">
-                                        <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
-                                        <span class="badge bg-hrp ms-2">HRP</span>
-                                    </h3>
-                                    <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
-                                    
-                                    {% set subforumCount = forum.subforums|length %}
-                                    {% set threadCount = forum.threads|length %}
-                                    
-                                    <div class="forum-stats">
-                                        <span><i class="fas fa-folder"></i> {{ subforumCount }} sous-forum(s)</span>
-                                        <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion(s)</span>
-                                    </div>
-                                    
-                                    {% if forum.lastPostInfo %}
-                                        <div class="forum-last-post">
-                                            <small>
-                                                <i class="fas fa-clock"></i> Dernière activité: 
-                                                {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
-                                                par {{ forum.lastPostInfo.author }}
-                                            </small>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="forum-action">
-                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm" style="background-color: var(--hrp-primary); color: white;">
-                                        <i class="fas fa-arrow-right"></i>
-                                    </a>
-                                </div>
-                            </div>
+                            {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
                         {% endif %}
                     {% endfor %}
                     

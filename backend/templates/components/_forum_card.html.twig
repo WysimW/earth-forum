@@ -1,0 +1,86 @@
+{% if forum is defined %}
+<div class="forum-card">
+    <div class="forum-icon">
+        {% if forum.heroLogo %}
+            <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
+        {% else %}
+            <i class="fas fa-{% if forum.isRoleplay %}theater-masks{% else %}comments{% endif %}"></i>
+        {% endif %}
+    </div>
+    <div class="forum-info">
+        <h3 class="forum-title">
+            <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
+            <span class="badge {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} ms-2">
+                {% if forum.isRoleplay %}RP{% else %}HRP{% endif %}
+            </span>
+        </h3>
+        <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+        
+        {% set subforumCount = forum.stats is defined ? forum.stats.subforum_count : forum.subforums|length %}
+        {% set threadCount = forum.stats is defined ? forum.stats.thread_count : forum.threads|length %}
+        {% set postCount = forum.stats is defined ? forum.stats.post_count : 0 %}
+        
+        <div class="forum-stats">
+            {% if subforumCount > 0 %}
+                <span><i class="fas fa-folder-open"></i> {{ subforumCount }} sous-forum{% if subforumCount > 1 %}s{% endif %}</span>
+            {% endif %}
+            <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion{% if threadCount > 1 %}s{% endif %}</span>
+            <span><i class="fas fa-file-alt"></i> {{ postCount }} message{% if postCount > 1 %}s{% endif %}</span>
+        </div>
+        
+        {% if subforumCount > 0 and forum.subforums is defined %}
+            <div class="sub-forums">
+                <small class="text-muted d-block mb-1">Sous-forums :</small>
+                <div class="sub-forum-links">
+                    {% for subforum in forum.subforums|slice(0, 5) %}
+                        <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                            <i class="fas fa-{% if subforum.isRoleplay %}theater-masks{% else %}comments{% endif %} me-1"></i>
+                            {{ subforum.name }}
+                        </a>
+                    {% endfor %}
+                    {% if subforumCount > 5 %}
+                        <span class="badge bg-secondary">+{{ subforumCount - 5 }} autres</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if forum.lastPostInfo %}
+            <div class="forum-last-post">
+                <div class="d-flex align-items-start gap-2">
+                    <div class="last-post-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="last-post-details">
+                        <small class="d-block">
+                            <strong>Dernière activité :</strong> 
+                            <a href="{{ path('app_thread_show', {'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
+                                {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                            </a>
+                        </small>
+                        <small class="d-block text-truncate" style="max-width: 100%;">
+                            <strong>Dans :</strong>
+                            <a href="{{ path('app_thread_show', {'id': forum.lastPostInfo.threadId}) }}" class="link-light">
+                                {{ forum.lastPostInfo.threadTitle }}
+                            </a>
+                        </small>
+                        <small class="d-block">
+                            <strong>Par :</strong>
+                            {% if forum.lastPostInfo.character %}
+                                <span class="character-name">{{ forum.lastPostInfo.character }}</span>
+                            {% else %}
+                                {{ forum.lastPostInfo.author }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="forum-action">
+        <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isRoleplay %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+{% endif %}

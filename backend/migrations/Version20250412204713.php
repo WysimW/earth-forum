@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250410192754 extends AbstractMigration
+final class Version20250412204713 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,12 +20,12 @@ final class Version20250410192754 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE forum_category ADD position INT NOT NULL');
+        $this->addSql('ALTER TABLE `character` CHANGE age age VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE forum_category DROP position');
+        $this->addSql('ALTER TABLE `character` CHANGE age age INT DEFAULT NULL');
     }
 }

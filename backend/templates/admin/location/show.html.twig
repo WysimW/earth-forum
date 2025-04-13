@@ -1,0 +1,174 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails du Lieu | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Détails du lieu</h1>
+        <div>
+            <a href="{{ path('admin_location_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_location_edit', {'id': location.id}) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Modifier</a>
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Informations générales</span>
+                        <span class="badge rounded-pill bg-light text-dark">ID: {{ location.id }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if location.image %}
+                            <img src="{{ location.image }}" alt="{{ location.name }}" class="rounded mb-3" style="max-width: 100%; max-height: 200px;">
+                        {% else %}
+                            <div class="rounded bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                                <i class="bi bi-geo-alt fs-1"></i>
+                            </div>
+                        {% endif %}
+                        <h3 class="mb-0">{{ location.name }}</h3>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="130">Lieu parent</th>
+                                <td>
+                                    {% if location.parent %}
+                                        <a href="{{ path('admin_location_show', {'id': location.parent.id}) }}">
+                                            {{ location.parent.name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Aucun (lieu principal)</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Univers</th>
+                                <td>{{ location.univers ? location.univers.name : 'Global' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date de création</th>
+                                <td>{{ location.createdAt|date('d/m/Y') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière mise à jour</th>
+                                <td>{{ location.updatedAt ? location.updatedAt|date('d/m/Y') : 'Jamais' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Sous-lieux</th>
+                                <td>{{ location.children|length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <form method="post" action="{{ path('admin_location_delete', {'id': location.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce lieu? Cette action est irréversible et pourrait affecter les personnages qui s\'y trouvent.');" class="mt-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ location.id) }}">
+                        <button class="btn btn-danger w-100"><i class="bi bi-trash"></i> Supprimer ce lieu</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card mb-4">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    <i class="bi bi-card-text me-2"></i> Description
+                </div>
+                <div class="card-body">
+                    {% if location.description %}
+                        <div class="location-description">
+                            {{ location.description|raw }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">Ce lieu n'a pas de description.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if location.children|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    <i class="bi bi-diagram-3 me-2"></i> Sous-lieux ({{ location.children|length }})
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for child in location.children %}
+                            <a href="{{ path('admin_location_show', {'id': child.id}) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    {% if child.image %}
+                                        <img src="{{ child.image }}" alt="{{ child.name }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ child.name }}</h6>
+                                        <p class="text-muted mb-0">
+                                            {{ child.description|striptags|length > 50 ? child.description|striptags|slice(0, 50) ~ '...' : child.description|striptags }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ path('admin_location_new') }}" class="btn btn-sm btn-outline-teal" style="border-color: #20c997; color: #20c997;"><i class="bi bi-plus-circle"></i> Ajouter un sous-lieu</a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if location.characters|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    <i class="bi bi-people me-2"></i> Personnages présents ({{ location.characters|length }})
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for character in location.characters %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            {% if character.avatar %}
+                                                <img src="{{ character.avatar }}" alt="{{ character.name }}" class="rounded-circle me-3" width="50" height="50" style="object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-person"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ character.name }}</h6>
+                                                <p class="text-muted mb-0">
+                                                    {{ character.user ? 'Joué par ' ~ character.user.pseudo : 'Sans joueur' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-light">
+                                        <a href="{{ path('admin_character_show', {'id': character.id}) }}" class="btn btn-sm btn-outline-primary w-100">Voir détails</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

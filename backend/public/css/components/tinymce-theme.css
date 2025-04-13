@@ -1,0 +1,296 @@
+/**
+ * Thème personnalisé pour TinyMCE
+ * Adapté à la charte graphique de DC Earth
+ * Dark theme avec accents spécifiques pour RP et HRP
+ */
+
+/* Couleurs principales */
+:root {
+  --tinymce-bg-dark: rgba(10, 10, 10, 0.95);
+  --tinymce-bg-panel: rgba(12, 45, 72, 0.8);
+  --tinymce-bg-button: rgba(20, 93, 160, 0.2);
+  --tinymce-bg-button-hover: rgba(20, 93, 160, 0.4);
+  --tinymce-bg-button-active: rgba(20, 93, 160, 0.6);
+  --tinymce-border-color: rgba(255, 255, 255, 0.15);
+  --tinymce-text-color: rgba(255, 255, 255, 0.9);
+  --tinymce-text-disabled: rgba(255, 255, 255, 0.4);
+  
+  /* Accents RP */
+  --tinymce-rp-accent: #4A9CF7;
+  --tinymce-rp-bg: rgba(92, 45, 145, 0.15);
+  --tinymce-rp-border: rgba(156, 85, 211, 0.3);
+  --tinymce-rp-glow: rgba(74, 156, 247, 0.4);
+  
+  /* Accents HRP */
+  --tinymce-hrp-accent: #4c956c;
+  --tinymce-hrp-bg: rgba(44, 110, 73, 0.15);
+  --tinymce-hrp-border: rgba(76, 149, 108, 0.3);
+  --tinymce-hrp-glow: rgba(76, 149, 108, 0.4);
+}
+
+/* Conteneur principal de l'éditeur */
+.tox.tox-tinymce {
+  border: 1px solid var(--tinymce-border-color) !important;
+  border-radius: 8px !important;
+  background-color: var(--tinymce-bg-dark) !important;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+}
+
+/* Version RP de l'éditeur */
+.roleplay .tox.tox-tinymce {
+  border: 1px solid var(--tinymce-rp-border) !important;
+  box-shadow: 0 0 15px var(--tinymce-rp-glow) !important;
+}
+
+/* Version HRP de l'éditeur */
+.hrp .tox.tox-tinymce {
+  border: 1px solid var(--tinymce-hrp-border) !important;
+  box-shadow: 0 0 15px var(--tinymce-hrp-glow) !important;
+}
+
+/* Barres d'outils */
+.tox .tox-toolbar,
+.tox .tox-toolbar__primary,
+.tox .tox-toolbar__overflow,
+.tox-toolbar__group {
+  background-color: var(--tinymce-bg-panel) !important;
+  border-bottom: 1px solid var(--tinymce-border-color) !important;
+}
+
+.roleplay .tox .tox-toolbar,
+.roleplay .tox .tox-toolbar__primary,
+.roleplay .tox .tox-toolbar__overflow,
+.roleplay .tox-toolbar__group {
+  border-bottom-color: var(--tinymce-rp-border) !important;
+}
+
+.hrp .tox .tox-toolbar,
+.hrp .tox .tox-toolbar__primary,
+.hrp .tox .tox-toolbar__overflow,
+.hrp .tox-toolbar__group {
+  border-bottom-color: var(--tinymce-hrp-border) !important;
+}
+
+/* Séparateurs dans la barre d'outils */
+.tox .tox-tbtn--enabled,
+.tox .tox-tbtn--enabled:hover {
+  background-color: var(--tinymce-bg-button-active) !important;
+}
+
+.roleplay .tox .tox-tbtn--enabled,
+.roleplay .tox .tox-tbtn--enabled:hover {
+  background-color: var(--tinymce-rp-bg) !important;
+}
+
+.hrp .tox .tox-tbtn--enabled,
+.hrp .tox .tox-tbtn--enabled:hover {
+  background-color: var(--tinymce-hrp-bg) !important;
+}
+
+/* Boutons */
+.tox .tox-tbtn {
+  color: var(--tinymce-text-color) !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+}
+
+.tox .tox-tbtn svg {
+  fill: var(--tinymce-text-color) !important;
+}
+
+.tox .tox-tbtn:hover {
+  background-color: var(--tinymce-bg-button-hover) !important;
+}
+
+.tox .tox-tbtn:focus:not(.tox-tbtn--disabled) {
+  background-color: var(--tinymce-bg-button-hover) !important;
+}
+
+.tox .tox-tbtn--disabled {
+  color: var(--tinymce-text-disabled) !important;
+  background-color: transparent !important;
+}
+
+.tox .tox-tbtn--disabled svg {
+  fill: var(--tinymce-text-disabled) !important;
+}
+
+/* Menus déroulants */
+.tox .tox-tbtn[aria-haspopup="true"] {
+  width: auto !important;
+}
+
+.tox .tox-collection--list .tox-collection__item {
+  color: var(--tinymce-text-color) !important;
+}
+
+.tox .tox-menu {
+  background-color: var(--tinymce-bg-dark) !important;
+  border: 1px solid var(--tinymce-border-color) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.tox .tox-collection__item {
+  color: var(--tinymce-text-color) !important;
+}
+
+.tox .tox-collection__item--active {
+  background-color: var(--tinymce-bg-button-hover) !important;
+}
+
+.roleplay .tox .tox-collection__item--active {
+  background-color: var(--tinymce-rp-bg) !important;
+}
+
+.hrp .tox .tox-collection__item--active {
+  background-color: var(--tinymce-hrp-bg) !important;
+}
+
+/* Cadre d'édition */
+.tox .tox-edit-area__iframe {
+  background-color: var(--tinymce-bg-dark) !important;
+}
+
+/* Styles pour l'intérieur de l'iframe */
+.mce-content-body {
+  color: var(--tinymce-text-color) !important;
+  background-color: var(--tinymce-bg-dark) !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  padding: 16px !important;
+}
+
+/* Personnalisation des citations */
+.mce-content-body blockquote {
+  margin: 16px 0 !important;
+  padding: 12px 16px !important;
+  border-left: 4px solid rgba(20, 93, 160, 0.6) !important;
+  background-color: rgba(20, 93, 160, 0.1) !important;
+  color: var(--tinymce-text-color) !important;
+}
+
+/* Styles pour les citations RP */
+.mce-content-body blockquote.roleplay {
+  border-left: 4px solid var(--tinymce-rp-border) !important;
+  background-color: var(--tinymce-rp-bg) !important;
+}
+
+/* Styles pour les citations HRP */
+.mce-content-body blockquote.hrp {
+  border-left: 4px solid var(--tinymce-hrp-border) !important;
+  background-color: var(--tinymce-hrp-bg) !important;
+}
+
+/* Styles pour le texte RP et HRP */
+.mce-content-body .roleplay-text {
+  color: var(--tinymce-rp-accent) !important;
+  font-style: italic !important;
+}
+
+.mce-content-body .hrp-text {
+  color: var(--tinymce-hrp-accent) !important;
+  background-color: var(--tinymce-hrp-bg) !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+}
+
+/* Barre de statut */
+.tox .tox-statusbar {
+  background-color: var(--tinymce-bg-panel) !important;
+  border-top: 1px solid var(--tinymce-border-color) !important;
+  color: var(--tinymce-text-color) !important;
+}
+
+.tox .tox-statusbar a {
+  color: var(--tinymce-rp-accent) !important;
+}
+
+/* Boutons de redimensionnement */
+.tox .tox-statusbar__resize-handle svg {
+  fill: var(--tinymce-text-color) !important;
+}
+
+/* Modales et dialogues */
+.tox .tox-dialog {
+  background-color: var(--tinymce-bg-dark) !important;
+  border: 1px solid var(--tinymce-border-color) !important;
+  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
+}
+
+.tox .tox-dialog__header {
+  background-color: var(--tinymce-bg-panel) !important;
+  border-bottom: 1px solid var(--tinymce-border-color) !important;
+}
+
+.tox .tox-dialog__footer {
+  background-color: var(--tinymce-bg-panel) !important;
+  border-top: 1px solid var(--tinymce-border-color) !important;
+}
+
+.tox .tox-dialog__title {
+  color: var(--tinymce-text-color) !important;
+}
+
+/* Champs de formulaire dans les dialogues */
+.tox .tox-textfield,
+.tox .tox-listboxfield .tox-listbox,
+.tox .tox-toolbar-textfield,
+.tox .tox-selectfield select {
+  background-color: rgba(30, 30, 30, 0.9) !important;
+  border: 1px solid var(--tinymce-border-color) !important;
+  color: var(--tinymce-text-color) !important;
+  border-radius: 4px !important;
+}
+
+.tox .tox-textfield:focus,
+.tox .tox-listboxfield .tox-listbox:focus,
+.tox .tox-toolbar-textfield:focus,
+.tox .tox-selectfield select:focus {
+  border-color: var(--tinymce-rp-accent) !important;
+  box-shadow: 0 0 0 2px var(--tinymce-rp-glow) !important;
+}
+
+/* Boutons dans les dialogues */
+.tox .tox-button {
+  background-color: rgba(20, 93, 160, 0.8) !important;
+  border-color: rgba(20, 93, 160, 0.8) !important;
+  color: white !important;
+  border-radius: 4px !important;
+}
+
+.tox .tox-button:hover:not(:disabled) {
+  background-color: rgba(20, 93, 160, 1) !important;
+  border-color: rgba(20, 93, 160, 1) !important;
+}
+
+.tox .tox-button--secondary {
+  background-color: rgba(100, 100, 100, 0.3) !important;
+  border-color: rgba(100, 100, 100, 0.3) !important;
+}
+
+.tox .tox-button--secondary:hover:not(:disabled) {
+  background-color: rgba(100, 100, 100, 0.5) !important;
+  border-color: rgba(100, 100, 100, 0.5) !important;
+}
+
+/* Code d'insertion pour appliquer ce style dans TinyMCE */
+.mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Style pour sélection de texte */
+.mce-content-body ::selection {
+  background-color: rgba(20, 93, 160, 0.6) !important;
+}
+
+.roleplay .mce-content-body ::selection {
+  background-color: var(--tinymce-rp-glow) !important;
+}
+
+.hrp .mce-content-body ::selection {
+  background-color: var(--tinymce-hrp-glow) !important;
+}

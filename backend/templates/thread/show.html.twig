@@ -2,6 +2,12 @@
 
 {% block title %}{{ thread.title }} - DC Earth{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/editor.css') }}">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
 <div class="thread-show container my-4">
     {# Fil d'Ariane #}
@@ -26,7 +32,7 @@
                 
                 <span class="badge {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %}" title="Type de discussion">
                     {% if thread.type == 'roleplay' %}
-                        <i class="fas fa-theater-masks"></i> RP
+                        <i class="fa-solid fa-dice-d20"></i> RP
                     {% else %}
                         <i class="fas fa-comments"></i> HRP
                     {% endif %}
@@ -67,8 +73,6 @@
         {% endif %}
         
         <div class="thread-details">
-
-            
             {% if thread.location %}
                 <span class="badge bg-info me-2" title="Lieu">
                     <i class="fas fa-map-marker-alt me-1"></i> {{ thread.location.name }}
@@ -93,6 +97,16 @@
             {% if canReply %}
                 <a href="#replyForm" class="btn {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white ms-2">
                     <i class="fas fa-reply me-1"></i> Répondre
+                </a>
+                
+                <a href="{{ path('app_post_new', {'threadId': thread.id}) }}" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-edit me-1"></i> Rédaction complète
+                </a>
+            {% endif %}
+            
+            {% if app.user %}
+                <a href="{{ path('app_my_drafts') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="fas fa-save me-1"></i> Mes brouillons
                 </a>
             {% endif %}
         </div>
@@ -161,12 +175,18 @@
         {# Affichage du premier post (message initial) #}
         {% for post in posts %}
             <div class="post-anchor" id="post-{{ post.id }}"></div>
-            <div class="post-container {% if post.isRoleplay %}roleplay-post{% else %}hrp-post{% endif %} mb-4 {% if app.request.get('highlight') == post.id %}highlighted-post{% endif %}">
+            <div class="post-container {% if post.isRoleplay %}roleplay-post{% else %}hrp-post{% endif %} mb-4 {% if app.request.get('highlight') == post.id %}highlighted-post{% endif %} {% if post.isDraft %}draft-post{% endif %}">
+                {% if post.isDraft %}
+                    <div class="draft-badge">
+                        <span class="badge bg-warning">Brouillon</span>
+                    </div>
+                {% endif %}
+                
                 <div class="post-sidebar">
                     {% if post.isRoleplay and post.character %}
                         <div class="character-avatar">
                             {% if post.character.avatar %}
-                                <img src="{{ post.character.avatar }}" alt="{{ post.character.name }}">
+                                <img src="{{ post.character.avatar }}" alt="{{ post.character.name }}" class="img-fluid rounded">
                             {% else %}
                                 <div class="default-avatar">
                                     <i class="fas fa-user-astronaut"></i>
@@ -175,25 +195,32 @@
                         </div>
                         
                         <div class="character-info">
-                            <div class="character-name">{{ post.character.name }}</div>
-                            {% if post.character.alias %}
-                                <div class="character-alias">{{ post.character.alias }}</div>
+                            <div class="character-name fw-bold">{{ post.character.name }}</div>
+                            {% if post.character.actualPseudo %}
+                                <div class="character-pseudo">{{ post.character.actualPseudo }}</div>
                             {% endif %}
-                            <div class="player-name">
-                                <small>{{ post.author.pseudo }}</small>
+                            {% if post.character.alias %}
+                                <div class="character-alias text-muted"><em>{{ post.character.alias }}</em></div>
+                            {% endif %}
+                            <div class="player-name small mt-2">
+                                <span class="badge bg-secondary">Joué par {{ post.author.pseudo }}</span>
                             </div>
                         </div>
                     {% else %}
                         <div class="user-avatar">
-                            <div class="default-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
+                            {% if post.author.avatar %}
+                                <img src="{{ post.author.avatar }}" alt="{{ post.author.pseudo }}" class="img-fluid rounded">
+                            {% else %}
+                                <div class="default-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="user-info">
-                            <div class="pseudo">{{ post.author.pseudo }}</div>
-                            <div class="user-details">
-                                <small>Membre depuis {{ post.author.createdAt|date('d/m/Y') }}</small>
+                            <div class="pseudo fw-bold">{{ post.author.pseudo }}</div>
+                            <div class="user-details small text-muted">
+                                Membre depuis {{ post.author.createdAt|date('d/m/Y') }}
                             </div>
                         </div>
                     {% endif %}
@@ -210,19 +237,25 @@
                         
                         <div class="post-actions">
                             {% if app.user %}
-                                <a href="#replyForm" class="btn btn-sm btn-outline-secondary quote-btn" data-post-id="{{ post.id }}">
+                                <a href="#quickReplyForm" class="btn btn-sm btn-outline-secondary quote-btn" data-post-id="{{ post.id }}" title="Citer">
                                     <i class="fas fa-quote-right"></i>
                                 </a>
                             {% endif %}
                             
                             {% if is_granted('EDIT', post) %}
-                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary" title="Éditer">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             {% endif %}
                             
+                            {% if post.isDraft and post.author == app.user %}
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="publishDraft({{ post.id }})" title="Publier">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            {% endif %}
+                            
                             {% if is_granted('DELETE', post) and not loop.first %}
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{ post.id }}">
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{ post.id }}" title="Supprimer">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}
@@ -245,27 +278,31 @@
         {% endfor %}
     </div>
 
-    {# Formulaire de réponse #}
+    {# Formulaire de réponse rapide #}
     {% if canReply %}
-        <div id="replyForm" class="reply-form mt-5">
+        <div id="quickReplyForm" class="quick-reply-form {% if thread.type == 'roleplay' %}roleplay{% else %}hrp{% endif %}">
             <h3 class="reply-title {% if thread.type == 'roleplay' %}text-roleplay{% else %}text-hrp{% endif %}">
                 {% if thread.type == 'roleplay' %}
-                    <i class="fas fa-theater-masks"></i> Répondre en tant que personnage
+                    <i class="fa-solid fa-dice-d20 me-1"></i> Réponse rapide
                 {% else %}
-                    <i class="fas fa-comments"></i> Répondre à la discussion
+                    <i class="fas fa-comments me-1"></i> Réponse rapide
                 {% endif %}
             </h3>
             
-            {{ form_start(form) }}
+            <form id="quickReplyFormElement" method="post" action="{{ path('app_post_quick_reply', {'threadId': thread.id}) }}">
                 {% if thread.type == 'roleplay' %}
                     <div class="mb-3">
-                        {{ form_label(form.character) }}
-                        {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
-                        {{ form_errors(form.character) }}
+                        <label for="character_id" class="form-label">Personnage</label>
+                        <select id="character_id" name="character_id" class="form-select" required>
+                            <option value="">Choisir un personnage...</option>
+                            {% for character in app.user.characters|filter(c => c.status == 'validated') %}
+                                <option value="{{ character.id }}">{{ character.name }}{% if character.actualPseudo %} ({{ character.actualPseudo }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
                         
                         {% if not userHasCharacters %}
                             <div class="alert alert-warning mt-2">
-                                <i class="fas fa-exclamation-triangle"></i>
+                                <i class="fas fa-exclamation-triangle me-1"></i>
                                 Vous n'avez pas encore créé de personnage. 
                                 <a href="{{ path('app_roleplay_character_new') }}">Créer un personnage</a> pour participer à cette scène.
                             </div>
@@ -273,23 +310,34 @@
                     </div>
                 {% endif %}
                 
-                {% if form is defined and form is not null %}
-                    <div class="mb-3">
-                        {{ form_label(form.content) }}
-                        {{ form_widget(form.content, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': 8}}) }}
-                        {{ form_errors(form.content) }}
+                <div class="mb-3">
+                    <label for="quick_reply_content" class="form-label">Votre message</label>
+                    <textarea id="quick_reply_content" name="content" class="form-control wysiwyg-editor-quick" rows="5" required></textarea>
+                    <div class="char-counter">
+                        <span id="charCounter">0</span> caractères
                     </div>
-                                        
-                    <div class="mb-3 d-flex justify-content-between">
-                        {% if not isRoleplay %}
-                            {{ form_row(form.type, {'attr': {'class': 'roleplay-toggle'}}) }}
-                        {% endif %}
-                        <button type="submit" class="btn {% if isRoleplay or (form.type is defined and form.type.vars.data == 'roleplay') %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
-                            <i class="fas fa-paper-plane me-1"></i> Publier
-                        </button>
-                    </div>
-                {% endif %}
-            {{ form_end(form) }}
+                </div>
+                
+                <div class="editor-actions">
+                    <button type="submit" class="btn {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+                        <i class="fas fa-paper-plane me-1"></i> Publier
+                    </button>
+                    <button type="button" id="saveDraftBtn" class="btn btn-outline-secondary">
+                        <i class="fas fa-save me-1"></i> Enregistrer comme brouillon
+                    </button>
+                    <a href="{{ path('app_post_new', {'threadId': thread.id}) }}" class="btn btn-outline-info">
+                        <i class="fas fa-edit me-1"></i> Mode éditeur complet
+                    </a>
+                </div>
+                
+                <input type="hidden" name="is_draft" id="is_draft" value="0">
+            </form>
+        </div>
+        
+        {# Formulaire original (form) masqué pour compatibilité #}
+        <div style="display: none;">
+            {{ form_start(form) }}
+                {{ form_end(form) }}
         </div>
     {% elseif not is_granted('IS_AUTHENTICATED_FULLY') %}
         <div class="alert alert-info mt-4">
@@ -316,7 +364,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <a href="{{ path('app_thread_delete', {'id': thread.id}) }}" class="btn btn-danger">Supprimer</a>
+                    <form action="{{ path('app_thread_delete', {'id': thread.id}) }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_thread_' ~ thread.id) }}">
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -336,7 +387,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <form id="deletePostForm" action="" method="POST">
-                        <input type="hidden" name="token" value="{{ csrf_token('delete_post') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_post') }}">
                         <button type="submit" class="btn btn-danger">Supprimer</button>
                     </form>
                 </div>
@@ -352,10 +403,56 @@
     .hrp-bg {
         border-left: 5px solid var(--hrp-primary);
     }
+    .post-container {
+        position: relative;
+        display: flex;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .post-sidebar {
+        width: 200px;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
+        text-align: center;
+        border-radius: 8px 0 0 8px;
+    }
+    .post-main {
+        flex: 1;
+        padding: 1rem;
+    }
+    .character-avatar, .user-avatar {
+        margin-bottom: 0.75rem;
+    }
+    .character-avatar img, .user-avatar img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: block;
+        border: 3px solid var(--roleplay-primary);
+    }
+    .character-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+    .draft-post {
+        border: 2px dashed #ffc107;
+    }
+    .draft-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+    }
 </style>
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="{{ asset('js/dc-editor.js') }}"></script>
+    <script src="{{ asset('js/forum/post-actions.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Highlight post if URL has an anchor
@@ -368,17 +465,56 @@
                 }
             }
 
+            // Récupération de l'éditeur Quill pour les réponses rapides
+            let quillEditor = null;
+            if (document.querySelector('.wysiwyg-editor-quick')) {
+                // L'éditeur devrait déjà être initialisé par dc-editor.js
+                // Récupérer l'instance depuis l'objet global dcQuillEditors
+                const editorId = document.querySelector('.wysiwyg-editor-quick').id;
+                if (window.dcQuillEditors && window.dcQuillEditors[editorId]) {
+                    quillEditor = window.dcQuillEditors[editorId];
+                    console.log("Éditeur Quill récupéré depuis le stockage global");
+                } else {
+                    // Fallback: rechercher l'instance du DOM
+                    const editorElement = document.querySelector('.wysiwyg-editor-quick');
+                    const parent = editorElement.parentNode;
+                    const quillContainer = parent.querySelector('.dc-editor-container .ql-container');
+                    
+                    if (quillContainer) {
+                        quillEditor = Quill.find(quillContainer);
+                        console.log("Éditeur Quill récupéré depuis le DOM");
+                    }
+                }
+            }
+
             // Setup quote buttons
             document.querySelectorAll('.quote-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const postId = this.getAttribute('data-post-id');
-                    // Here we would fetch the post content and add it to the editor
-                    // This is a placeholder for the actual quote functionality
-                    const editor = document.querySelector('.wysiwyg-editor');
-                    if (editor) {
-                        editor.value += `\n\n[quote]Contenu du post #${postId}[/quote]\n\n`;
+                    // Rechercher le contenu du post à citer
+                    const postContainer = document.getElementById('post-' + postId).nextElementSibling;
+                    const author = postContainer.querySelector('.character-name')?.textContent || 
+                                  postContainer.querySelector('.pseudo')?.textContent || 'Anonymous';
+                    const content = postContainer.querySelector('.post-content').innerHTML;
+                    
+                    // Ajouter le contenu cité à l'éditeur
+                    if (quillEditor) {
+                        const quoteHTML = `<blockquote class="${postContainer.classList.contains('roleplay-post') ? 'roleplay' : 'hrp'}"><strong>${author} a écrit:</strong><br>${content}</blockquote><p><br></p>`;
+                        const range = quillEditor.getSelection();
+                        if (range) {
+                            quillEditor.clipboard.dangerouslyPasteHTML(range.index, quoteHTML);
+                        } else {
+                            quillEditor.clipboard.dangerouslyPasteHTML(0, quoteHTML);
+                        }
+                        // Forcer le focus sur l'éditeur après l'insertion
+                        setTimeout(() => {
+                            quillEditor.focus();
+                        }, 100);
                     }
+                    
+                    // Faire défiler vers le formulaire de réponse
+                    document.getElementById('quickReplyForm').scrollIntoView({behavior: 'smooth'});
                 });
             });
 
@@ -387,26 +523,75 @@
                 button.addEventListener('click', function() {
                     const postId = this.getAttribute('data-post-id');
                     const deletePostForm = document.getElementById('deletePostForm');
-                    deletePostForm.action = `/post/${postId}/delete`;
+                    deletePostForm.action = `{{ path('app_post_delete', {'id': 'POST_ID'}) }}`.replace('POST_ID', postId);
+                    const tokenInput = deletePostForm.querySelector('input[name="_token"]');
+                    tokenInput.value = '{{ csrf_token('delete_post_') }}' + postId;
                     const deletePostModal = new bootstrap.Modal(document.getElementById('deletePostModal'));
                     deletePostModal.show();
                 });
             });
             
-            // Roleplay post toggle style
-            const roleplayToggle = document.querySelector('.roleplay-toggle');
-            if (roleplayToggle) {
-                roleplayToggle.addEventListener('change', function() {
-                    const submitBtn = document.querySelector('button[type="submit"]');
-                    if (this.checked) {
-                        submitBtn.classList.remove('bg-hrp');
-                        submitBtn.classList.add('bg-roleplay');
-                    } else {
-                        submitBtn.classList.remove('bg-roleplay');
-                        submitBtn.classList.add('bg-hrp');
+            // Bouton brouillon pour réponse rapide
+            document.getElementById('saveDraftBtn')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('is_draft').value = "1";
+                
+                // Soumettre le formulaire avec le contenu de l'éditeur
+                if (quillEditor) {
+                    const hiddenInput = document.querySelector('input[name="content"]');
+                    if (!hiddenInput) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'content';
+                        document.getElementById('quickReplyFormElement').appendChild(input);
                     }
-                });
+                    document.querySelector('input[name="content"]').value = quillEditor.root.innerHTML;
+                }
+                
+                document.getElementById('quickReplyFormElement').submit();
+            });
+            
+            // Compteur de caractères
+            if (quillEditor) {
+                const charCounter = document.getElementById('charCounter');
+                
+                if (charCounter) {
+                    const updateCharCount = function() {
+                        const text = quillEditor.getText();
+                        charCounter.textContent = text.length - 1; // -1 pour ne pas compter le caractère de nouvelle ligne à la fin
+                        
+                        if (text.length > 1000) {
+                            charCounter.parentElement.classList.add('warning');
+                        } else {
+                            charCounter.parentElement.classList.remove('warning');
+                        }
+                        
+                        if (text.length > 2000) {
+                            charCounter.parentElement.classList.add('danger');
+                        } else {
+                            charCounter.parentElement.classList.remove('danger');
+                        }
+                    };
+                    
+                    quillEditor.on('text-change', updateCharCount);
+                    // Initialiser le compteur
+                    updateCharCount();
+                }
             }
+            
+            // Surcharger la soumission du formulaire pour inclure le contenu HTML
+            document.getElementById('quickReplyFormElement')?.addEventListener('submit', function(e) {
+                if (quillEditor) {
+                    const hiddenInput = document.querySelector('input[name="content"]');
+                    if (!hiddenInput) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'content';
+                        this.appendChild(input);
+                    }
+                    document.querySelector('input[name="content"]').value = quillEditor.root.innerHTML;
+                }
+            });
         });
     </script>
 {% endblock %}

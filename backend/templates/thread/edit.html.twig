@@ -12,7 +12,7 @@
         <div class="card-header {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
             <h1 class="h3 mb-0">
                 {% if thread.type == 'roleplay' %}
-                    <i class="fas fa-theater-masks me-2"></i>Modifier la scène
+                    <i class="fa-solid fa-dice-d20 me-2"></i>Modifier la scène
                 {% else %}
                     <i class="fas fa-edit me-2"></i>Modifier la discussion
                 {% endif %}
@@ -67,7 +67,7 @@
                         'attr': {
                             'class': 'form-control wysiwyg-editor',
                             'rows': 10,
-                            'data-type': thread.type
+                            'data-mode': thread.type
                         }
                     }) }}
                     {{ form_errors(form.description) }}

@@ -2,57 +2,46 @@
 
 namespace App\Controller;
 
-use App\Entity\Post;
-use App\Entity\User;
-use App\Entity\Forum;
-use App\Entity\Thread;
-use App\Entity\ForumCategory;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
+use App\Repository\ForumRepository;
+use App\Repository\ThreadRepository;
+use App\Repository\PostRepository;
+use App\Repository\ForumCategoryRepository;
+use App\Repository\CharacterRepository;
+use App\Repository\LocationRepository;
+use App\Repository\CharacterRelationRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/admin', name: 'admin_')]
+#[Route('/admin')]
 class AdminController extends AbstractController
 {
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    #[Route('/', name: 'admin_dashboard')]
+    public function dashboard(
+        UserRepository $userRepository,
+        ForumRepository $forumRepository,
+        ThreadRepository $threadRepository,
+        PostRepository $postRepository,
+        ForumCategoryRepository $categoryRepository,
+        CharacterRepository $characterRepository,
+        LocationRepository $locationRepository,
+        CharacterRelationRepository $relationRepository
+    ): Response
     {
-        $this->entityManager = $entityManager;
-    }
-
-    #[Route('/', name: 'dashboard')]
-    public function dashboard(): Response
-    {
-        // Statistiques générales
-        $userCount = $this->entityManager->getRepository(User::class)->count([]);
-        $forumCount = $this->entityManager->getRepository(Forum::class)->count([]);
-        $threadCount = $this->entityManager->getRepository(Thread::class)->count([]);
-        $postCount = $this->entityManager->getRepository(Post::class)->count([]);
-        $categoryCount = $this->entityManager->getRepository(ForumCategory::class)->count([]);
-
-        // Derniers utilisateurs inscrits
-        $latestUsers = $this->entityManager->getRepository(User::class)
-            ->findBy([], ['createdAt' => 'DESC'], 5);
-
-        // Derniers threads créés
-        $latestThreads = $this->entityManager->getRepository(Thread::class)
-            ->findBy([], ['createdAt' => 'DESC'], 5);
-
-        // Derniers posts
-        $latestPosts = $this->entityManager->getRepository(Post::class)
-            ->findBy([], ['createdAt' => 'DESC'], 5);
-
         return $this->render('admin/dashboard.html.twig', [
-            'userCount' => $userCount,
-            'forumCount' => $forumCount,
-            'threadCount' => $threadCount,
-            'postCount' => $postCount,
-            'categoryCount' => $categoryCount,
-            'latestUsers' => $latestUsers,
-            'latestThreads' => $latestThreads,
-            'latestPosts' => $latestPosts,
+            'userCount' => $userRepository->count([]),
+            'forumCount' => $forumRepository->count([]),
+            'threadCount' => $threadRepository->count([]),
+            'postCount' => $postRepository->count([]),
+            'categoryCount' => $categoryRepository->count([]),
+            'characterCount' => $characterRepository->count([]),
+            'locationCount' => $locationRepository->count([]),
+            'relationCount' => $relationRepository->count([]),
+            'latestUsers' => $userRepository->findBy([], ['createdAt' => 'DESC'], 5),
+            'latestThreads' => $threadRepository->findBy([], ['createdAt' => 'DESC'], 5),
+            'latestPosts' => $postRepository->findBy([], ['createdAt' => 'DESC'], 5),
+            'latestCharacters' => $characterRepository->findBy([], ['createdAt' => 'DESC'], 4),
         ]);
     }
 }

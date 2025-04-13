@@ -1,0 +1,228 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes brouillons - DC Earth{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/drafts.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    <h1 class="mb-4">Mes brouillons</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Messages brouillons</h2>
+                <a href="{{ path('app_post_new_draft') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nouveau brouillon
+                </a>
+            </div>
+            
+            {% if drafts|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Titre / Discussion</th>
+                                <th>Type</th>
+                                <th>Date de création</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for draft in drafts %}
+                                <tr>
+                                    <td>
+                                        {% if draft.thread %}
+                                            <a href="{{ path('app_thread_show', {'id': draft.thread.id}) }}#post-{{ draft.id }}">
+                                                {{ draft.thread.title }}
+                                            </a>
+                                        {% else %}
+                                            <em>Nouveau message</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if draft.isRoleplay %}
+                                            <span class="badge bg-roleplay">RP</span>
+                                        {% else %}
+                                            <span class="badge bg-hrp">HRP</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ draft.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ path('app_post_edit', {'id': draft.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Éditer
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success" onclick="publishDraft({{ draft.id }})">
+                                                <i class="fas fa-paper-plane"></i> Publier
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal" 
+                                                    data-post-id="{{ draft.id }}">
+                                                <i class="fas fa-trash-alt"></i> Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Vous n'avez aucun brouillon pour l'instant.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if threadDrafts|length > 0 %}
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Discussions en brouillon</h2>
+                <a href="{{ path('app_thread_new') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nouvelle discussion
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Forum</th>
+                            <th>Type</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for threadDraft in threadDrafts %}
+                            <tr>
+                                <td>{{ threadDraft.title }}</td>
+                                <td>{{ threadDraft.forum.name }}</td>
+                                <td>
+                                    {% if threadDraft.type == 'roleplay' %}
+                                        <span class="badge bg-roleplay">RP</span>
+                                    {% else %}
+                                        <span class="badge bg-hrp">HRP</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ threadDraft.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('app_thread_edit', {'id': threadDraft.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Éditer
+                                        </a>
+                                        <a href="{{ path('app_thread_publish', {'id': threadDraft.id}) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-paper-plane"></i> Publier
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteThreadModal" 
+                                                data-thread-id="{{ threadDraft.id }}">
+                                            <i class="fas fa-trash-alt"></i> Supprimer
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> Vous n'avez aucune discussion en brouillon.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal de suppression de brouillon -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce brouillon ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post">
+                    <input type="hidden" name="_token" value="">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de suppression de discussion en brouillon -->
+<div class="modal fade" id="deleteThreadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette discussion en brouillon ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteThreadForm" method="post">
+                    <input type="hidden" name="_token" value="">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/forum/post-actions.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration du modal de suppression de post
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const postId = button.getAttribute('data-post-id');
+                    
+                    const form = document.getElementById('deleteForm');
+                    form.action = '{{ path('app_post_delete', {'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
+                    
+                    const tokenInput = form.querySelector('input[name="_token"]');
+                    tokenInput.value = '{{ csrf_token('delete_post_') }}' + postId;
+                });
+            }
+            
+            // Configuration du modal de suppression de thread
+            const deleteThreadModal = document.getElementById('deleteThreadModal');
+            if (deleteThreadModal) {
+                deleteThreadModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const threadId = button.getAttribute('data-thread-id');
+                    
+                    const form = document.getElementById('deleteThreadForm');
+                    form.action = '{{ path('app_thread_delete', {'id': 'THREAD_ID'}) }}'.replace('THREAD_ID', threadId);
+                    
+                    const tokenInput = form.querySelector('input[name="_token"]');
+                    tokenInput.value = '{{ csrf_token('delete_thread_') }}' + threadId;
+                });
+            }
+        });
+    </script>
+{% endblock %}
+{% endblock %}

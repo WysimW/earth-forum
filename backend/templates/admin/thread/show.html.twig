@@ -11,27 +11,41 @@
         </div>
     </div>
 
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             Informations générales
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <table class="table table-bordered">
                         <tbody>
                             <tr>
-                                <th width="150">ID</th>
+                                <th width="200">ID</th>
                                 <td>{{ thread.id }}</td>
                             </tr>
                             <tr>
                                 <th>Titre</th>
-                                <td>{{ thread.title }}</td>
+                                <td>
+                                    {% if thread.sticky %}
+                                        <span class="badge bg-info me-1" title="Thread épinglé"><i class="bi bi-pin"></i></span>
+                                    {% endif %}
+                                    {{ thread.title }}
+                                </td>
                             </tr>
                             <tr>
                                 <th>Forum</th>
                                 <td>
-                                    <a href="{{ path('admin_forum_show', {'id': thread.forum.id}) }}" class="badge bg-success text-decoration-none">
+                                    <a href="{{ path('admin_forum_show', {'id': thread.forum.id}) }}">
                                         {{ thread.forum.name }}
                                     </a>
                                 </td>
@@ -39,113 +53,176 @@
                             <tr>
                                 <th>Auteur</th>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        {% if thread.author.avatar %}
-                                            <img src="{{ thread.author.avatar }}" alt="{{ thread.author.pseudo }}" class="rounded-circle me-2" width="30" height="30">
-                                        {% else %}
-                                            <i class="bi bi-person-circle me-2"></i>
-                                        {% endif %}
-                                        <a href="{{ path('admin_user_show', {'id': thread.author.id}) }}" class="text-decoration-none">
+                                    {% if thread.author %}
+                                        <a href="{{ path('admin_user_show', {'id': thread.author.id}) }}">
                                             {{ thread.author.pseudo }}
                                         </a>
-                                    </div>
+                                    {% else %}
+                                        Non défini
+                                    {% endif %}
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <table class="table table-bordered">
-                        <tbody>
                             <tr>
-                                <th width="150">Date de création</th>
-                                <td>{{ thread.createdAt|date('d/m/Y H:i:s') }}</td>
+                                <th>Date de création</th>
+                                <td>{{ thread.createdAt ? thread.createdAt|date('d/m/Y à H:i') : 'Non définie' }}</td>
                             </tr>
                             <tr>
                                 <th>Dernière mise à jour</th>
-                                <td>{{ thread.updatedAt|date('d/m/Y H:i:s') }}</td>
+                                <td>{{ thread.updatedAt ? thread.updatedAt|date('d/m/Y à H:i') : 'Non définie' }}</td>
                             </tr>
                             <tr>
-                                <th>Nombre de messages</th>
-                                <td>{{ thread.posts|length }}</td>
+                                <th>Type</th>
+                                <td>
+                                    {% if thread.type == 'normal' %}
+                                        <span class="badge bg-secondary">Normal</span>
+                                    {% elseif thread.type == 'roleplay' %}
+                                        <span class="badge bg-primary">Roleplay</span>
+                                    {% elseif thread.type == 'announcement' %}
+                                        <span class="badge bg-warning">Annonce</span>
+                                    {% elseif thread.type == 'character_sheet' %}
+                                        <span class="badge bg-info">Fiche personnage</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ thread.type }}</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <th>Statut</th>
                                 <td>
-                                    {% if thread.posts|length > 0 %}
-                                        <span class="badge bg-success">Actif</span>
+                                    {% if thread.status == 'open' %}
+                                        <span class="badge bg-success">Ouvert</span>
+                                    {% elseif thread.status == 'closed' %}
+                                        <span class="badge bg-danger">Fermé</span>
+                                    {% elseif thread.status == 'archived' %}
+                                        <span class="badge bg-secondary">Archivé</span>
                                     {% else %}
-                                        <span class="badge bg-warning">Sans messages</span>
+                                        <span class="badge bg-secondary">{{ thread.status }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
+                            <tr>
+                                <th>Épinglé</th>
+                                <td>
+                                    {% if thread.sticky %}
+                                        <span class="badge bg-success"><i class="bi bi-check-lg"></i> Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="bi bi-x-lg"></i> Non</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if thread.isRoleplay() %}
+                                <tr>
+                                    <th>Visibilité</th>
+                                    <td>
+                                        {% if thread.visibleToCharactersOnly %}
+                                            <span class="badge bg-warning">Visible uniquement par les participants</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Visible par tous</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Maximum de participants</th>
+                                    <td>{{ thread.maxParticipants ? thread.maxParticipants : 'Illimité' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lieu</th>
+                                    <td>{{ thread.location ? thread.location.name : 'Non défini' }}</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
 
-            {% if thread.posts|length == 0 %}
-                <form method="post" action="{{ path('admin_thread_delete', {'id': thread.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce thread?');" class="mt-3">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ thread.id) }}">
-                    <button class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Supprimer ce thread
-                    </button>
-                </form>
+    {% if thread.description %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Description
+            </div>
+            <div class="card-body">
+                <div class="thread-description">
+                    {{ thread.description|raw }}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if thread.isRoleplay() and thread.participants|length > 0 %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Personnages participants
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for character in thread.participants %}
+                        <div class="card" style="width: 150px;">
+                            <div class="card-body text-center">
+                                {% if character.avatar %}
+                                    <img src="{{ character.avatar }}" alt="{{ character.name }}" class="rounded-circle mb-2" width="64" height="64">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 64px; height: 64px;">
+                                        <i class="bi bi-person fs-4"></i>
+                                    </div>
+                                {% endif %}
+                                <p class="mb-0">{{ character.name }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Messages ({{ thread.posts|length }})
+        </div>
+        <div class="card-body">
+            {% if thread.posts|length > 0 %}
+                <div class="list-group">
+                    {% for post in thread.posts %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">
+                                    {% if post.character %}
+                                        <span class="badge bg-primary me-1">RP</span>
+                                        {{ post.character.name }}
+                                    {% else %}
+                                        {{ post.author.pseudo }}
+                                    {% endif %}
+                                </h5>
+                                <small>{{ post.createdAt|date('d/m/Y H:i') }}</small>
+                            </div>
+                            <p class="mb-1">{{ post.content|striptags|length > 100 ? post.content|striptags|slice(0, 100) ~ '...' : post.content|striptags }}</p>
+                            <div class="d-flex justify-content-end">
+                                <a href="#" class="btn btn-sm btn-outline-secondary">Voir</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">Aucun message dans ce thread.</div>
+                <div class="text-center">
+                    <a href="#" class="btn btn-primary">Ajouter un message</a>
+                </div>
             {% endif %}
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center bg-info text-white">
-            <span>Messages du thread ({{ thread.posts|length }})</span>
-            <a href="#" class="btn btn-sm btn-light"><i class="bi bi-plus-circle"></i> Ajouter un message</a>
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            Danger Zone
         </div>
         <div class="card-body">
-            {% if thread.posts|length > 0 %}
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Auteur</th>
-                                <th>Contenu</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for post in thread.posts %}
-                                <tr>
-                                    <td>{{ post.id }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            {% if post.author.avatar %}
-                                                <img src="{{ post.author.avatar }}" alt="{{ post.author.pseudo }}" class="rounded-circle me-2" width="25" height="25">
-                                            {% else %}
-                                                <i class="bi bi-person-circle me-2"></i>
-                                            {% endif %}
-                                            {{ post.author.pseudo }}
-                                        </div>
-                                    </td>
-                                    <td>{{ post.content|length > 50 ? post.content|slice(0, 50) ~ '...' : post.content }}</td>
-                                    <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-circle"></i> Ce thread ne contient aucun message.
-                </div>
-            {% endif %}
+            <form method="post" action="{{ path('admin_thread_delete', {'id': thread.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce thread et tous ses messages? Cette action est irréversible.');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ thread.id) }}">
+                <button class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Supprimer ce thread
+                </button>
+            </form>
         </div>
     </div>
 {% endblock %}

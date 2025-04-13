@@ -16,7 +16,7 @@
         <div class="card-header {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
             <h1 class="h3 mb-0">
                 {% if forum.isRoleplay %}
-                    <i class="fas fa-theater-masks me-2"></i>Nouvelle scène RP
+                    <i class="fa-solid fa-dice-d20 me-2"></i>Nouvelle scène RP
                 {% else %}
                     <i class="fas fa-comments me-2"></i>Nouvelle discussion
                 {% endif %}
@@ -84,7 +84,7 @@
                         'attr': {
                             'class': 'form-control wysiwyg-editor',
                             'rows': 10,
-                            'data-type': forum.isRoleplay ? 'roleplay' : 'hrp'
+                            'data-mode': forum.isRoleplay ? 'roleplay' : 'hrp'
                         }
                     }) }}
                     {{ form_errors(form.description) }}

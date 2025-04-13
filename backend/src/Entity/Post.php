@@ -42,14 +42,15 @@ class Post implements TimestampableInterface
     
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $postType = 'normal';  // normal, ic (in-character), ooc (out-of-character), etc.
+    
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isDraft = false;
 
     public function __construct()
     {  
         $this->createdAt = new \DateTimeImmutable(); // Set the default value for createdAt
         $this->updatedAt = new \DateTimeImmutable();  // Set the default value for updatedAt as well
-
     }
-
 
     public function isRoleplay(): bool
     {
@@ -169,6 +170,17 @@ class Post implements TimestampableInterface
     {
         $this->editedAt = $editedAt;
 
+        return $this;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->isDraft;
+    }
+    
+    public function setIsDraft(bool $isDraft): self
+    {
+        $this->isDraft = $isDraft;
         return $this;
     }
 

@@ -1,0 +1,196 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails Personnage | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Détails du personnage</h1>
+        <div>
+            <a href="{{ path('admin_character_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+            <a href="{{ path('admin_character_edit', {'id': character.id}) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Modifier</a>
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Informations générales</span>
+                        <span class="badge rounded-pill bg-light text-dark">ID: {{ character.id }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if character.avatar %}
+                            <img src="{{ character.avatar }}" alt="{{ character.name }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                                <i class="bi bi-person-fill fs-1"></i>
+                            </div>
+                        {% endif %}
+                        <h3 class="mb-0">{{ character.name }}</h3>
+                        {% if character.user %}
+                            <p class="text-muted">
+                                Joué par <a href="{{ path('admin_user_show', {'id': character.user.id}) }}">{{ character.user.pseudo }}</a>
+                            </p>
+                        {% else %}
+                            <p class="text-muted">Sans joueur</p>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            {% if character.status == 'active' %}
+                                <span class="badge bg-success">Actif</span>
+                            {% elseif character.status == 'inactive' %}
+                                <span class="badge bg-secondary">Inactif</span>
+                            {% elseif character.status == 'dead' %}
+                                <span class="badge bg-danger">Décédé</span>
+                            {% else %}
+                                <span class="badge bg-info">{{ character.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="130">Âge</th>
+                                <td>{{ character.age ?: 'Non défini' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Genre</th>
+                                <td>{{ character.gender ?: 'Non défini' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date de création</th>
+                                <td>{{ character.createdAt|date('d/m/Y') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière mise à jour</th>
+                                <td>{{ character.updatedAt ? character.updatedAt|date('d/m/Y') : 'Jamais' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Posts</th>
+                                <td>{{ character.posts|length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <form method="post" action="{{ path('admin_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage? Cette action est irréversible.');" class="mt-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
+                        <button class="btn btn-danger w-100"><i class="bi bi-trash"></i> Supprimer ce personnage</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card mb-4">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    <i class="bi bi-card-text me-2"></i> Description
+                </div>
+                <div class="card-body">
+                    {% if character.description %}
+                        <div class="character-description">
+                            {{ character.description|raw }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">Ce personnage n'a pas de description.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if character.location %}
+            <div class="card mb-4">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    <i class="bi bi-geo-alt me-2"></i> Lieu actuel
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{ character.location.name }}</h5>
+                            <p class="text-muted mb-0">{{ character.location.description|striptags|length > 100 ? character.location.description|striptags|slice(0, 100) ~ '...' : character.location.description|striptags }}</p>
+                        </div>
+                        <a href="{{ path('admin_location_show', {'id': character.location.id}) }}" class="btn btn-outline-teal ms-3" style="border-color: #20c997; color: #20c997;">Voir détails</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if character.relations|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-indigo text-white" style="background-color: #6610f2;">
+                    <i class="bi bi-people me-2"></i> Relations ({{ character.relations|length }})
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for relation in character.relations %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        {% if relation.targetCharacter.avatar %}
+                                            <img src="{{ relation.targetCharacter.avatar }}" alt="{{ relation.targetCharacter.name }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ relation.targetCharacter.name }}</h6>
+                                            <p class="text-muted mb-0">{{ relation.type }}</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ path('admin_character_relation_show', {'id': relation.id}) }}" class="btn btn-sm btn-outline-indigo" style="border-color: #6610f2; color: #6610f2;">Détails</a>
+                                </div>
+                                {% if relation.description %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">{{ relation.description|striptags|length > 100 ? relation.description|striptags|slice(0, 100) ~ '...' : relation.description|striptags }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ path('admin_character_relation_new') }}" class="btn btn-sm btn-outline-indigo" style="border-color: #6610f2; color: #6610f2;"><i class="bi bi-plus-circle"></i> Ajouter une relation</a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if character.posts|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-chat-left-text me-2"></i> Messages récents ({{ character.posts|length }})
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for post in character.posts|slice(0, 5) %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">Dans <a href="{{ path('admin_thread_show', {'id': post.thread.id}) }}">{{ post.thread.title }}</a></h6>
+                                    <small>{{ post.createdAt|date('d/m/Y H:i') }}</small>
+                                </div>
+                                <p class="mb-1">{{ post.content|striptags|length > 100 ? post.content|striptags|slice(0, 100) ~ '...' : post.content|striptags }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if character.posts|length > 5 %}
+                <div class="card-footer">
+                    <a href="#" class="btn btn-sm btn-outline-info">Voir tous les messages</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

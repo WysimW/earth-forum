@@ -8,8 +8,14 @@
         {% block stylesheets %}
             <!-- Bootstrap CSS -->
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-            <!-- Font Awesome -->
+            <!-- Quill Editor CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.min.css" rel="stylesheet">
+            <!-- Notre thème CSS pour l'éditeur Quill -->
+            <link href="/css/components/quill-editor.css" rel="stylesheet">
+            <!-- Font Awesome (CDN gratuit) -->
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <!-- Styles généraux -->
+            <link rel="stylesheet" href="/css/main.css">
             <!-- Google Fonts -->
             <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
             <!-- Custom styles -->
@@ -21,10 +27,12 @@
             <link rel="stylesheet" href="{{ asset('css/components/forms.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/tables.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/forums.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/forum-components.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/posts.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/utilities.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/animations.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/responsive.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/tinymce-theme.css') }}">
         {% endblock %}
     </head>
     <body>
@@ -82,7 +90,7 @@
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item" href="{{ path('app_admin') }}">Administration</a></li>
+                                                <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}">Administration</a></li>
                                             {% endif %}
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
@@ -113,10 +121,10 @@
                 </ul>
                 
                 <ul class="sidebar-menu">
-                    <li class="sidebar-menu-title"><i class="fas fa-theater-masks text-roleplay"></i> Roleplay</li>
+                    <li class="sidebar-menu-title"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Roleplay</li>
                     <li class="sidebar-menu-item">
                         <a href="{{ path('app_roleplay_threads') }}" class="sidebar-menu-link rp-link">
-                            <i class="fas fa-theater-masks"></i> Scènes RP
+                            <i class="fa-solid fa-dice-d20"></i> Scènes RP
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
@@ -199,12 +207,12 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-title">Administration</li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_admin') }}" class="sidebar-menu-link">
+                        <a href="{{ path('admin_dashboard') }}" class="sidebar-menu-link">
                             <i class="fas fa-toolbox"></i> Panneau d'admin
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_admin') }}/users" class="sidebar-menu-link">
+                        <a href="{{ path('admin_dashboard') }}/users" class="sidebar-menu-link">
                             <i class="fas fa-users-cog"></i> Gestion utilisateurs
                         </a>
                     </li>
@@ -245,7 +253,7 @@
                             <h5 class="subtitle">Liens utiles</h5>
                             <ul class="list-unstyled small">
                                 <li><a href="{{ path('app_roleplay') }}">Accueil</a></li>
-                                <li><a href="{{ path('app_roleplay_threads') }}"><i class="fas fa-theater-masks text-roleplay"></i> Scènes RP</a></li>
+                                <li><a href="{{ path('app_roleplay_threads') }}"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Scènes RP</a></li>
                                 <li><a href="{{ path('app_roleplay') }}#hrp-forums"><i class="fas fa-comments text-hrp"></i> Forums HRP</a></li>
                                 <li><a href="{{ path('app_roleplay_search') }}">Recherche</a></li>
                             </ul>
@@ -270,6 +278,10 @@
         {% block javascripts %}
             <!-- Bootstrap Bundle with Popper -->
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Quill.js (éditeur WYSIWYG gratuit) -->
+            <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
+            <!-- Notre éditeur personnalisé basé sur Quill -->
+            <script src="/js/dc-editor.js"></script>
             <!-- Custom JavaScript -->
             <script>
                 document.addEventListener('DOMContentLoaded', function() {

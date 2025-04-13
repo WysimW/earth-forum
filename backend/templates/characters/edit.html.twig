@@ -35,6 +35,30 @@
                     {{ form_widget(form.universe, {'attr': {'class': 'form-control character-input'}}) }}
                     {{ form_errors(form.universe) }}
                 </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.firstName) }}</div>
+                    {{ form_widget(form.firstName, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.lastName) }}</div>
+                    {{ form_widget(form.lastName, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.age) }}</div>
+                    {{ form_widget(form.age, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.age) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.pseudonyms) }}</div>
+                    {{ form_widget(form.pseudonyms, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.pseudonyms) }}
+                </div>
             </div>
         </div>
 
@@ -45,11 +69,67 @@
             </h2>
             <div class="character-avatar-preview">
                 <div class="preview-container" id="avatarPreview">
-                    <i class="fas fa-user-circle"></i>
+                    {% if character.avatar %}
+                        <img src="{{ character.avatar }}" alt="{{ character.name }}">
+                    {% else %}
+                        <i class="fas fa-user-circle"></i>
+                    {% endif %}
                 </div>
                 {{ form_widget(form.avatar, {'attr': {'class': 'form-control character-input', 'placeholder': 'URL de votre avatar'}}) }}
                 {{ form_errors(form.avatar) }}
                 <small class="form-text text-muted">Collez l'URL d'une image pour votre personnage</small>
+            </div>
+        </div>
+        
+        {# Section Caractéristiques personnelles #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-user-tag"></i> Caractéristiques personnelles
+            </h2>
+            <div class="character-info-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.gender) }}</div>
+                    {{ form_widget(form.gender, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.gender) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.sexualOrientation) }}</div>
+                    {{ form_widget(form.sexualOrientation, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.sexualOrientation) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.civilStatus) }}</div>
+                    {{ form_widget(form.civilStatus, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.civilStatus) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.occupation) }}</div>
+                    {{ form_widget(form.occupation, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.occupation) }}
+                </div>
+            </div>
+        </div>
+        
+        {# Section Affiliation #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-users"></i> Affiliation
+            </h2>
+            <div class="character-info-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.moralAffiliation) }}</div>
+                    {{ form_widget(form.moralAffiliation, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.moralAffiliation) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.factions) }}</div>
+                    {{ form_widget(form.factions, {'attr': {'class': 'form-control character-textarea', 'rows': '2'}}) }}
+                    {{ form_errors(form.factions) }}
+                </div>
             </div>
         </div>
 
@@ -61,6 +141,7 @@
             <div class="character-bio">
                 {{ form_widget(form.biography, {'attr': {
                     'class': 'form-control character-textarea wysiwyg-editor',
+                    'data-mode': 'roleplay',
                     'rows': '8',
                     'placeholder': 'Racontez l\'histoire de votre personnage...'
                 }}) }}
@@ -76,10 +157,11 @@
             <div class="character-traits-grid">
                 <div class="character-info-item">
                     <div class="character-info-label">
-                        <i class="fas fa-theater-masks"></i> {{ form_label(form.personality) }}
+                        <i class="fa-solid fa-dice-d20"></i> {{ form_label(form.personality) }}
                     </div>
                     {{ form_widget(form.personality, {'attr': {
-                        'class': 'form-control character-textarea',
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'data-mode': 'roleplay',
                         'rows': '4',
                         'placeholder': 'Décrivez la personnalité de votre personnage...'
                     }}) }}
@@ -91,7 +173,8 @@
                         <i class="fas fa-eye"></i> {{ form_label(form.appearance) }}
                     </div>
                     {{ form_widget(form.appearance, {'attr': {
-                        'class': 'form-control character-textarea',
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'data-mode': 'roleplay',
                         'rows': '4',
                         'placeholder': 'Décrivez l\'apparence de votre personnage...'
                     }}) }}
@@ -103,11 +186,38 @@
                         <i class="fas fa-bolt"></i> {{ form_label(form.abilities) }}
                     </div>
                     {{ form_widget(form.abilities, {'attr': {
-                        'class': 'form-control character-textarea',
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'data-mode': 'roleplay',
                         'rows': '4',
                         'placeholder': 'Listez les capacités de votre personnage...'
                     }}) }}
                     {{ form_errors(form.abilities) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-toolbox"></i> {{ form_label(form.equipment) }}
+                    </div>
+                    {{ form_widget(form.equipment, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'data-mode': 'roleplay',
+                        'rows': '4',
+                        'placeholder': 'Décrivez les équipements de votre personnage...'
+                    }}) }}
+                    {{ form_errors(form.equipment) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-skull-crossbones"></i> {{ form_label(form.weaknesses) }}
+                    </div>
+                    {{ form_widget(form.weaknesses, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'data-mode': 'roleplay',
+                        'rows': '4',
+                        'placeholder': 'Listez les faiblesses de votre personnage...'
+                    }}) }}
+                    {{ form_errors(form.weaknesses) }}
                 </div>
             </div>
         </div>
@@ -118,7 +228,7 @@
             <i class="fas fa-times"></i> Annuler
         </a>
         <button type="submit" class="btn bg-roleplay text-white">
-            <i class="fas fa-save"></i> Créer le personnage
+            <i class="fas fa-save"></i> Enregistrer les modifications
         </button>
     </div>
     {{ form_end(form) }}
@@ -127,7 +237,6 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Prévisualisation de l'avatar
@@ -152,55 +261,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Configuration TinyMCE
-    const editorConfig = {
-        skin: 'oxide-dark',
-        content_css: 'dark',
-        height: 300,
-        menubar: false,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
-        ],
-        toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | emoticons | help',
-        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }',
-        browser_spellcheck: true,
-        contextmenu: false,
-        language: 'fr_FR'
-    };
-
-    // Initialisation des éditeurs
-    tinymce.init({
-        ...editorConfig,
-        selector: '#{{ form.biography.vars.id }}',
-        placeholder: 'Racontez l\'histoire de votre personnage...',
-    });
-
-    tinymce.init({
-        ...editorConfig,
-        selector: '#{{ form.personality.vars.id }}',
-        height: 200,
-        placeholder: 'Décrivez la personnalité de votre personnage...',
-    });
-
-    tinymce.init({
-        ...editorConfig,
-        selector: '#{{ form.appearance.vars.id }}',
-        height: 200,
-        placeholder: 'Décrivez l\'apparence de votre personnage...',
-    });
-
-    tinymce.init({
-        ...editorConfig,
-        selector: '#{{ form.abilities.vars.id }}',
-        height: 200,
-        placeholder: 'Listez les capacités de votre personnage...',
-    });
+    
+    // Initialisation des éditeurs Quill.js
+    if (typeof window.initWysiwygEditors === 'function') {
+        window.initWysiwygEditors();
+    }
 });
 </script>
 {% endblock %}

@@ -1,0 +1,125 @@
+{{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    Informations générales
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.name) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.user) }}
+                        {{ form_widget(form.user, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.user) }}
+                        <div class="form-text">L'utilisateur qui contrôle ce personnage.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.avatar) }}
+                        {{ form_widget(form.avatar, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.avatar) }}
+                        <div class="form-text">URL d'une image pour représenter le personnage.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.age) }}
+                                {{ form_widget(form.age, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.age) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.gender) }}
+                                {{ form_widget(form.gender, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.gender) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.status) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.status) }}
+                        <div class="form-text">Statut actuel du personnage.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.location) }}
+                        {{ form_widget(form.location, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.location) }}
+                        <div class="form-text">Lieu actuel où se trouve le personnage.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    Description et histoire du personnage
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control html-editor', 'rows': '10'}}) }}
+                        {{ form_errors(form.description) }}
+                        <div class="form-text">Décrivez l'apparence, la personnalité et l'histoire du personnage.</div>
+                    </div>
+                    
+                    {% if form.backstory is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.backstory) }}
+                        {{ form_widget(form.backstory, {'attr': {'class': 'form-control html-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.backstory) }}
+                        <div class="form-text">L'histoire du personnage avant le début du RP.</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if form.tags is defined %}
+            <div class="card mb-4">
+                <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                    Informations supplémentaires
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.tags) }}
+                        {{ form_widget(form.tags, {'attr': {'class': 'form-control', 'data-role': 'tagsinput'}}) }}
+                        {{ form_errors(form.tags) }}
+                        <div class="form-text">Mots-clés séparés par des virgules (ex: guerrier, mage, elfe).</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ path('admin_character_index') }}" class="btn btn-secondary">Annuler</a>
+        <button class="btn btn-primary"><i class="bi bi-save"></i> {{ button_label|default('Enregistrer') }}</button>
+    </div>
+{{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+    // Initialisation d'un éditeur de texte riche si disponible
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof tinymce !== 'undefined') {
+            tinymce.init({
+                selector: '.html-editor',
+                height: 300,
+                plugins: 'link image lists table code',
+                toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | table | code'
+            });
+        }
+    });
+</script>
+{% endblock %}

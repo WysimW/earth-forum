@@ -27,8 +27,10 @@
                             <th>Titre</th>
                             <th>Forum</th>
                             <th>Auteur</th>
+                            <th>Type</th>
+                            <th>Statut</th>
                             <th>Messages</th>
-                            <th>Date de création</th>
+                            <th>Création</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -36,22 +38,40 @@
                         {% for thread in threads %}
                             <tr>
                                 <td>{{ thread.id }}</td>
-                                <td>{{ thread.title }}</td>
                                 <td>
-                                    <span class="badge bg-success">{{ thread.forum.name }}</span>
+                                    {% if thread.sticky %}
+                                        <span class="badge bg-info me-1" title="Thread épinglé"><i class="bi bi-pin"></i></span>
+                                    {% endif %}
+                                    {{ thread.title }}
+                                </td>
+                                <td>{{ thread.forum.name }}</td>
+                                <td>{{ thread.author ? thread.author.pseudo : 'Non défini' }}</td>
+                                <td>
+                                    {% if thread.type == 'normal' %}
+                                        <span class="badge bg-secondary">Normal</span>
+                                    {% elseif thread.type == 'roleplay' %}
+                                        <span class="badge bg-primary">Roleplay</span>
+                                    {% elseif thread.type == 'announcement' %}
+                                        <span class="badge bg-warning">Annonce</span>
+                                    {% elseif thread.type == 'character_sheet' %}
+                                        <span class="badge bg-info">Fiche personnage</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ thread.type }}</span>
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        {% if thread.author.avatar %}
-                                            <img src="{{ thread.author.avatar }}" alt="{{ thread.author.pseudo }}" class="rounded-circle me-2" width="25" height="25">
-                                        {% else %}
-                                            <i class="bi bi-person-circle me-2"></i>
-                                        {% endif %}
-                                        {{ thread.author.pseudo }}
-                                    </div>
+                                    {% if thread.status == 'open' %}
+                                        <span class="badge bg-success">Ouvert</span>
+                                    {% elseif thread.status == 'closed' %}
+                                        <span class="badge bg-danger">Fermé</span>
+                                    {% elseif thread.status == 'archived' %}
+                                        <span class="badge bg-secondary">Archivé</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ thread.status }}</span>
+                                    {% endif %}
                                 </td>
                                 <td>{{ thread.posts|length }}</td>
-                                <td>{{ thread.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>{{ thread.createdAt ? thread.createdAt|date('d/m/Y H:i') : '' }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="{{ path('admin_thread_show', {'id': thread.id}) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
@@ -65,7 +85,7 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7">Aucun thread trouvé</td>
+                                <td colspan="9">Aucun thread trouvé</td>
                             </tr>
                         {% endfor %}
                     </tbody>

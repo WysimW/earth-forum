@@ -58,8 +58,8 @@
             </div>
 
             {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_forum_new_thread') }}" class="btn bg-roleplay text-white w-100">
-                    <i class="fas fa-plus-circle me-2"></i>Nouvelle discussion
+                <a href="{{ path('app_choose_forum_new_thread') }}" class="btn bg-roleplay text-white w-100">
+                    <i class="fas fa-plus-circle me-2"></i>Créer une discussion
                 </a>
             {% endif %}
         </div>
@@ -182,7 +182,7 @@
                                 </p>
 
                                 {% if is_granted('ROLE_USER') %}
-                                    <a href="{{ path('app_forum_new_thread') }}" class="btn btn-primary">
+                                    <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-primary">
                                         <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle discussion
                                     </a>
                                 {% endif %}

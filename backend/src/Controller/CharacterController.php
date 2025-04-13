@@ -72,8 +72,8 @@ class CharacterController extends AbstractController
         
         if ($form->isSubmitted() && $form->isValid()) {
             // Set status to "pending" by default when creating a new character
-            $character->setStatus(Character::STATUS_PENDING);
-            $character->setStatusMessage('En attente de validation');
+            $character->setStatus(Character::STATUS_DRAFT);
+            $character->setStatusMessage('En cours de rédaction');
             
             $this->entityManager->persist($character);
             
@@ -240,7 +240,10 @@ class CharacterController extends AbstractController
     #[Route('/{id}/validate', name: 'app_roleplay_character_validate', methods: ['POST'])]
     #[IsGranted('ROLE_MODERATOR')]
     public function validate(Request $request, Character $character): Response
-    {
+    {   
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
         $moderationNote = $request->request->get('moderation_note', '');
         
         $character->setStatus(Character::STATUS_VALIDATED);
@@ -262,7 +265,7 @@ class CharacterController extends AbstractController
                 $moderationPost = new Post();
                 $moderationPost->setThread($characterSheetThread);
                 $moderationPost->setAuthor($this->getUser());
-                $moderationPost->setContent('<div class="alert alert-success">Personnage validé par ' . $this->getUser()->getPseudo() . 
+                $moderationPost->setContent('<div class="alert alert-success">Personnage validé par ' . $user->getPseudo() . 
                                            ($moderationNote ? '<br>Note: ' . $moderationNote : '') . '</div>');
                 
                 $this->entityManager->persist($moderationPost);
@@ -279,7 +282,10 @@ class CharacterController extends AbstractController
     #[Route('/{id}/reject', name: 'app_roleplay_character_reject', methods: ['POST'])]
     #[IsGranted('ROLE_MODERATOR')]
     public function reject(Request $request, Character $character): Response
-    {
+    {   
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
         $moderationNote = $request->request->get('moderation_note', '');
         
         $character->setStatus(Character::STATUS_REJECTED);
@@ -300,7 +306,7 @@ class CharacterController extends AbstractController
                 $moderationPost = new Post();
                 $moderationPost->setThread($characterSheetThread);
                 $moderationPost->setAuthor($this->getUser());
-                $moderationPost->setContent('<div class="alert alert-danger">Personnage refusé par ' . $this->getUser()->getPseudo() . 
+                $moderationPost->setContent('<div class="alert alert-danger">Personnage refusé par ' . $user->getPseudo() . 
                                            ($moderationNote ? '<br>Raison: ' . $moderationNote : '') . '</div>');
                 
                 $this->entityManager->persist($moderationPost);

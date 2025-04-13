@@ -10,7 +10,7 @@
                     <h1 class="forum-title">{{ forum.name }}</h1>
                     <div class="forum-type-badge {% if forum.isRoleplay %}roleplay{% else %}hrp{% endif %} position-absolute top-0 end-0 m-3">
                         {% if forum.isRoleplay %}
-                            <i class="fas fa-theater-masks"></i> Forum Roleplay
+                            <i class="fa-solid fa-dice-d20"></i> Forum Roleplay
                         {% else %}
                             <i class="fas fa-comments"></i> Forum Hors-Roleplay
                         {% endif %}
@@ -21,7 +21,7 @@
                     <h1 class="forum-title mb-0">{{ forum.name }}</h1>
                     <div class="forum-type-badge {% if forum.isRoleplay %}roleplay{% else %}hrp{% endif %}">
                         {% if forum.isRoleplay %}
-                            <i class="fas fa-theater-masks"></i> Forum Roleplay
+                            <i class="fa-solid fa-dice-d20"></i> Forum Roleplay
                         {% else %}
                             <i class="fas fa-comments"></i> Forum Hors-Roleplay
                         {% endif %}
@@ -59,54 +59,15 @@
             </div>
         </div>
 
-        {% if subForums|length > 0 %}
-            <div class="subforums-section mb-5">
-                <h2 class="section-title {% if forum.isRoleplay %}rp-forums{% else %}hrp-forums{% endif %}">
-                    <i class="fas fa-folder"></i> Sous-forums
-                </h2>
-                <div class="subforums-list">
-                    {% for subforum in subForums %}
-                        <div class="forum-card">
-                            <div class="forum-icon">
-                                {% if subforum.isRoleplay %}
-                                    <i class="fas fa-theater-masks"></i>
-                                {% else %}
-                                    <i class="fas fa-comments"></i>
-                                {% endif %}
-                            </div>
-                            <div class="forum-info">
-                                <h3 class="forum-title">
-                                    <a href="{{ path('app_forum_show', {'id': subforum.id}) }}">{{ subforum.name }}</a>
-                                    <span class="badge {% if subforum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %}">
-                                        {% if subforum.isRoleplay %}RP{% else %}HRP{% endif %}
-                                    </span>
-                                </h3>
-                                <p class="forum-description">{{ subforum.description|striptags|slice(0, 100) }}{% if subforum.description|length > 100 %}...{% endif %}</p>
-                                
-                                {% set subforumCount = subforum.subforums|length %}
-                                {% set threadCount = subforum.threads|length %}
-                                
-                                <div class="forum-stats">
-                                    {% if subforumCount > 0 %}
-                                        <span><i class="fas fa-folder"></i> {{ subforumCount }} sous-forum(s)</span>
-                                    {% endif %}
-                                    <span><i class="fas fa-comment-alt"></i> {{ threadCount }} discussion(s)</span>
-                                </div>
-                            </div>
-                            <div class="forum-action">
-                                <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="btn btn-sm" style="background-color: {% if subforum.isRoleplay %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
+        {# Inclusion du composant de sous-forums #}
+        {% include 'components/_subforums_list.html.twig' with {
+            'subForums': subForums,
+            'forumIsRoleplay': forum.isRoleplay
+        } %}
 
         <div class="threads-section">
             <h2 class="section-title {% if forum.isRoleplay %}rp-forums{% else %}hrp-forums{% endif %}">
-                <i class="fas {% if forum.isRoleplay %}fa-theater-masks{% else %}fa-comments{% endif %}"></i> 
+                <i class="fas {% if forum.isRoleplay %}fa-solid fa-dice-d20{% else %}fa-comments{% endif %}"></i> 
                 Discussions
             </h2>
             
@@ -118,144 +79,43 @@
                 </div>
             {% endif %}
             
-            {% if threads|length > 0 %}
-                <div class="threads-list">
-                    <div class="threads-header">
-                        <div style="width: 50px;"></div>
-                        <div style="flex: 3;">Discussion</div>
-                        <div style="flex: 1;">Auteur</div>
-                        <div class="text-center" style="flex: 1;">Réponses</div>
-                        <div class="text-center" style="flex: 1;">Dernière activité</div>
-                    </div>
-                    
-                    {% for thread in threads %}
-                        <div class="thread-row {% if thread.sticky %}thread-sticky{% endif %}">
-                            <div class="thread-icon">
-                                {% if thread.sticky %}
-                                    <i class="fas fa-thumbtack text-warning" data-bs-toggle="tooltip" title="Épinglé"></i>
-                                {% elseif thread.type == 'roleplay' %}
-                                    <i class="fas fa-theater-masks" data-bs-toggle="tooltip" title="Roleplay"></i>
-                                {% else %}
-                                    <i class="fas fa-comment-alt" data-bs-toggle="tooltip" title="Discussion"></i>
-                                {% endif %}
-                                
-                                {% if thread.status == 'closed' %}
-                                    <i class="fas fa-lock text-warning ms-2" data-bs-toggle="tooltip" title="Fermé"></i>
-                                {% endif %}
-                            </div>
-                            <div class="thread-info">
-                                <h3 class="thread-title">
-                                    <a href="{{ path('app_thread_show', {'id': thread.id}) }}">{{ thread.title }}</a>
-                                    
-                                    {% if thread.sticky %}
-                                        <span class="badge bg-warning ms-1">Épinglé</span>
-                                    {% endif %}
-                                    
-                                    {% if thread.status == 'closed' %}
-                                        <span class="badge bg-secondary ms-1">Fermé</span>
-                                    {% endif %}
-                                    
-                                    {% if thread.type == 'roleplay' %}
-                                        <span class="badge bg-roleplay ms-1" title="Scène Roleplay">RP</span>
-                                    {% else %}
-                                        <span class="badge bg-hrp ms-1" title="Discussion Hors-Roleplay">HRP</span>
-                                    {% endif %}
-                                </h3>
-                                
-                                <div class="thread-meta">
-                                    {% if thread.location %}
-                                        <span class="thread-location">
-                                            <i class="fas fa-map-marker-alt"></i> {{ thread.location.name }}
-                                        </span>
-                                    {% endif %}
-                                    <span class="thread-date">
-                                        <i class="fas fa-calendar-alt"></i> {{ thread.createdAt|date('d/m/Y') }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="thread-author">
-                                {% if thread.type == 'roleplay' and thread.characterCreator %}
-                                    <div class="thread-author-avatar">
-                                        {% if thread.characterCreator.avatar %}
-                                            <img src="{{ thread.characterCreator.avatar }}" alt="{{ thread.characterCreator.name }}">
-                                        {% else %}
-                                            <div class="default-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <span class="character-name">{{ thread.characterCreator.name }}</span>
-                                {% else %}
-                                    <div class="thread-author-avatar">
-                                        <div class="default-avatar">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                    </div>
-                                    {{ thread.author.pseudo }}
-                                {% endif %}
-                            </div>
-                            <div class="thread-stats text-center">
-                                {{ thread.posts|length - 1 }} <i class="fas fa-comments ms-1"></i>
-                            </div>
-                            <div class="thread-last-post">
-                                {% if thread.lastPostInfo %}
-                                    {{ thread.lastPostInfo.date|date('d/m/Y H:i') }}
-                                {% else %}
-                                    <span class="text-muted">Pas de réponse</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                
-                {# Pagination #}
-                {% if pagination is defined and pagination.totalPages > 1 %}
-                    <nav aria-label="Pagination" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                            {% if pagination.currentPage > 1 %}
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': pagination.currentPage - 1}) }}">Précédent</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">Précédent</span>
-                                </li>
-                            {% endif %}
-                            
-                            {% for i in 1..pagination.totalPages %}
-                                <li class="page-item {% if i == pagination.currentPage %}active{% endif %}">
-                                    <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': i}) }}">{{ i }}</a>
-                                </li>
-                            {% endfor %}
-                            
-                            {% if pagination.currentPage < pagination.totalPages %}
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': pagination.currentPage + 1}) }}">Suivant</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">Suivant</span>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% endif %}
-                
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas {% if forum.isRoleplay %}fa-theater-masks{% else %}fa-comments{% endif %} fa-3x"></i>
-                    <h3>Aucune discussion n'a été créée dans ce forum.</h3>
-                    {% if app.user %}
-                        <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white mt-3">
-                            <i class="fas fa-plus me-2"></i> Créer la première discussion
-                        </a>
-                    {% else %}
-                        <p>Connectez-vous pour créer une discussion.</p>
-                        <a href="{{ path('app_login') }}" class="btn btn-primary mt-2">
-                            <i class="fas fa-sign-in-alt me-2"></i> Connexion
-                        </a>
-                    {% endif %}
-                </div>
+            {# Inclusion du composant pour la liste de threads #}
+            {% include 'components/_threads_list.html.twig' with {
+                'threads': threads,
+                'isRoleplay': forum.isRoleplay
+            } %}
+            
+            {# Pagination #}
+            {% if pagination is defined and pagination.totalPages > 1 %}
+                <nav aria-label="Pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if pagination.currentPage > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': pagination.currentPage - 1}) }}">Précédent</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Précédent</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for i in 1..pagination.totalPages %}
+                            <li class="page-item {% if i == pagination.currentPage %}active{% endif %}">
+                                <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': i}) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if pagination.currentPage < pagination.totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_forum_show', {'id': forum.id, 'page': pagination.currentPage + 1}) }}">Suivant</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Suivant</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             {% endif %}
         </div>
         

@@ -77,6 +77,16 @@ class Forum implements TimestampableInterface
     #[ORM\Column(length: 255, unique: true)]
     private ?string $slug = null;
 
+     /**
+     * @var mixed|null
+     */
+    public $lastPostInfo;
+
+    /**
+     * @var mixed|null
+     */
+    public $stats;
+
     public function __construct()
     {   
         $this->threads = new ArrayCollection();

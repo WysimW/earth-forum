@@ -1,95 +1,213 @@
 <div class="character-sheet-container">
-    <div class="character-sheet-section">
-        <div class="character-sheet-section-header">
-            <div class="character-sheet-status-badge {% if character.status == 'validated' %}badge bg-success{% elseif character.status == 'rejected' %}badge bg-danger{% elseif character.status == 'abandoned' %}badge bg-secondary{% else %}badge bg-warning{% endif %} mb-3">
-                <i class="fas {% if character.status == 'validated' %}fa-check-circle{% elseif character.status == 'rejected' %}fa-times-circle{% elseif character.status == 'abandoned' %}fa-trash-alt{% elseif character.status == 'editing' %}fa-pencil-alt{% else %}fa-clock{% endif %}"></i> 
-                {{ {
-                    'draft': 'Brouillon',
-                    'pending': 'En attente de validation',
-                    'validated': 'Validé',
-                    'rejected': 'Refusé',
-                    'abandoned': 'Abandonné',
-                    'editing': 'En cours d\'édition'
-                }[character.status] }}
-                {% if character.statusMessage %} - {{ character.statusMessage }}{% endif %}
-            </div>
+    {# En-tête améliorée #}
+    <div class="character-sheet-header">
+        <div class="character-sheet-status-badge {% if character.status == 'validated' %}badge bg-success{% elseif character.status == 'rejected' %}badge bg-danger{% elseif character.status == 'abandoned' %}badge bg-secondary{% else %}badge bg-warning{% endif %} mb-3">
+            <i class="fas {% if character.status == 'validated' %}fa-check-circle{% elseif character.status == 'rejected' %}fa-times-circle{% elseif character.status == 'abandoned' %}fa-trash-alt{% elseif character.status == 'editing' %}fa-pencil-alt{% else %}fa-clock{% endif %}"></i> 
+            {{ {
+                'draft': 'Brouillon',
+                'pending': 'En attente de validation',
+                'validated': 'Validé',
+                'rejected': 'Refusé',
+                'abandoned': 'Abandonné',
+                'editing': 'En cours d\'édition'
+            }[character.status] }}
+            {% if character.statusMessage %} - {{ character.statusMessage }}{% endif %}
         </div>
 
-        <div class="character-sheet-profile-header">
-            <div class="character-sheet-info-grid">
-                <div class="character-sheet-info-item">
-                    <div class="character-sheet-info-label">Nom</div>
-                    <div class="character-sheet-info-value">{{ character.name }}</div>
-                </div>
-                {% if character.alias %}
-                    <div class="character-sheet-info-item">
-                        <div class="character-sheet-info-label">Alias</div>
-                        <div class="character-sheet-info-value">{{ character.alias }}</div>
+        <div class="character-profile-header">
+            <div class="character-avatar-banner">
+                {% if character.avatar %}
+                    <div class="character-avatar-large">
+                        <img src="{{ character.avatar }}" alt="{{ character.name }}">
                     </div>
-                {% endif %}
-                {% if character.universe %}
-                    <div class="character-sheet-info-item">
-                        <div class="character-sheet-info-label">Univers</div>
-                        <div class="character-sheet-info-value">
-                            <i class="fas fa-globe-americas"></i> {{ character.universe.name }}
-                        </div>
+                {% else %}
+                    <div class="character-avatar-large character-avatar-placeholder">
+                        <i class="fas fa-user-circle"></i>
                     </div>
                 {% endif %}
             </div>
-
-            {% if character.avatar %}
-                <div class="character-sheet-avatar-large">
-                    <img src="{{ character.avatar }}" alt="{{ character.name }}">
+            
+            <div class="character-header-content">
+                <h1 class="character-name-title">{{ character.name }}</h1>
+                
+                <div class="character-quick-info">
+                    {% if character.firstName or character.lastName %}
+                        <div class="character-info-badge">
+                            <i class="fas fa-id-card"></i>
+                            {{ [character.firstName, character.lastName]|filter(v => v)|join(' ') }}
+                        </div>
+                    {% endif %}
+                    
+                    {% if character.moralAffiliation %}
+                        <div class="character-info-badge">
+                            <span class="badge {% if character.moralAffiliation == 'Super-héros' %}bg-primary{% elseif character.moralAffiliation == 'Super-vilain' %}bg-danger{% elseif character.moralAffiliation == 'Anti-héros' %}bg-warning{% elseif character.moralAffiliation == 'Vigilante' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ character.moralAffiliation }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if character.universe %}
+                        <div class="character-info-badge">
+                            <i class="fas fa-globe-americas"></i>
+                            {{ character.universe.name }}
+                        </div>
+                    {% endif %}
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {# Section d'informations #}
+    <div class="character-info-section glass-panel">
+        <div class="character-sheet-info-grid">
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Nom</div>
+                <div class="character-sheet-info-value">{{ character.name }}</div>
+            </div>
+            
+            {% if character.firstName or character.lastName %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Identité civile</div>
+                <div class="character-sheet-info-value">
+                    {{ [character.firstName, character.lastName]|filter(v => v)|join(' ') }}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if character.age %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Âge</div>
+                <div class="character-sheet-info-value">{{ character.age }}</div>
+            </div>
+            {% endif %}
+            
+            {% if character.pseudonyms %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Pseudonymes</div>
+                <div class="character-sheet-info-value">{{ character.pseudonyms }}</div>
+            </div>
+            {% endif %}
+            
+            {% if character.factions %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Factions</div>
+                <div class="character-sheet-info-value">{{ character.factions }}</div>
+            </div>
+            {% endif %}
+            
+            {% if character.gender or character.sexualOrientation %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Identité</div>
+                <div class="character-sheet-info-value">
+                    {% if character.gender %}{{ character.gender }}{% endif %}
+                    {% if character.gender and character.sexualOrientation %} • {% endif %}
+                    {% if character.sexualOrientation %}{{ character.sexualOrientation }}{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if character.civilStatus %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Statut civil</div>
+                <div class="character-sheet-info-value">{{ character.civilStatus }}</div>
+            </div>
+            {% endif %}
+            
+            {% if character.occupation %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Occupation</div>
+                <div class="character-sheet-info-value">{{ character.occupation }}</div>
+            </div>
+            {% endif %}
+            
+            {% if character.alias %}
+            <div class="character-sheet-info-item">
+                <div class="character-sheet-info-label">Alias</div>
+                <div class="character-sheet-info-value">{{ character.alias }}</div>
+            </div>
             {% endif %}
         </div>
     </div>
 
-    <div class="character-sheet-section">
-        <div class="character-sheet-section-header">
-            <i class="fas fa-book-open"></i>
-            <h3>Biographie</h3>
-        </div>
-        <div class="character-sheet-section-content">
-            <div class="character-sheet-description">
-                {{ character.biography|raw }}
+    {# Tabs pour le contenu #}
+    <div class="character-content-tabs glass-panel mt-4">
+        <ul class="nav nav-tabs" id="characterSheetTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="bio-tab" data-bs-toggle="tab" data-bs-target="#bio" type="button" role="tab" aria-controls="bio" aria-selected="true">
+                    <i class="fas fa-book-open"></i> Biographie
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="personality-tab" data-bs-toggle="tab" data-bs-target="#personality" type="button" role="tab" aria-controls="personality" aria-selected="false">
+                    <i class="fas fa-brain"></i> Personnalité
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
+                    <i class="fas fa-user"></i> Apparence
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="abilities-tab" data-bs-toggle="tab" data-bs-target="#abilities" type="button" role="tab" aria-controls="abilities" aria-selected="false">
+                    <i class="fas fa-bolt"></i> Capacités
+                </button>
+            </li>
+            {% if character.equipment %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab" aria-controls="equipment" aria-selected="false">
+                    <i class="fas fa-toolbox"></i> Équipements
+                </button>
+            </li>
+            {% endif %}
+            {% if character.weaknesses %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="weaknesses-tab" data-bs-toggle="tab" data-bs-target="#weaknesses" type="button" role="tab" aria-controls="weaknesses" aria-selected="false">
+                    <i class="fas fa-skull-crossbones"></i> Faiblesses
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="tab-content p-4" id="characterSheetTabContent">
+            <div class="tab-pane fade show active" id="bio" role="tabpanel" aria-labelledby="bio-tab">
+                <div class="character-sheet-description">
+                    {{ character.biography|raw }}
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="character-sheet-section">
-        <div class="character-sheet-section-header">
-            <i class="fas fa-user"></i>
-            <h3>Apparence</h3>
-        </div>
-        <div class="character-sheet-section-content">
-            <div class="character-sheet-description">
-                {{ character.appearance|raw }}
+            
+            <div class="tab-pane fade" id="personality" role="tabpanel" aria-labelledby="personality-tab">
+                <div class="character-sheet-description">
+                    {{ character.personality|raw }}
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="character-sheet-section">
-        <div class="character-sheet-section-header">
-            <i class="fas fa-brain"></i>
-            <h3>Personnalité</h3>
-        </div>
-        <div class="character-sheet-section-content">
-            <div class="character-sheet-description">
-                {{ character.personality|raw }}
+            
+            <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
+                <div class="character-sheet-description">
+                    {{ character.appearance|raw }}
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="character-sheet-section">
-        <div class="character-sheet-section-header">
-            <i class="fas fa-bolt"></i>
-            <h3>Capacités</h3>
-        </div>
-        <div class="character-sheet-section-content">
-            <div class="character-sheet-description">
-                {{ character.abilities|raw }}
+            
+            <div class="tab-pane fade" id="abilities" role="tabpanel" aria-labelledby="abilities-tab">
+                <div class="character-sheet-description">
+                    {{ character.abilities|raw }}
+                </div>
             </div>
+            
+            {% if character.equipment %}
+            <div class="tab-pane fade" id="equipment" role="tabpanel" aria-labelledby="equipment-tab">
+                <div class="character-sheet-description">
+                    {{ character.equipment|raw }}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if character.weaknesses %}
+            <div class="tab-pane fade" id="weaknesses" role="tabpanel" aria-labelledby="weaknesses-tab">
+                <div class="character-sheet-description">
+                    {{ character.weaknesses|raw }}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -103,58 +221,213 @@
 </div>
 
 <style>
+/* Nouvelles styles pour la fiche de personnage */
 .character-sheet-container {
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--font-main);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.character-sheet-section-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 2rem;
+.character-sheet-header {
+    background: linear-gradient(135deg, var(--roleplay-primary), var(--roleplay-secondary));
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
     position: relative;
+    box-shadow: 0 10px 25px rgba(92, 45, 145, 0.3);
+    overflow: hidden;
 }
 
-.character-sheet-info-grid {
+.character-sheet-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%);
+    pointer-events: none;
+}
+
+.character-profile-header {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 2rem;
+    align-items: center;
+    gap: 2rem;
     position: relative;
+    z-index: 2;
 }
 
-.character-sheet-info-item {
-    flex: 2;
-    min-width: 300px;
+.character-avatar-banner {
+    flex-shrink: 0;
 }
 
-.character-sheet-avatar-large {
-    flex: 1;
-    max-width: 250px;
-    min-width: 150px;
-    margin-left: 1rem;
+.character-avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.character-sheet-avatar-large img {
+.character-avatar-placeholder {
+    background: rgba(10, 10, 10, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.character-avatar-placeholder i {
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.character-avatar-large img {
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.character-header-content {
+    flex: 1;
+}
+
+.character-name-title {
+    color: white;
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.character-quick-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.character-info-badge {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: white;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-info-badge i {
+    color: var(--roleplay-light);
 }
 
 .character-sheet-status-badge {
     position: absolute;
-    top: -15px;
-    left: 0;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
     padding: 0.5rem 1rem;
     border-radius: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    font-family: var(--font-special);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.character-info-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.character-content-tabs {
+    overflow: hidden;
+}
+
+.character-content-tabs .nav-tabs {
+    background-color: rgba(10, 10, 10, 0.3);
+    border-bottom: 1px solid rgba(156, 85, 211, 0.2);
+}
+
+.character-content-tabs .nav-link {
+    color: var(--light-gray) !important;
+    border: none;
+    padding: 1rem 1.5rem !important;
+    font-family: var(--font-special);
+    letter-spacing: 1px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.character-content-tabs .nav-link i {
+    color: var(--roleplay-accent);
+}
+
+.character-content-tabs .nav-link:hover {
+    background-color: rgba(156, 85, 211, 0.1);
+    border-bottom: 3px solid var(--roleplay-secondary);
+}
+
+.character-content-tabs .nav-link.active {
+    background-color: rgba(156, 85, 211, 0.2);
+    color: white !important;
+    border-bottom: 3px solid var(--roleplay-accent);
+    font-weight: 500;
 }
 
 .character-sheet-description {
-    line-height: 1.6;
+    line-height: 1.8;
+    font-size: 1.05rem;
+    color: var(--text-white);
+}
+
+.character-sheet-validation-info {
+    font-family: var(--font-special);
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    .character-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .character-name-title {
+        font-size: 2rem;
+    }
+    
+    .character-quick-info {
+        justify-content: center;
+    }
+    
+    .character-sheet-status-badge {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin: 0 auto 1rem;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .character-content-tabs .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    
+    .character-content-tabs .nav-link {
+        white-space: nowrap;
+        padding: 0.75rem 1rem !important;
+    }
 }
 </style>
 

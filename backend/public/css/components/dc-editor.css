@@ -1,0 +1,199 @@
+/**
+ * DC Earth Forum - Styles pour l'éditeur WYSIWYG
+ */
+.dc-editor-container {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background-color: rgba(12, 45, 72, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Styles généraux de l'éditeur */
+.ql-toolbar.ql-snow {
+    background-color: rgba(10, 10, 10, 0.5);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.1);
+    border-top-left-radius: var(--border-radius-md);
+    border-top-right-radius: var(--border-radius-md);
+    padding: var(--spacing-sm);
+}
+
+.ql-container.ql-snow {
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: var(--border-radius-md);
+    border-bottom-right-radius: var(--border-radius-md);
+    background-color: rgba(10, 10, 10, 0.3);
+    color: var(--text-white);
+    font-family: var(--font-main);
+    height: 200px;
+}
+
+.dc-editor-container.roleplay .ql-container.ql-snow {
+    height: 300px;
+}
+
+.dc-editor-container.hrp .ql-container.ql-snow {
+    height: 150px;
+}
+
+/* Style pour les éditeurs full-size */
+.wysiwyg-editor-full + .dc-editor-container .ql-container.ql-snow {
+    height: 400px;
+}
+
+/* Style pour les éditeurs quick */
+.wysiwyg-editor-quick + .dc-editor-container .ql-container.ql-snow {
+    height: 100px;
+}
+
+/* Styles pour les boutons et icônes */
+.ql-snow.ql-toolbar button, .ql-snow .ql-toolbar button {
+    color: var(--light-gray);
+}
+
+.ql-snow.ql-toolbar button:hover, .ql-snow .ql-toolbar button:hover,
+.ql-snow.ql-toolbar button.ql-active, .ql-snow .ql-toolbar button.ql-active {
+    color: var(--primary);
+}
+
+.ql-snow .ql-stroke {
+    stroke: var(--light-gray);
+}
+
+.ql-snow .ql-fill {
+    fill: var(--light-gray);
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke {
+    stroke: var(--primary);
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-fill {
+    fill: var(--primary);
+}
+
+/* Styles des formats personnalisés pour le texte */
+.roleplay-text {
+    font-style: italic;
+    color: var(--roleplay-accent);
+}
+
+.hrp-text {
+    background-color: rgba(44, 110, 73, 0.2);
+    color: var(--hrp-accent);
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+
+/* Styles des boutons RP et HRP personnalisés */
+.ql-rp, .ql-hrp {
+    position: relative;
+    padding: 0 2px;
+    width: auto !important;
+    min-width: 28px;
+    text-align: center;
+}
+
+.ql-rp::after {
+    content: 'RP';
+    font-family: var(--font-special);
+    color: var(--roleplay-accent);
+    font-style: italic;
+}
+
+.ql-hrp::after {
+    content: 'HRP';
+    font-family: var(--font-special);
+    color: var(--hrp-accent);
+    background-color: rgba(44, 110, 73, 0.2);
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+.ql-rp.ql-active::after {
+    text-shadow: 0 0 5px var(--roleplay-glow);
+}
+
+.ql-hrp.ql-active::after {
+    text-shadow: 0 0 5px var(--hrp-glow);
+}
+
+/* Compteur de caractères */
+.dc-editor-char-counter {
+    text-align: right;
+    padding: var(--spacing-xs);
+    color: var(--light-gray);
+    font-size: 0.8rem;
+    background-color: rgba(10, 10, 10, 0.5);
+}
+
+.dc-editor-char-counter.warning {
+    color: var(--warning);
+}
+
+.dc-editor-char-counter.danger {
+    color: var(--danger);
+}
+
+/* Style du contenu dans l'éditeur */
+.ql-editor {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.ql-editor p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3, 
+.ql-editor h4, .ql-editor h5, .ql-editor h6 {
+    font-family: var(--font-title);
+    color: var(--primary-light);
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+.ql-editor blockquote {
+    border-left: 3px solid var(--primary);
+    padding-left: var(--spacing-md);
+    margin-left: var(--spacing-md);
+    color: var(--light-gray);
+}
+
+.ql-editor pre.ql-syntax {
+    background-color: rgba(10, 10, 10, 0.7);
+    color: var(--light-green);
+    border-radius: var(--border-radius-sm);
+    overflow: auto;
+}
+
+.ql-editor a {
+    color: var(--secondary);
+    text-decoration: none;
+}
+
+.ql-editor a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ql-container.ql-snow {
+        height: 150px;
+    }
+    
+    .wysiwyg-editor-full + .dc-editor-container .ql-container.ql-snow {
+        height: 250px;
+    }
+    
+    .ql-toolbar.ql-snow {
+        flex-wrap: wrap;
+    }
+}

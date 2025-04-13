@@ -74,7 +74,7 @@
                     {% if participatingThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in participatingThreads %}
-                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h5 class="mb-1">{{ thread.title }}</h5>
                                         <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">
@@ -111,7 +111,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                     <h2 class="card-title h5 mb-0">Mes créations</h2>
-                    <a href="{{ path('app_forum_new_thread') }}" class="btn btn-sm btn-outline-light">
+                    <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-sm btn-outline-light">
                         <i class="fas fa-plus"></i> Nouvelle
                     </a>
                 </div>
@@ -119,7 +119,7 @@
                     {% if createdThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in createdThreads %}
-                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-0">{{ thread.title }}</h6>
                                         <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %} rounded-pill">
@@ -142,7 +142,7 @@
                             <i class="fas fa-pencil-alt fa-3x text-muted mb-3"></i>
                             <h3 class="h5">Vous n'avez pas encore créé de scène</h3>
                             <p class="text-muted mb-3">Lancez votre première histoire</p>
-                            <a href="{{ path('app_forum_new_thread') }}" class="btn btn-info text-white">
+                            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-info text-white">
                                 <i class="fas fa-plus"></i> Créer une scène
                             </a>
                         </div>
@@ -158,16 +158,13 @@
                     {% if recentThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in recentThreads %}
-                                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-0">{{ thread.title }}</h6>
                                         <small class="text-muted">{{ thread.updatedAt|date('d/m/Y') }}</small>
                                     </div>
                                     <small class="text-muted">
                                         <span class="me-2"><i class="fas fa-user"></i> {{ thread.author.pseudo }}</span>
-                                        {% if thread.universe %}
-                                            <span><i class="fas fa-globe-europe"></i> {{ thread.universe.name }}</span>
-                                        {% endif %}
                                     </small>
                                 </a>
                             {% endfor %}
@@ -179,10 +176,10 @@
                         </div>
                     {% else %}
                         <div class="text-center py-4">
-                            <i class="fas fa-theater-masks fa-3x text-muted mb-3"></i>
+                            <i class="fa-solid fa-dice-d20 fa-3x text-muted mb-3"></i>
                             <h3 class="h5">Aucune scène récente</h3>
                             <p class="text-muted mb-3">Soyez le premier à créer une scène</p>
-                            <a href="{{ path('app_forum_new_thread') }}" class="btn btn-secondary">
+                            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-secondary">
                                 <i class="fas fa-plus"></i> Créer une scène
                             </a>
                         </div>
@@ -199,7 +196,7 @@
                         <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-outline-primary">
                             <i class="fas fa-user-plus"></i> Créer un personnage
                         </a>
-                        <a href="{{ path('app_forum_new_thread') }}" class="btn btn-outline-success">
+                        <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-outline-success">
                             <i class="fas fa-plus-circle"></i> Créer une scène
                         </a>
                         <a href="{{ path('app_roleplay_threads') }}" class="btn btn-outline-info">

@@ -1,0 +1,80 @@
+{% if thread is defined %}
+<div class="thread-row {% if thread.sticky %}thread-sticky{% endif %}">
+    <div class="thread-icon">
+        <i class="fas {% if thread.sticky %}fa-thumbtack{% else %}{% if thread.type == 'roleplay' %}fa-solid fa-dice-d20{% else %}fa-comments{% endif %}{% endif %}"></i>
+    </div>
+    <div class="thread-info">
+        <h3 class="thread-title">
+            <a href="{{ path('app_thread_show', {'id': thread.id}) }}">{{ thread.title }}</a>
+            {% if thread.sticky %}
+                <span class="badge bg-warning ms-1" title="Épinglé"><i class="fas fa-thumbtack"></i></span>
+            {% endif %}
+            {% if thread.status == 'closed' %}
+                <span class="badge bg-danger ms-1" title="Fermé"><i class="fas fa-lock"></i></span>
+            {% endif %}
+            {% if thread.status == 'archived' %}
+                <span class="badge bg-secondary ms-1" title="Archivé"><i class="fas fa-archive"></i></span>
+            {% endif %}
+            {% if thread.type == 'roleplay' and thread.visibleToCharactersOnly %}
+                <span class="badge bg-dark ms-1" title="Visible uniquement par les participants"><i class="fas fa-user-shield"></i></span>
+            {% endif %}
+        </h3>
+        <div class="thread-meta">
+            <span class="thread-author">
+                {% if thread.type == 'roleplay' and thread.characterCreator %}
+                    <span class="character-name">
+                        {{ thread.characterCreator.name }}
+                    </span> 
+                    <span class="text-muted">({{ thread.author.pseudo }})</span>
+                {% else %}
+                    {{ thread.author.pseudo }}
+                {% endif %}
+            </span>
+            {% if thread.location %}
+                <span class="me-3">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ thread.location.name }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="thread-stats">
+        <div class="mb-1">
+            <span class="badge bg-light text-dark" title="Réponses">
+                <i class="fas fa-comments me-1"></i>{{ thread.posts|length - 1 }}
+            </span>
+        </div>
+        {% if thread.type == 'roleplay' %}
+            <div>
+                <span class="badge bg-light text-dark" title="Participants">
+                    <i class="fas fa-users me-1"></i>
+                    {% if thread.maxParticipants %}
+                        {{ thread.participants|length }}/{{ thread.maxParticipants }}
+                    {% else %}
+                        {{ thread.participants|length }}
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="thread-last-post">
+        {% if thread.lastPost %}
+            <small class="text-muted d-block">
+                <i class="fas fa-clock me-1"></i>{{ thread.lastPost.createdAt|date('d/m/Y H:i') }}
+            </small>
+            <small>
+                {% if thread.lastPost.character %}
+                    <span class="character-name">{{ thread.lastPost.character.name }}</span>
+                {% else %}
+                    {{ thread.lastPost.author.pseudo }}
+                {% endif %}
+            </small>
+            <a href="{{ path('app_thread_show', {'id': thread.id}) }}#post-{{ thread.lastPost.id }}" class="btn btn-sm btn-outline-secondary mt-1">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        {% else %}
+            <span class="text-muted">Pas de réponse</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

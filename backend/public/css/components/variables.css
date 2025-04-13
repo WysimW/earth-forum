@@ -14,25 +14,25 @@
     --text-white: #FFFFFF;
 
     /* Accents et états */
-    --accent-green: #00A86B;
-    --accent-light: #2ecc71;
+    --accent-green: #0476F2;
+    --accent-light: #2588F5;
     --warning: #f39c12;
     --danger: #e74c3c;
     --info: #3498db;
 
     /* Couleurs RP */
-    --roleplay-primary: #5c2d91;
-    --roleplay-secondary: #7048b6;
-    --roleplay-accent: #9c55d3;
-    --roleplay-light: #b76ee3;
-    --roleplay-glow: rgba(92, 45, 145, 0.6);
+    --roleplay-primary: #0476F2;
+    --roleplay-secondary: #2588F5;
+    --roleplay-accent: #4A9CF7;
+    --roleplay-light: #6FB0FA;
+    --roleplay-glow: rgba(4, 118, 242, 0.6);
 
     /* Couleurs HRP */
-    --hrp-primary: #2c6e49;
-    --hrp-secondary: #3a8a5f;
-    --hrp-accent: #4c956c;
-    --hrp-light: #64ad84;
-    --hrp-glow: rgba(44, 110, 73, 0.6);
+    --hrp-primary: #282E3C;
+    --hrp-secondary: #323847;
+    --hrp-accent: #3D4454;
+    --hrp-light: #4A5163;
+    --hrp-glow: rgba(40, 46, 60, 0.6);
 
     /* Effets de lueur */
     --glow-blue: rgba(20, 93, 160, 0.6);
@@ -41,7 +41,7 @@
     /* Polices */
     --font-main: 'Inter', sans-serif;
     --font-title: 'Bebas Neue', sans-serif;
-    --font-special: 'Roboto Mono', sans-serif;
+    --font-special: 'Bebas Neue', sans-serif;
 
     /* Espacements */
     --spacing-xs: 0.25rem;

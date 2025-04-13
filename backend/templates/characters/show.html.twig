@@ -54,8 +54,77 @@
                             <span class="badge bg-primary fs-6 mb-2">{{ character.universe.name }}</span>
                         {% endif %}
                     </div>
+
+                    <div class="character-info-box">
+                        {% if character.firstName or character.lastName %}
+                            <div class="info-row">
+                                <span class="info-label">Identité:</span>
+                                <span class="info-value">{{ [character.firstName, character.lastName]|filter(v => v)|join(' ') }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.age %}
+                            <div class="info-row">
+                                <span class="info-label">Âge:</span>
+                                <span class="info-value">{{ character.age }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.pseudonyms %}
+                            <div class="info-row">
+                                <span class="info-label">Pseudonymes:</span>
+                                <span class="info-value">{{ character.pseudonyms }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.gender %}
+                            <div class="info-row">
+                                <span class="info-label">Sexe:</span>
+                                <span class="info-value">{{ character.gender }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.sexualOrientation %}
+                            <div class="info-row">
+                                <span class="info-label">Orientation:</span>
+                                <span class="info-value">{{ character.sexualOrientation }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.moralAffiliation %}
+                            <div class="info-row">
+                                <span class="info-label">Affiliation:</span>
+                                <span class="info-value">
+                                    <span class="badge {% if character.moralAffiliation == 'Super-héros' %}bg-primary{% elseif character.moralAffiliation == 'Super-vilain' %}bg-danger{% elseif character.moralAffiliation == 'Anti-héros' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                        {{ character.moralAffiliation }}
+                                    </span>
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.factions %}
+                            <div class="info-row">
+                                <span class="info-label">Factions:</span>
+                                <span class="info-value">{{ character.factions }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.civilStatus %}
+                            <div class="info-row">
+                                <span class="info-label">Statut civil:</span>
+                                <span class="info-value">{{ character.civilStatus }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if character.occupation %}
+                            <div class="info-row">
+                                <span class="info-label">Travail:</span>
+                                <span class="info-value">{{ character.occupation }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
                     
-                    <div class="text-muted small">
+                    <div class="text-muted small mt-3">
                         <div>Créé par: {{ character.user.pseudo }}</div>
                         <div>Créé le: {{ character.createdAt|date('d/m/Y') }}</div>
                     </div>
@@ -74,6 +143,16 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="abilities-tab" data-bs-toggle="tab" data-bs-target="#abilities" type="button" role="tab">Capacités</button>
                         </li>
+                        {% if character.equipment %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab">Équipements</button>
+                        </li>
+                        {% endif %}
+                        {% if character.weaknesses %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="weaknesses-tab" data-bs-toggle="tab" data-bs-target="#weaknesses" type="button" role="tab">Faiblesses</button>
+                        </li>
+                        {% endif %}
                     </ul>
                     <div class="tab-content p-3 border border-top-0 rounded-bottom" id="characterTabContent">
                         <div class="tab-pane fade show active" id="bio" role="tabpanel" aria-labelledby="bio-tab">
@@ -112,6 +191,20 @@
                                 <p class="text-muted fst-italic">Aucune capacité ou compétence spécifiée pour ce personnage.</p>
                             {% endif %}
                         </div>
+                        {% if character.equipment %}
+                        <div class="tab-pane fade" id="equipment" role="tabpanel" aria-labelledby="equipment-tab">
+                            <div class="character-info">
+                                {{ character.equipment|nl2br }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if character.weaknesses %}
+                        <div class="tab-pane fade" id="weaknesses" role="tabpanel" aria-labelledby="weaknesses-tab">
+                            <div class="character-info">
+                                {{ character.weaknesses|nl2br }}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -158,4 +251,38 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+.character-info-box {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: left;
+}
+
+.info-row {
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-label {
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: inline-block;
+    width: 90px;
+}
+
+.info-value {
+    display: inline-block;
+}
+</style>
 {% endblock %}

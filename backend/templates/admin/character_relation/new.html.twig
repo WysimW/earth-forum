@@ -1,0 +1,113 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvelle Relation | Earth Forum{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Créer une nouvelle relation</h1>
+        <a href="{{ path('admin_character_relation_index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {{ form_start(form) }}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-indigo text-white" style="background-color: #6610f2;">
+                        <i class="bi bi-diagram-3 me-2"></i> Personnages
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form_label(form.sourceCharacter) }}
+                            {{ form_widget(form.sourceCharacter) }}
+                            {{ form_errors(form.sourceCharacter) }}
+                            <div class="form-text">{{ form_help(form.sourceCharacter) }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.targetCharacter) }}
+                            {{ form_widget(form.targetCharacter) }}
+                            {{ form_errors(form.targetCharacter) }}
+                            <div class="form-text">{{ form_help(form.targetCharacter) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-indigo text-white" style="background-color: #6610f2;">
+                        <i class="bi bi-info-circle me-2"></i> Détails de la relation
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type) }}
+                            {{ form_errors(form.type) }}
+                            <div class="form-text">{{ form_help(form.type) }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.intensity) }}
+                            {{ form_widget(form.intensity) }}
+                            {{ form_errors(form.intensity) }}
+                            <div class="form-text">{{ form_help(form.intensity) }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.isPublic) }}
+                            <div>
+                                {{ form_widget(form.isPublic) }}
+                            </div>
+                            {{ form_errors(form.isPublic) }}
+                            <div class="form-text">{{ form_help(form.isPublic) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-indigo text-white" style="background-color: #6610f2;">
+                <i class="bi bi-card-text me-2"></i> Description de la relation
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description) }}
+                    {{ form_errors(form.description) }}
+                    <div class="form-text">{{ form_help(form.description) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path('admin_character_relation_index') }}" class="btn btn-secondary">Annuler</a>
+            <button class="btn btn-primary"><i class="bi bi-save"></i> Créer</button>
+        </div>
+    {{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+    // Initialisation d'un éditeur de texte riche si disponible
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof tinymce !== 'undefined') {
+            tinymce.init({
+                selector: '.html-editor',
+                height: 250,
+                plugins: 'link image lists table code',
+                toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | table | code'
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

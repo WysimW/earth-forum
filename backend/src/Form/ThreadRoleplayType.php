@@ -37,16 +37,31 @@ class ThreadRoleplayType extends AbstractType
                 ]
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description / Premier message',
+                'label' => 'Description de la scène',
+                'attr' => [
+                    'rows' => 5,
+                    'class' => 'wysiwyg-editor'
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez saisir une description pour votre scène']),
+                    new Length([
+                        'min' => 20,
+                        'minMessage' => 'La description doit faire au moins {{ limit }} caractères'
+                    ])
+                ],
+                'help' => 'Une brève description de la scène, visible dans le résumé du thread'
+            ])
+            ->add('firstPostContent', TextareaType::class, [
+                'label' => 'Contenu du premier message',
                 'attr' => [
                     'rows' => 10,
                     'class' => 'wysiwyg-editor'
                 ],
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez saisir une description pour commencer votre scène']),
+                    new NotBlank(['message' => 'Veuillez saisir un contenu pour commencer votre scène']),
                     new Length([
                         'min' => 50,
-                        'minMessage' => 'La description doit faire au moins {{ limit }} caractères'
+                        'minMessage' => 'Le premier message doit faire au moins {{ limit }} caractères'
                     ])
                 ]
             ])
@@ -87,6 +102,10 @@ class ThreadRoleplayType extends AbstractType
                 'label' => 'Visible uniquement par les personnages participants',
                 'required' => false,
                 'help' => 'Si activé, seuls les personnages participants pourront voir cette scène'
+            ])
+            ->add('sticky', CheckboxType::class, [
+                'label' => 'Épingler cette discussion',
+                'required' => false
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',

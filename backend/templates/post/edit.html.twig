@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer le message{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/editor.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="editor-container {% if isRoleplay %}roleplay{% else %}hrp{% endif %}">
+            <div class="editor-header">
+                <h1 class="editor-title">Éditer le message</h1>
+                <div class="thread-badges">
+                    <span class="badge {% if isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %}">
+                        {% if isRoleplay %}
+                            <i class="fa-solid fa-dice-d20 me-1"></i> Roleplay
+                        {% else %}
+                            <i class="fas fa-comments me-1"></i> Discussion
+                        {% endif %}
+                    </span>
+                    {% if post.isDraft %}
+                        <span class="badge bg-warning">
+                            <i class="fas fa-save me-1"></i> Brouillon
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="editor-body">
+                <h5 class="mb-3">{{ thread.title }}</h5>
+
+                {{ form_start(form, {'attr': {'class': 'post-form'}}) }}
+                    {% if isRoleplay %}
+                        <div class="mb-3">
+                            {{ form_label(form.character) }}
+                            {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_help(form.character) }}
+                            {{ form_errors(form.character) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content, {
+                            'attr': {
+                                'class': 'wysiwyg-editor-full',
+                                'data-mode': isRoleplay ? 'roleplay' : 'hrp'
+                            }
+                        }) }}
+                        {{ form_help(form.content) }}
+                        {{ form_errors(form.content) }}
+                    </div>
+
+                    <div class="editor-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-1"></i> Mettre à jour
+                        </button>
+                        {% if post.isDraft %}
+                            <button type="submit" name="save_draft" value="1" class="btn btn-outline-secondary">
+                                <i class="fas fa-save me-1"></i> Enregistrer comme brouillon
+                            </button>
+                            <a href="{{ path('app_post_publish', {'id': post.id}) }}" 
+                               class="btn btn-success"
+                               onclick="return confirm('Êtes-vous sûr de vouloir publier ce brouillon ?')">
+                                <i class="fas fa-paper-plane me-1"></i> Publier maintenant
+                            </a>
+                        {% endif %}
+                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="btn btn-outline-danger">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

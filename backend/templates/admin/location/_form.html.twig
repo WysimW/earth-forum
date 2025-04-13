@@ -1,0 +1,76 @@
+{{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card mb-4">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    Informations générales
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.name) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.image) }}
+                        {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.image) }}
+                        <div class="form-text">{{ form_help(form.image) }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.parent) }}
+                        {{ form_widget(form.parent, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.parent) }}
+                        <div class="form-text">{{ form_help(form.parent) }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.univers) }}
+                        {{ form_widget(form.univers, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.univers) }}
+                        <div class="form-text">{{ form_help(form.univers) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header bg-teal text-white" style="background-color: #20c997;">
+                    Description du lieu
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control html-editor', 'rows': '10'}}) }}
+                        {{ form_errors(form.description) }}
+                        <div class="form-text">Décrivez ce lieu en détail (apparence, ambiance, particularités...)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ path('admin_location_index') }}" class="btn btn-secondary">Annuler</a>
+        <button class="btn btn-primary"><i class="bi bi-save"></i> {{ button_label|default('Enregistrer') }}</button>
+    </div>
+{{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+    // Initialisation d'un éditeur de texte riche si disponible
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof tinymce !== 'undefined') {
+            tinymce.init({
+                selector: '.html-editor',
+                height: 300,
+                plugins: 'link image lists table code',
+                toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | table | code'
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -22,116 +22,110 @@
     {% endfor %}
 
     <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card">
                 <div class="card-header bg-primary text-white">
-                    Profil utilisateur
+                    Informations générales
                 </div>
-                <div class="card-body text-center">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar }}" alt="{{ user.pseudo }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
-                    {% else %}
-                        <div class="bg-light p-5 rounded-circle d-inline-block mb-3">
-                            <i class="bi bi-person-circle fs-1"></i>
-                        </div>
-                    {% endif %}
-                    <h5 class="card-title">{{ user.pseudo }}</h5>
-                    <p class="card-text">{{ user.email }}</p>
-                    <p>Inscrit depuis le {{ user.createdAt|date('d/m/Y') }}</p>
-                    
-                    <h6 class="mt-3">Rôles</h6>
-                    <div>
-                        {% for role in user.playerRoles %}
-                            <span class="badge mb-1" style="background-color: {{ role.color }};">{{ role.name }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Aucun rôle</span>
-                        {% endfor %}
-                    </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="150">ID</th>
+                                <td>{{ user.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Pseudo</th>
+                                <td>{{ user.pseudo }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date d'inscription</th>
+                                <td>{{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : 'Non définie' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    Threads créés ({{ user.threads|length }})
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Titre</th>
-                                    <th>Forum</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for thread in user.threads %}
-                                    <tr>
-                                        <td>{{ thread.id }}</td>
-                                        <td>{{ thread.title }}</td>
-                                        <td>{{ thread.forum.name }}</td>
-                                        <td>{{ thread.createdAt|date('d/m/Y H:i') }}</td>
-                                        <td>
-                                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="5">Aucun thread créé</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+        
+        <div class="col-md-8 mb-4">
             <div class="card">
-                <div class="card-header bg-info text-white">
-                    Derniers posts ({{ user.posts|length }})
+                <div class="card-header bg-primary text-white">
+                    Avatar
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Thread</th>
-                                    <th>Contenu</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for post in user.posts|slice(0, 10) %}
-                                    <tr>
-                                        <td>{{ post.id }}</td>
-                                        <td>{{ post.thread.title }}</td>
-                                        <td>{{ post.content|length > 30 ? post.content|slice(0, 30) ~ '...' : post.content }}</td>
-                                        <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
-                                        <td>
-                                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="5">Aucun post</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% if user.posts|length > 10 %}
-                            <div class="text-center mt-2">
-                                <span class="badge bg-secondary">{{ user.posts|length - 10 }} posts supplémentaires non affichés</span>
-                            </div>
-                        {% endif %}
-                    </div>
+                <div class="card-body text-center">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar }}" alt="{{ user.pseudo }}" class="img-fluid rounded" style="max-height: 200px;">
+                    {% else %}
+                        <div class="alert alert-info">Aucun avatar défini</div>
+                    {% endif %}
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Rôles
+                </div>
+                <div class="card-body">
+                    {% if user.playerRoles|length > 0 %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for role in user.playerRoles %}
+                                <span class="badge" style="background-color: {{ role.color }};">{{ role.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">Aucun rôle attribué</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Activité
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>Threads créés</th>
+                                <td>{{ user.threads|length }}</td>
+                            </tr>
+                            <tr>
+                                <th>Messages postés</th>
+                                <td>{{ user.posts|length }}</td>
+                            </tr>
+                            <tr>
+                                <th>Personnages</th>
+                                <td>{{ user.characters|length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Danger Zone
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur? Cette action est irréversible.');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                <button class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Supprimer l'utilisateur
+                </button>
+            </form>
         </div>
     </div>
 {% endblock %}

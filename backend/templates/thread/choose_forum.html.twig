@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choisir un forum - DC Earth{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h1 class="h3 mb-0"><i class="fas fa-folder-open me-2"></i>Choisir un forum pour votre discussion</h1>
+        </div>
+        <div class="card-body">
+            <p class="lead">Sélectionnez le forum où vous souhaitez créer votre nouvelle discussion.</p>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Conseil :</strong> Choisissez un forum correspondant au type de discussion que vous souhaitez créer.
+                Les forums RP sont destinés aux scènes roleplay avec vos personnages, tandis que les forums HRP sont pour les discussions hors-roleplay.
+            </div>
+        </div>
+    </div>
+
+    <!-- Forums Roleplay -->
+    {% if forumsRP|length > 0 %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-roleplay text-white">
+            <h2 class="h4 mb-0"><i class="fa-solid fa-dice-d20 me-2"></i>Forums Roleplay</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for forum in forumsRP %}
+                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ forum.name }}</h5>
+                            <p class="mb-1 text-muted small">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+                        </div>
+                        <span class="btn btn-sm bg-roleplay text-white">
+                            <i class="fas fa-plus me-1"></i>Créer
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Forums Hors-Roleplay -->
+    {% if forumsHRP|length > 0 %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-hrp text-white">
+            <h2 class="h4 mb-0"><i class="fas fa-comments me-2"></i>Forums Hors-Roleplay</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for forum in forumsHRP %}
+                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ forum.name }}</h5>
+                            <p class="mb-1 text-muted small">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+                        </div>
+                        <span class="btn btn-sm bg-hrp text-white">
+                            <i class="fas fa-plus me-1"></i>Créer
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if forumsRP|length == 0 and forumsHRP|length == 0 %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Aucun forum disponible pour créer une discussion.
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ path('app_roleplay') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à l'accueil
+        </a>
+    </div>
+</div>
+
+<style>
+.bg-roleplay {
+    background-color: var(--roleplay-primary);
+}
+.bg-roleplay:hover {
+    background-color: var(--roleplay-accent);
+}
+.bg-hrp {
+    background-color: var(--hrp-primary);
+}
+.bg-hrp:hover {
+    background-color: var(--hrp-accent);
+}
+</style>
+{% endblock %}

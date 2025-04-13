@@ -44,6 +44,9 @@ class Thread implements TimestampableInterface
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $firstPostContent = null;
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
     private ?Character $characterCreator = null;
@@ -65,6 +68,9 @@ class Thread implements TimestampableInterface
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $visibleToCharactersOnly = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isDraft = false;
 
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
@@ -158,6 +164,18 @@ class Thread implements TimestampableInterface
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+        
+        return $this;
+    }
+    
+    public function getFirstPostContent(): ?string
+    {
+        return $this->firstPostContent;
+    }
+    
+    public function setFirstPostContent(?string $firstPostContent): static
+    {
+        $this->firstPostContent = $firstPostContent;
         
         return $this;
     }
@@ -387,6 +405,17 @@ class Thread implements TimestampableInterface
     public function isSticky(): bool
     {
         return $this->sticky === true;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->isDraft;
+    }
+
+    public function setIsDraft(bool $isDraft): static
+    {
+        $this->isDraft = $isDraft;
+        return $this;
     }
 
     #[ORM\PrePersist]

@@ -6,6 +6,8 @@ use App\Repository\CharacterRepository;
 use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Service\BreadcrumbService;
+use App\Service\LastPostService;
+use App\Service\ForumStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,10 +18,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class FrontOfficeController extends AbstractController
 {
     private BreadcrumbService $breadcrumbService;
+    private LastPostService $lastPostService;
+    private ForumStatisticsService $forumStatsService;
 
-    public function __construct(BreadcrumbService $breadcrumbService)
-    {
+    public function __construct(
+        BreadcrumbService $breadcrumbService, 
+        LastPostService $lastPostService,
+        ForumStatisticsService $forumStatsService
+    ) {
         $this->breadcrumbService = $breadcrumbService;
+        $this->lastPostService = $lastPostService;
+        $this->forumStatsService = $forumStatsService;
     }
 
     #[Route('/', name: 'app_roleplay')]
@@ -27,6 +36,16 @@ class FrontOfficeController extends AbstractController
     {
         // Récupérer les forums principaux (sans parent)
         $mainForums = $forumRepository->findBy(['parent' => null], ['position' => 'ASC']);
+        
+        // Enrichir les forums avec les informations sur les derniers posts et les statistiques
+        foreach ($mainForums as $forum) {
+            $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($forum->getId());
+            $forum->lastPostInfo = $lastPostInfo;
+            
+            // Ajouter les statistiques cumulées
+            $stats = $this->forumStatsService->getForumStats($forum->getId());
+            $forum->stats = $stats;
+        }
         
         return $this->render('forum/index.html.twig', [
             'mainForums' => $mainForums,

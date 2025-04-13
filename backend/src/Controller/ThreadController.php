@@ -33,10 +33,28 @@ class ThreadController extends AbstractController
         $this->breadcrumbService = $breadcrumbService;
     }
 
+    #[Route('/choisir-forum', name: 'app_choose_forum_new_thread')]
+    #[IsGranted('ROLE_USER')]
+    public function chooseForum(ForumRepository $forumRepository): Response
+    {
+        // Récupérer tous les forums disponibles, regroupés par catégorie
+        $forumsRP = $forumRepository->findBy(['isRoleplay' => true], ['name' => 'ASC']);
+        $forumsHRP = $forumRepository->findBy(['isRoleplay' => false], ['name' => 'ASC']);
+        
+        return $this->render('thread/choose_forum.html.twig', [
+            'forumsRP' => $forumsRP,
+            'forumsHRP' => $forumsHRP,
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                'Choisir un forum' => $this->generateUrl('app_choose_forum_new_thread'),
+            ]),
+        ]);
+    }
+
     #[Route('/forum/{id}/nouvelle-discussion', name: 'app_forum_new_thread')]
     #[IsGranted('ROLE_USER')]
     public function newThread(Request $request, Forum $forum, CharacterRepository $characterRepository): Response
-    {   
+    {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -50,7 +68,7 @@ class ThreadController extends AbstractController
         $thread->setForum($forum);
         $thread->setAuthor($this->getUser());
         $thread->setStatus('open');
-        
+
         $isRpForum = $forum->isRoleplay();
         $thread->setType($isRpForum ? 'roleplay' : 'discussion');
         $hasValidatedCharacters = false;
@@ -65,41 +83,50 @@ class ThreadController extends AbstractController
         } else {
             $form = $this->createForm(ThreadType::class, $thread);
         }
-        
+
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             $post = new Post();
             $post->setThread($thread);
             $post->setAuthor($this->getUser());
-            $post->setContent($thread->getDescription());
             
+            // Utiliser le contenu du premier post spécifié séparément de la description du thread
+            $post->setContent($isRpForum ? $thread->getFirstPostContent() : $thread->getDescription());
+
             if ($isRpForum && $thread->getCharacterCreator()) {
                 $post->setCharacter($thread->getCharacterCreator());
                 $thread->addParticipant($thread->getCharacterCreator());
             }
+
+            // Generate slug from the title
+            $slug = $this->generateSlug($thread->getTitle());
+            $thread->setSlug($slug);
             
             $thread->setAuthor($this->getUser());
             // La date est déjà initialisée dans le constructeur
             $this->entityManager->persist($thread);
             $this->entityManager->persist($post);
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'Votre discussion a été créée avec succès.');
-            
+
             return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
         }
-        
+
         return $this->render('thread/new.html.twig', [
             'form' => $form->createView(),
             'forum' => $forum,
-            'isRoleplay' => $isRpForum,
-            'breadcrumbs' => $this->getBreadcrumbsForForum($forum, ['Nouvelle discussion' => null]),
-            'user' => $user,
+            'isRpForum' => $isRpForum,
             'hasValidatedCharacters' => $hasValidatedCharacters,
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                $forum->getName() => $this->generateUrl('app_forum_show', ['id' => $forum->getId()]),
+                'Nouvelle discussion' => $this->generateUrl('app_forum_new_thread', ['id' => $forum->getId()]),
+            ]),
         ]);
     }
-    
+
     #[Route('/thread/{id}', name: 'app_thread_show')]
     public function show(Thread $thread, Request $request, CharacterRepository $characterRepository): Response
     {
@@ -107,57 +134,117 @@ class ThreadController extends AbstractController
         if ($thread->isCharacterSheet()) {
             return $this->showCharacterSheet($thread, $request);
         }
-        
+
         $isRpThread = $thread->getType() === 'roleplay';
         $post = new Post();
         $post->setThread($thread);
         $post->setAuthor($this->getUser());
-        
+
         if ($isRpThread && $this->getUser()) {
             if ($thread->isOpen()) {
                 $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
             } else {
                 $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
             }
-            
+
             $form = $this->createForm(PostRoleplayType::class, $post, [
                 'characters' => $userCharacters,
             ]);
         } else {
             $form = $this->createForm(PostType::class, $post);
         }
-        
+
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
                 if ($thread->isFull()) {
                     $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
                     return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
                 }
-                
+
                 $thread->addParticipant($post->getCharacter());
             }
-            
+
             $this->entityManager->persist($post);
             $this->entityManager->flush();
-            
+
             return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
         }
-        
+
         return $this->render('thread/show.html.twig', [
             'thread' => $thread,
             'form' => $form->createView(),
             'isRoleplay' => $isRpThread,
-            'userCanPost' => $this->getUser() && ($thread->isOpen() || 
-                                               $thread->getAuthor() === $this->getUser() ||
-                                               ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
+            'userCanPost' => $this->getUser() && ($thread->isOpen() ||
+                $thread->getAuthor() === $this->getUser() ||
+                ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
             'breadcrumbs' => $this->getBreadcrumbsForThread($thread),
             'canReply' => $thread->isOpen() || $thread->getAuthor() === $this->getUser(),
             'posts' => $thread->getPosts(),
             'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
         ]);
     }
+
+    #[Route('/thread_roleplay/{id}', name: 'app_roleplay_thread_show')]
+    public function showRolePlay(Thread $thread, Request $request, CharacterRepository $characterRepository): Response
+    {
+        // Gestion spéciale pour les fiches de personnage
+        if ($thread->isCharacterSheet()) {
+            return $this->showCharacterSheet($thread, $request);
+        }
+
+        $isRpThread = $thread->getType() === 'roleplay';
+        $post = new Post();
+        $post->setThread($thread);
+        $post->setAuthor($this->getUser());
+
+        if ($isRpThread && $this->getUser()) {
+            if ($thread->isOpen()) {
+                $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+            } else {
+                $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
+            }
+
+            $form = $this->createForm(PostRoleplayType::class, $post, [
+                'characters' => $userCharacters,
+            ]);
+        } else {
+            $form = $this->createForm(PostType::class, $post);
+        }
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
+                if ($thread->isFull()) {
+                    $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
+                    return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+                }
+
+                $thread->addParticipant($post->getCharacter());
+            }
+
+            $this->entityManager->persist($post);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+        }
+
+        return $this->render('thread/show.html.twig', [
+            'thread' => $thread,
+            'form' => $form->createView(),
+            'isRoleplay' => $isRpThread,
+            'userCanPost' => $this->getUser() && ($thread->isOpen() ||
+                $thread->getAuthor() === $this->getUser() ||
+                ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
+            'breadcrumbs' => $this->getBreadcrumbsForThread($thread),
+            'canReply' => $thread->isOpen() || $thread->getAuthor() === $this->getUser(),
+            'posts' => $thread->getPosts(),
+            'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
+        ]);
+    }
+
 
     /**
      * Affiche une fiche de personnage
@@ -168,21 +255,21 @@ class ThreadController extends AbstractController
         if (!$character) {
             throw $this->createNotFoundException('Cette fiche de personnage n\'existe pas ou a été supprimée.');
         }
-        
+
         $post = new Post();
         $post->setThread($thread);
         $post->setAuthor($this->getUser());
-        
+
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->persist($post);
             $this->entityManager->flush();
-            
+
             return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
         }
-        
+
         $isOwner = $this->getUser() && $character->getUser() === $this->getUser();
         $isModerator = $this->isGranted('ROLE_MODERATOR');
 
@@ -201,7 +288,7 @@ class ThreadController extends AbstractController
 
         // Ajouter le titre du thread comme élément actif
         $breadcrumbsArray[] = $thread->getTitle();
-        
+
         return $this->render('thread/character_sheet.html.twig', [
             'thread' => $thread,
             'character' => $character,
@@ -223,64 +310,65 @@ class ThreadController extends AbstractController
         if (!$thread->isCharacterSheet()) {
             throw $this->createNotFoundException('Cette discussion n\'est pas une fiche de personnage.');
         }
-        
+
         $character = $thread->getCharacterSheet();
         if (!$character) {
             throw $this->createNotFoundException('Le personnage associé à cette fiche n\'existe pas ou a été supprimé.');
         }
-        
+
         $isOwner = $this->getUser() && $character->getUser() === $this->getUser();
         $isModerator = $this->isGranted('ROLE_MODERATOR');
-        
+
         if (!$isOwner && !$isModerator) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier le statut de cette fiche.');
         }
-        
+
         $newStatus = $request->request->get('status');
         $statusMessage = $request->request->get('status_message');
         $moderationNote = $request->request->get('moderation_note');
-        
+
         // Mettre à jour le personnage
         $character->setStatus($newStatus);
-        
+
         if ($statusMessage) {
             $character->setStatusMessage($statusMessage);
         }
-        
+
         if ($moderationNote && $isModerator) {
             $character->setModerationNote($moderationNote);
         }
-        
+
         // Si le statut est "validated" et que ce n'était pas déjà le cas
         if ($newStatus === 'validated' && !$character->isValidated()) {
             $character->setValidatedAt(new \DateTimeImmutable());
         }
-        
+
         // Déplacer le thread vers le forum approprié
-        $targetForumName = match($newStatus) {
+        $targetForumName = match ($newStatus) {
             'validated' => 'Fiches validées',
             'rejected', 'abandoned' => 'Fiches refusées',
+            'editing' => 'Fiches en attente',
             default => 'Fiches en attente',
         };
-        
+
         $targetForum = $forumRepository->findOneBy(['name' => $targetForumName]);
         if ($targetForum) {
             $thread->setForum($targetForum);
         }
-        
+
         // Ajouter un message dans le thread pour indiquer le changement de statut
         $statusPost = new Post();
         $statusPost->setThread($thread);
         $statusPost->setAuthor($this->getUser());
-        
-        $alertClass = match($newStatus) {
+
+        $alertClass = match ($newStatus) {
             'validated' => 'success',
             'rejected' => 'danger',
             'abandoned' => 'secondary',
             default => 'warning',
         };
-        
-        $statusLabel = match($newStatus) {
+
+        $statusLabel = match ($newStatus) {
             'draft' => 'Brouillon',
             'pending' => 'En attente de validation',
             'validated' => 'Validé',
@@ -288,22 +376,22 @@ class ThreadController extends AbstractController
             'abandoned' => 'Abandonné',
             'editing' => 'En cours d\'édition',
         };
-        
-        $statusContent = "<div class=\"alert alert-$alertClass\">".
-            "Statut mis à jour : <strong>$statusLabel</strong>".
-            ($moderationNote && $isModerator ? "<br>Note: $moderationNote" : "").
+
+        $statusContent = "<div class=\"alert alert-$alertClass\">" .
+            "Statut mis à jour : <strong>$statusLabel</strong>" .
+            ($moderationNote && $isModerator ? "<br>Note: $moderationNote" : "") .
             "</div>";
-        
+
         $statusPost->setContent($statusContent);
-        
+
         $this->entityManager->persist($statusPost);
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'Le statut de la fiche a été mis à jour avec succès.');
-        
+
         return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
     }
-    
+
     #[Route('/thread/{id}/delete', name: 'app_thread_delete', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function delete(Request $request, Thread $thread): Response
@@ -331,8 +419,8 @@ class ThreadController extends AbstractController
             ['type' => 'roleplay'],
             ['updatedAt' => 'DESC']
         );
-        
-        return $this->render('threads/index.html.twig', [
+
+        return $this->render('thread/index.html.twig', [
             'threads' => $threads,
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
@@ -340,17 +428,18 @@ class ThreadController extends AbstractController
             ]),
         ]);
     }
-    
+
     #[Route('/threads/filter', name: 'app_roleplay_threads_filter')]
     public function filter(Request $request, ThreadRepository $threadRepository): Response
     {
         $type = $request->query->get('type', 'all');
         $status = $request->query->get('status', '');
-    
+
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $threads = [];
         $title = 'Scènes RP';
-        
+
         switch ($type) {
             case 'participating':
                 $title = 'Mes participations';
@@ -358,7 +447,7 @@ class ThreadController extends AbstractController
                     $threads = $threadRepository->findThreadsWithUserParticipation($user->getId(), $status);
                 }
                 break;
-                
+
             case 'created':
                 $title = 'Mes scènes créées';
                 if ($user) {
@@ -369,7 +458,7 @@ class ThreadController extends AbstractController
                     $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC']);
                 }
                 break;
-                
+
             case 'recent':
                 $title = 'Scènes récentes';
                 if ($status === 'open') {
@@ -382,7 +471,7 @@ class ThreadController extends AbstractController
                     $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC'], 20);
                 }
                 break;
-                
+
             default:
                 if ($status === 'open') {
                     $threads = $threadRepository->findActiveThreads();
@@ -394,17 +483,17 @@ class ThreadController extends AbstractController
                     $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC']);
                 }
         }
-        
+
         $breadcrumbs = [
             'Accueil' => $this->generateUrl('app_roleplay'),
             'Scènes RP' => $this->generateUrl('app_roleplay_threads')
         ];
-        
+
         if ($title !== 'Scènes RP') {
             $breadcrumbs[$title] = $this->generateUrl('app_roleplay_threads_filter', ['type' => $type]);
         }
-        
-        return $this->render('threads/filter.html.twig', [
+
+        return $this->render('thread/filter.html.twig', [
             'threads' => $threads,
             'type' => $type,
             'status' => $status,
@@ -412,18 +501,18 @@ class ThreadController extends AbstractController
             'breadcrumbs' => $this->breadcrumbService->generate($breadcrumbs),
         ]);
     }
-    
+
     #[Route('/character-sheets', name: 'app_character_sheets')]
     public function characterSheets(ThreadRepository $threadRepository, ForumRepository $forumRepository): Response
     {
         $pendingSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches en attente']);
         $validatedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches validées']);
         $rejectedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches refusées']);
-        
+
         $pendingSheets = $pendingSheetsForum ? $threadRepository->findBy(['forum' => $pendingSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
         $validatedSheets = $validatedSheetsForum ? $threadRepository->findBy(['forum' => $validatedSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
         $rejectedSheets = $rejectedSheetsForum ? $threadRepository->findBy(['forum' => $rejectedSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
-        
+
         return $this->render('thread/character_sheets.html.twig', [
             'pendingSheets' => $pendingSheets,
             'validatedSheets' => $validatedSheets,
@@ -441,7 +530,7 @@ class ThreadController extends AbstractController
     public function myCharacterSheets(ThreadRepository $threadRepository): Response
     {
         $myCharacterSheets = $threadRepository->findCharacterSheetsByUser($this->getUser());
-        
+
         return $this->render('thread/my_character_sheets.html.twig', [
             'characterSheets' => $myCharacterSheets,
             'breadcrumbs' => $this->breadcrumbService->generate([
@@ -451,41 +540,72 @@ class ThreadController extends AbstractController
             ]),
         ]);
     }
-    
+
     private function getBreadcrumbsForForum(Forum $forum, array $additional = []): array
     {
         $breadcrumbs = [
             'Accueil' => $this->generateUrl('app_roleplay')
         ];
-        
+
         $currentForum = $forum;
         $parentForums = [];
-        
+
         while ($parent = $currentForum->getParent()) {
             $parentForums[] = $parent;
             $currentForum = $parent;
         }
-        
+
         $parentForums = array_reverse($parentForums);
-        
+
         foreach ($parentForums as $parentForum) {
             $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', ['id' => $parentForum->getId()]);
         }
-        
+
         $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', ['id' => $forum->getId()]);
-        
+
         foreach ($additional as $name => $url) {
             $breadcrumbs[$name] = $url;
         }
-        
+
         return $this->breadcrumbService->generate($breadcrumbs);
     }
-    
+
     private function getBreadcrumbsForThread(Thread $thread): array
     {
         $forum = $thread->getForum();
         $breadcrumbs = $this->getBreadcrumbsForForum($forum);
         $breadcrumbs[$thread->getTitle()] = $this->generateUrl('app_thread_show', ['id' => $thread->getId()]);
         return $breadcrumbs;
+    }
+    
+    /**
+     * Generate a URL-friendly slug from a string
+     * 
+     * @param string $text The text to slugify
+     * @return string
+     */
+    private function generateSlug(string $text): string
+    {
+        // Remove accents
+        $text = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9-] remove; Lower()', $text);
+        
+        // Replace spaces with hyphens
+        $text = str_replace(' ', '-', $text);
+        
+        // Remove any remaining non-alphanumeric characters except for hyphens
+        $text = preg_replace('/[^a-z0-9-]/', '', $text);
+        
+        // Remove multiple consecutive hyphens
+        $text = preg_replace('/-+/', '-', $text);
+        
+        // Trim hyphens from beginning and end
+        $text = trim($text, '-');
+        
+        // Ensure slug isn't empty
+        if (empty($text)) {
+            $text = 'discussion-' . time();
+        }
+        
+        return $text;
     }
 }
