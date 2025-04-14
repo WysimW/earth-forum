@@ -1,0 +1,46 @@
+{# Template partiel pour le formulaire de réponse #}
+<div class="card mb-4">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'post-form'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.content) }}
+                {{ form_widget(form.content, {'attr': {
+                    'class': 'form-control wysiwyg-editor',
+                    'rows': '10',
+                    'placeholder': 'Écrivez votre message ici...'
+                }}) }}
+                {{ form_errors(form.content) }}
+            </div>
+
+            {% if form.character is defined %}
+                <div class="mb-3">
+                    {{ form_label(form.character) }}
+                    {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.character) }}
+                </div>
+            {% endif %}
+
+            {% if form.type is defined %}
+                <div class="mb-3">
+                    {{ form_label(form.type) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.type) }}
+                </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                    <button type="submit" name="publish" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i> Publier
+                    </button>
+                    <button type="submit" name="save_draft" class="btn btn-secondary">
+                        <i class="fas fa-save me-2"></i> Enregistrer comme brouillon
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                        <i class="fas fa-times me-2"></i> Annuler
+                    </button>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div> 

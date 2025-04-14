@@ -1,6 +1,6 @@
 {% if forum is defined %}
-<div class="forum-card">
-    <div class="forum-icon">
+<div class="forum-card hover-effect hover-lift {% if forum.isRoleplay %}rp-theme hover-glow-rp{% else %}hrp-theme hover-glow-hrp{% endif %} border-subtle">
+    <div class="forum-icon {% if forum.isRoleplay %}rp-color{% else %}hrp-color{% endif %}">
         {% if forum.heroLogo %}
             <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
         {% else %}

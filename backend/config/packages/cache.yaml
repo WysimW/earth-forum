@@ -17,3 +17,14 @@ framework:
         # Namespaced pools use the above "app" backend by default
         #pools:
             #my.dedicated.cache: null
+
+        # Les caches par défaut utiliseront le pool system
+        app: cache.adapter.filesystem
+        system: cache.adapter.system
+        # Configure les pools de cache
+        pools:
+            # Ce pool utilise le service "cache.adapter.filesystem" par défaut
+            cache.forum_stats:
+                adapter: cache.adapter.filesystem
+                tags: true
+                default_lifetime: 600

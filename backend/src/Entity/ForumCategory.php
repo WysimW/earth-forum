@@ -34,7 +34,7 @@ class ForumCategory implements TimestampableInterface
     private Collection $forums;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $slug = null;
+    private ?string $slug = "default";
 
     #[ORM\Column]
     private int $position = 0;

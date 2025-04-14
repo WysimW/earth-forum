@@ -175,7 +175,7 @@
         {# Affichage du premier post (message initial) #}
         {% for post in posts %}
             <div class="post-anchor" id="post-{{ post.id }}"></div>
-            <div class="post-container {% if post.isRoleplay %}roleplay-post{% else %}hrp-post{% endif %} mb-4 {% if app.request.get('highlight') == post.id %}highlighted-post{% endif %} {% if post.isDraft %}draft-post{% endif %}">
+            <div class="post-container {% if post.isRoleplay %}roleplay-theme{% else %}hrp-theme{% endif %} mb-4 {% if app.request.get('highlight') == post.id %}highlighted-post{% endif %} {% if post.isDraft %}draft-post{% endif %}">
                 {% if post.isDraft %}
                     <div class="draft-badge">
                         <span class="badge bg-warning">Brouillon</span>
@@ -184,7 +184,7 @@
                 
                 <div class="post-sidebar">
                     {% if post.isRoleplay and post.character %}
-                        <div class="character-avatar">
+                        <div class="avatar-container">
                             {% if post.character.avatar %}
                                 <img src="{{ post.character.avatar }}" alt="{{ post.character.name }}" class="img-fluid rounded">
                             {% else %}
@@ -195,19 +195,14 @@
                         </div>
                         
                         <div class="character-info">
-                            <div class="character-name fw-bold">{{ post.character.name }}</div>
+                            <div class="name-label">{{ post.character.name }}</div>
                             {% if post.character.actualPseudo %}
-                                <div class="character-pseudo">{{ post.character.actualPseudo }}</div>
+                                <div class="character-alias">{{ post.character.actualPseudo }}</div>
                             {% endif %}
-                            {% if post.character.alias %}
-                                <div class="character-alias text-muted"><em>{{ post.character.alias }}</em></div>
-                            {% endif %}
-                            <div class="player-name small mt-2">
-                                <span class="badge bg-secondary">Joué par {{ post.author.pseudo }}</span>
-                            </div>
+                            <div class="player-name">Joueur: {{ post.author.pseudo }}</div>
                         </div>
                     {% else %}
-                        <div class="user-avatar">
+                        <div class="avatar-container">
                             {% if post.author.avatar %}
                                 <img src="{{ post.author.avatar }}" alt="{{ post.author.pseudo }}" class="img-fluid rounded">
                             {% else %}
@@ -218,10 +213,8 @@
                         </div>
                         
                         <div class="user-info">
-                            <div class="pseudo fw-bold">{{ post.author.pseudo }}</div>
-                            <div class="user-details small text-muted">
-                                Membre depuis {{ post.author.createdAt|date('d/m/Y') }}
-                            </div>
+                            <div class="name-label">{{ post.author.pseudo }}</div>
+                            <div class="player-since">Membre depuis {{ post.author.createdAt|date('d/m/Y') }}</div>
                         </div>
                     {% endif %}
                 </div>
@@ -230,35 +223,56 @@
                     <div class="post-header">
                         <div class="post-meta">
                             <span class="post-date">
-                                <i class="fas fa-clock"></i> {{ post.createdAt|date('d/m/Y H:i') }}
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ post.createdAt|date('d/m/Y à H:i') }}
                             </span>
-                            <span class="post-number">#{{ loop.index }}</span>
+                            <span class="post-id">
+                                <i class="fas fa-hashtag me-1"></i>
+                                <a href="#post-{{ post.id }}" class="text-reset">#{{ post.id }}</a>
+                            </span>
                         </div>
                         
                         <div class="post-actions">
-                            {% if app.user %}
-                                <a href="#quickReplyForm" class="btn btn-sm btn-outline-secondary quote-btn" data-post-id="{{ post.id }}" title="Citer">
-                                    <i class="fas fa-quote-right"></i>
-                                </a>
-                            {% endif %}
-                            
                             {% if is_granted('EDIT', post) %}
-                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary" title="Éditer">
+                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             {% endif %}
                             
-                            {% if post.isDraft and post.author == app.user %}
-                                <button type="button" class="btn btn-sm btn-outline-success" onclick="publishDraft({{ post.id }})" title="Publier">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            {% endif %}
-                            
-                            {% if is_granted('DELETE', post) and not loop.first %}
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{ post.id }}" title="Supprimer">
+                            {% if is_granted('DELETE', post) %}
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deletePostModal" 
+                                        data-post-id="{{ post.id }}">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#post-{{ post.id }}">
+                                            <i class="fas fa-link me-2"></i> Lien permanent
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_post_quote', {'id': post.id}) }}">
+                                            <i class="fas fa-quote-right me-2"></i> Citer
+                                        </a>
+                                    </li>
+                                    {% if is_granted('ROLE_MODERATOR') %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#">
+                                                <i class="fas fa-exclamation-triangle me-2"></i> Modérer
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                     
@@ -268,8 +282,8 @@
                     
                     {% if post.editedAt and post.editedAt != post.createdAt %}
                         <div class="post-edited">
-                            <small class="text-muted">
-                                <i class="fas fa-pen-fancy"></i> Modifié le {{ post.editedAt|date('d/m/Y H:i') }}
+                            <small>
+                                <em>Édité le {{ post.editedAt|date('d/m/Y à H:i') }}</em>
                             </small>
                         </div>
                     {% endif %}
@@ -278,71 +292,24 @@
         {% endfor %}
     </div>
 
-    {# Formulaire de réponse rapide #}
+    {# Formulaire de réponse (si l'utilisateur peut répondre) #}
     {% if canReply %}
-        <div id="quickReplyForm" class="quick-reply-form {% if thread.type == 'roleplay' %}roleplay{% else %}hrp{% endif %}">
-            <h3 class="reply-title {% if thread.type == 'roleplay' %}text-roleplay{% else %}text-hrp{% endif %}">
-                {% if thread.type == 'roleplay' %}
-                    <i class="fa-solid fa-dice-d20 me-1"></i> Réponse rapide
-                {% else %}
-                    <i class="fas fa-comments me-1"></i> Réponse rapide
-                {% endif %}
+        <div class="reply-section mt-4" id="replyForm">
+            <h3 class="mb-3">
+                <i class="fas fa-reply me-2"></i> 
+                Répondre à cette discussion
             </h3>
             
-            <form id="quickReplyFormElement" method="post" action="{{ path('app_post_quick_reply', {'threadId': thread.id}) }}">
-                {% if thread.type == 'roleplay' %}
-                    <div class="mb-3">
-                        <label for="character_id" class="form-label">Personnage</label>
-                        <select id="character_id" name="character_id" class="form-select" required>
-                            <option value="">Choisir un personnage...</option>
-                            {% for character in app.user.characters|filter(c => c.status == 'validated') %}
-                                <option value="{{ character.id }}">{{ character.name }}{% if character.actualPseudo %} ({{ character.actualPseudo }}){% endif %}</option>
-                            {% endfor %}
-                        </select>
-                        
-                        {% if not userHasCharacters %}
-                            <div class="alert alert-warning mt-2">
-                                <i class="fas fa-exclamation-triangle me-1"></i>
-                                Vous n'avez pas encore créé de personnage. 
-                                <a href="{{ path('app_roleplay_character_new') }}">Créer un personnage</a> pour participer à cette scène.
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endif %}
-                
-                <div class="mb-3">
-                    <label for="quick_reply_content" class="form-label">Votre message</label>
-                    <textarea id="quick_reply_content" name="content" class="form-control wysiwyg-editor-quick" rows="5" required></textarea>
-                    <div class="char-counter">
-                        <span id="charCounter">0</span> caractères
-                    </div>
-                </div>
-                
-                <div class="editor-actions">
-                    <button type="submit" class="btn {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
-                        <i class="fas fa-paper-plane me-1"></i> Publier
-                    </button>
-                    <button type="button" id="saveDraftBtn" class="btn btn-outline-secondary">
-                        <i class="fas fa-save me-1"></i> Enregistrer comme brouillon
-                    </button>
-                    <a href="{{ path('app_post_new', {'threadId': thread.id}) }}" class="btn btn-outline-info">
-                        <i class="fas fa-edit me-1"></i> Mode éditeur complet
-                    </a>
-                </div>
-                
-                <input type="hidden" name="is_draft" id="is_draft" value="0">
-            </form>
+            {% if thread.type == 'roleplay' %}
+                {{ render(controller('App\\Controller\\PostController::replyForm', { 'threadId': thread.id })) }}
+            {% else %}
+                {{ render(controller('App\\Controller\\PostController::replyHrpForm', { 'threadId': thread.id })) }}
+            {% endif %}
         </div>
-        
-        {# Formulaire original (form) masqué pour compatibilité #}
-        <div style="display: none;">
-            {{ form_start(form) }}
-                {{ form_end(form) }}
-        </div>
-    {% elseif not is_granted('IS_AUTHENTICATED_FULLY') %}
+    {% elseif not app.user %}
         <div class="alert alert-info mt-4">
             <i class="fas fa-info-circle me-2"></i>
-            <a href="{{ path('app_login') }}">Connectez-vous</a> pour participer à cette discussion.
+            Vous devez être <a href="{{ path('app_login') }}">connecté</a> pour participer à cette discussion.
         </div>
     {% elseif thread.status == 'closed' %}
         <div class="alert alert-warning mt-4">
@@ -350,249 +317,98 @@
             Cette discussion est fermée et n'accepte plus de nouvelles réponses.
         </div>
     {% endif %}
+</div>
 
-    {# Modal de confirmation de suppression #}
-    <div class="modal fade" id="deleteThreadModal" tabindex="-1">
+{% if is_granted('DELETE', thread) %}
+    {# Modal de confirmation de suppression du thread #}
+    <div class="modal fade" id="deleteThreadModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Confirmer la suppression</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer cette discussion? Cette action est irréversible.</p>
+                    <p>Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <form action="{{ path('app_thread_delete', {'id': thread.id}) }}" method="POST">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_thread_' ~ thread.id) }}">
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </form>
+                    <a href="{{ path('app_thread_delete', {'id': thread.id}) }}" class="btn btn-danger">Supprimer</a>
                 </div>
             </div>
         </div>
     </div>
+{% endif %}
 
-    {# Modal de confirmation de suppression d'un post #}
-    <div class="modal fade" id="deletePostModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmer la suppression</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer ce message? Cette action est irréversible.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <form id="deletePostForm" action="" method="POST">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_post') }}">
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </form>
-                </div>
+{# Modal de confirmation de suppression d'un post #}
+<div class="modal fade" id="deletePostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce message ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="#" id="deletePostLink" class="btn btn-danger">Supprimer</a>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .roleplay-bg {
-        border-left: 5px solid var(--roleplay-primary);
-    }
-    .hrp-bg {
-        border-left: 5px solid var(--hrp-primary);
-    }
-    .post-container {
-        position: relative;
-        display: flex;
-        margin-bottom: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    .post-sidebar {
-        width: 200px;
-        padding: 1rem;
-        background-color: rgba(0, 0, 0, 0.02);
-        border-right: 1px solid rgba(0, 0, 0, 0.08);
-        text-align: center;
-        border-radius: 8px 0 0 8px;
-    }
-    .post-main {
-        flex: 1;
-        padding: 1rem;
-    }
-    .character-avatar, .user-avatar {
-        margin-bottom: 0.75rem;
-    }
-    .character-avatar img, .user-avatar img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin: 0 auto;
-        display: block;
-        border: 3px solid var(--roleplay-primary);
-    }
-    .character-name {
-        font-size: 1.1rem;
-        margin-bottom: 0.25rem;
-    }
-    .draft-post {
-        border: 2px dashed #ffc107;
-    }
-    .draft-badge {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-    }
-</style>
+{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="{{ asset('js/dc-editor.js') }}"></script>
-    <script src="{{ asset('js/forum/post-actions.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Highlight post if URL has an anchor
-            if (window.location.hash && window.location.hash.startsWith('#post-')) {
-                const postId = window.location.hash.substring(6);
-                const postElement = document.getElementById('post-' + postId);
-                if (postElement) {
-                    postElement.scrollIntoView();
-                    postElement.nextElementSibling.classList.add('highlighted-post');
+            // Highlight anchor position
+            if (window.location.hash) {
+                const targetElement = document.querySelector(window.location.hash);
+                if (targetElement) {
+                    targetElement.scrollIntoView();
                 }
             }
-
-            // Récupération de l'éditeur Quill pour les réponses rapides
-            let quillEditor = null;
-            if (document.querySelector('.wysiwyg-editor-quick')) {
-                // L'éditeur devrait déjà être initialisé par dc-editor.js
-                // Récupérer l'instance depuis l'objet global dcQuillEditors
-                const editorId = document.querySelector('.wysiwyg-editor-quick').id;
-                if (window.dcQuillEditors && window.dcQuillEditors[editorId]) {
-                    quillEditor = window.dcQuillEditors[editorId];
-                    console.log("Éditeur Quill récupéré depuis le stockage global");
-                } else {
-                    // Fallback: rechercher l'instance du DOM
-                    const editorElement = document.querySelector('.wysiwyg-editor-quick');
-                    const parent = editorElement.parentNode;
-                    const quillContainer = parent.querySelector('.dc-editor-container .ql-container');
-                    
-                    if (quillContainer) {
-                        quillEditor = Quill.find(quillContainer);
-                        console.log("Éditeur Quill récupéré depuis le DOM");
-                    }
-                }
-            }
-
-            // Setup quote buttons
-            document.querySelectorAll('.quote-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const postId = this.getAttribute('data-post-id');
-                    // Rechercher le contenu du post à citer
-                    const postContainer = document.getElementById('post-' + postId).nextElementSibling;
-                    const author = postContainer.querySelector('.character-name')?.textContent || 
-                                  postContainer.querySelector('.pseudo')?.textContent || 'Anonymous';
-                    const content = postContainer.querySelector('.post-content').innerHTML;
-                    
-                    // Ajouter le contenu cité à l'éditeur
-                    if (quillEditor) {
-                        const quoteHTML = `<blockquote class="${postContainer.classList.contains('roleplay-post') ? 'roleplay' : 'hrp'}"><strong>${author} a écrit:</strong><br>${content}</blockquote><p><br></p>`;
-                        const range = quillEditor.getSelection();
-                        if (range) {
-                            quillEditor.clipboard.dangerouslyPasteHTML(range.index, quoteHTML);
-                        } else {
-                            quillEditor.clipboard.dangerouslyPasteHTML(0, quoteHTML);
-                        }
-                        // Forcer le focus sur l'éditeur après l'insertion
-                        setTimeout(() => {
-                            quillEditor.focus();
-                        }, 100);
-                    }
-                    
-                    // Faire défiler vers le formulaire de réponse
-                    document.getElementById('quickReplyForm').scrollIntoView({behavior: 'smooth'});
+            
+            // Handle delete post modal
+            const deletePostModal = document.getElementById('deletePostModal');
+            if (deletePostModal) {
+                deletePostModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const postId = button.getAttribute('data-post-id');
+                    const deleteLink = document.getElementById('deletePostLink');
+                    deleteLink.href = '{{ path('app_post_delete', {'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
                 });
-            });
-
-            // Setup delete post buttons
-            document.querySelectorAll('.delete-post-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const postId = this.getAttribute('data-post-id');
-                    const deletePostForm = document.getElementById('deletePostForm');
-                    deletePostForm.action = `{{ path('app_post_delete', {'id': 'POST_ID'}) }}`.replace('POST_ID', postId);
-                    const tokenInput = deletePostForm.querySelector('input[name="_token"]');
-                    tokenInput.value = '{{ csrf_token('delete_post_') }}' + postId;
-                    const deletePostModal = new bootstrap.Modal(document.getElementById('deletePostModal'));
-                    deletePostModal.show();
-                });
-            });
-            
-            // Bouton brouillon pour réponse rapide
-            document.getElementById('saveDraftBtn')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('is_draft').value = "1";
-                
-                // Soumettre le formulaire avec le contenu de l'éditeur
-                if (quillEditor) {
-                    const hiddenInput = document.querySelector('input[name="content"]');
-                    if (!hiddenInput) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'content';
-                        document.getElementById('quickReplyFormElement').appendChild(input);
-                    }
-                    document.querySelector('input[name="content"]').value = quillEditor.root.innerHTML;
-                }
-                
-                document.getElementById('quickReplyFormElement').submit();
-            });
-            
-            // Compteur de caractères
-            if (quillEditor) {
-                const charCounter = document.getElementById('charCounter');
-                
-                if (charCounter) {
-                    const updateCharCount = function() {
-                        const text = quillEditor.getText();
-                        charCounter.textContent = text.length - 1; // -1 pour ne pas compter le caractère de nouvelle ligne à la fin
-                        
-                        if (text.length > 1000) {
-                            charCounter.parentElement.classList.add('warning');
-                        } else {
-                            charCounter.parentElement.classList.remove('warning');
-                        }
-                        
-                        if (text.length > 2000) {
-                            charCounter.parentElement.classList.add('danger');
-                        } else {
-                            charCounter.parentElement.classList.remove('danger');
-                        }
-                    };
-                    
-                    quillEditor.on('text-change', updateCharCount);
-                    // Initialiser le compteur
-                    updateCharCount();
-                }
             }
             
-            // Surcharger la soumission du formulaire pour inclure le contenu HTML
-            document.getElementById('quickReplyFormElement')?.addEventListener('submit', function(e) {
-                if (quillEditor) {
-                    const hiddenInput = document.querySelector('input[name="content"]');
-                    if (!hiddenInput) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'content';
-                        this.appendChild(input);
-                    }
-                    document.querySelector('input[name="content"]').value = quillEditor.root.innerHTML;
+            // Initialize Quill editor if it exists
+            const editorContainer = document.getElementById('editor-container');
+            if (editorContainer) {
+                const quill = new Quill('#editor-container', {
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Rédigez votre réponse...',
+                    theme: 'snow'
+                });
+                
+                // Update hidden form field before submit
+                const form = document.querySelector('.reply-form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        const contentInput = document.getElementById('post_content');
+                        contentInput.value = quill.root.innerHTML;
+                    });
                 }
-            });
+            }
         });
     </script>
-{% endblock %}
 {% endblock %}

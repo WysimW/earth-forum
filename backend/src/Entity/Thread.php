@@ -73,7 +73,7 @@ class Thread implements TimestampableInterface
     private bool $isDraft = false;
 
     #[ORM\Column(length: 255)]
-    private ?string $slug = null;
+    private ?string $slug = "default";
 
     /**
      * @var Collection<int, Post>

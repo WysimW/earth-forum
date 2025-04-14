@@ -19,54 +19,87 @@ class ForumRepository extends ServiceEntityRepository
 
     public function findLatestThreadByRecentPostInForum(int $forumId): ?Thread
     {
-        $forum = $this->find($forumId);
-        if (!$forum) {
-            throw new \Exception('Forum not found');
+        // Utiliser une sous-requête CTE récursive pour obtenir tous les forums concernés
+        $conn = $this->getEntityManager()->getConnection();
+        $subforumsSql = "
+            WITH RECURSIVE forum_tree AS (
+                SELECT id FROM forum WHERE id = :forumId
+                UNION ALL
+                SELECT f.id FROM forum f
+                JOIN forum_tree ft ON f.parent_id = ft.id
+            )
+            SELECT id FROM forum_tree
+        ";
+        
+        $stmt = $conn->prepare($subforumsSql);
+        $stmt->bindValue('forumId', $forumId);
+        $result = $stmt->executeQuery();
+        $forumIds = $result->fetchFirstColumn();
+        
+        if (empty($forumIds)) {
+            return null;
         }
-
-        $latestThread = null;
-        $latestPostDate = null;
-
-        // Gather the forum and its subforums
-        $forumsToCheck = [$forum];
-        $forumsToCheck = array_merge($forumsToCheck, $forum->getSubforums()->toArray());
-
-        foreach ($forumsToCheck as $subForum) {
-            foreach ($subForum->getThreads() as $thread) {
-                foreach ($thread->getPosts() as $post) {
-                    if ($latestPostDate === null || $post->getCreatedAt() > $latestPostDate) {
-                        $latestPostDate = $post->getCreatedAt();
-                        $latestThread = $thread;
-                    }
-                }
-            }
-        }
-
-        return $latestThread;
+        
+        // Utiliser le QueryBuilder pour obtenir directement le thread avec le post le plus récent
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        
+        return $qb->select('t')
+            ->from('App\Entity\Thread', 't')
+            ->join('t.posts', 'p')
+            ->join('t.forum', 'f')
+            ->where('f.id IN (:forumIds)')
+            ->setParameter('forumIds', $forumIds)
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function countThreadsAndPostsInForum(int $forumId): array
     {
-        $forum = $this->find($forumId);
-        if (!$forum) {
-            throw new \Exception('Forum not found');
+        // Utiliser une sous-requête CTE récursive pour obtenir tous les forums concernés
+        $conn = $this->getEntityManager()->getConnection();
+        $subforumsSql = "
+            WITH RECURSIVE forum_tree AS (
+                SELECT id FROM forum WHERE id = :forumId
+                UNION ALL
+                SELECT f.id FROM forum f
+                JOIN forum_tree ft ON f.parent_id = ft.id
+            )
+            SELECT id FROM forum_tree
+        ";
+        
+        $stmt = $conn->prepare($subforumsSql);
+        $stmt->bindValue('forumId', $forumId);
+        $result = $stmt->executeQuery();
+        $forumIds = $result->fetchFirstColumn();
+        
+        if (empty($forumIds)) {
+            return [
+                'totalThreads' => 0,
+                'totalPosts' => 0,
+            ];
         }
-
-        $totalThreads = 0;
-        $totalPosts = 0;
-
-        // Gather the forum and its subforums
-        $forumsToCheck = [$forum];
-        $forumsToCheck = array_merge($forumsToCheck, $forum->getSubforums()->toArray());
-
-        foreach ($forumsToCheck as $subForum) {
-            $threads = $subForum->getThreads();
-            $totalThreads += count($threads);
-            foreach ($threads as $thread) {
-                $totalPosts += count($thread->getPosts());
-            }
-        }
-
+        
+        // Compter les threads en une seule requête
+        $qbThreads = $this->getEntityManager()->createQueryBuilder();
+        $totalThreads = $qbThreads->select('COUNT(t.id)')
+            ->from('App\Entity\Thread', 't')
+            ->where('t.forum IN (:forumIds)')
+            ->setParameter('forumIds', $forumIds)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        // Compter les posts en une seule requête
+        $qbPosts = $this->getEntityManager()->createQueryBuilder();
+        $totalPosts = $qbPosts->select('COUNT(p.id)')
+            ->from('App\Entity\Post', 'p')
+            ->join('p.thread', 't')
+            ->where('t.forum IN (:forumIds)')
+            ->setParameter('forumIds', $forumIds)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
         return [
             'totalThreads' => $totalThreads,
             'totalPosts' => $totalPosts,

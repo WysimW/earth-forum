@@ -43,6 +43,10 @@ class Post implements TimestampableInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isDraft = false;
 
+    #[ORM\ManyToOne(targetEntity: Post::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Post $quotedPost = null;
+
     public function __construct()
     {  
         $this->createdAt = new \DateTimeImmutable(); // Set the default value for createdAt
@@ -110,7 +114,7 @@ class Post implements TimestampableInterface
     
     public function isInCharacter(): bool
     {
-        return $this->type === 'ic';
+        return $this->type === 'roleplay';
     }
     
     public function isOutOfCharacter(): bool
@@ -166,6 +170,17 @@ class Post implements TimestampableInterface
     public function setIsDraft(bool $isDraft): self
     {
         $this->isDraft = $isDraft;
+        return $this;
+    }
+
+    public function getQuotedPost(): ?Post
+    {
+        return $this->quotedPost;
+    }
+
+    public function setQuotedPost(?Post $quotedPost): self
+    {
+        $this->quotedPost = $quotedPost;
         return $this;
     }
 

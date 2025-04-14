@@ -29,7 +29,7 @@ class Univers
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $slug = null;
+    private ?string $slug = "default";
 
     /**
      * @var Collection<int, Character>

@@ -541,6 +541,20 @@ class ThreadController extends AbstractController
         ]);
     }
 
+    #[Route('/post/{id}/quote', name: 'app_post_quote')]
+    #[IsGranted('ROLE_USER')]
+    public function quote(Post $post): Response
+    {
+        $thread = $post->getThread();
+        $forum = $thread->getForum();
+        
+        // Rediriger vers le formulaire de réponse avec le contenu cité
+        return $this->redirectToRoute('app_thread_show', [
+            'id' => $thread->getId(),
+            'quote' => $post->getId()
+        ]);
+    }
+
     private function getBreadcrumbsForForum(Forum $forum, array $additional = []): array
     {
         $breadcrumbs = [

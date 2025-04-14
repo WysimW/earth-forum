@@ -7,6 +7,8 @@ use App\Repository\ForumRepository;
 use App\Repository\PostRepository;
 use App\Repository\ThreadRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class ForumStatisticsService
 {
@@ -14,23 +16,40 @@ class ForumStatisticsService
     private ThreadRepository $threadRepository;
     private PostRepository $postRepository;
     private EntityManagerInterface $entityManager;
+    private TagAwareCacheInterface $cache;
 
     public function __construct(
         ForumRepository $forumRepository,
         ThreadRepository $threadRepository,
         PostRepository $postRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TagAwareCacheInterface $cache
     ) {
         $this->forumRepository = $forumRepository;
         $this->threadRepository = $threadRepository;
         $this->postRepository = $postRepository;
         $this->entityManager = $entityManager;
+        $this->cache = $cache;
     }
 
     /**
      * Calcule les statistiques cumulées pour un forum et tous ses sous-forums
      */
     public function getForumStats(int $forumId): array
+    {
+        // Utiliser le cache avec une durée de vie de 10 minutes (600 secondes)
+        return $this->cache->get('forum_stats_' . $forumId, function (ItemInterface $item) use ($forumId) {
+            $item->expiresAfter(600);
+            $item->tag(['forum_stats', 'forum_' . $forumId]);
+            
+            return $this->calculateForumStats($forumId);
+        });
+    }
+    
+    /**
+     * Calcule les statistiques sans utiliser le cache
+     */
+    private function calculateForumStats(int $forumId): array
     {
         // Récupérer tous les IDs de sous-forums (récursivement)
         $conn = $this->entityManager->getConnection();
@@ -72,5 +91,13 @@ class ForumStatisticsService
             'subforum_count' => $subforumCount,
             'forum_ids' => $forumIds
         ];
+    }
+    
+    /**
+     * Invalide le cache des statistiques du forum
+     */
+    public function invalidateForumStats(int $forumId): void
+    {
+        $this->cache->invalidateTags(['forum_' . $forumId]);
     }
 }

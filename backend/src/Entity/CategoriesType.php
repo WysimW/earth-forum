@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\CategoriesTypeRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use Doctrine\Common\Collections\Collection;
+use App\Repository\CategoriesTypeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: CategoriesTypeRepository::class)]
 #[ApiResource]
@@ -25,6 +26,9 @@ class CategoriesType
 
     #[ORM\OneToMany(mappedBy: 'type', targetEntity: ForumCategory::class)]
     private Collection $forumCategories;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $slug = "default";
 
     public function __construct()
     {
@@ -89,4 +93,27 @@ class CategoriesType
 
         return $this;
     }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        if (empty($this->slug) && !empty($this->name)) {
+            $slugger = new AsciiSlugger();  
+            $this->slug = strtolower($slugger->slug($this->name));
+        }
+    }
+
 }

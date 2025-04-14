@@ -22,17 +22,18 @@
     height: 2px;
 }
 
-.rp-forums .section-title::after {
+/* Gradient spécifique pour chaque type de forum */
+.section-title.rp-gradient::after {
     background: linear-gradient(to right, var(--roleplay-primary), transparent);
     box-shadow: 0 0 10px var(--roleplay-glow);
 }
 
-.hrp-forums .section-title::after {
+.section-title.hrp-gradient::after {
     background: linear-gradient(to right, var(--hrp-primary), transparent);
     box-shadow: 0 0 10px var(--hrp-glow);
 }
 
-/* Cartes de forum */
+/* Cartes de forum - structure de base */
 .forum-card {
     display: flex;
     background-color: rgba(12, 45, 72, 0.7);
@@ -43,18 +44,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.rp-forums .forum-card:hover {
-    background-color: rgba(92, 45, 145, 0.2);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 5px var(--roleplay-glow);
-    transform: translateY(-3px);
-}
-
-.hrp-forums .forum-card:hover {
-    background-color: rgba(44, 110, 73, 0.2);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 5px var(--hrp-glow);
-    transform: translateY(-3px);
-}
-
+/* Icône du forum */
 .forum-icon {
     width: 70px;
     height: 70px;
@@ -65,12 +55,21 @@
     padding: 1rem;
 }
 
-.rp-forums .forum-icon {
+/* Couleurs spécifiques aux types de forums */
+.rp-color {
     color: var(--roleplay-accent);
 }
 
-.hrp-forums .forum-icon {
+.hrp-color {
     color: var(--hrp-accent);
+}
+
+.forum-card.rp-theme:hover {
+    background-color: rgba(92, 45, 145, 0.2);
+}
+
+.forum-card.hrp-theme:hover {
+    background-color: rgba(44, 110, 73, 0.2);
 }
 
 .forum-info {
@@ -130,11 +129,13 @@
     transition: all 0.3s;
 }
 
+/* Utiliser une classe unique pour le survol des lignes de thread */
 .thread-row:hover {
     background-color: rgba(20, 93, 160, 0.3);
 }
 
-.thread-row.thread-sticky {
+/* Styles spécifiques pour les threads épinglés */
+.thread-sticky {
     background-color: rgba(243, 156, 18, 0.15);
 }
 
@@ -172,7 +173,8 @@
     align-items: center;
 }
 
-.thread-author .character-name {
+/* Classe unique pour le nom du personnage */
+.character-name {
     color: var(--roleplay-accent);
 }
 
@@ -200,7 +202,7 @@
     opacity: 0.7;
 }
 
-/* Badges de type de forum */
+/* Badges pour les types de forum */
 .forum-type-badge {
     display: inline-flex;
     align-items: center;
@@ -211,6 +213,7 @@
     text-transform: uppercase;
 }
 
+/* Styles spécifiques pour les badges RP et HRP */
 .forum-type-badge.roleplay {
     background-color: var(--roleplay-primary);
     color: var(--text-white);

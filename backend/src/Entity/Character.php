@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Interface\TimestampableInterface;
 use App\Entity\Trait\TimestampableTrait;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: CharacterRepository::class)]
 #[ORM\Table(name: '`character`')]
@@ -117,6 +118,9 @@ class Character implements TimestampableInterface
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $moderationNote = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $slug = "default";
     
     public function __construct()
     {
@@ -456,6 +460,17 @@ class Character implements TimestampableInterface
         return $this;
     }
 
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
@@ -466,6 +481,16 @@ class Character implements TimestampableInterface
     public function onPreUpdate(): void
     {
         $this->updateTimestamps();
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        if (empty($this->slug) && !empty($this->name)) {
+            $slugger = new AsciiSlugger();
+            $this->slug = strtolower($slugger->slug($this->name));
+        }
     }
 
     public function isValidated(): bool

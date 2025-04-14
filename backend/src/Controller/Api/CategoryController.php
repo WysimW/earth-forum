@@ -23,8 +23,7 @@ class CategoryController extends AbstractController
     #[Route('/api/categories', name: 'get_categories', methods: ['GET'])]
     public function getCategories(ForumCategoryRepository $categoryRepository): JsonResponse
     {
-        $categories = $categoryRepository->findAll();
-
+        $categories = $categoryRepository->findAllWithForums();
 
         $data = [];
 
@@ -36,20 +35,26 @@ class CategoryController extends AbstractController
                 $id = $forum->getID();
                 $latestThread = $this->forumRepository->findLatestThreadByRecentPostInForum($id);
 
-
                 if ($latestThread != null) {
-                    $lastPostDate = $latestThread->getPosts()->last()->getCreatedAt()->format('H\hi \l\e d/m/y');
-                    $formattedDate = 'Posté à ' . $lastPostDate;
-                    $lastThreadData = [
-                        'id' => $latestThread->getId(),
-                        'title' => $latestThread->getTitle(),
-                        'author' => $latestThread->getAuthor()->getPseudo(), // Assuming Thread entity has a relation to Author
-                        'avatar' => $latestThread->getAuthor()->getAvatar(),
-                        'date' => $formattedDate, // Get the date of the last post
-                    ];
+                    $lastPost = $this->getEntityManager()->getRepository(\App\Entity\Post::class)
+                        ->findLastPostForThread($latestThread->getId());
+                    
+                    if ($lastPost) {
+                        $lastPostDate = $lastPost->getCreatedAt()->format('H\hi \l\e d/m/y');
+                        $formattedDate = 'Posté à ' . $lastPostDate;
+                        $lastThreadData = [
+                            'id' => $latestThread->getId(),
+                            'title' => $latestThread->getTitle(),
+                            'author' => $latestThread->getAuthor()->getPseudo(),
+                            'avatar' => $latestThread->getAuthor()->getAvatar(),
+                            'date' => $formattedDate,
+                        ];
+                    } else {
+                        $lastThreadData = [];
+                    }
                 } else {
                     $lastThreadData = [];
-                };
+                }
 
                 $stats = $this->forumRepository->countThreadsAndPostsInForum($id);
                 $statsData = [
@@ -58,8 +63,6 @@ class CategoryController extends AbstractController
                 ];
 
                 foreach ($forum->getSubforums() as $subForum) {
-
-                    $lastThread = $subForum->getLastPostInfo();
                     $subForums[] = [
                         'id' => $subForum->getId(),
                         'name' => $subForum->getName(),
@@ -74,7 +77,7 @@ class CategoryController extends AbstractController
                     'description' => $forum->getDescription(),
                     'banner' => $forum->getBanner(),
                     'heroLogo' => $forum->getHeroLogo(),
-                    'lastThread' => $lastThreadData, // Method to retrieve last thread info
+                    'lastThread' => $lastThreadData,
                     'stats' => $statsData,
                     'subforums' => $subForums,
                 ];

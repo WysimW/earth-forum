@@ -53,6 +53,22 @@ class ForumCategoryRepository extends ServiceEntityRepository
     
     
 
+    /**
+     * Récupère toutes les catégories avec leurs forums préchargés
+     */
+    public function findAllWithForums(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.forums', 'f')
+            ->leftJoin('f.subforums', 's')
+            ->addSelect('f')
+            ->addSelect('s')
+            ->orderBy('c.homeOrder', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return ForumCategory[] Returns an array of ForumCategory objects
     //     */

@@ -75,7 +75,7 @@ class Forum implements TimestampableInterface
     private int $position = 0;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $slug = null;
+    private ?string $slug = "default";
 
      /**
      * @var mixed|null

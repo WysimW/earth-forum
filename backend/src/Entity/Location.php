@@ -8,8 +8,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource]
 class Location
 {
@@ -47,6 +49,9 @@ class Location
 
     #[ORM\Column(nullable: true)]
     private ?bool $isPublic = true;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $slug = "default";
 
     public function __construct()
     {
@@ -218,5 +223,27 @@ class Location
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        if (empty($this->slug) && !empty($this->name)) {
+            $slugger = new AsciiSlugger();
+            $this->slug = strtolower($slugger->slug($this->name));
+        }
     }
 }

@@ -19,7 +19,7 @@ class Role
     private ?string $name = null;
 
     #[ORM\Column(length: 7)]
-    private ?string $color = null;
+    private ?string $color = "#000000";
 
     /**
      * @var Collection<int, User>

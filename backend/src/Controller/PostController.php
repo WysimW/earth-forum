@@ -52,9 +52,6 @@ class PostController extends AbstractController
         $isRpThread = $thread->getType() === 'roleplay';
         
         if ($isRpThread) {
-            // Pour les posts dans un thread roleplay, définir le type comme roleplay
-            $post->setType('ic'); // Par défaut, un post dans un thread RP est "in-character"
-            
             // For roleplay threads, get valid characters for the current user
             if ($thread->isOpen()) {
                 $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
@@ -69,7 +66,9 @@ class PostController extends AbstractController
             ]);
         } else {
             // For regular threads, use standard post form
-            $form = $this->createForm(PostType::class, $post);
+            $form = $this->createForm(PostType::class, $post, [
+                'is_roleplay' => $thread->getType() === 'roleplay'
+            ]);
         }
         
         $form->handleRequest($request);
@@ -79,8 +78,15 @@ class PostController extends AbstractController
             $isDraft = $request->request->get('save_draft') !== null;
             $post->setIsDraft($isDraft);
             
+            // Définir le type de post en fonction du type de thread
+            if ($thread->getType() === 'roleplay') {
+                $post->setType('roleplay'); // in-character pour les threads RP
+            } else {
+                $post->setType('normal'); // normal pour les autres threads
+            }
+            
             // For roleplay threads, add character as participant if not already in the list
-            if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
+            if ($thread->getType() === 'roleplay' && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
                 if ($thread->isFull()) {
                     $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
                     return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
@@ -91,6 +97,18 @@ class PostController extends AbstractController
             
             // Update thread's lastPostAt date
             $thread->setUpdatedAt(new \DateTimeImmutable());
+            
+            // Si un post est cité, on ajoute une mention dans le contenu
+            if ($post->getQuotedPost()) {
+                $quotedContent = $post->getQuotedPost()->getContent();
+                $quotedAuthor = $post->getQuotedPost()->getAuthor()->getPseudo();
+                $post->setContent(sprintf('[quote="%s"]%s[/quote]%s%s', 
+                    $quotedAuthor, 
+                    $quotedContent, 
+                    "\n\n", 
+                    $post->getContent()
+                ));
+            }
             
             $this->entityManager->persist($post);
             $this->entityManager->flush();
@@ -140,7 +158,7 @@ class PostController extends AbstractController
         // Pour les threads RP
         if ($thread->isRoleplay()) {
             // Définir le type de post comme roleplay
-            $post->setType('ic'); // Par défaut, un post dans un thread RP est "in-character"
+            $post->setType('roleplay'); // Par défaut, un post dans un thread RP est "in-character"
             
             $characterId = $request->request->get('character_id');
             
@@ -214,8 +232,8 @@ class PostController extends AbstractController
         // Assurez-vous que le type de post est correctement défini pour les threads RP
         if ($isRpThread) {
             // Définir le type de post comme roleplay si ce n'est pas déjà le cas
-            if ($post->getType() !== 'ic' && $post->getType() !== 'ooc') {
-                $post->setType('ic');
+            if ($post->getType() !== 'roleplay' && $post->getType() !== 'ooc') {
+                $post->setType('roleplay');
             }
             
             $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
@@ -355,6 +373,58 @@ class PostController extends AbstractController
                 'Mes brouillons' => $this->generateUrl('app_my_drafts'),
                 'Nouveau brouillon' => $this->generateUrl('app_post_new_draft'),
             ]),
+        ]);
+    }
+
+    #[Route('/thread/{threadId}/reply-form', name: 'app_post_reply_form')]
+    public function replyForm(int $threadId, CharacterRepository $characterRepository): Response
+    {
+        $thread = $this->entityManager->getRepository(Thread::class)->find($threadId);
+        
+        if (!$thread) {
+            throw $this->createNotFoundException('Thread not found');
+        }
+        
+        $post = new Post();
+        $post->setThread($thread);
+        $post->setAuthor($this->getUser());
+        $post->setType('roleplay'); // Par défaut, un post dans un thread RP est "in-character"
+        
+        // Récupérer les personnages validés de l'utilisateur
+        $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+        
+        $form = $this->createForm(PostRoleplayType::class, $post, [
+            'characters' => $userCharacters,
+            'action' => $this->generateUrl('app_post_new', ['threadId' => $threadId])
+        ]);
+        
+        return $this->render('post/_reply_form.html.twig', [
+            'form' => $form->createView(),
+            'thread' => $thread
+        ]);
+    }
+    
+    #[Route('/thread/{threadId}/reply-hrp-form', name: 'app_post_reply_hrp_form')]
+    public function replyHrpForm(int $threadId): Response
+    {
+        $thread = $this->entityManager->getRepository(Thread::class)->find($threadId);
+        
+        if (!$thread) {
+            throw $this->createNotFoundException('Thread not found');
+        }
+        
+        $post = new Post();
+        $post->setThread($thread);
+        $post->setAuthor($this->getUser());
+        $post->setType('ooc'); // Hors-roleplay
+        
+        $form = $this->createForm(PostType::class, $post, [
+            'action' => $this->generateUrl('app_post_new', ['threadId' => $threadId])
+        ]);
+        
+        return $this->render('post/_reply_form.html.twig', [
+            'form' => $form->createView(),
+            'thread' => $thread
         ]);
     }
 
