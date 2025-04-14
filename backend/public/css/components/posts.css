@@ -11,16 +11,24 @@
 
 /* Variantes de posts selon le type (RP/HRP) */
 .post-container.roleplay-theme {
-    background-color: rgba(92, 45, 145, 0.15);
-    border: var(--border-width-sm) solid rgba(156, 85, 211, 0.2);
+    background-color: var(--roleplay-transparent);
+    border: var(--border-width-sm) var(--roleplay-transparent);
     box-shadow: 0 0 15px var(--roleplay-glow);
 }
 
 .post-container.hrp-theme {
     background-color: rgba(44, 110, 73, 0.15);
-    border: var(--border-width-sm) solid rgba(76, 149, 108, 0.2);
-    box-shadow: 0 0 15px var(--hrp-glow);
+    border: var(--border-width-sm) var(--hrp-transparent);
+    box-shadow: 0 0 15px var(--hrp-hover);
 }
+
+.post-container.important-theme {
+    background-color: var(--important-transparent);
+    border: var(--border-width-sm) solid rgba(156, 85, 211, 0.2);
+    box-shadow: 0 0 15px var(--important-glow);
+}
+
+
 
 /* Noms et avatars - classes génériques */
 .name-label {

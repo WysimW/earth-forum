@@ -58,10 +58,10 @@ header {
 }
 
 .nav-link {
-    color: var(--light-gray) !important;
+    color: var(--light-gray) ;
     font-weight: 500;
     letter-spacing: 1px;
-    padding: var(--spacing-sm) var(--spacing-md) !important;
+    padding: var(--spacing-sm) var(--spacing-md) ;
     transition: color var(--transition-normal), text-shadow var(--transition-normal);
     position: relative;
     font-family: var(--font-special);
@@ -72,6 +72,48 @@ header {
     text-shadow: 0 0 10px var(--glow-blue);
 }
 
+.nav-link:before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--accent-green);
+    transition: width var(--transition-normal);
+    box-shadow: 0 0 8px var(--glow-green);
+}
+
+.nav-link:hover:before {
+    width: 70%;
+}
+
+/* Reset du style Bootstrap pour le dropdown-toggle */
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Style de la flèche personnalisée */
+.nav-link.dropdown-toggle {
+    position: relative;
+    padding-right: 2rem !important;
+}
+
+.nav-link.dropdown-toggle .dropdown-arrow {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--roleplay-accent);
+    transition: transform 0.2s ease;
+}
+
+.nav-link.dropdown-toggle[aria-expanded="true"] .dropdown-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Style de la ligne de soulignement */
 .nav-link:after {
     content: '';
     position: absolute;
@@ -179,7 +221,9 @@ header {
 .content {
     grid-area: content;
     padding: var(--spacing-xl);
-    max-width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 /* Footer */
@@ -814,3 +858,77 @@ footer a:hover {
         flex-direction: column;
     }
 }
+
+/* Dropdown styles */
+.dropdown-menu {
+    background-color: rgba(12, 45, 72, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(220, 225, 227, 0.1);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    min-width: 200px;
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    color: var(--text-white);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(20, 93, 160, 0.3);
+    color: var(--text-white);
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--roleplay-accent);
+}
+
+.dropdown-divider {
+    border-color: rgba(220, 225, 227, 0.1);
+    margin: 0.5rem 0;
+}
+
+/* Style de la flèche du dropdown */
+.dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.5rem;
+    vertical-align: 0.255em;
+    content: "";
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    color: var(--roleplay-accent);
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dropdown-toggle i {
+    margin-right: 0.5rem;
+}
+
+/* Navbar dropdown specific */
+.navbar .dropdown-menu {
+    margin-top: 0.5rem;
+}
+
+.navbar .dropdown-item {
+    font-size: 0.9rem;
+}
+
+.navbar .dropdown-item i {
+    font-size: 1rem;
+}
+

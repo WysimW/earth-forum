@@ -2,6 +2,16 @@
 
 {% block title %}{{ character.name }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/characters.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/characters.js') }}"></script>
+{% endblock %}
+
 {% block body %}
 <div class="container my-4">
     {# Fil d'Ariane #}
@@ -24,20 +34,24 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="character-header mb-4">
-                <h1 class="mb-0">{{ character.name }}</h1>
-                {% if character.universe %}
-                    <span class="badge bg-primary me-2">{{ character.universe.name }}</span>
-                {% endif %}
-                <span class="character-status status-{{ character.status }}">
-                    {% if character.status == 'pending' %}
-                        En attente de validation
-                    {% elseif character.status == 'validated' %}
-                        Personnage validé
-                    {% else %}
-                        Personnage refusé
+            <div class="character-profile-header mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="h2 mb-0">{{ character.name }}</h1>
+                    {% if character.universe %}
+                        <span class="badge bg-primary">{{ character.universe.name }}</span>
                     {% endif %}
-                </span>
+                </div>
+                <div class="character-status mt-2">
+                    <span class="status-badge status-{{ character.status }}">
+                        {% if character.status == 'pending' %}
+                            <i class="fas fa-clock me-1"></i> En attente de validation
+                        {% elseif character.status == 'validated' %}
+                            <i class="fas fa-check-circle me-1"></i> Personnage validé
+                        {% else %}
+                            <i class="fas fa-times-circle me-1"></i> Personnage refusé
+                        {% endif %}
+                    </span>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-4 text-center mb-4 mb-md-0">
@@ -130,32 +144,46 @@
                     </div>
                 </div>
                 <div class="col-md-8">
-                    <ul class="nav nav-tabs" id="characterTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="bio-tab" data-bs-toggle="tab" data-bs-target="#bio" type="button" role="tab">Biographie</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="personality-tab" data-bs-toggle="tab" data-bs-target="#personality" type="button" role="tab">Personnalité</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab">Apparence</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="abilities-tab" data-bs-toggle="tab" data-bs-target="#abilities" type="button" role="tab">Capacités</button>
-                        </li>
-                        {% if character.equipment %}
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab">Équipements</button>
-                        </li>
-                        {% endif %}
-                        {% if character.weaknesses %}
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="weaknesses-tab" data-bs-toggle="tab" data-bs-target="#weaknesses" type="button" role="tab">Faiblesses</button>
-                        </li>
-                        {% endif %}
-                    </ul>
+                    <div class="character-tabs">
+                        <ul class="nav nav-tabs" id="characterTabs" role="tablist">
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link active" id="biography-tab" data-bs-toggle="tab" data-bs-target="#biography" type="button" role="tab" aria-controls="biography" aria-selected="true">
+                                    <i class="fas fa-book-open me-2"></i>Biographie
+                                </button>
+                            </li>
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link" id="personality-tab" data-bs-toggle="tab" data-bs-target="#personality" type="button" role="tab" aria-controls="personality" aria-selected="false">
+                                    <i class="fas fa-brain me-2"></i>Personnalité
+                                </button>
+                            </li>
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
+                                    <i class="fas fa-user me-2"></i>Apparence
+                                </button>
+                            </li>
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link" id="abilities-tab" data-bs-toggle="tab" data-bs-target="#abilities" type="button" role="tab" aria-controls="abilities" aria-selected="false">
+                                    <i class="fas fa-fist-raised me-2"></i>Capacités
+                                </button>
+                            </li>
+                            {% if character.equipment %}
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab" aria-controls="equipment" aria-selected="false">
+                                    <i class="fas fa-shield-alt me-2"></i>Équipements
+                                </button>
+                            </li>
+                            {% endif %}
+                            {% if character.weaknesses %}
+                            <li class="character-tab-item" role="presentation">
+                                <button class="character-tab-link" id="weaknesses-tab" data-bs-toggle="tab" data-bs-target="#weaknesses" type="button" role="tab" aria-controls="weaknesses" aria-selected="false">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Faiblesses
+                                </button>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
                     <div class="tab-content p-3 border border-top-0 rounded-bottom" id="characterTabContent">
-                        <div class="tab-pane fade show active" id="bio" role="tabpanel" aria-labelledby="bio-tab">
+                        <div class="tab-pane fade show active" id="biography" role="tabpanel" aria-labelledby="biography-tab">
                             {% if character.biography %}
                                 <div class="character-biography">
                                     {{ character.biography|raw }}
@@ -167,7 +195,7 @@
                         <div class="tab-pane fade" id="personality" role="tabpanel" aria-labelledby="personality-tab">
                             {% if character.personality %}
                                 <div class="character-info">
-                                    {{ character.personality|nl2br }}
+                                    {{ character.personality|raw }}
                                 </div>
                             {% else %}
                                 <p class="text-muted fst-italic">Aucune information sur la personnalité de ce personnage.</p>
@@ -176,7 +204,7 @@
                         <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
                             {% if character.appearance %}
                                 <div class="character-info">
-                                    {{ character.appearance|nl2br }}
+                                    {{ character.appearance|raw }}
                                 </div>
                             {% else %}
                                 <p class="text-muted fst-italic">Aucune description de l'apparence de ce personnage.</p>
@@ -185,7 +213,7 @@
                         <div class="tab-pane fade" id="abilities" role="tabpanel" aria-labelledby="abilities-tab">
                             {% if character.abilities %}
                                 <div class="character-info">
-                                    {{ character.abilities|nl2br }}
+                                    {{ character.abilities|raw }}
                                 </div>
                             {% else %}
                                 <p class="text-muted fst-italic">Aucune capacité ou compétence spécifiée pour ce personnage.</p>
@@ -194,14 +222,14 @@
                         {% if character.equipment %}
                         <div class="tab-pane fade" id="equipment" role="tabpanel" aria-labelledby="equipment-tab">
                             <div class="character-info">
-                                {{ character.equipment|nl2br }}
+                                {{ character.equipment|raw }}
                             </div>
                         </div>
                         {% endif %}
                         {% if character.weaknesses %}
                         <div class="tab-pane fade" id="weaknesses" role="tabpanel" aria-labelledby="weaknesses-tab">
                             <div class="character-info">
-                                {{ character.weaknesses|nl2br }}
+                                {{ character.weaknesses|raw }}
                             </div>
                         </div>
                         {% endif %}
@@ -251,38 +279,4 @@
         {% endif %}
     </div>
 </div>
-
-<style>
-.character-info-box {
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-top: 1rem;
-    text-align: left;
-}
-
-.info-row {
-    border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-}
-
-.info-row:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.info-label {
-    font-weight: bold;
-    font-size: 0.85rem;
-    color: #6c757d;
-    display: inline-block;
-    width: 90px;
-}
-
-.info-value {
-    display: inline-block;
-}
-</style>
 {% endblock %}

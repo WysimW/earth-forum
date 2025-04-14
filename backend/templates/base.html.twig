@@ -70,17 +70,17 @@
                                 {% if app.user %}
                                     <div class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-user-circle me-1"></i> {{ app.user.pseudo }}
+                                            <i class="fas fa-user-circle me-1"></i> {{ app.user.pseudo }} <span class="dropdown-arrow">▼</span>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}"><i class="fas fa-columns"></i> Tableau de bord</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_characters') }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}">Administration</a></li>
+                                                <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-toolbox"></i> Administration</a></li>
                                             {% endif %}
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
                                         </ul>
                                     </div>
                                 {% else %}
