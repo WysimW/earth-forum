@@ -4,7 +4,6 @@ namespace App\Form\Admin;
 
 use App\Entity\User;
 use App\Entity\Character;
-use App\Entity\Location;
 use App\Form\CharacterType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -46,20 +45,6 @@ class AdminCharacterType extends CharacterType
             ],
             'required' => true,
         ]);
-        
-        // Ajouter le champ location s'il existe dans l'entité
-        try {
-            $builder->add('location', EntityType::class, [
-                'class' => Location::class,
-                'choice_label' => 'name',
-                'label' => 'Lieu',
-                'required' => false,
-                'placeholder' => 'Sélectionnez un lieu (optionnel)',
-            ]);
-        } catch (\Throwable $e) {
-            // Le champ location n'est peut-être pas présent dans l'entité Character
-            // Nous ignorons donc l'erreur
-        }
         
         // Gérer les autres champs spécifiques si nécessaire
         if (!$builder->has('description')) {

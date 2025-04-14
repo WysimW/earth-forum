@@ -91,4 +91,38 @@ class CharacterController extends AbstractController
 
         return $this->redirectToRoute('admin_character_index');
     }
+
+    #[Route('/{id}/reject', name: 'admin_character_reject', methods: ['POST'])]
+    public function reject(Request $request, Character $character): Response
+    {
+        if ($this->isCsrfTokenValid('reject' . $character->getId(), $request->request->get('_token'))) {
+            $rejectionReason = $request->request->get('rejection_reason');
+            
+            $character->setStatus('rejected');
+            $character->setStatusMessage($rejectionReason);
+            $character->setRejectedAt(new \DateTimeImmutable());
+            
+            $this->entityManager->flush();
+            
+            $this->addFlash('success', 'Le personnage a été rejeté avec succès.');
+        }
+
+        return $this->redirectToRoute('admin_character_index');
+    }
+
+    #[Route('/{id}/validate', name: 'admin_character_validate', methods: ['POST'])]
+    public function validate(Request $request, Character $character): Response
+    {
+        if ($this->isCsrfTokenValid('validate' . $character->getId(), $request->request->get('_token'))) {
+            $character->setStatus(Character::STATUS_VALIDATED);
+            $character->setValidatedAt(new \DateTimeImmutable());
+            $character->setStatusMessage('Validé par un administrateur');
+            
+            $this->entityManager->flush();
+            
+            $this->addFlash('success', 'Le personnage a été validé avec succès.');
+        }
+
+        return $this->redirectToRoute('admin_character_index');
+    }
 }

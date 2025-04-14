@@ -1,24 +1,253 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Modifier Personnage | Earth Forum{% endblock %}
+{% block title %}Modifier le Personnage - {{ character.name }}{% endblock %}
 
 {% block body %}
+<div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Modifier le personnage</h1>
         <div>
-            <a href="{{ path('admin_character_index') }}" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
-            <a href="{{ path('admin_character_show', {'id': character.id}) }}" class="btn btn-info"><i class="bi bi-eye"></i> Voir détails</a>
+            <h1 class="h3 mb-0">Modifier le Personnage</h1>
+            <p class="text-muted mb-0">{{ character.name }}</p>
+        </div>
+        <div>
+            <a href="{{ path('admin_character_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
         </div>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+    <div class="row g-4">
+        <!-- Informations principales -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-circle me-2"></i>Informations principales
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.universe, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.universe, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.universe) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.user, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.user, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.user) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.avatar, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.avatar, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.avatar) }}
+                        <div id="avatar-preview" class="text-center mt-3" style="display: none;">
+                            <img src="" alt="Aperçu de l'avatar" class="img-thumbnail" style="max-width: 200px;">
+                        </div>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-    {% endfor %}
 
-    {% include 'admin/character/_form.html.twig' with {'button_label': 'Mettre à jour'} %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-vcard me-2"></i>Identité
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_label(form.pseudonyms, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.pseudonyms, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.pseudonyms) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.gender, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.gender, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.gender) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.age, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.age, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.age) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_label(form.occupation, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.occupation, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.occupation) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.civilStatus, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.civilStatus, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.civilStatus) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.sexualOrientation, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.sexualOrientation, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.sexualOrientation) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people me-2"></i>Affiliation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.moralAffiliation, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.moralAffiliation, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.moralAffiliation) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.factions, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.factions, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+                        {{ form_errors(form.factions) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détails du personnage -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-book me-2"></i>Description
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.biography, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.biography, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.biography) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.personality, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.personality, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.personality) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.appearance, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.appearance, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.appearance) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning-charge me-2"></i>Caractéristiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.abilities, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.abilities, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.abilities) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.equipment, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.equipment, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.equipment) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.weaknesses, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.weaknesses, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                        {{ form_errors(form.weaknesses) }}
+                    </div>
+                </div>
+            </div>
+
+            {% if form.moderationNote is defined %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-shield-check me-2"></i>Modération
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {{ form_label(form.moderationNote, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.moderationNote, {'attr': {'class': 'form-control wysiwyg-editor', 'rows': '5'}}) }}
+                    {{ form_errors(form.moderationNote) }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ path('admin_character_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Enregistrer
+        </button>
+    </div>
+    {{ form_end(form) }}
+</div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des éditeurs WYSIWYG
+    const editors = document.querySelectorAll('.wysiwyg-editor');
+    editors.forEach(function(editor) {
+        ClassicEditor
+            .create(editor)
+            .catch(error => {
+                console.error(error);
+            });
+    });
+
+    // Prévisualisation de l'avatar
+    const avatarPreview = document.querySelector('#avatar-preview img');
+    if (avatarPreview && '{{ character.avatar }}') {
+        avatarPreview.src = '{{ character.avatar }}';
+        document.querySelector('#avatar-preview').style.display = 'block';
+    }
+
+    // Mise à jour de la prévisualisation lors du changement d'avatar
+    const avatarInput = document.querySelector('#character_avatar');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                    document.querySelector('#avatar-preview').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

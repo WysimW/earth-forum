@@ -38,6 +38,12 @@ class Univers
     private Collection $characters;
 
     /**
+     * @var Collection<int, Npc>
+     */
+    #[ORM\OneToMany(targetEntity: Npc::class, mappedBy: 'universe')]
+    private Collection $npcs;
+
+    /**
      * @var Collection<int, Forum>
      */
     #[ORM\OneToMany(targetEntity: Forum::class, mappedBy: 'universe')]
@@ -53,6 +59,7 @@ class Univers
     {   
         $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
         $this->characters = new ArrayCollection();
+        $this->npcs = new ArrayCollection();
         $this->forums = new ArrayCollection();
         $this->locations = new ArrayCollection();
     }
@@ -196,6 +203,36 @@ class Univers
             }
         }
         
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Npc>
+     */
+    public function getNpcs(): Collection
+    {
+        return $this->npcs;
+    }
+
+    public function addNpc(Npc $npc): static
+    {
+        if (!$this->npcs->contains($npc)) {
+            $this->npcs->add($npc);
+            $npc->setUniverse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNpc(Npc $npc): static
+    {
+        if ($this->npcs->removeElement($npc)) {
+            // set the owning side to null (unless already changed)
+            if ($npc->getUniverse() === $this) {
+                $npc->setUniverse(null);
+            }
+        }
+
         return $this;
     }
 }

@@ -89,10 +89,15 @@ class Thread implements TimestampableInterface
     #[ORM\JoinTable(name: 'thread_participants')]
     private Collection $participants;
 
+    #[ORM\ManyToMany(targetEntity: Npc::class)]
+    #[ORM\JoinTable(name: 'thread_npcs')]
+    private Collection $npcs;
+
     public function __construct()
     {  
         $this->posts = new ArrayCollection();
         $this->participants = new ArrayCollection();
+        $this->npcs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -345,6 +350,30 @@ class Thread implements TimestampableInterface
     public function removeParticipant(Character $participant): static
     {
         $this->participants->removeElement($participant);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Npc>
+     */
+    public function getNpcs(): Collection
+    {
+        return $this->npcs;
+    }
+
+    public function addNpc(Npc $npc): static
+    {
+        if (!$this->npcs->contains($npc)) {
+            $this->npcs->add($npc);
+        }
+
+        return $this;
+    }
+
+    public function removeNpc(Npc $npc): static
+    {
+        $this->npcs->removeElement($npc);
 
         return $this;
     }

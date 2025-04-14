@@ -6,6 +6,7 @@ use App\Entity\Character;
 use App\Entity\Location;
 use App\Entity\Thread;
 use App\Entity\Univers;
+use App\Entity\Npc;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -83,6 +84,19 @@ class ThreadRoleplayType extends AbstractType
                 'help' => 'Quel personnage utilise-t-on pour débuter cette scène ?',
                 'attr' => [
                     'class' => 'character-select'
+                ]
+            ])
+            ->add('npcs', EntityType::class, [
+                'label' => 'PNJ participants',
+                'class' => Npc::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+                'help' => 'Sélectionnez les PNJ qui participent à cette scène',
+                'attr' => [
+                    'class' => 'form-select',
+                    'data-choices' => 'true'
                 ]
             ])
             ->add('maxParticipants', IntegerType::class, [

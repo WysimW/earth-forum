@@ -1,19 +1,19 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Nouveau Personnage{% endblock %}
+{% block title %}{{ editMode ? 'Modifier' : 'Créer' }} un PNJ{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1>Nouveau Personnage</h1>
-            <p class="text-muted mb-0">Création d'un nouveau personnage</p>
+            <h1>{{ editMode ? 'Modifier' : 'Créer' }} un PNJ</h1>
+            {% if editMode %}
+                <p class="text-muted mb-0">{{ npc.name }}</p>
+            {% endif %}
         </div>
-        <div>
-            <a href="{{ path('admin_character_index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Retour
-            </a>
-        </div>
+        <a href="{{ path('app_admin_npc_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
     </div>
 
     {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
@@ -47,8 +47,6 @@
                     {{ form_row(form.gender) }}
                     {{ form_row(form.age) }}
                     {{ form_row(form.occupation) }}
-                    {{ form_row(form.civilStatus) }}
-                    {{ form_row(form.sexualOrientation) }}
                 </div>
             </div>
 
@@ -63,7 +61,7 @@
             </div>
         </div>
 
-        <!-- Détails du personnage -->
+        <!-- Détails du PNJ -->
         <div class="col-md-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
@@ -114,11 +112,11 @@
     </div>
 
     <div class="d-flex justify-content-end gap-2">
-        <a href="{{ path('admin_character_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-x-lg"></i> Annuler
+        <a href="{{ path('app_admin_npc_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Annuler
         </a>
         <button type="submit" class="btn btn-primary">
-            <i class="bi bi-save"></i> {{ editMode ? 'Enregistrer' : 'Créer' }}
+            <i class="fas fa-save"></i> {{ editMode ? 'Enregistrer' : 'Créer' }}
         </button>
     </div>
     {{ form_end(form) }}
@@ -139,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Prévisualisation de l'avatar
-    const avatarInput = document.querySelector('#character_avatar');
+    const avatarInput = document.querySelector('#npc_avatar');
     const avatarPreview = document.querySelector('#avatar-preview img');
 
     if (avatarInput && avatarPreview) {
@@ -163,4 +161,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% endblock %}
+{% endblock %} 

@@ -1,20 +1,20 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Détails du Personnage - {{ character.name }}{% endblock %}
+{% block title %}Détails du PNJ - {{ npc.name }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1>Détails du Personnage</h1>
-            <p class="text-muted mb-0">{{ character.name }}</p>
+            <h1>Détails du PNJ</h1>
+            <p class="text-muted mb-0">{{ npc.name }}</p>
         </div>
         <div class="btn-group">
-            <a href="{{ path('admin_character_edit', {'id': character.id}) }}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i> Modifier
+            <a href="{{ path('app_admin_npc_edit', {'id': npc.id}) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Modifier
             </a>
-            <a href="{{ path('admin_character_index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Retour
+            <a href="{{ path('app_admin_npc_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
             </a>
         </div>
     </div>
@@ -31,27 +31,27 @@
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-body text-center">
-                    {% if character.avatar %}
-                        <img src="{{ character.avatar }}" alt="{{ character.name }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% if npc.avatar %}
+                        <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                     {% else %}
                         <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
-                            <i class="bi bi-person fa-3x"></i>
+                            <i class="fas fa-user fa-3x"></i>
                         </div>
                     {% endif %}
-                    <h3 class="card-title">{{ character.name }}</h3>
-                    <p class="text-muted">{{ character.occupation }}</p>
-                    <span class="status-badge status-{{ character.status }}">
-                        {% if character.status == 'draft' %}
+                    <h3 class="card-title">{{ npc.name }}</h3>
+                    <p class="text-muted">{{ npc.occupation }}</p>
+                    <span class="status-badge status-{{ npc.status }}">
+                        {% if npc.status == 'draft' %}
                             Brouillon
-                        {% elseif character.status == 'pending' %}
+                        {% elseif npc.status == 'pending' %}
                             En attente
-                        {% elseif character.status == 'validated' %}
+                        {% elseif npc.status == 'validated' %}
                             Validé
-                        {% elseif character.status == 'rejected' %}
+                        {% elseif npc.status == 'rejected' %}
                             Refusé
-                        {% elseif character.status == 'abandoned' %}
+                        {% elseif npc.status == 'abandoned' %}
                             Abandonné
-                        {% elseif character.status == 'editing' %}
+                        {% elseif npc.status == 'editing' %}
                             En édition
                         {% endif %}
                     </span>
@@ -66,34 +66,34 @@
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Univers</dt>
                         <dd class="col-sm-8">
-                            {% if character.universe %}
-                                <span class="badge bg-primary">{{ character.universe.name }}</span>
+                            {% if npc.universe %}
+                                <span class="badge bg-primary">{{ npc.universe.name }}</span>
                             {% else %}
                                 <span class="text-muted">Aucun</span>
                             {% endif %}
                         </dd>
 
                         <dt class="col-sm-4">Propriétaire</dt>
-                        <dd class="col-sm-8">{{ character.user.pseudo }}</dd>
+                        <dd class="col-sm-8">{{ npc.owner.username }}</dd>
 
                         <dt class="col-sm-4">Créé le</dt>
-                        <dd class="col-sm-8">{{ character.createdAt|date('d/m/Y H:i') }}</dd>
+                        <dd class="col-sm-8">{{ npc.createdAt|date('d/m/Y H:i') }}</dd>
 
-                        {% if character.validatedAt %}
+                        {% if npc.validatedAt %}
                             <dt class="col-sm-4">Validé le</dt>
-                            <dd class="col-sm-8">{{ character.validatedAt|date('d/m/Y H:i') }}</dd>
+                            <dd class="col-sm-8">{{ npc.validatedAt|date('d/m/Y H:i') }}</dd>
                         {% endif %}
 
-                        {% if character.status == 'rejected' and character.statusMessage %}
+                        {% if npc.status == 'rejected' and npc.statusMessage %}
                             <dt class="col-sm-4">Raison du rejet</dt>
-                            <dd class="col-sm-8">{{ character.statusMessage }}</dd>
+                            <dd class="col-sm-8">{{ npc.statusMessage }}</dd>
                         {% endif %}
                     </dl>
                 </div>
             </div>
         </div>
 
-        <!-- Détails du personnage -->
+        <!-- Détails du PNJ -->
         <div class="col-md-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
@@ -102,15 +102,15 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="text-muted">Biographie</h6>
-                        <div class="character-content">{{ character.biography|raw }}</div>
+                        <div class="npc-content">{{ npc.biography|raw }}</div>
                     </div>
                     <div class="mb-4">
                         <h6 class="text-muted">Personnalité</h6>
-                        <div class="character-content">{{ character.personality|raw }}</div>
+                        <div class="npc-content">{{ npc.personality|raw }}</div>
                     </div>
                     <div>
                         <h6 class="text-muted">Apparence</h6>
-                        <div class="character-content">{{ character.appearance|raw }}</div>
+                        <div class="npc-content">{{ npc.appearance|raw }}</div>
                     </div>
                 </div>
             </div>
@@ -122,15 +122,15 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="text-muted">Capacités</h6>
-                        <div class="character-content">{{ character.abilities|raw }}</div>
+                        <div class="npc-content">{{ npc.abilities|raw }}</div>
                     </div>
                     <div class="mb-4">
                         <h6 class="text-muted">Équipement</h6>
-                        <div class="character-content">{{ character.equipment|raw }}</div>
+                        <div class="npc-content">{{ npc.equipment|raw }}</div>
                     </div>
                     <div>
                         <h6 class="text-muted">Faiblesses</h6>
-                        <div class="character-content">{{ character.weaknesses|raw }}</div>
+                        <div class="npc-content">{{ npc.weaknesses|raw }}</div>
                     </div>
                 </div>
             </div>
@@ -142,23 +142,23 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="text-muted">Rôle dans l'histoire</h6>
-                        <div class="character-content">{{ character.roleInStory|raw }}</div>
+                        <div class="npc-content">{{ npc.roleInStory|raw }}</div>
                     </div>
                     <div class="mb-4">
                         <h6 class="text-muted">Relations</h6>
-                        <div class="character-content">{{ character.relationships|raw }}</div>
+                        <div class="npc-content">{{ npc.relationships|raw }}</div>
                     </div>
                     <div class="mb-4">
                         <h6 class="text-muted">Quêtes</h6>
-                        <div class="character-content">{{ character.quests|raw }}</div>
+                        <div class="npc-content">{{ npc.quests|raw }}</div>
                     </div>
                     <div>
                         <h6 class="text-muted">Style de dialogue</h6>
-                        <div class="character-content">{{ character.dialogueStyle|raw }}</div>
+                        <div class="npc-content">{{ npc.dialogueStyle|raw }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %} 

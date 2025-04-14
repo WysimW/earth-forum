@@ -1,0 +1,390 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if entity_type == 'character' %}
+        Personnalisez le style de dialogue de {{ character.name }}
+    {% else %}
+        Personnalisez le style de dialogue de {{ npc.name }}
+    {% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
+    <style>
+        .style-preview {
+            margin: 20px 0;
+            padding: 15px;
+            box-shadow: 0 0 15px var(--roleplay-glow);
+            background-color: var(--roleplay-transparent);
+            border: var(--border-width-sm) var(--roleplay-transparent);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .color-picker {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('app_characters_index') }}">Mes personnages</a></li>
+                    {% if entity_type == 'character' %}
+                        <li class="breadcrumb-item"><a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}">{{ character.name }}</a></li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{{ path('app_npc_show', {'id': npc.id}) }}">{{ npc.name }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Style de dialogue</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">
+                        {% if entity_type == 'character' %}
+                            Personnalisez le style de dialogue de {{ character.name }}
+                        {% else %}
+                            Personnalisez le style de dialogue de {{ npc.name }}
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-4">
+                        Définissez l'apparence des dialogues pour ce personnage. Ces paramètres seront appliqués automatiquement lorsque vous sélectionnerez ce personnage dans l'éditeur.
+                    </p>
+
+                    <div class="style-preview mb-4" id="stylePreview">
+                        <div id="previewContent">
+                            {% if entity_type == 'character' %}
+                                <span id="previewName">{{ character.name }}</span> : <span id="previewText">Voici un exemple de dialogue qui sera affiché avec ce style.</span>
+                            {% else %}
+                                <span id="previewName">{{ npc.name }}</span> : <span id="previewText">Voici un exemple de dialogue qui sera affiché avec ce style.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        <h4 class="mb-3">Style du nom</h4>
+                        
+                        <div class="color-picker-wrapper">
+                            <label for="nameColor">Couleur du nom :</label>
+                            <div class="color-picker" id="nameColorPicker" style="background-color: {{ style.nameColor }}"></div>
+                            <input type="hidden" name="nameColor" id="nameColor" value="{{ style.nameColor }}">
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="nameBold" name="nameBold" {% if style.nameBold %}checked{% endif %}>
+                                <label for="nameBold">Gras</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="nameItalic" name="nameItalic" {% if style.nameItalic %}checked{% endif %}>
+                                <label for="nameItalic">Italique</label>
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">Style du texte</h4>
+                        
+                        <div class="color-picker-wrapper">
+                            <label for="textColor">Couleur du texte :</label>
+                            <div class="color-picker" id="textColorPicker" style="background-color: {{ style.textColor }}"></div>
+                            <input type="hidden" name="textColor" id="textColor" value="{{ style.textColor }}">
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="textBold" name="textBold" {% if style.textBold %}checked{% endif %}>
+                                <label for="textBold">Gras</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="textItalic" name="textItalic" {% if style.textItalic %}checked{% endif %}>
+                                <label for="textItalic">Italique</label>
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">Options avancées</h4>
+                        
+                        <div class="mb-3">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="showName" name="showName" {% if style.showName %}checked{% endif %}>
+                                <label for="showName">Afficher le nom du personnage avant le dialogue</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="quoteType" class="form-label">Type de guillemets :</label>
+                            <select id="quoteType" name="quoteType" class="form-select">
+                                <option value="none" {% if style.quoteType == 'none' %}selected{% endif %}>Sans guillemets</option>
+                                <option value="double" {% if style.quoteType == 'double' %}selected{% endif %}>Guillemets doubles ("...")</option>
+                                <option value="single" {% if style.quoteType == 'single' %}selected{% endif %}>Guillemets simples ('...')</option>
+                                <option value="french" {% if style.quoteType == 'french' %}selected{% endif %}>Guillemets français (« ... »)</option>
+                                <option value="dash" {% if style.quoteType == 'dash' %}selected{% endif %}>Tiret (— ...)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fontFamily" class="form-label">Police de caractères :</label>
+                            <select id="fontFamily" name="fontFamily" class="form-select">
+                                <option value="inherit" {% if style.fontFamily == 'inherit' %}selected{% endif %}>Police par défaut</option>
+                                <option value="arial" {% if style.fontFamily == 'arial' %}selected{% endif %}>Arial</option>
+                                <option value="times-new-roman" {% if style.fontFamily == 'times-new-roman' %}selected{% endif %}>Times New Roman</option>
+                                <option value="courier-new" {% if style.fontFamily == 'courier-new' %}selected{% endif %}>Courier New</option>
+                                <option value="georgia" {% if style.fontFamily == 'georgia' %}selected{% endif %}>Georgia</option>
+                                <option value="trebuchet-ms" {% if style.fontFamily == 'trebuchet-ms' %}selected{% endif %}>Trebuchet MS</option>
+                                <option value="verdana" {% if style.fontFamily == 'verdana' %}selected{% endif %}>Verdana</option>
+                            </select>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{{ entity_type == 'character' ? path('app_roleplay_character_show', {'id': character.id}) : path('app_npc_show', {'id': npc.id}) }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Enregistrer le style
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation de l\'éditeur de style de dialogue');
+            console.log('Style chargé depuis le serveur:', {{ style|json_encode|raw }});
+            // Initialiser les sélecteurs de couleur
+            const nameColorPickr = Pickr.create({
+                el: '#nameColorPicker',
+                theme: 'classic',
+                default: '{{ style.nameColor }}',
+                components: {
+                    preview: true,
+                    opacity: true,
+                    hue: true,
+                    interaction: {
+                        hex: true,
+                        rgba: true,
+                        hsla: false,
+                        hsva: false,
+                        cmyk: false,
+                        input: true,
+                        clear: false,
+                        save: true
+                    }
+                }
+            });
+            
+            const textColorPickr = Pickr.create({
+                el: '#textColorPicker',
+                theme: 'classic',
+                default: '{{ style.textColor }}',
+                components: {
+                    preview: true,
+                    opacity: true,
+                    hue: true,
+                    interaction: {
+                        hex: true,
+                        rgba: true,
+                        hsla: false,
+                        hsva: false,
+                        cmyk: false,
+                        input: true,
+                        clear: false,
+                        save: true
+                    }
+                }
+            });
+            
+            // Mettre à jour les champs cachés et l'aperçu lors de la sélection de couleur
+            nameColorPickr.on('save', (color) => {
+                const colorValue = color.toHEXA().toString();
+                document.getElementById('nameColor').value = colorValue;
+                updatePreview();
+                nameColorPickr.hide();
+            });
+            
+            textColorPickr.on('save', (color) => {
+                const colorValue = color.toHEXA().toString();
+                document.getElementById('textColor').value = colorValue;
+                updatePreview();
+                textColorPickr.hide();
+            });
+            
+            // Mettre à jour l'aperçu quand les checkboxes changent
+            const styleInputs = document.querySelectorAll('input[type="checkbox"]');
+            styleInputs.forEach(input => {
+                input.addEventListener('change', updatePreview);
+            });
+            
+            // Écouter les changements de police
+            document.getElementById('fontFamily').addEventListener('change', function(e) {
+                console.log('Police sélectionnée:', e.target.value);
+                updatePreview();
+            });
+            
+            // Écouter les changements de type de guillemets
+            document.getElementById('quoteType').addEventListener('change', function(e) {
+                console.log('Type de guillemets sélectionné:', e.target.value);
+                updatePreview();
+            });
+            
+            // Fonction pour mettre à jour l'aperçu en temps réel
+            function updatePreview() {
+                const previewContent = document.getElementById('previewContent');
+                
+                // Stocker les valeurs originales
+                const originalText = "Voici un exemple de dialogue qui sera affiché avec ce style.";
+                
+                // Récupérer le nom original depuis un attribut data sur le conteneur
+                const originalName = previewContent.getAttribute('data-original-name');
+                
+                // Si le nom original n'est pas encore stocké, le sauvegarder
+                if (!originalName) {
+                    const nameEl = document.getElementById('previewName');
+                    if (nameEl) {
+                        previewContent.setAttribute('data-original-name', nameEl.textContent);
+                    }
+                }
+                
+                // Récupérer toutes les valeurs de style
+                const nameColor = document.getElementById('nameColor').value;
+                const nameBold = document.getElementById('nameBold').checked;
+                const nameItalic = document.getElementById('nameItalic').checked;
+                const textColor = document.getElementById('textColor').value;
+                const textBold = document.getElementById('textBold').checked;
+                const textItalic = document.getElementById('textItalic').checked;
+                const showName = document.getElementById('showName').checked;
+                const fontFamily = document.getElementById('fontFamily').value;
+                
+                console.log('=== UPDATE PREVIEW ===');
+                console.log('Police sélectionnée:', fontFamily);
+                
+                // Appliquer la police à l'ensemble du contenu
+                const fontClassMap = {
+                    'arial': 'Arial, sans-serif',
+                    'times-new-roman': 'Times New Roman, serif',
+                    'courier-new': 'Courier New, monospace',
+                    'georgia': 'Georgia, serif',
+                    'trebuchet-ms': 'Trebuchet MS, sans-serif',
+                    'verdana': 'Verdana, sans-serif'
+                };
+                
+                previewContent.style.fontFamily = fontFamily !== 'inherit' ? fontClassMap[fontFamily] : 'inherit';
+                console.log('CSS fontFamily appliqué:', previewContent.style.fontFamily);
+                
+                // Déterminer les guillemets à utiliser
+                const quoteType = document.getElementById('quoteType').value;
+                let openQuote = '';
+                let closeQuote = '';
+                
+                switch(quoteType) {
+                    case 'double':
+                        openQuote = '"';
+                        closeQuote = '"';
+                        break;
+                    case 'single':
+                        openQuote = "'";
+                        closeQuote = "'";
+                        break;
+                    case 'french':
+                        openQuote = '« ';
+                        closeQuote = ' »';
+                        break;
+                    case 'dash':
+                        openQuote = '— ';
+                        closeQuote = '';
+                        break;
+                    default:
+                        openQuote = '';
+                        closeQuote = '';
+                }
+                
+                // Vider le contenu actuel
+                previewContent.innerHTML = '';
+                
+                // Reconstruire le contenu selon les options
+                if (showName) {
+                    // Créer l'élément pour le nom
+                    const nameSpan = document.createElement('span');
+                    nameSpan.id = 'previewName';
+                    nameSpan.textContent = previewContent.getAttribute('data-original-name') || 
+                        '{% if entity_type == "character" %}{{ character.name }}{% else %}{{ npc.name }}{% endif %}';
+                    nameSpan.style.color = nameColor;
+                    nameSpan.style.fontWeight = nameBold ? 'bold' : 'normal';
+                    nameSpan.style.fontStyle = nameItalic ? 'italic' : 'normal';
+                    
+                    // Créer l'élément pour le texte
+                    const textSpan = document.createElement('span');
+                    textSpan.id = 'previewText';
+                    textSpan.textContent = openQuote + originalText + closeQuote;
+                    textSpan.style.color = textColor;
+                    textSpan.style.fontWeight = textBold ? 'bold' : 'normal';
+                    textSpan.style.fontStyle = textItalic ? 'italic' : 'normal';
+                    
+                    // Assembler le contenu
+                    previewContent.appendChild(nameSpan);
+                    previewContent.appendChild(document.createTextNode(' : '));
+                    previewContent.appendChild(textSpan);
+                } else {
+                    // Uniquement le texte sans le nom
+                    const textSpan = document.createElement('span');
+                    textSpan.id = 'previewText';
+                    textSpan.textContent = openQuote + originalText + closeQuote;
+                    textSpan.style.color = textColor;
+                    textSpan.style.fontWeight = textBold ? 'bold' : 'normal';
+                    textSpan.style.fontStyle = textItalic ? 'italic' : 'normal';
+                    
+                    previewContent.appendChild(textSpan);
+                }
+                
+                console.log('HTML de prévisualisation après mise à jour:', previewContent.innerHTML);
+            }
+            
+            // Initialiser l'aperçu
+            updatePreview();
+            
+            // Log lors de la soumission du formulaire
+            document.querySelector('form').addEventListener('submit', function(e) {
+                console.log('=== SOUMISSION DU FORMULAIRE ===');
+                const formData = new FormData(this);
+                for (let [name, value] of formData.entries()) {
+                    console.log(name + ':', value);
+                }
+            });
+        });
+    </script>
+{% endblock %} 

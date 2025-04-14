@@ -7,6 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Interface\TimestampableInterface;
 use App\Entity\Trait\TimestampableTrait;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -47,10 +49,15 @@ class Post implements TimestampableInterface
     #[ORM\JoinColumn(nullable: true)]
     private ?Post $quotedPost = null;
 
+    #[ORM\ManyToMany(targetEntity: Npc::class)]
+    #[ORM\JoinTable(name: 'post_npcs')]
+    private Collection $npcs;
+
     public function __construct()
     {  
         $this->createdAt = new \DateTimeImmutable(); // Set the default value for createdAt
         $this->updatedAt = new \DateTimeImmutable();  // Set the default value for updatedAt as well
+        $this->npcs = new ArrayCollection();
     }
 
     public function isRoleplay(): bool
@@ -181,6 +188,30 @@ class Post implements TimestampableInterface
     public function setQuotedPost(?Post $quotedPost): self
     {
         $this->quotedPost = $quotedPost;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Npc>
+     */
+    public function getNpcs(): Collection
+    {
+        return $this->npcs;
+    }
+
+    public function addNpc(Npc $npc): self
+    {
+        if (!$this->npcs->contains($npc)) {
+            $this->npcs->add($npc);
+        }
+
+        return $this;
+    }
+
+    public function removeNpc(Npc $npc): self
+    {
+        $this->npcs->removeElement($npc);
+
         return $this;
     }
 

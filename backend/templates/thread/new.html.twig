@@ -69,6 +69,15 @@
                     </div>
 
                     <div class="mb-3">
+                        {{ form_label(form.npcs) }}
+                        {{ form_widget(form.npcs, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.npcs) }}
+                        <small class="form-text text-muted">
+                            Sélectionnez les PNJ qui participeront à cette scène
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
                         {{ form_widget(form.visibleToCharactersOnly, {'attr': {'class': 'form-check-input'}}) }}
                         {{ form_label(form.visibleToCharactersOnly, null, {'label_attr': {'class': 'form-check-label'}}) }}
                         {{ form_errors(form.visibleToCharactersOnly) }}

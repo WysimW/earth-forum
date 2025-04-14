@@ -6,13 +6,16 @@ use App\Entity\Post;
 use App\Entity\Forum;
 use App\Entity\Thread;
 use App\Entity\Character;
+use App\Entity\Npc;
 use App\Form\CharacterType;
+use App\Form\NpcType;
 use App\Service\BreadcrumbService;
 use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Repository\UniversRepository;
 use App\Service\CharacterForumManager;
 use App\Repository\CharacterRepository;
+use App\Repository\NpcRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,15 +47,18 @@ class CharacterController extends AbstractController
         $this->slugger = $slugger;
     }
 
-    #[Route('', name: 'app_roleplay_characters', methods: ['GET'])]
+    #[Route('/', name: 'app_roleplay_characters', methods: ['GET'])]
+    #[Route('/', name: 'app_characters_index', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function index(CharacterRepository $characterRepository): Response
+    public function index(CharacterRepository $characterRepository, NpcRepository $npcRepository): Response
     {
         $user = $this->getUser();
         $characters = $characterRepository->findBy(['user' => $user]);
+        $npcs = $npcRepository->findBy(['user' => $user]);
         
         return $this->render('characters/index.html.twig', [
             'characters' => $characters,
+            'npcs' => $npcs,
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
                 'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
@@ -350,5 +356,97 @@ class CharacterController extends AbstractController
                 $character->getName() => $this->generateUrl('app_roleplay_character_show', ['id' => $character->getId()]),
             ]),
         ]);
+    }
+
+    #[Route('/npc/new', name: 'app_npc_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function newNpc(Request $request): Response
+    {
+        $npc = new Npc();
+        $npc->setUser($this->getUser());
+        $npc->setStatus('draft');
+        
+        $form = $this->createForm(NpcType::class, $npc);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($npc);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre PNJ a été créé avec succès.');
+
+            return $this->redirectToRoute('app_roleplay_characters');
+        }
+
+        return $this->render('characters/npc/new.html.twig', [
+            'form' => $form->createView(),
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
+                'Nouveau PNJ' => $this->generateUrl('app_npc_new'),
+            ]),
+        ]);
+    }
+
+    #[Route('/npc/{id}', name: 'app_npc_show', methods: ['GET'])]
+    public function showNpc(Npc $npc): Response
+    {
+        return $this->render('characters/npc/show.html.twig', [
+            'npc' => $npc,
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
+                $npc->getName() => $this->generateUrl('app_npc_show', ['id' => $npc->getId()]),
+            ]),
+        ]);
+    }
+
+    #[Route('/npc/{id}/edit', name: 'app_npc_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function editNpc(Request $request, Npc $npc): Response
+    {
+        if ($npc->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier ce PNJ.');
+        }
+
+        $form = $this->createForm(NpcType::class, $npc);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre PNJ a été modifié avec succès.');
+
+            return $this->redirectToRoute('app_roleplay_characters');
+        }
+
+        return $this->render('characters/npc/edit.html.twig', [
+            'form' => $form->createView(),
+            'npc' => $npc,
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
+                $npc->getName() => $this->generateUrl('app_npc_show', ['id' => $npc->getId()]),
+                'Modifier' => $this->generateUrl('app_npc_edit', ['id' => $npc->getId()]),
+            ]),
+        ]);
+    }
+
+    #[Route('/npc/{id}', name: 'app_npc_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function deleteNpc(Request $request, Npc $npc): Response
+    {
+        if ($npc->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer ce PNJ.');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$npc->getId(), $request->request->get('_token'))) {
+            $this->entityManager->remove($npc);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre PNJ a été supprimé avec succès.');
+        }
+
+        return $this->redirectToRoute('app_roleplay_characters');
     }
 }

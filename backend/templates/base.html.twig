@@ -18,6 +18,8 @@
             <link rel="stylesheet" href="/css/main.css">
             <!-- Google Fonts -->
             <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <!-- Google Fonts pour l'éditeur -->
+            <link href="https://fonts.googleapis.com/css2?family=Trebuchet+MS&family=Georgia&family=Arial&family=Verdana&display=swap" rel="stylesheet">
             <!-- Custom styles -->
             <link rel="stylesheet" href="{{ asset('css/components/variables.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/layout.css') }}">
@@ -33,6 +35,26 @@
             <link rel="stylesheet" href="{{ asset('css/components/animations.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/responsive.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/tinymce-theme.css') }}">
+            
+            <!-- Fonts supplémentaires pour l'éditeur Quill -->
+            <style>
+                @font-face {
+                    font-family: 'Trebuchet MS';
+                    src: local('Trebuchet MS'), local('TrebuchetMS'),
+                         url('https://cdn.jsdelivr.net/npm/@fontsource/trebuchet-ms@4.5.0/files/trebuchet-ms-latin-400-normal.woff2') format('woff2');
+                    font-style: normal;
+                    font-weight: 400;
+                    font-display: swap;
+                }
+                
+                /* Garantir que les polices de l'éditeur sont disponibles */
+                .ql-font-arial { font-family: Arial, sans-serif !important; }
+                .ql-font-times { font-family: 'Times New Roman', serif !important; }
+                .ql-font-courier { font-family: 'Courier New', monospace !important; }
+                .ql-font-georgia { font-family: Georgia, serif !important; }
+                .ql-font-trebuchet { font-family: 'Trebuchet MS', sans-serif !important; }
+                .ql-font-verdana { font-family: Verdana, sans-serif !important; }
+            </style>
         {% endblock %}
     </head>
     <body>

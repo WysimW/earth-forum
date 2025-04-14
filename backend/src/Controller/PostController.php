@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Entity\Thread;
+use App\Entity\Npc;
 use App\Form\PostRoleplayType;
 use App\Form\PostType;
 use App\Repository\CharacterRepository;
@@ -60,9 +61,16 @@ class PostController extends AbstractController
                 $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
             }
             
+            // Récupérer les PNJ validés de l'utilisateur
+            $availableNpcs = $entityManager->getRepository(Npc::class)->findBy([
+                'user' => $this->getUser(),
+                'status' => 'validated'
+            ]);
+            
             // Create the roleplay form type with character selection
             $form = $this->createForm(PostRoleplayType::class, $post, [
                 'characters' => $userCharacters,
+                'npcs' => $availableNpcs
             ]);
         } else {
             // For regular threads, use standard post form
@@ -77,6 +85,14 @@ class PostController extends AbstractController
             // Pour les brouillons
             $isDraft = $request->request->get('save_draft') !== null;
             $post->setIsDraft($isDraft);
+            
+            // Gérer les PNJ sélectionnés
+            if ($thread->isRoleplay() && $form->has('npcs')) {
+                $selectedNpcs = $form->get('npcs')->getData();
+                foreach ($selectedNpcs as $npc) {
+                    $post->addNpc($npc);
+                }
+            }
             
             // Définir le type de post en fonction du type de thread
             if ($thread->getType() === 'roleplay') {
@@ -179,6 +195,17 @@ class PostController extends AbstractController
             
             $post->setCharacter($character);
             
+            // Gérer les PNJ sélectionnés
+            $npcIds = $request->request->all('npc_ids');
+            if (!empty($npcIds)) {
+                foreach ($npcIds as $npcId) {
+                    $npc = $entityManager->getRepository(Npc::class)->find($npcId);
+                    if ($npc && $thread->getNpcs()->contains($npc)) {
+                        $post->addNpc($npc);
+                    }
+                }
+            }
+            
             // Ajouter le personnage comme participant s'il n'y est pas déjà
             if (!$thread->getParticipants()->contains($character)) {
                 if ($thread->isFull()) {
@@ -250,6 +277,20 @@ class PostController extends AbstractController
             // Pour les brouillons
             $isDraft = $request->request->get('save_draft') !== null;
             $post->setIsDraft($isDraft);
+            
+            // Gérer les PNJ sélectionnés
+            if ($thread->isRoleplay() && $form->has('npcs')) {
+                // Supprimer tous les PNJ existants
+                foreach ($post->getNpcs() as $npc) {
+                    $post->removeNpc($npc);
+                }
+                
+                // Ajouter les nouveaux PNJ sélectionnés
+                $selectedNpcs = $form->get('npcs')->getData();
+                foreach ($selectedNpcs as $npc) {
+                    $post->addNpc($npc);
+                }
+            }
             
             $post->setEditedAt(new \DateTime());
             $this->entityManager->flush();
@@ -393,8 +434,15 @@ class PostController extends AbstractController
         // Récupérer les personnages validés de l'utilisateur
         $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
         
+        // Récupérer les PNJ validés de l'utilisateur
+        $availableNpcs = $this->entityManager->getRepository(Npc::class)->findBy([
+            'user' => $this->getUser(),
+            'status' => 'validated'
+        ]);
+        
         $form = $this->createForm(PostRoleplayType::class, $post, [
             'characters' => $userCharacters,
+            'npcs' => $availableNpcs,
             'action' => $this->generateUrl('app_post_new', ['threadId' => $threadId])
         ]);
         

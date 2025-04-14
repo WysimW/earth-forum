@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Character;
 use App\Entity\Post;
+use App\Entity\Npc;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -51,6 +52,23 @@ class PostRoleplayType extends AbstractType
                 ]
             ]);
         }
+
+        // Ajouter le champ de sélection des PNJ si des PNJ sont disponibles
+        if (!empty($options['npcs'])) {
+            $builder->add('npcs', EntityType::class, [
+                'label' => 'PNJ participants',
+                'class' => Npc::class,
+                'choices' => $options['npcs'],
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-select'
+                ],
+                'help' => 'Sélectionnez les PNJ qui participent à ce message'
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -58,6 +76,7 @@ class PostRoleplayType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Post::class,
             'characters' => [], // Liste des personnages disponibles
+            'npcs' => [], // Liste des PNJ disponibles
         ]);
     }
 }

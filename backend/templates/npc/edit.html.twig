@@ -1,0 +1,80 @@
+{% extends 'npc/new.html.twig' %}
+
+{% block title %}Modifier {{ npc.name }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Modifier {{ npc.name }}</h1>
+
+        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Informations de base</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_row(form.name) }}
+                            {{ form_row(form.firstName) }}
+                            {{ form_row(form.lastName) }}
+                            {{ form_row(form.pseudonyms) }}
+                            {{ form_row(form.gender) }}
+                            {{ form_row(form.age) }}
+                            {{ form_row(form.universe) }}
+                            {{ form_row(form.avatar) }}
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Caractéristiques</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_row(form.moralAffiliation) }}
+                            {{ form_row(form.factions) }}
+                            {{ form_row(form.occupation) }}
+                            {{ form_row(form.equipment) }}
+                            {{ form_row(form.weaknesses) }}
+                            {{ form_row(form.abilities) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Description</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_row(form.biography) }}
+                            {{ form_row(form.personality) }}
+                            {{ form_row(form.appearance) }}
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Rôle et Relations</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_row(form.roleInStory) }}
+                            {{ form_row(form.relationships) }}
+                            {{ form_row(form.quests) }}
+                            {{ form_row(form.dialogueStyle) }}
+                            {{ form_row(form.secrets) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer les modifications
+                </button>
+                <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au PNJ
+                </a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %} 

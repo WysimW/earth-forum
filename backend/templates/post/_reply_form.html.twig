@@ -20,6 +20,17 @@
                 </div>
             {% endif %}
 
+            {% if form.npcs is defined %}
+                <div class="mb-3">
+                    {{ form_label(form.npcs) }}
+                    {{ form_widget(form.npcs, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.npcs) }}
+                    <small class="form-text text-muted">
+                        Sélectionnez les PNJ qui participent à ce message
+                    </small>
+                </div>
+            {% endif %}
+
             {% if form.type is defined %}
                 <div class="mb-3">
                     {{ form_label(form.type) }}

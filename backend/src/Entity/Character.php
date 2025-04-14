@@ -121,6 +121,12 @@ class Character implements TimestampableInterface
 
     #[ORM\Column(length: 255)]
     private ?string $slug = "default";
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $rejectedAt = null;
+    
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $dialogueStyle = null;
     
     public function __construct()
     {
@@ -471,6 +477,29 @@ class Character implements TimestampableInterface
         return $this;
     }
 
+    public function getRejectedAt(): ?\DateTimeImmutable
+    {
+        return $this->rejectedAt;
+    }
+
+    public function setRejectedAt(?\DateTimeImmutable $rejectedAt): static
+    {
+        $this->rejectedAt = $rejectedAt;
+
+        return $this;
+    }
+
+    public function getDialogueStyle(): ?string
+    {
+        return $this->dialogueStyle;
+    }
+
+    public function setDialogueStyle(?string $dialogueStyle): self
+    {
+        $this->dialogueStyle = $dialogueStyle;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
@@ -616,5 +645,10 @@ class Character implements TimestampableInterface
     public function getMainCharacterSheetThread(): ?Thread
     {
         return $this->characterSheetThread->isEmpty() ? null : $this->characterSheetThread->first();
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->user;
     }
 }

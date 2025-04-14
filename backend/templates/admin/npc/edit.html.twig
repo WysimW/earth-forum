@@ -1,0 +1,22 @@
+{% extends 'admin/npc/new.html.twig' %}
+
+{% block title %}Modifier le PNJ - {{ npc.name }}{% endblock %}
+
+{% block body %}
+    {% set editMode = true %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Afficher l'avatar existant
+    const avatarPreview = document.querySelector('#avatar-preview img');
+    if (avatarPreview && '{{ npc.avatar }}') {
+        avatarPreview.src = '{{ npc.avatar }}';
+        document.querySelector('#avatar-preview').style.display = 'block';
+    }
+});
+</script>
+{% endblock %} 

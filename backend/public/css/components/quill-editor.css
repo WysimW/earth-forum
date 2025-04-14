@@ -259,3 +259,42 @@
 .hrp .ql-editor ::selection {
   background-color: var(--editor-hrp-glow);
 }
+
+/* Styles pour les éléments de dialogue avec police spécifique */
+[style*="Trebuchet MS"] {
+    font-family: 'Trebuchet MS', sans-serif !important;
+}
+
+.ql-font-Arial\,\ sans-serif {
+    font-family: Arial, sans-serif !important;
+}
+
+.ql-font-\'Times\ New\ Roman\'\,\ serif {
+    font-family: 'Times New Roman', serif !important;
+}
+
+.ql-font-\'Courier\ New\'\,\ monospace {
+    font-family: 'Courier New', monospace !important;
+}
+
+.ql-font-Georgia\,\ serif {
+    font-family: Georgia, serif !important;
+}
+
+.ql-font-\'Trebuchet\ MS\'\,\ sans-serif {
+    font-family: 'Trebuchet MS', sans-serif !important;
+}
+
+.ql-font-Verdana\,\ sans-serif {
+    font-family: Verdana, sans-serif !important;
+}
+
+/* Pour le cas particulier des dialogues */
+em[style*="color"] {
+    font-style: italic;
+}
+
+/* S'assurer que les attributs inline prennent priorité */
+[style*="font-family"] {
+    font-family: attr(style font-family) !important;
+}

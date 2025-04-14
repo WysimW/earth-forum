@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des PNJ{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Liste des PNJ</h1>
+
+        <div class="mb-4">
+            <a href="{{ path('app_npc_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un nouveau PNJ
+            </a>
+        </div>
+
+        <div class="row">
+            {% for npc in npcs %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if npc.avatar %}
+                            <img src="{{ npc.avatar }}" class="card-img-top" alt="{{ npc.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ npc.name }}</h5>
+                            <p class="card-text">
+                                <strong>Univers :</strong> {{ npc.universe.name }}<br>
+                                <strong>Statut :</strong> 
+                                <span class="badge bg-{{ npc.status == 'validated' ? 'success' : (npc.status == 'pending' ? 'warning' : 'secondary') }}">
+                                    {{ npc.status }}
+                                </span>
+                            </p>
+                            <p class="card-text">{{ npc.biography|slice(0, 150) }}...</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            {% if is_granted('edit', npc) %}
+                                <a href="{{ path('app_npc_edit', {'id': npc.id}) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        Aucun PNJ n'a été trouvé.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %} 

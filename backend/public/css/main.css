@@ -1,0 +1,71 @@
+p:has(br:only-child) {
+    display: none;
+}
+
+/* Styles pour les dialogues avec polices personnalisées */
+[data-font="'Trebuchet MS', sans-serif"] {
+    font-family: 'Trebuchet MS', sans-serif !important;
+}
+
+[data-font="Arial, sans-serif"] {
+    font-family: Arial, sans-serif !important;
+}
+
+[data-font="'Times New Roman', serif"] {
+    font-family: 'Times New Roman', serif !important;
+}
+
+[data-font="'Courier New', monospace"] {
+    font-family: 'Courier New', monospace !important;
+}
+
+[data-font="Georgia, serif"] {
+    font-family: Georgia, serif !important;
+}
+
+[data-font="Verdana, sans-serif"] {
+    font-family: Verdana, sans-serif !important;
+}
+
+/* Styles pour les polices de l'éditeur Quill */
+/* Utilisation des identifiants simplifiés de Quill */
+.ql-font-arial { 
+    font-family: Arial, sans-serif !important; 
+}
+.ql-font-times-new-roman { 
+    font-family: 'Times New Roman', serif !important; 
+}
+.ql-font-courier-new { 
+    font-family: 'Courier New', monospace !important; 
+}
+.ql-font-georgia { 
+    font-family: Georgia, serif !important; 
+}
+.ql-font-trebuchet-ms { 
+    font-family: 'Trebuchet MS', sans-serif !important; 
+}
+.ql-font-verdana { 
+    font-family: Verdana, sans-serif !important; 
+}
+
+/* Support des anciens attributs data-font pour rétrocompatibilité */
+[data-font="trebuchet-ms"],
+[data-font="'Trebuchet MS', sans-serif"] {
+    font-family: 'Trebuchet MS', sans-serif !important;
+}
+
+[data-font="arial"],
+[data-font="Arial, sans-serif"] {
+    font-family: Arial, sans-serif !important;
+}
+
+[data-font="times-new-roman"],
+[data-font="'Times New Roman', serif"] {
+    font-family: 'Times New Roman', serif !important;
+}
+
+/* Support des styles via couleurs spécifiques de personnages */
+/* Uniquement utilisé comme fallback */
+em[style*="color: #FEC60B"] {
+    font-family: 'Trebuchet MS', sans-serif !important;
+}

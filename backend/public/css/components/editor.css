@@ -214,3 +214,154 @@
         padding: var(--spacing-sm);
     }
 }
+
+/* Styles pour les dialogues RP */
+.dialogue-text {
+    display: inline-block;
+    position: relative;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: var(--border-radius-sm);
+    background-color: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid var(--roleplay-accent);
+    cursor: pointer;
+}
+
+.dialogue-text::before {
+    content: attr(data-character);
+    position: absolute;
+    top: -1.2rem;
+    left: 0;
+    font-size: 0.8rem;
+    color: var(--roleplay-accent);
+    opacity: 0.8;
+}
+
+.dialogue-text:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dialogue-text:hover::after {
+    content: attr(data-character-info);
+    position: absolute;
+    top: -2.5rem;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    color: var(--light-gray);
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+/* Style spécifique pour les dialogues de PNJ */
+.dialogue-text[data-type="npc"] {
+    border-left-color: var(--npc-accent);
+}
+
+.dialogue-text[data-type="npc"]::before {
+    color: var(--npc-accent);
+}
+
+/* Style pour les dialogues éphémères */
+.dialogue-text[data-type="ephemeral"] {
+    border-left-color: var(--ephemeral-accent);
+}
+
+.dialogue-text[data-type="ephemeral"]::before {
+    color: var(--ephemeral-accent);
+}
+
+/* Styles pour l'éditeur WYSIWYG */
+.dc-editor-container {
+    margin-bottom: 1rem;
+}
+
+.dc-editor-char-counter {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.dc-editor-char-counter.warning {
+    color: #ffc107;
+}
+
+.dc-editor-char-counter.danger {
+    color: #dc3545;
+}
+
+/* Styles pour les formats personnalisés */
+.roleplay-text {
+    font-style: italic;
+    color: #6f42c1;
+}
+
+.hrp-text {
+    background-color: #f8f9fa;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25em;
+}
+
+.dialogue-text {
+    display: inline-block;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25em;
+    background-color: #e9ecef;
+    margin: 0.2em 0;
+}
+
+/* Styles pour le bouton dialogue-rp */
+.ql-dialogue-rp {
+    width: 24px;
+    height: 24px;
+    border: none;
+    cursor: pointer;
+    vertical-align: middle;
+    background: none;
+    padding: 0;
+    margin-bottom: 0.5em;;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ql-dialogue-rp:after {
+    content: "💬";
+    color: var(--text-white);
+    font-weight: bold;
+    font-size: 1em;
+}
+
+/* Styles pour empêcher l'ajout automatique de fond */
+.ql-editor em, 
+.ql-editor strong, 
+.ql-editor span, 
+.ql-editor p,
+.ql-editor em[style], 
+.ql-editor strong[style], 
+.ql-editor span[style], 
+.ql-editor p[style] {
+    background-color: transparent !important;
+}
+
+/* Styles pour les polices de caractères */
+.ql-font-arial {
+    font-family: Arial, sans-serif;
+}
+.ql-font-times {
+    font-family: 'Times New Roman', serif;
+}
+.ql-font-courier {
+    font-family: 'Courier New', monospace;
+}
+.ql-font-georgia {
+    font-family: Georgia, serif;
+}
+.ql-font-trebuchet {
+    font-family: 'Trebuchet MS', sans-serif;
+}
+.ql-font-verdana {
+    font-family: Verdana, sans-serif;
+}

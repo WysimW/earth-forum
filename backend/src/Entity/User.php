@@ -44,6 +44,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $characters;
 
     /**
+     * @var Collection<int, Npc>
+     */
+    #[ORM\OneToMany(targetEntity: Npc::class, mappedBy: 'user')]
+    private Collection $npcs;
+
+    /**
      * @var Collection<int, Thread>
      */
     #[ORM\OneToMany(targetEntity: Thread::class, mappedBy: 'author')]
@@ -76,6 +82,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->characters = new ArrayCollection();
+        $this->npcs = new ArrayCollection();
         $this->threads = new ArrayCollection();
         $this->posts = new ArrayCollection();
         $this->playerRoles = new ArrayCollection();
@@ -180,6 +187,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($character->getUser() === $this) {
                 $character->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Npc>
+     */
+    public function getNpcs(): Collection
+    {
+        return $this->npcs;
+    }
+
+    public function addNpc(Npc $npc): static
+    {
+        if (!$this->npcs->contains($npc)) {
+            $this->npcs->add($npc);
+            $npc->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNpc(Npc $npc): static
+    {
+        if ($this->npcs->removeElement($npc)) {
+            // set the owning side to null (unless already changed)
+            if ($npc->getUser() === $this) {
+                $npc->setUser(null);
             }
         }
 
@@ -316,5 +353,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->playerRoles->removeElement($playerRole);
 
         return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->pseudo;
     }
 }
