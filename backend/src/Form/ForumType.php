@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class ForumType extends AbstractType
 {
@@ -26,6 +27,15 @@ class ForumType extends AbstractType
                 'label' => 'Description',
                 'attr' => ['class' => 'form-control', 'rows' => 3],
                 'required' => false
+            ])
+            ->add('type', ChoiceType::class, [
+                'choices' => [
+                    'Forum Important' => 'important',
+                    'Forum Roleplay' => 'roleplay',
+                    'Forum Hors-Roleplay' => 'hrp'
+                ],
+                'label' => 'Type de forum',
+                'attr' => ['class' => 'form-select']
             ])
             ->add('banner', UrlType::class, [
                 'label' => 'URL de la bannière',

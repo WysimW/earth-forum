@@ -72,10 +72,13 @@ class Forum implements TimestampableInterface
     private string $status = 'open'; // open, closed, archived
 
     #[ORM\Column]
-    private int $position = 0;
+    private ?int $position = 0;
 
     #[ORM\Column(length: 255, unique: true)]
     private ?string $slug = "default";
+
+    #[ORM\Column(length: 20)]
+    private string $type = 'hrp'; // important, roleplay, hrp
 
      /**
      * @var mixed|null
@@ -266,7 +269,7 @@ class Forum implements TimestampableInterface
         return $this;
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->position;
     }
@@ -274,7 +277,6 @@ class Forum implements TimestampableInterface
     public function setPosition(int $position): static
     {
         $this->position = $position;
-
         return $this;
     }
     
@@ -315,5 +317,26 @@ class Forum implements TimestampableInterface
     {
         $this->slug = $slug;
         return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function isImportant(): bool
+    {
+        return $this->type === 'important';
+    }
+
+    public function isHrp(): bool
+    {
+        return $this->type === 'hrp';
     }
 }

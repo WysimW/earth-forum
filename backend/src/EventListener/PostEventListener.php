@@ -37,15 +37,25 @@ class PostEventListener
 
     private function invalidateCache(Post $post): void
     {
-        if ($post->getThread() && $post->getThread()->getForum()) {
-            $forumId = $post->getThread()->getForum()->getId();
-            $this->statsService->invalidateForumStats($forumId);
-            
-            // Si le forum a un parent, invalider aussi le cache du parent
-            $parent = $post->getThread()->getForum()->getParent();
-            if ($parent) {
-                $this->statsService->invalidateForumStats($parent->getId());
+        try {
+            if ($post->getThread() && $post->getThread()->getForum()) {
+                $forum = $post->getThread()->getForum();
+                $forumId = $forum->getId();
+                
+                // Vérifier si le forum existe toujours dans la base de données
+                if ($forumId !== null) {
+                    $this->statsService->invalidateForumStats($forumId);
+                    
+                    // Si le forum a un parent, invalider aussi le cache du parent
+                    $parent = $forum->getParent();
+                    if ($parent && $parent->getId() !== null) {
+                        $this->statsService->invalidateForumStats($parent->getId());
+                    }
+                }
             }
+        } catch (\Exception $e) {
+            // Ignorer les erreurs lors de la suppression en cascade
+            // car le forum et ses relations sont en cours de suppression
         }
     }
 } 

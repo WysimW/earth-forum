@@ -33,8 +33,18 @@ class ForumController extends AbstractController
     #[Route('/forum/{id}', name: 'app_forum_show')]
     public function show(Forum $forum, Request $request, ForumRepository $forumRepository, ThreadRepository $threadRepository, PostRepository $postRepository): Response
     {
-        // Récupérer les sous-forums
-        $subForums = $forumRepository->findBy(['parent' => $forum], ['position' => 'ASC']);
+        // Récupérer les sous-forums triés par type (important > roleplay > hrp) puis par position
+        $subForums = $forumRepository->createQueryBuilder('f')
+            ->where('f.parent = :parent')
+            ->setParameter('parent', $forum)
+            ->orderBy('CASE f.type 
+                WHEN \'important\' THEN 1 
+                WHEN \'roleplay\' THEN 2 
+                WHEN \'hrp\' THEN 3 
+                ELSE 4 END', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
         
         // Enrichir les sous-forums avec les informations sur le dernier post et les statistiques
         foreach ($subForums as $subforum) {
@@ -90,6 +100,26 @@ class ForumController extends AbstractController
                 'totalPages' => $totalPages,
                 'totalItems' => $totalThreads
             ],
+        ]);
+    }
+
+    #[Route('/', name: 'app_roleplay')]
+    public function index(ForumRepository $forumRepository): Response
+    {
+        // Récupérer les forums parents triés par type (important > roleplay > hrp) puis par position
+        $parentForums = $forumRepository->createQueryBuilder('f')
+            ->where('f.parent IS NULL')
+            ->orderBy('CASE f.type 
+                WHEN \'important\' THEN 1 
+                WHEN \'roleplay\' THEN 2 
+                WHEN \'hrp\' THEN 3 
+                ELSE 4 END', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('forum/index.html.twig', [
+            'parentForums' => $parentForums,
         ]);
     }
 

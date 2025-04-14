@@ -1,0 +1,139 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des positions des forums{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.css" rel="stylesheet">
+    <style>
+        .category-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .category-header {
+            background: #e9ecef;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .forum-item {
+            background: white;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            cursor: move;
+            border: 1px solid #dee2e6;
+        }
+        .forum-item:hover {
+            background: #f8f9fa;
+        }
+        .subforums {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Gestion des positions des forums</h1>
+        
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Glissez-déposez les forums pour modifier leur position.
+            Les forums peuvent être déplacés entre les catégories.
+        </div>
+
+        <div id="categories-container">
+            {% for parentForum in parentForums %}
+                <div class="category-card" data-category-id="{{ parentForum.id }}">
+                    <div class="category-header">
+                        <h5 class="mb-0">{{ parentForum.name }}</h5>
+                    </div>
+                    <div class="forums-list" data-category="{{ parentForum.id }}">
+                        <div class="forum-item" data-forum-id="{{ parentForum.id }}">
+                            {{ parentForum.name }}
+                        </div>
+                        {% for subforum in parentForum.getSubforums() %}
+                            <div class="forum-item" data-forum-id="{{ subforum.id }}">
+                                {{ subforum.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Activer le drag and drop pour les catégories
+            new Sortable(document.getElementById('categories-container'), {
+                handle: '.category-header',
+                animation: 150,
+                onEnd: function() {
+                    updatePositions();
+                }
+            });
+
+            // Activer le drag and drop pour les forums dans chaque catégorie
+            document.querySelectorAll('.forums-list').forEach(function(list) {
+                new Sortable(list, {
+                    animation: 150,
+                    onEnd: function() {
+                        updatePositions();
+                    }
+                });
+            });
+
+            function updatePositions() {
+                const data = [];
+                let categoryPosition = 0;
+                
+                document.querySelectorAll('.category-card').forEach(function(category) {
+                    const categoryId = category.dataset.categoryId;
+                    data.push({
+                        id: categoryId,
+                        position: categoryPosition++,
+                        parentId: null
+                    });
+
+                    let forumPosition = 0;
+                    category.querySelectorAll('.forum-item').forEach(function(forum) {
+                        const forumId = forum.dataset.forumId;
+                        if (forumId !== categoryId) { // Ne pas ajouter la catégorie elle-même
+                            data.push({
+                                id: forumId,
+                                position: forumPosition++,
+                                parentId: categoryId
+                            });
+                        }
+                    });
+                });
+
+                fetch('{{ path('admin_forum_update_positions') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Erreur lors de la mise à jour des positions : ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la mise à jour des positions');
+                });
+            }
+        });
+    </script>
+{% endblock %} 

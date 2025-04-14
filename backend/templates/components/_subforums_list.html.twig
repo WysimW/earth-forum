@@ -1,6 +1,6 @@
 {% if subForums is defined and subForums|length > 0 %}
     <div class="subforums-section mb-5">
-        <h2 class="section-title {% if forumIsRoleplay is defined and forumIsRoleplay %}rp-forums{% else %}hrp-forums{% endif %}">
+        <h2 class="section-title {% if forumType is defined and forumType == 'important' %}important-forums{% elseif forumType is defined and forumType == 'roleplay' %}rp-forums{% else %}hrp-forums{% endif %}">
             <i class="fas fa-folder"></i> Sous-forums
         </h2>
         <div class="subforums-list">

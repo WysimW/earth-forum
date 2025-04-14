@@ -62,9 +62,9 @@ class CharacterRepository extends ServiceEntityRepository
             ->orderBy('c.name', 'ASC');
             
         // Si le thread est lié à un univers, on filtre les personnages par univers
-        if ($thread->getUnivers()) {
-            $queryBuilder->andWhere('c.univers = :univers')
-                ->setParameter('univers', $thread->getUnivers());
+        if ($thread->getUniverse()) {
+            $queryBuilder->andWhere('c.universe = :universe')
+                ->setParameter('universe', $thread->getUniverse());
         }
         
         return $queryBuilder->getQuery()->getResult();
@@ -95,7 +95,7 @@ class CharacterRepository extends ServiceEntityRepository
     public function findByUnivers(Univers $univers): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.univers = :univers')
+            ->andWhere('c.universe = :univers')
             ->setParameter('univers', $univers)
             ->orderBy('c.name', 'ASC')
             ->getQuery()

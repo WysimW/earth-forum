@@ -35,7 +35,12 @@ class CharacterRelationController extends AbstractController
         $relations = $this->relationRepository->findCharacterRelations($character);
 
         // Récupérer les personnages disponibles pour créer de nouvelles relations
-        $availableCharacters = $this->characterRepository->findBy(['user' => $this->getUser()]);
+        $availableCharacters = [];
+        
+        // Si le personnage a un univers, on récupère tous les personnages de cet univers
+        if ($character->getUniverse()) {
+            $availableCharacters = $this->characterRepository->findByUnivers($character->getUniverse());
+        }
         
         // Enlever le personnage actuel de la liste des disponibles
         $availableCharacters = array_filter($availableCharacters, function($char) use ($character) {
@@ -82,6 +87,12 @@ class CharacterRelationController extends AbstractController
 
         if (!$targetCharacter) {
             $this->addFlash('error', 'Le personnage cible n\'existe pas.');
+            return $this->redirectToRoute('app_roleplay_character_relationships', ['id' => $character->getId()]);
+        }
+
+        // Vérifier que les personnages appartiennent au même univers
+        if ($character->getUniverse() !== $targetCharacter->getUniverse()) {
+            $this->addFlash('error', 'Les personnages doivent appartenir au même univers pour avoir une relation.');
             return $this->redirectToRoute('app_roleplay_character_relationships', ['id' => $character->getId()]);
         }
 

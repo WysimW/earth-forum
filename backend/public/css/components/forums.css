@@ -33,6 +33,12 @@
     box-shadow: 0 0 10px var(--hrp-glow);
 }
 
+/* Styles pour les forums importants */
+.section-title.important-gradient::after {
+    background: linear-gradient(to right, #bb070e, transparent);
+    box-shadow: 0 0 10px rgba(187, 7, 14, 0.5);
+}
+
 /* Cartes de forum - structure de base */
 .forum-card {
     display: flex;
@@ -65,11 +71,15 @@
 }
 
 .forum-card.rp-theme:hover {
-    background-color: rgba(92, 45, 145, 0.2);
+    background-color: var(--roleplay-hpver);
 }
 
 .forum-card.hrp-theme:hover {
-    background-color: rgba(44, 110, 73, 0.2);
+    background-color: var(--hrp-hover);
+}
+
+.forum-card.important-theme:hover {
+    background-color: var(--important-hover);
 }
 
 .forum-info {
@@ -228,4 +238,21 @@
 
 .forum-type-badge i {
     margin-right: 0.5rem;
+}
+
+/* Styles pour les forums importants */
+.important-forums .forum-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.important-forums .forum-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(187, 7, 14, 0.1) 0%, transparent 100%);
+    pointer-events: none;
 }

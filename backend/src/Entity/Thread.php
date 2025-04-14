@@ -33,11 +33,15 @@ class Thread implements TimestampableInterface
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
     #[ORM\JoinColumn(nullable: true)]
+    private ?Universe $universe = null;
+
+    #[ORM\ManyToOne(inversedBy: 'threads')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['forum_detail'])]
     private ?User $author = null;
 
     #[ORM\Column(length: 20)]
-    private string $type = 'normal'; // normal, roleplay, announcement, character_sheet, etc.
+    private ?string $type = null;
 
     #[ORM\Column(length: 20)]
     private string $status = 'open'; // open, closed, archived
@@ -120,6 +124,18 @@ class Thread implements TimestampableInterface
         return $this;
     }
 
+    public function getUniverse(): ?Universe
+    {
+        return $this->universe;
+    }
+
+    public function setUniverse(?Universe $universe): static
+    {
+        $this->universe = $universe;
+
+        return $this;
+    }
+
     public function getAuthor(): ?User
     {
         return $this->author;
@@ -132,12 +148,12 @@ class Thread implements TimestampableInterface
         return $this;
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function setType(string $type): static
+    public function setType(?string $type): static
     {
         $this->type = $type;
         

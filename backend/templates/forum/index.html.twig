@@ -28,11 +28,38 @@
             </div>
             {% endif %}
         </div>
-        
+
         {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
 
         <div class="forums-container">
-            {# Afficher d'abord les forums roleplay (RP) #}
+            {# Afficher d'abord les forums importants #}
+            <div id="important-forums" class="forum-section mb-5">
+                <h2 class="section-title important-gradient">
+                    <i class="fas fa-thumbtack text-important"></i> Forums Importants
+                    <small class="text-muted">Annonces et informations essentielles</small>
+                </h2>
+
+                <div class="forums-list">
+                    {% set displayedImportantForums = false %}
+                    {% for forum in mainForums %}
+                        {% if forum.isImportant() %}
+                            {% set displayedImportantForums = true %}
+                            <div class="col-md-12 mb-4">
+                                {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not displayedImportantForums %}
+                        <div class="empty-state">
+                            <i class="fas fa-thumbtack fa-3x"></i>
+                            <p>Aucun forum important n'est disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Ensuite les forums roleplay (RP) #}
             <div id="rp-forums" class="forum-section mb-5">
                 <h2 class="section-title rp-gradient">
                     <i class="fa-solid fa-dice-d20 text-roleplay"></i> Forums Roleplay
@@ -42,9 +69,11 @@
                 <div class="forums-list">
                     {% set displayedRpForums = false %}
                     {% for forum in mainForums %}
-                        {% if forum.isRoleplay %}
+                        {% if forum.isRoleplay() %}
                             {% set displayedRpForums = true %}
-                            {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
+                            <div class="col-md-12 mb-4">
+                                {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
+                            </div>
                         {% endif %}
                     {% endfor %}
                     
@@ -57,7 +86,7 @@
                 </div>
             </div>
             
-            {# Ensuite afficher les forums hors-roleplay (HRP) #}
+            {# Enfin les forums hors-roleplay (HRP) #}
             <div id="hrp-forums" class="forum-section">
                 <h2 class="section-title hrp-gradient">
                     <i class="fas fa-comments text-hrp"></i> Forums Hors-Roleplay
@@ -67,9 +96,11 @@
                 <div class="forums-list">
                     {% set displayedHrpForums = false %}
                     {% for forum in mainForums %}
-                        {% if not forum.isRoleplay %}
+                        {% if forum.isHrp() %}
                             {% set displayedHrpForums = true %}
-                            {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
+                            <div class="col-md-12 mb-4">
+                                {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
+                            </div>
                         {% endif %}
                     {% endfor %}
                     

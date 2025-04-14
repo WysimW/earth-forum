@@ -4,12 +4,14 @@
 
 {% block body %}
     <div class="forum-show">
-        <div class="{% if forum.isRoleplay %}roleplay-bg{% else %}hrp-bg{% endif %} glass-panel mb-4">
+        <div class="{% if forum.isImportant() %}important-bg{% elseif forum.isRoleplay() %}roleplay-bg{% else %}hrp-bg{% endif %} glass-panel mb-4">
             {% if forum.banner %}
                 <div class="forum-banner" style="background-image:url('{{ forum.banner }}')">
                     <h1 class="forum-title">{{ forum.name }}</h1>
-                    <div class="forum-type-badge {% if forum.isRoleplay %}roleplay{% else %}hrp{% endif %} position-absolute top-0 end-0 m-3">
-                        {% if forum.isRoleplay %}
+                    <div class="forum-type-badge {% if forum.isImportant() %}important{% elseif forum.isRoleplay() %}roleplay{% else %}hrp{% endif %} position-absolute top-0 end-0 m-3">
+                        {% if forum.isImportant() %}
+                            <i class="fas fa-thumbtack"></i> Forum Important
+                        {% elseif forum.isRoleplay() %}
                             <i class="fa-solid fa-dice-d20"></i> Forum Roleplay
                         {% else %}
                             <i class="fas fa-comments"></i> Forum Hors-Roleplay
@@ -19,8 +21,10 @@
             {% else %}
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h1 class="forum-title mb-0">{{ forum.name }}</h1>
-                    <div class="forum-type-badge {% if forum.isRoleplay %}roleplay{% else %}hrp{% endif %}">
-                        {% if forum.isRoleplay %}
+                    <div class="forum-type-badge {% if forum.isImportant() %}important{% elseif forum.isRoleplay() %}roleplay{% else %}hrp{% endif %}">
+                        {% if forum.isImportant() %}
+                            <i class="fas fa-thumbtack"></i> Forum Important
+                        {% elseif forum.isRoleplay() %}
                             <i class="fa-solid fa-dice-d20"></i> Forum Roleplay
                         {% else %}
                             <i class="fas fa-comments"></i> Forum Hors-Roleplay
@@ -38,8 +42,8 @@
 
         <div class="forum-actions d-flex justify-content-between align-items-center mb-4">
             {% if app.user %}
-                <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
-                    <i class="fas fa-plus"></i> Nouvelle discussion {% if forum.isRoleplay %}RP{% else %}HRP{% endif %}
+                <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+                    <i class="fas fa-plus"></i> Nouvelle discussion {% if forum.isRoleplay() %}RP{% else %}HRP{% endif %}
                 </a>
             {% else %}
                 <a href="{{ path('app_login') }}" class="btn btn-outline-primary">
@@ -62,18 +66,18 @@
         {# Inclusion du composant de sous-forums #}
         {% include 'components/_subforums_list.html.twig' with {
             'subForums': subForums,
-            'forumIsRoleplay': forum.isRoleplay
+            'forumType': forum.type
         } %}
 
         <div class="threads-section">
-            <h2 class="section-title {% if forum.isRoleplay %}rp-forums{% else %}hrp-forums{% endif %}">
-                <i class="fas {% if forum.isRoleplay %}fa-solid fa-dice-d20{% else %}fa-comments{% endif %}"></i> 
+            <h2 class="section-title {% if forum.isImportant() %}important-forums{% elseif forum.isRoleplay() %}rp-forums{% else %}hrp-forums{% endif %}">
+                <i class="fas {% if forum.isImportant() %}fa-thumbtack{% elseif forum.isRoleplay() %}fa-solid fa-dice-d20{% else %}fa-comments{% endif %}"></i> 
                 Discussions
             </h2>
             
             {% if app.user %}
                 <div class="mb-3 text-end">
-                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white btn-sm">
+                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} text-white btn-sm">
                         <i class="fas fa-plus"></i> Nouvelle discussion
                     </a>
                 </div>
@@ -82,7 +86,7 @@
             {# Inclusion du composant pour la liste de threads #}
             {% include 'components/_threads_list.html.twig' with {
                 'threads': threads,
-                'isRoleplay': forum.isRoleplay
+                'isRoleplay': forum.isRoleplay()
             } %}
             
             {# Pagination #}
@@ -123,10 +127,10 @@
             <div class="quick-actions mt-5">
                 <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
                 <div class="action-buttons">
-                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+                    <a href="{{ path('app_forum_new_thread', {'id': forum.id}) }}" class="btn {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
                         <i class="fas fa-plus me-2"></i> Nouvelle discussion
                     </a>
-                    {% if forum.isRoleplay %}
+                    {% if forum.isRoleplay() %}
                         <a href="{{ path('app_roleplay_characters') }}" class="btn btn-outline-primary">
                             <i class="fas fa-user-astronaut me-2"></i> Mes personnages
                         </a>
@@ -145,6 +149,9 @@
         }
         .hrp-bg {
             border-left: 5px solid var(--hrp-primary);
+        }
+        .important-bg {
+            border-left: 5px solid var(--important-primary);
         }
     </style>
 {% endblock %}

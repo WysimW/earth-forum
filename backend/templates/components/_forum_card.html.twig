@@ -1,17 +1,17 @@
 {% if forum is defined %}
-<div class="forum-card hover-effect hover-lift {% if forum.isRoleplay %}rp-theme hover-glow-rp{% else %}hrp-theme hover-glow-hrp{% endif %} border-subtle">
-    <div class="forum-icon {% if forum.isRoleplay %}rp-color{% else %}hrp-color{% endif %}">
+<div class="forum-card hover-effect hover-lift {% if forum.isImportant() %}important-theme hover-glow-important{% elseif forum.isRoleplay() %}rp-theme hover-glow-rp{% else %}hrp-theme hover-glow-hrp{% endif %} border-subtle">
+    <div class="forum-icon {% if forum.isImportant() %}important-color{% elseif forum.isRoleplay() %}rp-color{% else %}hrp-color{% endif %}">
         {% if forum.heroLogo %}
             <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
         {% else %}
-            <i class="fas fa-{% if forum.isRoleplay %}dice-d20{% else %}comments{% endif %}"></i>
+            <i class="fas fa-{% if forum.isImportant() %}thumbtack{% elseif forum.isRoleplay() %}dice-d20{% else %}comments{% endif %}"></i>
         {% endif %}
     </div>
     <div class="forum-info">
         <h3 class="forum-title">
             <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
-            <span class="badge {% if forum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} ms-2">
-                {% if forum.isRoleplay %}RP{% else %}HRP{% endif %}
+            <span class="badge {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} ms-2">
+                {% if forum.isImportant() %}Important{% elseif forum.isRoleplay() %}RP{% else %}HRP{% endif %}
             </span>
         </h3>
         <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
@@ -33,8 +33,8 @@
                 <small class="text-muted d-block mb-1">Sous-forums :</small>
                 <div class="sub-forum-links">
                     {% for subforum in forum.subforums|slice(0, 5) %}
-                        <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isRoleplay %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
-                            <i class="fas fa-{% if subforum.isRoleplay %}dice-d20{% else %}comments{% endif %} me-1"></i>
+                        <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                            <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
                             {{ subforum.name }}
                         </a>
                     {% endfor %}
@@ -67,7 +67,7 @@
                         <small class="d-block">
                             <strong>Par :</strong>
                             {% if forum.lastPostInfo.character %}
-                                <span class="forum-card-character-name">{{ forum.lastPostInfo.character }}</span>
+                                <span class="character-name">{{ forum.lastPostInfo.character }}</span>
                             {% else %}
                                 {{ forum.lastPostInfo.author }}
                             {% endif %}
@@ -78,7 +78,7 @@
         {% endif %}
     </div>
     <div class="forum-action">
-        <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isRoleplay %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+        <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
             <i class="fas fa-arrow-right"></i>
         </a>
     </div>

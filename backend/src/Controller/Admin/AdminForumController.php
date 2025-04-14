@@ -10,10 +10,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/admin/forums', name: 'admin_forum_')]
 class AdminForumController extends AbstractController
 {
+    public function __construct(
+        private ForumRepository $forumRepository,
+        private EntityManagerInterface $entityManager
+    ) {
+    }
+
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(ForumRepository $forumRepository): Response
     {
@@ -97,23 +104,100 @@ class AdminForumController extends AbstractController
     public function delete(Request $request, Forum $forum, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$forum->getId(), $request->request->get('_token'))) {
-            // Vérifier si le forum a des threads ou des sous-forums
-            if (count($forum->getThreads()) > 0) {
-                $this->addFlash('error', 'Impossible de supprimer ce forum car il contient des threads.');
-                return $this->redirectToRoute('admin_forum_index');
-            }
+            // Supprimer tous les posts des threads du forum et de ses sous-forums
+            $this->deleteAllPosts($forum, $entityManager);
             
-            if (count($forum->getSubForums()) > 0) {
-                $this->addFlash('error', 'Impossible de supprimer ce forum car il contient des sous-forums.');
-                return $this->redirectToRoute('admin_forum_index');
-            }
+            // Supprimer tous les threads du forum et de ses sous-forums
+            $this->deleteAllThreads($forum, $entityManager);
             
+            // Supprimer les sous-forums
+            $this->deleteSubforums($forum, $entityManager);
+            
+            // Supprimer le forum lui-même
             $entityManager->remove($forum);
             $entityManager->flush();
             
-            $this->addFlash('success', 'Le forum a été supprimé avec succès.');
+            $this->addFlash('success', 'Le forum et tous ses contenus ont été supprimés avec succès.');
+        } else {
+            $this->addFlash('error', 'Token CSRF invalide.');
         }
 
         return $this->redirectToRoute('admin_forum_index');
+    }
+
+    private function deleteAllPosts(Forum $forum, EntityManagerInterface $entityManager): void
+    {
+        // Supprimer les posts des threads du forum
+        foreach ($forum->getThreads() as $thread) {
+            foreach ($thread->getPosts() as $post) {
+                $entityManager->remove($post);
+            }
+        }
+
+        // Supprimer les posts des sous-forums
+        foreach ($forum->getSubforums() as $subforum) {
+            $this->deleteAllPosts($subforum, $entityManager);
+        }
+    }
+
+    private function deleteAllThreads(Forum $forum, EntityManagerInterface $entityManager): void
+    {
+        // Supprimer les threads du forum
+        foreach ($forum->getThreads() as $thread) {
+            $entityManager->remove($thread);
+        }
+
+        // Supprimer les threads des sous-forums
+        foreach ($forum->getSubforums() as $subforum) {
+            $this->deleteAllThreads($subforum, $entityManager);
+        }
+    }
+
+    private function deleteSubforums(Forum $forum, EntityManagerInterface $entityManager): void
+    {
+        // Supprimer les sous-forums
+        foreach ($forum->getSubforums() as $subforum) {
+            $entityManager->remove($subforum);
+        }
+    }
+
+    #[Route('/admin/forums/positions', name: 'positions')]
+    public function positions(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $parentForums = $this->forumRepository->findBy(['parent' => null], ['position' => 'ASC']);
+        
+        return $this->render('admin/forum/positions.html.twig', [
+            'parentForums' => $parentForums,
+        ]);
+    }
+
+    #[Route('/admin/forums/update-positions', name: 'update_positions', methods: ['POST'])]
+    public function updatePositions(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        try {
+            foreach ($data as $item) {
+                $forum = $this->forumRepository->find($item['id']);
+                if ($forum) {
+                    $forum->setPosition($item['position']);
+                    if (isset($item['parentId'])) {
+                        $parent = $this->forumRepository->find($item['parentId']);
+                        $forum->setParent($parent);
+                    } else {
+                        $forum->setParent(null);
+                    }
+                }
+            }
+            
+            $entityManager->flush();
+            return new JsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
     }
 }
