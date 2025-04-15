@@ -115,36 +115,36 @@
                     <i class="fas fa-globe-americas"></i> Forums des Elseworlds
                 </h2>
                 
-                {% for elseworld in elseworlds %}
-                    {% if elseworld.forums|length > 0 %}
+                {% if elseworldsForums is defined and elseworldsForums|length > 0 %}
+                    {% for elseworldId, elseworldData in elseworldsForums %}
                         <div class="elseworld-section mb-5">
                             <div class="elseworld-header d-flex align-items-center mb-3">
-                                {% if elseworld.logo %}
-                                    <img src="{{ elseworld.logo }}" alt="Logo" class="me-2" style="height: 40px; width: auto;">
+                                {% if elseworldData.elseworld.logo %}
+                                    <img src="{{ elseworldData.elseworld.logo }}" alt="Logo" class="me-2" style="height: 40px; width: auto;">
                                 {% else %}
                                     <i class="fas fa-globe-americas me-2 fs-4"></i>
                                 {% endif %}
-                                <h3 class="h4 mb-0">{{ elseworld.name }}</h3>
-                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworld.slug}) }}" class="btn btn-sm btn-outline-secondary ms-3">
+                                <h3 class="h4 mb-0">{{ elseworldData.elseworld.name }}</h3>
+                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworldData.elseworld.slug}) }}" class="btn btn-sm btn-outline-secondary ms-3">
                                     <i class="fas fa-external-link-alt"></i> Voir l'Elseworld
                                 </a>
                             </div>
                             
                             <!-- Forums RP de l'Elseworld -->
                             {% set hasRpForums = false %}
-                            {% for forum in elseworld.forums %}
+                            {% for forum in elseworldData.forums %}
                                 {% if forum.isRoleplay() %}
                                     {% set hasRpForums = true %}
                                 {% endif %}
                             {% endfor %}
                             
                             {% if hasRpForums %}
-                                <div id="elseworld-rp-forums-{{ elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-rp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
                                     <h4 class="section-title rp-gradient h5">
                                         <i class="fa-solid fa-dice-d20 text-roleplay"></i> Forums Roleplay
                                     </h4>
                                     <div class="forums-list">
-                                        {% for forum in elseworld.forums %}
+                                        {% for forum in elseworldData.forums %}
                                             {% if forum.isRoleplay() %}
                                                 <div class="col-md-12 mb-3">
                                                     {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
@@ -157,19 +157,19 @@
                             
                             <!-- Forums HRP de l'Elseworld -->
                             {% set hasHrpForums = false %}
-                            {% for forum in elseworld.forums %}
+                            {% for forum in elseworldData.forums %}
                                 {% if forum.isHrp() %}
                                     {% set hasHrpForums = true %}
                                 {% endif %}
                             {% endfor %}
                             
                             {% if hasHrpForums %}
-                                <div id="elseworld-hrp-forums-{{ elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-hrp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
                                     <h4 class="section-title hrp-gradient h5">
                                         <i class="fas fa-comments text-hrp"></i> Forums Hors-Roleplay
                                     </h4>
                                     <div class="forums-list">
-                                        {% for forum in elseworld.forums %}
+                                        {% for forum in elseworldData.forums %}
                                             {% if forum.isHrp() %}
                                                 <div class="col-md-12 mb-3">
                                                     {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
@@ -182,19 +182,19 @@
                             
                             <!-- Forums importants de l'Elseworld -->
                             {% set hasImportantForums = false %}
-                            {% for forum in elseworld.forums %}
+                            {% for forum in elseworldData.forums %}
                                 {% if forum.isImportant() %}
                                     {% set hasImportantForums = true %}
                                 {% endif %}
                             {% endfor %}
                             
                             {% if hasImportantForums %}
-                                <div id="elseworld-important-forums-{{ elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-important-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
                                     <h4 class="section-title important-gradient h5">
                                         <i class="fas fa-thumbtack text-important"></i> Forums Importants
                                     </h4>
                                     <div class="forums-list">
-                                        {% for forum in elseworld.forums %}
+                                        {% for forum in elseworldData.forums %}
                                             {% if forum.isImportant() %}
                                                 <div class="col-md-12 mb-3">
                                                     {% include 'components/_forum_card.html.twig' with {'forum': forum} %}
@@ -205,23 +205,13 @@
                                 </div>
                             {% endif %}
                         </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-            
-            <!-- Section si aucun Elseworld n'a de forums -->
-            {% set hasElseworldForums = false %}
-            {% for elseworld in elseworlds %}
-                {% if elseworld.forums|length > 0 %}
-                    {% set hasElseworldForums = true %}
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state mt-5">
+                        <i class="fas fa-globe-americas fa-3x"></i>
+                        <p>Aucun forum n'est disponible dans les Elseworlds de cet univers.</p>
+                    </div>
                 {% endif %}
-            {% endfor %}
-            
-            {% if elseworlds|length > 0 and not hasElseworldForums %}
-                <div class="empty-state mt-5">
-                    <i class="fas fa-globe-americas fa-3x"></i>
-                    <p>Aucun forum n'est disponible dans les Elseworlds de cet univers.</p>
-                </div>
             {% endif %}
         </div>
         

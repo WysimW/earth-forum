@@ -92,6 +92,13 @@ class Forum implements TimestampableInterface
      * @var mixed|null
      */
     public $stats;
+    
+    /**
+     * Propriété publique temporaire pour stocker les sous-forums triés
+     * Cette propriété n'est pas persistée en base de données
+     * @var Collection<int, self>|array<int, self>|null
+     */
+    public $tempSubforums = null;
 
     public function __construct()
     {   

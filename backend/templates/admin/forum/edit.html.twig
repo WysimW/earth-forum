@@ -23,10 +23,21 @@
     <div class="card">
         <div class="card-body">
             {{ form_start(form) }}
-                <div class="mb-3">
-                    {{ form_label(form.name) }}
-                    {{ form_widget(form.name) }}
-                    {{ form_errors(form.name) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.name) }}
+                            {{ form_widget(form.name) }}
+                            {{ form_errors(form.name) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type) }}
+                            {{ form_errors(form.type) }}
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="mb-3">
@@ -36,11 +47,11 @@
                 </div>
 
                 <div class="mb-3 form-check">
-    {{ form_widget(form.isRoleplay) }}
-    {{ form_label(form.isRoleplay) }}
-    {{ form_errors(form.isRoleplay) }}
-</div>
-
+                    {{ form_widget(form.isRoleplay) }}
+                    {{ form_label(form.isRoleplay) }}
+                    {{ form_errors(form.isRoleplay) }}
+                    <div class="form-text">Cette option est automatiquement activée si vous choisissez "Forum Roleplay" comme type.</div>
+                </div>
                 
                 <div class="mb-3">
                     {{ form_label(form.banner) }}
@@ -81,6 +92,25 @@
                     </div>
                 </div>
 
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.universe) }}
+                            {{ form_widget(form.universe) }}
+                            {{ form_errors(form.universe) }}
+                            <div class="form-text">Sélectionnez l'univers auquel ce forum est associé</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.elseworld) }}
+                            {{ form_widget(form.elseworld) }}
+                            {{ form_errors(form.elseworld) }}
+                            <div class="form-text">Sélectionnez l'elseworld auquel ce forum est associé (si applicable)</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle"></i> Un forum doit être soit un forum principal (rattaché à une catégorie), 
                     soit un sous-forum (rattaché à un autre forum). Il ne peut pas être les deux à la fois.
@@ -90,4 +120,24 @@
             {{ form_end(form) }}
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('forum_type');
+        const isRoleplayCheckbox = document.getElementById('forum_isRoleplay');
+        
+        if (typeSelect && isRoleplayCheckbox) {
+            // Synchroniser le checkbox isRoleplay lorsque le type change
+            typeSelect.addEventListener('change', function() {
+                isRoleplayCheckbox.checked = (this.value === 'roleplay');
+            });
+            
+            // Définir l'état initial du checkbox en fonction du type sélectionné
+            isRoleplayCheckbox.checked = (typeSelect.value === 'roleplay');
+        }
+    });
+</script>
 {% endblock %}

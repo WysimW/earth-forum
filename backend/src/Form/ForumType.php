@@ -15,6 +15,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class ForumType extends AbstractType
 {
@@ -37,7 +39,10 @@ class ForumType extends AbstractType
                     'Forum Hors-Roleplay' => 'hrp'
                 ],
                 'label' => 'Type de forum',
-                'attr' => ['class' => 'form-select']
+                'attr' => [
+                    'class' => 'form-select',
+                    'id' => 'forum_type'
+                ]
             ])
             ->add('banner', UrlType::class, [
                 'label' => 'URL de la bannière',
@@ -84,9 +89,33 @@ class ForumType extends AbstractType
             ->add('isRoleplay', CheckboxType::class, [
                 'label' => 'Forum de jeu de rôle',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                'attr' => [
+                    'class' => 'form-check-input',
+                    'id' => 'forum_isRoleplay'
+                ]
             ])
         ;
+        
+        // Ajouter un event listener pour synchroniser le type et isRoleplay
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            
+            // Si le type est défini comme 'roleplay', définir isRoleplay à true
+            if (isset($data['type']) && $data['type'] === 'roleplay') {
+                $data['isRoleplay'] = true;
+            }
+            
+            $event->setData($data);
+        });
+        
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+            $forum = $event->getData();
+            
+            // S'assurer que isRoleplay est cohérent avec le type après la soumission
+            if ($forum->getType() === 'roleplay') {
+                $forum->setIsRoleplay(true);
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

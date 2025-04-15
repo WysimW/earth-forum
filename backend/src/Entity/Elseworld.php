@@ -60,6 +60,13 @@ class Elseworld implements TimestampableInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $logo = null;
 
+    /**
+     * Propriété temporaire pour stocker les forums chargés explicitement
+     * Cette propriété n'est pas persistée en base de données
+     * @var array<int, Forum>|null
+     */
+    public $tempForums = null;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();

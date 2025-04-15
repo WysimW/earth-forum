@@ -16,7 +16,7 @@
         </h3>
         <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
         
-        {% set subforumCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'subforum_count') is defined) ? forum.stats.subforum_count : (forum.subforums is defined ? forum.subforums|length : 0) %}
+        {% set subforumCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'subforum_count') is defined) ? forum.stats.subforum_count : (forum.tempSubforums is defined ? forum.tempSubforums|length : (forum.subforums is defined ? forum.subforums|length : 0)) %}
         {% set threadCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'thread_count') is defined) ? forum.stats.thread_count : (forum.threads is defined ? forum.threads|length : 0) %}
         {% set postCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'post_count') is defined) ? forum.stats.post_count : 0 %}
         
@@ -28,11 +28,12 @@
             <span><i class="fas fa-file-alt"></i> {{ postCount }} message{% if postCount > 1 %}s{% endif %}</span>
         </div>
         
-        {% if subforumCount > 0 and forum.subforums is defined and forum.subforums is not null %}
+        {% if subforumCount > 0 and ((forum.tempSubforums is defined and forum.tempSubforums is not null) or (forum.subforums is defined and forum.subforums is not null)) %}
             <div class="sub-forums">
                 <small class="text-muted d-block mb-1">Sous-forums :</small>
                 <div class="sub-forum-links">
-                    {% for subforum in forum.subforums|slice(0, 5) %}
+                    {% set subforumsToUse = forum.tempSubforums is defined and forum.tempSubforums is not null ? forum.tempSubforums : forum.subforums %}
+                    {% for subforum in subforumsToUse|slice(0, 5) %}
                         <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
                             <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
                             {{ subforum.name }}

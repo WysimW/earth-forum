@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Univers;
 use App\Entity\Elseworld;
+use App\Entity\Forum;
 use App\Repository\UniversRepository;
 use App\Repository\ElseworldRepository;
 use App\Repository\ForumRepository;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\LastPostService;
 use App\Service\ForumStatisticsService;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/univers')]
 class UniversController extends AbstractController
@@ -43,8 +45,10 @@ class UniversController extends AbstractController
         string $slug, 
         UniversRepository $universRepository, 
         ForumRepository $forumRepository,
+        ElseworldRepository $elseworldRepository,
         LastPostService $lastPostService,
-        ForumStatisticsService $forumStatsService
+        ForumStatisticsService $forumStatsService,
+        EntityManagerInterface $entityManager
     ): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $slug]);
@@ -57,6 +61,7 @@ class UniversController extends AbstractController
         $universeForums = $forumRepository->createQueryBuilder('f')
             ->where('f.parent IS NULL')
             ->andWhere('f.universe = :universe')
+            ->andWhere('f.elseworld IS NULL')
             ->setParameter('universe', $univers)
             ->orderBy('CASE f.type 
                 WHEN \'important\' THEN 1 
@@ -90,17 +95,75 @@ class UniversController extends AbstractController
                 ->getQuery()
                 ->getResult();
                 
-            // Assigner les sous-forums à une propriété publique
-            $forum->subforums = $subforums;
+            // Assigner les sous-forums à la propriété publique temporaire
+            $forum->tempSubforums = $subforums;
         }
         
-        // Récupérer tous les elseworlds de cet univers avec leurs forums
-        $elseworlds = $univers->getElseworlds();
+        // Récupérer tous les elseworlds de cet univers
+        $elseworlds = $elseworldRepository->findBy(['parentUniverse' => $univers]);
+        
+        // Créer un tableau des forums organisés par elseworld
+        $elseworldsForums = [];
+        
+        foreach ($elseworlds as $elseworld) {
+            // Récupérer les forums parents de l'elseworld
+            $elseworldForums = $forumRepository->createQueryBuilder('f')
+                ->where('f.parent IS NULL')
+                ->andWhere('f.elseworld = :elseworld')
+                ->setParameter('elseworld', $elseworld)
+                ->orderBy('CASE f.type 
+                    WHEN \'important\' THEN 1 
+                    WHEN \'roleplay\' THEN 2 
+                    WHEN \'hrp\' THEN 3 
+                    ELSE 4 END', 'ASC')
+                ->addOrderBy('f.position', 'ASC')
+                ->getQuery()
+                ->getResult();
+            
+            // Si l'elseworld a des forums, les traiter
+            if (count($elseworldForums) > 0) {
+                $elseworldsForums[$elseworld->getId()] = [
+                    'elseworld' => $elseworld,
+                    'forums' => []
+                ];
+                
+                // Enrichir chaque forum de l'elseworld
+                foreach ($elseworldForums as $forum) {
+                    // Ajouter les informations du dernier post
+                    $lastPostInfo = $lastPostService->getLastPostInfoForForum($forum->getId());
+                    $forum->lastPostInfo = $lastPostInfo;
+                    
+                    // Ajouter les statistiques cumulées
+                    $stats = $forumStatsService->getForumStats($forum->getId());
+                    $forum->stats = $stats;
+                    
+                    // Charger explicitement les sous-forums triés par type et position
+                    $subforums = $forumRepository->createQueryBuilder('sf')
+                        ->where('sf.parent = :parent')
+                        ->setParameter('parent', $forum)
+                        ->orderBy('CASE sf.type 
+                            WHEN \'important\' THEN 1 
+                            WHEN \'roleplay\' THEN 2 
+                            WHEN \'hrp\' THEN 3 
+                            ELSE 4 END', 'ASC')
+                        ->addOrderBy('sf.position', 'ASC')
+                        ->getQuery()
+                        ->getResult();
+                        
+                    // Assigner les sous-forums à la propriété publique temporaire
+                    $forum->tempSubforums = $subforums;
+                    
+                    // Ajouter le forum au tableau des forums de l'elseworld
+                    $elseworldsForums[$elseworld->getId()]['forums'][] = $forum;
+                }
+            }
+        }
         
         return $this->render('univers/forums.html.twig', [
             'univers' => $univers,
             'universeForums' => $universeForums,
-            'elseworlds' => $elseworlds
+            'elseworlds' => $elseworlds,
+            'elseworldsForums' => $elseworldsForums
         ]);
     }
 

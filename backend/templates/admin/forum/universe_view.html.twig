@@ -1,0 +1,283 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des Forums par Univers | Earth Forum{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .universe-card {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .universe-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .forums-container {
+            min-height: 100px;
+            padding: 1rem;
+        }
+        
+        .forum-item {
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            border-radius: 4px;
+            padding: 0.75rem;
+            background-color: white;
+            cursor: move;
+        }
+        
+        .forum-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .forum-item.dragging {
+            opacity: 0.5;
+        }
+        
+        .subforum-container {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+            border-left: 2px solid #dee2e6;
+            padding-left: 1rem;
+        }
+        
+        .subforum-item {
+            margin-bottom: 0.5rem;
+            border: 1px dashed rgba(0, 0, 0, 0.125);
+            border-radius: 4px;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des forums par univers</h1>
+        <div>
+            <a href="{{ path('admin_forum_index') }}" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+            <a href="{{ path('admin_forum_new') }}" class="btn btn-success">
+                <i class="bi bi-plus"></i> Nouveau forum
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Glissez-déposez les forums pour les déplacer entre les univers. Les sous-forums seront automatiquement déplacés avec leur parent.
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row" id="universes-container">
+        <div class="col-md-4 mb-4">
+            <div class="card universe-card" data-universe-id="null">
+                <div class="card-header universe-header bg-secondary text-white">
+                    <h5 class="mb-0">Sans univers</h5>
+                </div>
+                <div class="card-body forums-container" data-droppable="true">
+                    {% for forum in noUniverseForums %}
+                        <div class="forum-item" data-forum-id="{{ forum.id }}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ forum.name }}</span>
+                                <div>
+                                    <span class="badge bg-light text-dark">{{ forum.threads|length }} sujets</span>
+                                </div>
+                            </div>
+                            
+                            {% if forum.subforums.count > 0 %}
+                                <div class="subforum-container">
+                                    {% for subforum in forum.subforums %}
+                                        <div class="subforum-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>{{ subforum.name }}</span>
+                                                <span class="badge bg-light text-dark">{{ subforum.threads|length }} sujets</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        {% for universe in universes %}
+            <div class="col-md-4 mb-4">
+                <div class="card universe-card" data-universe-id="{{ universe.id }}">
+                    <div class="card-header universe-header bg-primary text-white">
+                        <h5 class="mb-0">{{ universe.name }}</h5>
+                    </div>
+                    <div class="card-body forums-container" data-droppable="true">
+                        {% if forumsByUniverse[universe.id] is defined %}
+                            {% for forum in forumsByUniverse[universe.id] %}
+                                <div class="forum-item" data-forum-id="{{ forum.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>{{ forum.name }}</span>
+                                        <div>
+                                            <span class="badge bg-light text-dark">{{ forum.threads|length }} sujets</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if forum.subforums.count > 0 %}
+                                        <div class="subforum-container">
+                                            {% for subforum in forum.subforums %}
+                                                <div class="subforum-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>{{ subforum.name }}</span>
+                                                        <span class="badge bg-light text-dark">{{ subforum.threads|length }} sujets</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-info-circle"></i> Aucun forum dans cet univers
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forumItems = document.querySelectorAll('.forum-item');
+            const universeContainers = document.querySelectorAll('.forums-container');
+            
+            let draggedItem = null;
+            
+            // Fonctions pour le drag and drop
+            forumItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    draggedItem = this;
+                    setTimeout(() => {
+                        this.classList.add('dragging');
+                    }, 0);
+                });
+                
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                    draggedItem = null;
+                });
+                
+                // Rendre les éléments draggable
+                item.setAttribute('draggable', 'true');
+            });
+            
+            universeContainers.forEach(container => {
+                container.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                container.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                container.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    if (draggedItem) {
+                        const forumId = draggedItem.dataset.forumId;
+                        const targetContainer = this;
+                        const universeCard = this.closest('.universe-card');
+                        const universeId = universeCard.dataset.universeId;
+                        const previousUniverseId = draggedItem.closest('.universe-card').dataset.universeId;
+                        
+                        // Ne rien faire si on dépose dans le même univers
+                        if (universeId === previousUniverseId) {
+                            return;
+                        }
+                        
+                        // Clone l'élément original pour le cas où il serait modifié pendant la requête
+                        const clonedItem = draggedItem.cloneNode(true);
+                        
+                        // Appeler l'API pour mettre à jour l'univers du forum
+                        updateForumUniverse(forumId, universeId).then(response => {
+                            if (response.success) {
+                                // Déplacer visuellement l'élément
+                                try {
+                                    // Vérifie si l'élément original existe encore dans le DOM
+                                    if (document.body.contains(draggedItem)) {
+                                        targetContainer.appendChild(draggedItem);
+                                    } else {
+                                        // Si l'élément original n'existe plus, utiliser le clone
+                                        targetContainer.appendChild(clonedItem);
+                                        // Rendre le clone draggable
+                                        clonedItem.setAttribute('draggable', 'true');
+                                        clonedItem.addEventListener('dragstart', function(e) {
+                                            draggedItem = this;
+                                            setTimeout(() => {
+                                                this.classList.add('dragging');
+                                            }, 0);
+                                        });
+                                        clonedItem.addEventListener('dragend', function() {
+                                            this.classList.remove('dragging');
+                                            draggedItem = null;
+                                        });
+                                    }
+                                } catch (err) {
+                                    console.error('Erreur lors du déplacement de l\'élément:', err);
+                                    // Rafraîchir la page en cas d'erreur
+                                    window.location.reload();
+                                }
+                            } else {
+                                console.error('Erreur lors de la mise à jour de l\'univers :', response.error);
+                                alert('Erreur lors de la mise à jour : ' + response.error);
+                            }
+                        }).catch(error => {
+                            console.error('Erreur avec la promesse:', error);
+                            alert('Une erreur est survenue. La page va être rechargée.');
+                            window.location.reload();
+                        });
+                    }
+                });
+            });
+            
+            // Fonction pour mettre à jour l'univers d'un forum via l'API
+            async function updateForumUniverse(forumId, universeId) {
+                try {
+                    const response = await fetch('{{ path('admin_forum_update_forum_universe') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            forumId: forumId,
+                            universeId: universeId
+                        })
+                    });
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    return { success: false, error: 'Une erreur est survenue lors de la communication avec le serveur' };
+                }
+            }
+        });
+    </script>
+{% endblock %} 

@@ -66,6 +66,9 @@ class AdminForumController extends AbstractController
                 ]);
             }
 
+            // S'assurer que isRoleplay est cohérent avec le type
+            $this->synchronizeForumTypeAndRoleplay($forum);
+
             $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $forum->getName()), '-'));
             $forum->setSlug($slug);
             
@@ -165,6 +168,9 @@ class AdminForumController extends AbstractController
                     'form' => $form->createView()
                 ]);
             }
+            
+            // S'assurer que isRoleplay est cohérent avec le type
+            $this->synchronizeForumTypeAndRoleplay($forum);
             
             $entityManager->flush();
 
@@ -371,5 +377,110 @@ class AdminForumController extends AbstractController
         }
         
         return $this->redirectToRoute('admin_forum_index');
+    }
+
+    #[Route('/admin/forums/by-universe', name: 'by_universe', methods: ['GET'])]
+    public function universeView(ForumRepository $forumRepository, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer tous les univers
+        $universes = $entityManager->getRepository(Univers::class)->findAll();
+        
+        // Récupérer tous les forums
+        $allForums = $forumRepository->findAll();
+        
+        // Organiser les forums par univers
+        $forumsByUniverse = [];
+        $noUniverseForums = [];
+        
+        foreach ($allForums as $forum) {
+            // Ne pas inclure les sous-forums car ils seront ajoutés avec leurs parents
+            if ($forum->getParent() !== null) {
+                continue;
+            }
+            
+            if ($forum->getUniverse() !== null) {
+                $universeId = $forum->getUniverse()->getId();
+                if (!isset($forumsByUniverse[$universeId])) {
+                    $forumsByUniverse[$universeId] = [];
+                }
+                $forumsByUniverse[$universeId][] = $forum;
+            } else {
+                $noUniverseForums[] = $forum;
+            }
+        }
+        
+        return $this->render('admin/forum/universe_view.html.twig', [
+            'universes' => $universes,
+            'forumsByUniverse' => $forumsByUniverse,
+            'noUniverseForums' => $noUniverseForums
+        ]);
+    }
+    
+    #[Route('/admin/forums/update-forum-universe', name: 'update_forum_universe', methods: ['POST'])]
+    public function updateForumUniverse(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['forumId']) || !isset($data['universeId'])) {
+            return new JsonResponse(['error' => 'Données invalides'], 400);
+        }
+        
+        $forumId = $data['forumId'];
+        $universeId = $data['universeId'];
+        
+        try {
+            $forum = $this->forumRepository->find($forumId);
+            
+            if (!$forum) {
+                return new JsonResponse(['error' => 'Forum non trouvé'], 404);
+            }
+            
+            if ($universeId === 'null') {
+                $forum->setUniverse(null);
+                $forum->setElseworld(null);
+            } else {
+                $universe = $entityManager->getRepository(Univers::class)->find($universeId);
+                
+                if (!$universe) {
+                    return new JsonResponse(['error' => 'Univers non trouvé'], 404);
+                }
+                
+                $forum->setUniverse($universe);
+                $forum->setElseworld(null);
+                
+                // Mettre également à jour tous les sous-forums
+                $this->updateSubforumsUniverse($forum, $universe, $entityManager);
+            }
+            
+            $entityManager->flush();
+            
+            return new JsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    private function updateSubforumsUniverse(Forum $parentForum, Univers $universe, EntityManagerInterface $entityManager): void
+    {
+        foreach ($parentForum->getSubforums() as $subforum) {
+            $subforum->setUniverse($universe);
+            $subforum->setElseworld(null);
+            
+            // Mise à jour récursive pour tous les sous-forums
+            $this->updateSubforumsUniverse($subforum, $universe, $entityManager);
+        }
+    }
+
+    /**
+     * Synchronise le type du forum et la propriété isRoleplay
+     */
+    private function synchronizeForumTypeAndRoleplay(Forum $forum): void
+    {
+        // Si le type est 'roleplay', s'assurer que isRoleplay est à true
+        if ($forum->getType() === 'roleplay') {
+            $forum->setIsRoleplay(true);
+        } 
+        // Si le forum est marqué comme roleplay mais que le type n'est pas 'roleplay', nous laissons isRoleplay tel quel
+        // car il peut y avoir des cas où un forum HRP ou Important est aussi un forum de roleplay
     }
 }

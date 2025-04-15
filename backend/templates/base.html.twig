@@ -74,8 +74,21 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ path('app_roleplay') }}">Accueil</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ path('app_univers_index') }}">Univers</a>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="universDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Univers <span class="dropdown-arrow">▼</span>
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="universDropdown">
+                                        <li><a class="dropdown-item" href="{{ path('app_univers_index') }}"><i class="fas fa-globe"></i> Tous les univers</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {% if all_univers is defined %}
+                                            {% for univers in all_univers %}
+                                                <li><a class="dropdown-item" href="{{ path('app_univers_forums', {'slug': univers.slug}) }}">
+                                                    <i class="fas fa-globe-americas"></i> {{ univers.name }}
+                                                </a></li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </ul>
                                 </li>
                                 {% if app.user %}
                                     <li class="nav-item">
@@ -130,10 +143,26 @@
                             <i class="fas fa-globe"></i> Accueil
                         </a>
                     </li>
-                    <li class="sidebar-menu-item">
-                        <a href="{{ path('app_univers_index') }}" class="sidebar-menu-link">
-                            <i class="fas fa-globe-americas"></i> Univers
+                    <li class="sidebar-menu-item dropdown">
+                        <a href="#" class="sidebar-menu-link dropdown-toggle" id="sidebarUniversDropdown" data-bs-toggle="collapse" data-bs-target="#universDropdownMenu">
+                            <i class="fas fa-globe-americas"></i> Univers <span class="dropdown-arrow">▼</span>
                         </a>
+                        <ul class="collapse" id="universDropdownMenu">
+                            <li class="sidebar-submenu-item">
+                                <a href="{{ path('app_univers_index') }}" class="sidebar-submenu-link">
+                                    <i class="fas fa-list"></i> Tous les univers
+                                </a>
+                            </li>
+                            {% if all_univers is defined %}
+                                {% for univers in all_univers %}
+                                    <li class="sidebar-submenu-item">
+                                        <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="sidebar-submenu-link">
+                                            <i class="fas fa-globe-americas"></i> {{ univers.name }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
                     </li>
                 </ul>
                 
