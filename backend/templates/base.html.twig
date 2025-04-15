@@ -74,6 +74,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ path('app_roleplay') }}">Accueil</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_univers_index') }}">Univers</a>
+                                </li>
                                 {% if app.user %}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a>
@@ -125,6 +128,11 @@
                     <li class="sidebar-menu-item">
                         <a href="{{ path('app_roleplay') }}" class="sidebar-menu-link">
                             <i class="fas fa-globe"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_univers_index') }}" class="sidebar-menu-link">
+                            <i class="fas fa-globe-americas"></i> Univers
                         </a>
                     </li>
                 </ul>
@@ -207,6 +215,7 @@
                             <h5 class="subtitle">Liens utiles</h5>
                             <ul class="list-unstyled small">
                                 <li><a href="{{ path('app_roleplay') }}">Accueil</a></li>
+                                <li><a href="{{ path('app_univers_index') }}">Univers</a></li>
                                 <li><a href="{{ path('app_roleplay_threads') }}"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Scènes RP</a></li>
                                 <li><a href="{{ path('app_roleplay') }}#hrp-forums"><i class="fas fa-comments text-hrp"></i> Forums HRP</a></li>
                                 <li><a href="{{ path('app_roleplay_search') }}">Recherche</a></li>

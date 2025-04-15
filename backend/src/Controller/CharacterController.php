@@ -125,6 +125,67 @@ class CharacterController extends AbstractController
         ]);
     }
 
+    #[Route('/new/elseworld/{id}', name: 'app_character_new_elseworld', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function newForElseworld(Request $request, \App\Entity\Elseworld $elseworld): Response
+    {
+        $character = new Character();
+        $character->setUser($this->getUser());
+        $character->setElseworld($elseworld);
+        
+        $form = $this->createForm(CharacterType::class, $character);
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Set status to "pending" by default when creating a new character
+            $character->setStatus(Character::STATUS_DRAFT);
+            $character->setStatusMessage('En cours de rédaction');
+            
+            $this->entityManager->persist($character);
+            
+            // Ensure character forums exist and get the pending forum
+            $forums = $this->characterForumManager->ensureCharacterForumsExist();
+            $pendingForum = $forums['pending'];
+
+            // Create character sheet thread
+            $characterSheetThread = new Thread();
+            $characterSheetThread->setTitle('Fiche de ' . $character->getName() . ' (Elseworld: ' . $elseworld->getName() . ')');
+            $characterSheetThread->setAuthor($this->getUser());
+            $characterSheetThread->setForum($pendingForum);
+            $characterSheetThread->setType('character_sheet');
+            $characterSheetThread->setStatus('open');
+            $characterSheetThread->setCharacterSheet($character);
+            $characterSheetThread->setSlug($this->slugger->slug('fiche-' . $character->getName())->lower());
+            
+            // Create first post with character details
+            $initialPost = new Post();
+            $initialPost->setThread($characterSheetThread);
+            $initialPost->setAuthor($this->getUser());
+            $initialPost->setContent($this->renderView('characters/sheet_content.html.twig', [
+                'character' => $character
+            ]));
+            
+            $this->entityManager->persist($characterSheetThread);
+            $this->entityManager->persist($initialPost);
+            
+            $this->entityManager->flush();
+            
+            $this->addFlash('success', 'Votre personnage a été créé avec succès et est en attente de validation.');
+            
+            return $this->redirectToRoute('app_roleplay_characters');
+        }
+        
+        return $this->render('characters/new.html.twig', [
+            'form' => $form->createView(),
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_roleplay'),
+                'Elseworld: ' . $elseworld->getName() => $this->generateUrl('app_elseworld_show', ['id' => $elseworld->getId()]),
+                'Nouveau Personnage' => $this->generateUrl('app_character_new_elseworld', ['id' => $elseworld->getId()]),
+            ]),
+            'elseworld' => $elseworld
+        ]);
+    }
+
     #[Route('/{id}/edit', name: 'app_roleplay_character_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
     public function edit(Request $request, Character $character): Response

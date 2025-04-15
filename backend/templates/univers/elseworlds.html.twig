@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Elseworlds de {{ univers.name }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_index') }}">Univers</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_show', {'slug': univers.slug}) }}">{{ univers.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Elseworlds</li>
+        </ol>
+    </nav>
+
+    <header class="mb-5">
+        <h1 class="display-4">Elseworlds de {{ univers.name }}</h1>
+        <p class="lead">
+            Découvrez les différentes réalités alternatives de cet univers
+        </p>
+    </header>
+
+    <div class="row">
+        {% for elseworld in elseworlds %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if elseworld.banner %}
+                        <img src="{{ elseworld.banner }}" class="card-img-top" alt="Bannière de {{ elseworld.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if elseworld.logo %}
+                                <img src="{{ elseworld.logo }}" alt="Logo" class="me-2" style="height: 30px; width: auto;">
+                            {% endif %}
+                            <h5 class="card-title mb-0">{{ elseworld.name }}</h5>
+                        </div>
+                        <p class="card-text">
+                            {% if elseworld.description %}
+                                {{ elseworld.description|slice(0, 150) }}{% if elseworld.description|length > 150 %}...{% endif %}
+                            {% else %}
+                                <em>Aucune description disponible</em>
+                            {% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworld.slug}) }}" class="btn btn-sm btn-primary">Explorer</a>
+                            </div>
+                            <div>
+                                <span class="badge bg-info me-1" title="Forums">
+                                    <i class="bi bi-chat-dots-fill"></i> {{ elseworld.forums|length }}
+                                </span>
+                                <span class="badge bg-success" title="Personnages">
+                                    <i class="bi bi-people-fill"></i> {{ elseworld.characters|length }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Aucun Elseworld n'est disponible pour cet univers.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

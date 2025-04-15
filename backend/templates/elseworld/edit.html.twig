@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'Elseworld {{ elseworld.name }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="mb-4">
+        <h1>Modifier l'Elseworld</h1>
+        <p class="text-muted">Elseworld: {{ elseworld.name }}</p>
+    </div>
+
+    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form_row(form.name) }}
+                    {{ form_row(form.parentUniverse) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_row(form.banner) }}
+                    {{ form_row(form.logo) }}
+                </div>
+            </div>
+            {{ form_row(form.description) }}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{{ path('app_elseworld_index') }}" class="btn btn-secondary">Retour à la liste</a>
+                    <a href="{{ path('app_elseworld_show', {'id': elseworld.id}) }}" class="btn btn-info">Voir détails</a>
+                </div>
+                <div>
+                    {{ include('elseworld/_delete_form.html.twig') }}
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %} 

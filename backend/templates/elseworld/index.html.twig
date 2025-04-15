@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Elseworlds{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Liste des Elseworlds</h1>
+        <a href="{{ path('app_elseworld_new') }}" class="btn btn-primary">Créer un Elseworld</a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Univers parent</th>
+                        <th>Description</th>
+                        <th>Créé le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for elseworld in elseworlds %}
+                    <tr>
+                        <td>{{ elseworld.id }}</td>
+                        <td>{{ elseworld.name }}</td>
+                        <td>{{ elseworld.parentUniverse.name }}</td>
+                        <td>{{ elseworld.description|length > 50 ? elseworld.description|slice(0, 50) ~ '...' : elseworld.description }}</td>
+                        <td>{{ elseworld.createdAt ? elseworld.createdAt|date('d/m/Y H:i') : '' }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ path('app_elseworld_show', {'id': elseworld.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_elseworld_edit', {'id': elseworld.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucun Elseworld trouvé</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

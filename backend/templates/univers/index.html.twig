@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les univers{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Tous les univers</h1>
+    
+    <div class="row mb-4">
+        {% for universe in univers %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ universe.name }}</h5>
+                        <p class="card-text">
+                            {% if universe.description %}
+                                {{ universe.description|slice(0, 150) }}{% if universe.description|length > 150 %}...{% endif %}
+                            {% else %}
+                                <em>Aucune description disponible</em>
+                            {% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <a href="{{ path('app_univers_show', {'slug': universe.slug}) }}" class="btn btn-sm btn-outline-primary">Voir l'univers</a>
+                                <a href="{{ path('app_univers_elseworlds', {'slug': universe.slug}) }}" class="btn btn-sm btn-outline-secondary">Elseworlds ({{ universe.elseworlds|length }})</a>
+                            </div>
+                            <small class="text-muted">{{ universe.forums|length }} forum(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Aucun univers n'est disponible pour le moment.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

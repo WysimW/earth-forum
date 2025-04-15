@@ -16,9 +16,9 @@
         </h3>
         <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
         
-        {% set subforumCount = forum.stats is defined ? forum.stats.subforum_count : forum.subforums|length %}
-        {% set threadCount = forum.stats is defined ? forum.stats.thread_count : forum.threads|length %}
-        {% set postCount = forum.stats is defined ? forum.stats.post_count : 0 %}
+        {% set subforumCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'subforum_count') is defined) ? forum.stats.subforum_count : (forum.subforums is defined ? forum.subforums|length : 0) %}
+        {% set threadCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'thread_count') is defined) ? forum.stats.thread_count : (forum.threads is defined ? forum.threads|length : 0) %}
+        {% set postCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'post_count') is defined) ? forum.stats.post_count : 0 %}
         
         <div class="forum-stats">
             {% if subforumCount > 0 %}
@@ -28,7 +28,7 @@
             <span><i class="fas fa-file-alt"></i> {{ postCount }} message{% if postCount > 1 %}s{% endif %}</span>
         </div>
         
-        {% if subforumCount > 0 and forum.subforums is defined %}
+        {% if subforumCount > 0 and forum.subforums is defined and forum.subforums is not null %}
             <div class="sub-forums">
                 <small class="text-muted d-block mb-1">Sous-forums :</small>
                 <div class="sub-forum-links">

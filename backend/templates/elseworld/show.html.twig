@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ elseworld.name }} - {{ univers.name }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_index') }}">Univers</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_show', {'slug': univers.slug}) }}">{{ univers.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}">Elseworlds</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ elseworld.name }}</li>
+        </ol>
+    </nav>
+
+    {% if elseworld.banner %}
+        <div class="mb-4 rounded overflow-hidden">
+            <img src="{{ elseworld.banner }}" class="img-fluid w-100" alt="Bannière de {{ elseworld.name }}" style="max-height: 300px; object-fit: cover;">
+        </div>
+    {% endif %}
+
+    <header class="mb-5 d-flex align-items-center">
+        {% if elseworld.logo %}
+            <img src="{{ elseworld.logo }}" alt="Logo" class="me-3" style="height: 50px; width: auto;">
+        {% endif %}
+        <div>
+            <h1 class="display-4">{{ elseworld.name }}</h1>
+            <p class="lead text-muted">
+                Un Elseworld de l'univers <a href="{{ path('app_univers_show', {'slug': univers.slug}) }}">{{ univers.name }}</a>
+            </p>
+        </div>
+    </header>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Description</h2>
+                </div>
+                <div class="card-body">
+                    {% if elseworld.description %}
+                        {{ elseworld.description|nl2br }}
+                    {% else %}
+                        <em>Aucune description disponible pour cet Elseworld.</em>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if elseworld.forums|length > 0 %}
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Forums</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for forum in elseworld.forums %}
+                                <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ forum.name }}</h5>
+                                        <small>{{ forum.threads|length }} sujets</small>
+                                    </div>
+                                    <p class="mb-1">{{ forum.description|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucun forum n'est disponible pour cet Elseworld.
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Statistiques</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Forums
+                            <span class="badge bg-primary rounded-pill">{{ elseworld.forums|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Personnages
+                            <span class="badge bg-success rounded-pill">{{ elseworld.characters|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            PNJ
+                            <span class="badge bg-warning rounded-pill">{{ elseworld.npcs|length }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if elseworld.characters|length > 0 %}
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Personnages populaires</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for character in elseworld.characters|slice(0, 5) %}
+                                <a href="{{ path('app_character_show', {'id': character.id}) }}" class="list-group-item list-group-item-action">
+                                    {{ character.name }}
+                                </a>
+                            {% endfor %}
+                            
+                            {% if elseworld.characters|length > 5 %}
+                                <a href="#" class="list-group-item list-group-item-action text-center">
+                                    <em>Voir tous les {{ elseworld.characters|length }} personnages</em>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Elseworlds de l'univers {{ universe.name }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Elseworlds de {{ universe.name }}</h1>
+            <p class="text-muted">Liste des univers alternatifs liés à {{ universe.name }}</p>
+        </div>
+        <div>
+            <a href="{{ path('app_univers_show', {'id': universe.id}) }}" class="btn btn-secondary">Retour à l'univers</a>
+            <a href="{{ path('app_elseworld_new') }}" class="btn btn-primary">Créer un Elseworld</a>
+        </div>
+    </div>
+
+    {% if elseworlds|length > 0 %}
+        <div class="row">
+            {% for elseworld in elseworlds %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if elseworld.banner %}
+                            <img src="{{ elseworld.banner }}" class="card-img-top" alt="{{ elseworld.name }}" style="height: 150px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ elseworld.name }}</h5>
+                            <p class="card-text text-muted small">Créé le {{ elseworld.createdAt ? elseworld.createdAt|date('d/m/Y') : 'N/A' }}</p>
+                            <p class="card-text">{{ elseworld.description|length > 100 ? elseworld.description|slice(0, 100) ~ '...' : elseworld.description }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    <span class="badge bg-info">{{ elseworld.forums|length }} forums</span>
+                                    <span class="badge bg-success">{{ elseworld.characters|length }} personnages</span>
+                                </span>
+                                <a href="{{ path('app_elseworld_show', {'id': elseworld.id}) }}" class="btn btn-sm btn-outline-primary">Voir détails</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>Aucun Elseworld n'a été créé pour cet univers.</p>
+            <a href="{{ path('app_elseworld_new') }}" class="btn btn-primary mt-2">Créer le premier Elseworld</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

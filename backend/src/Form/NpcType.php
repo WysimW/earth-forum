@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Npc;
 use App\Entity\User;
 use App\Entity\Univers;
+use App\Entity\Elseworld;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -80,6 +81,14 @@ class NpcType extends AbstractType
                 'choice_label' => 'name',
                 'label' => 'Univers',
                 'required' => true,
+            ])
+            ->add('elseworld', EntityType::class, [
+                'class' => Elseworld::class,
+                'choice_label' => 'name',
+                'label' => 'Elseworld',
+                'required' => false,
+                'placeholder' => 'Sélectionnez un Elseworld (optionnel)',
+                'help' => 'Elseworld (univers alternatif) auquel appartient ce PNJ'
             ])
             ->add('avatar', TextType::class, [
                 'label' => 'Avatar (URL)',

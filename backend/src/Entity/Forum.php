@@ -40,6 +40,9 @@ class Forum implements TimestampableInterface
     #[ORM\ManyToOne(inversedBy: 'forums')]
     private ?Univers $universe = null;
 
+    #[ORM\ManyToOne(inversedBy: 'forums')]
+    private ?Elseworld $elseworld = null;
+
     /**
      * @var Collection<int, Thread>
      */
@@ -145,6 +148,18 @@ class Forum implements TimestampableInterface
     public function setUniverse(?Univers $universe): static
     {
         $this->universe = $universe;
+
+        return $this;
+    }
+
+    public function getElseworld(): ?Elseworld
+    {
+        return $this->elseworld;
+    }
+
+    public function setElseworld(?Elseworld $elseworld): static
+    {
+        $this->elseworld = $elseworld;
 
         return $this;
     }

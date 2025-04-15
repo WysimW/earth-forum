@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Character;
 use App\Entity\Univers;
+use App\Entity\Elseworld;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -153,6 +154,17 @@ class CharacterType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Choisissez un univers (optionnel)',
                 'help' => 'Univers auquel appartient votre personnage'
+            ])
+            ->add('elseworld', EntityType::class, [
+                'label' => 'Elseworld',
+                'class' => Elseworld::class,
+                'choice_label' => 'name',
+                'required' => false,
+                'placeholder' => 'Choisissez un Elseworld (optionnel)',
+                'help' => 'Elseworld (univers alternatif) auquel appartient votre personnage',
+                'attr' => [
+                    'class' => 'elseworld-select'
+                ]
             ])
             ->add('personality', TextareaType::class, [
                 'label' => 'Personnalité',

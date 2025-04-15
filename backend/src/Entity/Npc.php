@@ -69,6 +69,10 @@ class Npc implements TimestampableInterface
     private ?Univers $universe = null;
 
     #[ORM\ManyToOne(inversedBy: 'npcs')]
+    private ?Elseworld $elseworld = null;
+
+    #[ORM\ManyToOne(inversedBy: 'npcs')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
     
     #[ORM\Column(length: 255, nullable: true)]
@@ -322,6 +326,17 @@ class Npc implements TimestampableInterface
     public function setUniverse(?Univers $universe): static
     {
         $this->universe = $universe;
+        return $this;
+    }
+
+    public function getElseworld(): ?Elseworld
+    {
+        return $this->elseworld;
+    }
+
+    public function setElseworld(?Elseworld $elseworld): static
+    {
+        $this->elseworld = $elseworld;
         return $this;
     }
 

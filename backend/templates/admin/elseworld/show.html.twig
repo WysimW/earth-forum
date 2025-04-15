@@ -1,0 +1,226 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Elseworld: {{ elseworld.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Détails de l'Elseworld</h1>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">{{ elseworld.name }}</h6>
+            <div>
+                <a href="{{ path('admin_elseworld_index') }}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+                <a href="{{ path('admin_elseworld_edit', {'id': elseworld.id}) }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>ID</th>
+                                <td>{{ elseworld.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ elseworld.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Slug</th>
+                                <td>{{ elseworld.slug }}</td>
+                            </tr>
+                            <tr>
+                                <th>Univers parent</th>
+                                <td>
+                                    <a href="{{ path('admin_univers_show', {'id': elseworld.parentUniverse.id}) }}">
+                                        {{ elseworld.parentUniverse.name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Créé le</th>
+                                <td>{{ elseworld.createdAt ? elseworld.createdAt|date('d/m/Y H:i') : '' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Modifié le</th>
+                                <td>{{ elseworld.updatedAt ? elseworld.updatedAt|date('d/m/Y H:i') : '' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ elseworld.description|nl2br }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    {% if elseworld.banner %}
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold">Bannière</h6>
+                            <img src="{{ elseworld.banner }}" alt="Bannière" class="img-fluid rounded">
+                        </div>
+                    {% endif %}
+                    
+                    {% if elseworld.logo %}
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold">Logo</h6>
+                            <img src="{{ elseworld.logo }}" alt="Logo" class="img-fluid rounded" style="max-height: 150px;">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Forums ({{ elseworld.forums|length }})</h6>
+                    <a href="{{ path('admin_forum_new_elseworld', {'id': elseworld.id}) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un forum
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if elseworld.forums|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for forum in elseworld.forums %}
+                                        <tr>
+                                            <td>{{ forum.id }}</td>
+                                            <td>{{ forum.name }}</td>
+                                            <td>{{ forum.type }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('admin_forum_show', {'id': forum.id}) }}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_forum_edit', {'id': forum.id}) }}" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucun forum trouvé pour cet Elseworld</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Personnages ({{ elseworld.characters|length }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if elseworld.characters|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Utilisateur</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for character in elseworld.characters %}
+                                        <tr>
+                                            <td>{{ character.id }}</td>
+                                            <td>{{ character.name }}</td>
+                                            <td>{{ character.user.pseudo }}</td>
+                                            <td>{{ character.status }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('admin_character_show', {'id': character.id}) }}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_character_edit', {'id': character.id}) }}" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucun personnage trouvé pour cet Elseworld</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">PNJ ({{ elseworld.npcs|length }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if elseworld.npcs|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Utilisateur</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for npc in elseworld.npcs %}
+                                        <tr>
+                                            <td>{{ npc.id }}</td>
+                                            <td>{{ npc.name }}</td>
+                                            <td>{{ npc.user.pseudo }}</td>
+                                            <td>{{ npc.status }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_admin_npc_show', {'id': npc.id}) }}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_admin_npc_edit', {'id': npc.id}) }}" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucun PNJ trouvé pour cet Elseworld</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-right mb-4">
+        {{ include('admin/elseworld/_delete_form.html.twig') }}
+    </div>
+</div>
+{% endblock %} 

@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
+use App\Entity\Univers;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ThreadRepository;
+use App\Entity\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\Interface\TimestampableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\Entity\Interface\TimestampableInterface;
-use App\Entity\Trait\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: ThreadRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -33,7 +34,7 @@ class Thread implements TimestampableInterface
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
     #[ORM\JoinColumn(nullable: true)]
-    private ?Universe $universe = null;
+    private ?Univers $universe = null;
 
     #[ORM\ManyToOne(inversedBy: 'threads')]
     #[ORM\JoinColumn(nullable: true)]
@@ -129,12 +130,12 @@ class Thread implements TimestampableInterface
         return $this;
     }
 
-    public function getUniverse(): ?Universe
+    public function getUniverse(): ?Univers
     {
         return $this->universe;
     }
 
-    public function setUniverse(?Universe $universe): static
+    public function setUniverse(?Univers $universe): static
     {
         $this->universe = $universe;
 

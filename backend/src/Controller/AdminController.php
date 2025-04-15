@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminController extends AbstractController
 {
     #[Route('/', name: 'admin_dashboard')]
+    #[Route('/', name: 'admin_index')]
     public function dashboard(
         UserRepository $userRepository,
         ForumRepository $forumRepository,

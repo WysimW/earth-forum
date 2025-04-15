@@ -1,0 +1,110 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier l'Elseworld {{ elseworld.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Modifier l'Elseworld</h1>
+    
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_elseworld_index') }}">Elseworlds</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_elseworld_show', {'id': elseworld.id}) }}">{{ elseworld.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">{{ elseworld.name }}</h6>
+            <div>
+                <a href="{{ path('admin_elseworld_index') }}" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Retour à la liste
+                </a>
+                <a href="{{ path('admin_elseworld_show', {'id': elseworld.id}) }}" class="btn btn-info btn-sm">
+                    <i class="bi bi-eye"></i> Voir détails
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                {% if form_errors(form) %}
+                    <div class="alert alert-danger">
+                        {{ form_errors(form) }}
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.name, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_help(form.name) }}
+                            {{ form_errors(form.name) }}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            {{ form_label(form.parentUniverse, 'Univers parent', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.parentUniverse, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_help(form.parentUniverse) }}
+                            {{ form_errors(form.parentUniverse) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.banner, 'Bannière (URL)', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.banner, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_help(form.banner) }}
+                            {{ form_errors(form.banner) }}
+                            {% if elseworld.banner %}
+                                <div class="mt-2">
+                                    <small>Aperçu actuel :</small>
+                                    <img src="{{ elseworld.banner }}" alt="Banner Preview" class="img-fluid mt-1 img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            {{ form_label(form.logo, 'Logo (URL)', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.logo, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_help(form.logo) }}
+                            {{ form_errors(form.logo) }}
+                            {% if elseworld.logo %}
+                                <div class="mt-2">
+                                    <small>Aperçu actuel :</small>
+                                    <img src="{{ elseworld.logo }}" alt="Logo Preview" class="img-fluid mt-1 img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-4">
+                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                    {{ form_help(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <div>
+                        <a href="{{ path('admin_elseworld_index') }}" class="btn btn-secondary me-2">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </a>
+                        <a href="{{ path('admin_elseworld_show', {'id': elseworld.id}) }}" class="btn btn-info">
+                            <i class="bi bi-eye"></i> Voir détails
+                        </a>
+                    </div>
+                    <div class="d-flex">
+                        {{ include('admin/elseworld/_delete_form.html.twig') }}
+                        <button type="submit" class="btn btn-success ms-2">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %} 

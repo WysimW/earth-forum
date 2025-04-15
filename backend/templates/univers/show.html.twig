@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ univers.name }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_univers_index') }}">Univers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ univers.name }}</li>
+        </ol>
+    </nav>
+
+    <header class="mb-5">
+        <h1 class="display-4">{{ univers.name }}</h1>
+        <p class="lead">
+            Créé le {{ univers.createdAt ? univers.createdAt|date('d/m/Y') : 'inconnu' }}
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-primary">
+                <i class="fas fa-comments me-2"></i> Voir tous les forums
+            </a>
+            <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-globe-americas me-2"></i> Voir les Elseworlds
+            </a>
+        </div>
+    </header>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Description</h2>
+                </div>
+                <div class="card-body">
+                    {% if univers.description %}
+                        {{ univers.description|nl2br }}
+                    {% else %}
+                        <em>Aucune description disponible pour cet univers.</em>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if univers.forums|length > 0 %}
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Forums</h2>
+                        <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-comments"></i> Tous les forums
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for forum in univers.forums|slice(0, 5) %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="h6 mb-1">{{ forum.name }}</h3>
+                                        <p class="text-muted small mb-0">{{ forum.description|slice(0, 100) }}{% if forum.description|length > 100 %}...{% endif %}</p>
+                                    </div>
+                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm btn-outline-primary">Visiter</a>
+                                </li>
+                            {% endfor %}
+                            
+                            {% if univers.forums|length > 5 %}
+                                <li class="list-group-item text-center">
+                                    <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-list"></i> Voir tous les forums ({{ univers.forums|length }})
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Elseworlds</h2>
+                    <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-sm btn-outline-primary">Tous les Elseworlds</a>
+                </div>
+                <div class="card-body">
+                    {% if univers.elseworlds|length > 0 %}
+                        <div class="list-group">
+                            {% for elseworld in univers.elseworlds|slice(0, 5) %}
+                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworld.slug}) }}" class="list-group-item list-group-item-action">
+                                    {{ elseworld.name }}
+                                    {% if elseworld.logo %}
+                                        <img src="{{ elseworld.logo }}" alt="Logo" class="ms-2" style="height: 16px; width: auto;">
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                            
+                            {% if univers.elseworlds|length > 5 %}
+                                <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="list-group-item list-group-item-action text-center">
+                                    <em>Voir tous les {{ univers.elseworlds|length }} Elseworlds</em>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p>Aucun Elseworld disponible pour cet univers.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Statistiques</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Forums
+                            <span class="badge bg-primary rounded-pill">{{ univers.forums|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Personnages
+                            <span class="badge bg-success rounded-pill">{{ univers.characters|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Elseworlds
+                            <span class="badge bg-warning rounded-pill">{{ univers.elseworlds|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Lieux
+                            <span class="badge bg-info rounded-pill">{{ univers.locations|length }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

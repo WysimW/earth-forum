@@ -4,6 +4,8 @@ namespace App\Form;
 
 use App\Entity\Forum;
 use App\Entity\ForumCategory;
+use App\Entity\Univers;
+use App\Entity\Elseworld;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -49,6 +51,24 @@ class ForumType extends AbstractType
                 'attr' => ['class' => 'form-select'],
                 'required' => false,
                 'placeholder' => 'Sélectionner une catégorie (pour un forum principal)'
+            ])
+            ->add('universe', EntityType::class, [
+                'class' => Univers::class,
+                'choice_label' => 'name',
+                'label' => 'Univers',
+                'attr' => ['class' => 'form-select'],
+                'required' => false,
+                'placeholder' => 'Sélectionner un univers (optionnel)',
+                'help' => 'Univers auquel ce forum est associé'
+            ])
+            ->add('elseworld', EntityType::class, [
+                'class' => Elseworld::class,
+                'choice_label' => 'name',
+                'label' => 'Elseworld',
+                'attr' => ['class' => 'form-select'],
+                'required' => false,
+                'placeholder' => 'Sélectionner un elseworld (optionnel)',
+                'help' => 'Elseworld auquel ce forum est associé'
             ])
             ->add('parent', EntityType::class, [
                 'class' => Forum::class,

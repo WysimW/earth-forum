@@ -1,0 +1,6 @@
+<form method="post" action="{{ path('admin_elseworld_delete', {'id': elseworld.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet Elseworld ? Cette action est irréversible et supprimera également tous les forums, personnages et PNJ associés.');" class="d-inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ elseworld.id) }}">
+    <button class="btn btn-danger" type="submit">
+        <i class="bi bi-trash"></i> Supprimer
+    </button>
+</form> 

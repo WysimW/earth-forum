@@ -45,6 +45,38 @@ class NpcController extends AbstractController
         ]);
     }
 
+    #[Route('/new/elseworld/{id}', name: 'app_npc_new_elseworld', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function newForElseworld(Request $request, EntityManagerInterface $entityManager, \App\Entity\Elseworld $elseworld): Response
+    {
+        $npc = new Npc();
+        $npc->setUser($this->getUser());
+        $npc->setElseworld($elseworld);
+        
+        $form = $this->createForm(NpcType::class, $npc);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $npc->setStatus(Npc::STATUS_DRAFT);
+            $entityManager->persist($npc);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre PNJ a été créé avec succès dans l\'Elseworld ' . $elseworld->getName());
+            return $this->redirectToRoute('app_npc_show', ['id' => $npc->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('npc/new.html.twig', [
+            'npc' => $npc,
+            'form' => $form,
+            'elseworld' => $elseworld,
+            'breadcrumbs' => [
+                'Accueil' => $this->generateUrl('app_home'),
+                'Elseworld: ' . $elseworld->getName() => $this->generateUrl('app_elseworld_show', ['id' => $elseworld->getId()]),
+                'Nouveau PNJ' => $this->generateUrl('app_npc_new_elseworld', ['id' => $elseworld->getId()]),
+            ],
+        ]);
+    }
+
     #[Route('/{id}', name: 'app_npc_show', methods: ['GET'])]
     public function show(Npc $npc): Response
     {

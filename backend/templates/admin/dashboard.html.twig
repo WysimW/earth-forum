@@ -322,4 +322,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Nav Item - Univers Collapse Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUnivers"
+            aria-expanded="true" aria-controls="collapseUnivers">
+            <i class="fas fa-globe"></i>
+            <span>Univers</span>
+        </a>
+        <div id="collapseUnivers" class="collapse" aria-labelledby="headingUnivers" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Gestion des univers:</h6>
+                <a class="collapse-item" href="#">Liste des univers</a>
+                <a class="collapse-item" href="#">Créer un univers</a>
+                <a class="collapse-item" href="{{ path('admin_elseworld_index') }}">Liste des Elseworlds</a>
+                <a class="collapse-item" href="{{ path('admin_elseworld_new') }}">Créer un Elseworld</a>
+            </div>
+        </div>
+    </li>
 {% endblock %}
