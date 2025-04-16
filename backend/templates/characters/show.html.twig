@@ -243,7 +243,7 @@
         <h3 class="mb-3">Scènes de roleplay avec ce personnage</h3>
         <div class="list-group mb-4">
             {% for thread in threads %}
-                <a href="{{ path('app_roleplay_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                <a href="{{ path('app_roleplay_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">{{ thread.title }}</h5>
                         <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">

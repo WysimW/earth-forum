@@ -15,7 +15,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h5 mb-0">Messages brouillons</h2>
-                <a href="{{ path('app_post_new_draft') }}" class="btn btn-primary btn-sm">
+                <a href="{{ path('app_post_new_draft', {'universeSlug': univers.slug}) }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nouveau brouillon
                 </a>
             </div>
@@ -36,7 +36,7 @@
                                 <tr>
                                     <td>
                                         {% if draft.thread %}
-                                            <a href="{{ path('app_thread_show', {'id': draft.thread.id}) }}#post-{{ draft.id }}">
+                                            <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': draft.thread.id}) }}#post-{{ draft.id }}">
                                                 {{ draft.thread.title }}
                                             </a>
                                         {% else %}
@@ -53,10 +53,10 @@
                                     <td>{{ draft.createdAt|date('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="btn-group">
-                                            <a href="{{ path('app_post_edit', {'id': draft.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ path('app_post_edit', {'universeSlug': univers.slug, 'id': draft.id}) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-edit"></i> Éditer
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-outline-success" onclick="publishDraft({{ draft.id }})">
+                                            <button type="button" class="btn btn-sm btn-outline-success" onclick="publishDraft({{ draft.id }}, '{{ univers.slug }}')">
                                                 <i class="fas fa-paper-plane"></i> Publier
                                             </button>
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
@@ -85,7 +85,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h5 mb-0">Discussions en brouillon</h2>
-                <a href="{{ path('app_thread_new') }}" class="btn btn-primary btn-sm">
+                <a href="{{ path('app_thread_new', {'universeSlug': univers.slug}) }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nouvelle discussion
                 </a>
             </div>
@@ -116,12 +116,14 @@
                                 <td>{{ threadDraft.createdAt|date('d/m/Y H:i') }}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{{ path('app_thread_edit', {'id': threadDraft.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ path('app_thread_edit', {'universeSlug': univers.slug, 'id': threadDraft.id}) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-edit"></i> Éditer
                                         </a>
-                                        <a href="{{ path('app_thread_publish', {'id': threadDraft.id}) }}" class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-paper-plane"></i> Publier
-                                        </a>
+                                        <form method="post" action="{{ path('app_thread_publish', {'universeSlug': univers.slug, 'id': threadDraft.id}) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-paper-plane"></i> Publier
+                                            </button>
+                                        </form>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#deleteThreadModal" 
@@ -201,7 +203,7 @@
                     const postId = button.getAttribute('data-post-id');
                     
                     const form = document.getElementById('deleteForm');
-                    form.action = '{{ path('app_post_delete', {'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
+                    form.action = '{{ path('app_post_delete', {'universeSlug': univers.slug, 'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
                     
                     const tokenInput = form.querySelector('input[name="_token"]');
                     tokenInput.value = '{{ csrf_token('delete_post_') }}' + postId;
@@ -216,7 +218,7 @@
                     const threadId = button.getAttribute('data-thread-id');
                     
                     const form = document.getElementById('deleteThreadForm');
-                    form.action = '{{ path('app_thread_delete', {'id': 'THREAD_ID'}) }}'.replace('THREAD_ID', threadId);
+                    form.action = '{{ path('app_thread_delete', {'universeSlug': univers.slug, 'id': 'THREAD_ID'}) }}'.replace('THREAD_ID', threadId);
                     
                     const tokenInput = form.querySelector('input[name="_token"]');
                     tokenInput.value = '{{ csrf_token('delete_thread_') }}' + threadId;

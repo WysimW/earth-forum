@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Thread;
 use App\Entity\User;
+use App\Entity\Univers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -74,6 +75,35 @@ class ThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve les threads où un utilisateur participe avec ses personnages, filtrés par univers
+     */
+    public function findThreadsWithUserParticipationByUniverse(int $userId, int $universeId, ?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->join('t.participants', 'p')
+            ->join('p.user', 'u')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('u.id = :userId')
+            ->andWhere('t.type = :type')
+            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->setParameter('userId', $userId)
+            ->setParameter('universeId', $universeId)
+            ->setParameter('type', 'roleplay');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb->orderBy('t.updatedAt', 'DESC')
+                 ->getQuery()
+                 ->getResult();
+    }
+
+    /**
      * Trouve les threads récemment actifs
      */
     public function findRecentActiveThreads(int $limit = 5): array
@@ -106,6 +136,131 @@ class ThreadRepository extends ServiceEntityRepository
 
         if ($limit) {
             $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve les threads actifs filtrés par univers
+     */
+    public function findActiveThreadsByUniverse(int $universeId, ?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.status = :status')
+            ->andWhere('t.type = :type')
+            ->leftJoin('t.posts', 'p')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->groupBy('t.id')
+            ->having('COUNT(p.id) < 20') // Limiter aux scènes qui ont moins de 20 messages
+            ->setParameter('status', 'open')
+            ->setParameter('type', 'roleplay')
+            ->setParameter('universeId', $universeId)
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve tous les threads de type roleplay liés à un univers
+     */
+    public function findRoleplayThreadsByUniverse(Univers $univers): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('(fu = :univers OR feu = :univers)')
+            ->setParameter('type', 'roleplay')
+            ->setParameter('univers', $univers)
+            ->orderBy('t.updatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Trouve les threads récents filtrés par univers
+     */
+    public function findRecentThreadsByUniverse(int $universeId, ?string $status = null, ?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->setParameter('type', 'roleplay')
+            ->setParameter('universeId', $universeId)
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve tous les threads d'un univers avec filtre de statut
+     */
+    public function findThreadsByUniverse(int $universeId, ?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->setParameter('type', 'roleplay')
+            ->setParameter('universeId', $universeId)
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve les threads créés par un utilisateur dans un univers spécifique
+     */
+    public function findThreadsByAuthorAndUniverse(int $userId, int $universeId, ?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->andWhere('t.author = :userId')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->setParameter('type', 'roleplay')
+            ->setParameter('userId', $userId)
+            ->setParameter('universeId', $universeId)
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
         }
 
         return $qb->getQuery()->getResult();
@@ -150,6 +305,28 @@ class ThreadRepository extends ServiceEntityRepository
             ->andWhere('c.user = :user')
             ->setParameter('type', 'character_sheet')
             ->setParameter('user', $user)
+            ->orderBy('t.updatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Trouve toutes les fiches de personnage d'un utilisateur dans un univers spécifique
+     */
+    public function findCharacterSheetsByUserAndUniverse(User $user, Univers $univers): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.characterSheet', 'c')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.universe', 'fu')
+            ->leftJoin('f.elseworld', 'fe')
+            ->leftJoin('fe.parentUniverse', 'feu')
+            ->where('t.type = :type')
+            ->andWhere('c.user = :user')
+            ->andWhere('(fu = :univers OR feu = :univers)')
+            ->setParameter('type', 'character_sheet')
+            ->setParameter('user', $user)
+            ->setParameter('univers', $univers)
             ->orderBy('t.updatedAt', 'DESC')
             ->getQuery()
             ->getResult();

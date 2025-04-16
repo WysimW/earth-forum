@@ -33,29 +33,8 @@ class ThreadType extends AbstractType
                     ]),
                 ]
             ])
-            ->add('forum', EntityType::class, [
-                'class' => Forum::class,
-                'choice_label' => 'name',
-                'label' => 'Forum',
-                'attr' => ['class' => 'form-select'],
-                'required' => true,
-                'group_by' => function($forum) {
-                    return $forum->getCategory() ? $forum->getCategory()->getName() : ($forum->getParent() ? 'Sous-forum de ' . $forum->getParent()->getName() : 'Autres');
-                },
-                'constraints' => [
-                    new NotBlank(['message' => 'Veuillez sélectionner un forum']),
-                ]
-            ])
-            ->add('author', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'pseudo',
-                'label' => 'Auteur',
-                'attr' => ['class' => 'form-select'],
-                'required' => true,
-                'constraints' => [
-                    new NotBlank(['message' => 'Veuillez sélectionner un auteur']),
-                ]
-            ]);
+
+;
 
         // Ajouter des champs supplémentaires si c'est un thread de roleplay
         if ($options['is_roleplay']) {
@@ -105,7 +84,7 @@ class ThreadType extends AbstractType
                     'label' => 'Type de thread',
                     'choices' => [
                         'Normal' => 'normal',
-                        'Announcement' => 'announcement',
+                        'Important' => 'important',
                     ],
                     'attr' => ['class' => 'form-select'],
                     'data' => 'normal'

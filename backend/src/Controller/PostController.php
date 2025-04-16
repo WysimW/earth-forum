@@ -29,9 +29,9 @@ class PostController extends AbstractController
         $this->breadcrumbService = $breadcrumbService;
     }
 
-    #[Route('/thread/{threadId}/post/new', name: 'app_post_new')]
+    #[Route('/univers/{universeSlug}/thread/{threadId}/post/new', name: 'app_post_new')]
     #[IsGranted('ROLE_USER')]
-    public function new(Request $request, int $threadId, EntityManagerInterface $entityManager, CharacterRepository $characterRepository): Response
+    public function new(Request $request, string $universeSlug, int $threadId, EntityManagerInterface $entityManager, CharacterRepository $characterRepository): Response
     {
         $thread = $entityManager->getRepository(Thread::class)->find($threadId);
         
@@ -46,7 +46,7 @@ class PostController extends AbstractController
         // Check if thread is closed
         if (!$thread->isOpen() && !$this->isGranted('ROLE_MODERATOR')) {
             $this->addFlash('error', 'Cette discussion est fermée.');
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
         // Check if thread is a roleplay type and if so, use the appropriate form
@@ -105,7 +105,7 @@ class PostController extends AbstractController
             if ($thread->getType() === 'roleplay' && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
                 if ($thread->isFull()) {
                     $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
-                    return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+                    return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
                 }
                 
                 $thread->addParticipant($post->getCharacter());
@@ -135,25 +135,35 @@ class PostController extends AbstractController
                 $this->addFlash('success', 'Votre message a été publié avec succès.');
             }
             
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
         
         return $this->render('post/new.html.twig', [
             'form' => $form->createView(),
             'thread' => $thread,
             'isRoleplay' => $isRpThread,
+            'univers' => $thread->getForum()->getUniverse(),
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
-                $thread->getForum()->getName() => $this->generateUrl('app_forum_show', ['id' => $thread->getForum()->getId()]),
-                $thread->getTitle() => $this->generateUrl('app_thread_show', ['id' => $thread->getId()]),
-                'Nouveau message' => $this->generateUrl('app_post_new', ['threadId' => $thread->getId()]),
+                $thread->getForum()->getName() => $this->generateUrl('app_forum_show', [
+                    'universeSlug' => $universeSlug,
+                    'id' => $thread->getForum()->getId()
+                ]),
+                $thread->getTitle() => $this->generateUrl('app_thread_show', [
+                    'universeSlug' => $universeSlug,
+                    'id' => $thread->getId()
+                ]),
+                'Nouveau message' => $this->generateUrl('app_post_new', [
+                    'universeSlug' => $universeSlug,
+                    'threadId' => $thread->getId()
+                ]),
             ]),
         ]);
     }
 
-    #[Route('/thread/{threadId}/post/quick-reply', name: 'app_post_quick_reply', methods: ['POST'])]
+    #[Route('/univers/{universeSlug}/thread/{threadId}/post/quick-reply', name: 'app_post_quick_reply', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function quickReply(Request $request, int $threadId, EntityManagerInterface $entityManager, CharacterRepository $characterRepository): Response
+    public function quickReply(Request $request, string $universeSlug, int $threadId, EntityManagerInterface $entityManager, CharacterRepository $characterRepository): Response
     {
         $thread = $entityManager->getRepository(Thread::class)->find($threadId);
         
@@ -242,12 +252,12 @@ class PostController extends AbstractController
         $message = $isDraft ? 'Votre brouillon a été enregistré avec succès.' : 'Votre message a été publié avec succès.';
         $this->addFlash('success', $message);
         
-        return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
     }
 
-    #[Route('/post/{id}/edit', name: 'app_post_edit')]
+    #[Route('/univers/{universeSlug}/post/{id}/edit', name: 'app_post_edit')]
     #[IsGranted('ROLE_USER')]
-    public function edit(Request $request, Post $post, CharacterRepository $characterRepository): Response
+    public function edit(Request $request, string $universeSlug, Post $post, CharacterRepository $characterRepository): Response
     {
         if ($post->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas éditer ce message.');
@@ -263,9 +273,18 @@ class PostController extends AbstractController
                 $post->setType('roleplay');
             }
             
-            $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
+            // Récupérer tous les personnages validés de l'utilisateur, pas seulement les participants
+            $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+            
+            // Récupérer tous les PNJ validés de l'utilisateur
+            $availableNpcs = $this->entityManager->getRepository(Npc::class)->findBy([
+                'user' => $this->getUser(),
+                'status' => 'validated'
+            ]);
+            
             $form = $this->createForm(PostRoleplayType::class, $post, [
                 'characters' => $userCharacters,
+                'npcs' => $availableNpcs
             ]);
         } else {
             $form = $this->createForm(PostType::class, $post);
@@ -292,6 +311,16 @@ class PostController extends AbstractController
                 }
             }
             
+            // Si l'utilisateur a changé de personnage et que c'est un thread RP, ajouter le personnage comme participant
+            if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
+                if ($thread->isFull()) {
+                    $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
+                    return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
+                }
+                
+                $thread->addParticipant($post->getCharacter());
+            }
+            
             $post->setEditedAt(new \DateTime());
             $this->entityManager->flush();
             
@@ -301,7 +330,7 @@ class PostController extends AbstractController
                 $this->addFlash('success', 'Votre message a été mis à jour avec succès.');
             }
             
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
         return $this->render('post/edit.html.twig', [
@@ -309,13 +338,14 @@ class PostController extends AbstractController
             'post' => $post,
             'thread' => $thread,
             'isRoleplay' => $isRpThread,
-            'breadcrumbs' => $this->getBreadcrumbsForThread($thread, ['Éditer le message' => null]),
+            'univers' => $thread->getForum()->getUniverse(),
+            'breadcrumbs' => $this->getBreadcrumbsForThread($thread, $universeSlug, ['Éditer le message' => null]),
         ]);
     }
 
-    #[Route('/post/{id}/publish', name: 'app_post_publish', methods: ['POST'])]
+    #[Route('/univers/{universeSlug}/post/{id}/publish', name: 'app_post_publish', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function publish(Request $request, Post $post): Response
+    public function publish(Request $request, string $universeSlug, Post $post): Response
     {
         if ($post->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas publier ce message.');
@@ -323,7 +353,7 @@ class PostController extends AbstractController
         
         if (!$post->isDraft()) {
             $this->addFlash('error', 'Ce message n\'est pas un brouillon.');
-            return $this->redirectToRoute('app_thread_show', ['id' => $post->getThread()->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $post->getThread()->getId()]);
         }
         
         // Publier le brouillon
@@ -336,12 +366,12 @@ class PostController extends AbstractController
         
         $this->addFlash('success', 'Votre message a été publié avec succès.');
         
-        return $this->redirectToRoute('app_thread_show', ['id' => $post->getThread()->getId()]);
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $post->getThread()->getId()]);
     }
     
-    #[Route('/post/{id}/delete', name: 'app_post_delete', methods: ['POST'])]
+    #[Route('/univers/{universeSlug}/post/{id}/delete', name: 'app_post_delete', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function delete(Request $request, Post $post): Response
+    public function delete(Request $request, string $universeSlug, Post $post): Response
     {
         $thread = $post->getThread();
 
@@ -358,12 +388,12 @@ class PostController extends AbstractController
             $this->addFlash('error', 'Token CSRF invalide.');
         }
 
-        return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
     }
 
-    #[Route('/my-drafts', name: 'app_my_drafts')]
+    #[Route('/univers/{universeSlug}/my-drafts', name: 'app_my_drafts')]
     #[IsGranted('ROLE_USER')]
-    public function myDrafts(): Response
+    public function myDrafts(string $universeSlug): Response
     {
         // Récupérer les brouillons de messages
         $drafts = $this->entityManager->getRepository(Post::class)->findBy([
@@ -380,16 +410,17 @@ class PostController extends AbstractController
         return $this->render('post/my_drafts.html.twig', [
             'drafts' => $drafts,
             'threadDrafts' => $threadDrafts,
+            'univers' => $this->entityManager->getRepository(Thread::class)->findOneBy([])->getForum()->getUniverse(),
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
-                'Mes brouillons' => $this->generateUrl('app_my_drafts'),
+                'Mes brouillons' => $this->generateUrl('app_my_drafts', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/post/new-draft', name: 'app_post_new_draft')]
+    #[Route('/univers/{universeSlug}/post/new-draft', name: 'app_post_new_draft')]
     #[IsGranted('ROLE_USER')]
-    public function newStandaloneDraft(Request $request): Response
+    public function newStandaloneDraft(Request $request, string $universeSlug): Response
     {
         $post = new Post();
         $post->setAuthor($this->getUser());
@@ -404,21 +435,22 @@ class PostController extends AbstractController
             
             $this->addFlash('success', 'Votre brouillon a été enregistré.');
             
-            return $this->redirectToRoute('app_my_drafts');
+            return $this->redirectToRoute('app_my_drafts', ['universeSlug' => $universeSlug]);
         }
         
         return $this->render('post/new_draft.html.twig', [
             'form' => $form->createView(),
+            'univers' => $this->entityManager->getRepository(Thread::class)->findOneBy([])->getForum()->getUniverse(),
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
-                'Mes brouillons' => $this->generateUrl('app_my_drafts'),
-                'Nouveau brouillon' => $this->generateUrl('app_post_new_draft'),
+                'Mes brouillons' => $this->generateUrl('app_my_drafts', ['universeSlug' => $universeSlug]),
+                'Nouveau brouillon' => $this->generateUrl('app_post_new_draft', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/thread/{threadId}/reply-form', name: 'app_post_reply_form')]
-    public function replyForm(int $threadId, CharacterRepository $characterRepository): Response
+    #[Route('/univers/{universeSlug}/thread/{threadId}/reply-form', name: 'app_post_reply_form')]
+    public function replyForm(string $universeSlug, int $threadId, CharacterRepository $characterRepository): Response
     {
         $thread = $this->entityManager->getRepository(Thread::class)->find($threadId);
         
@@ -443,7 +475,7 @@ class PostController extends AbstractController
         $form = $this->createForm(PostRoleplayType::class, $post, [
             'characters' => $userCharacters,
             'npcs' => $availableNpcs,
-            'action' => $this->generateUrl('app_post_new', ['threadId' => $threadId])
+            'action' => $this->generateUrl('app_post_new', ['universeSlug' => $universeSlug, 'threadId' => $threadId])
         ]);
         
         return $this->render('post/_reply_form.html.twig', [
@@ -452,8 +484,8 @@ class PostController extends AbstractController
         ]);
     }
     
-    #[Route('/thread/{threadId}/reply-hrp-form', name: 'app_post_reply_hrp_form')]
-    public function replyHrpForm(int $threadId): Response
+    #[Route('/univers/{universeSlug}/thread/{threadId}/reply-hrp-form', name: 'app_post_reply_hrp_form')]
+    public function replyHrpForm(string $universeSlug, int $threadId): Response
     {
         $thread = $this->entityManager->getRepository(Thread::class)->find($threadId);
         
@@ -467,7 +499,7 @@ class PostController extends AbstractController
         $post->setType('ooc'); // Hors-roleplay
         
         $form = $this->createForm(PostType::class, $post, [
-            'action' => $this->generateUrl('app_post_new', ['threadId' => $threadId])
+            'action' => $this->generateUrl('app_post_new', ['universeSlug' => $universeSlug, 'threadId' => $threadId])
         ]);
         
         return $this->render('post/_reply_form.html.twig', [
@@ -476,7 +508,7 @@ class PostController extends AbstractController
         ]);
     }
 
-    private function getBreadcrumbsForThread(Thread $thread, array $additional = []): array
+    private function getBreadcrumbsForThread(Thread $thread, string $universeSlug, array $additional = []): array
     {
         $forum = $thread->getForum();
         $breadcrumbs = [
@@ -494,11 +526,20 @@ class PostController extends AbstractController
         $parentForums = array_reverse($parentForums);
         
         foreach ($parentForums as $parentForum) {
-            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', ['id' => $parentForum->getId()]);
+            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', [
+                'universeSlug' => $universeSlug,
+                'id' => $parentForum->getId()
+            ]);
         }
         
-        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', ['id' => $forum->getId()]);
-        $breadcrumbs[$thread->getTitle()] = $this->generateUrl('app_thread_show', ['id' => $thread->getId()]);
+        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $forum->getId()
+        ]);
+        $breadcrumbs[$thread->getTitle()] = $this->generateUrl('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
+        ]);
         
         foreach ($additional as $name => $url) {
             $breadcrumbs[$name] = $url;

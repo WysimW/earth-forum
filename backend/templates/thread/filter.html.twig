@@ -15,19 +15,19 @@
                 </div>
                 <div class="card-body">
                     <div class="nav flex-column nav-pills">
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'all'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'all'}) }}" 
                            class="nav-link {% if type == 'all' %}active{% endif %}">
                             <i class="fas fa-list me-2"></i>Toutes les discussions
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'participating'}) }}" 
                            class="nav-link {% if type == 'participating' %}active{% endif %}">
                             <i class="fas fa-user-friends me-2"></i>Mes participations
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'created'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'created'}) }}" 
                            class="nav-link {% if type == 'created' %}active{% endif %}">
                             <i class="fas fa-pencil-alt me-2"></i>Mes créations
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'recent'}) }}" 
                            class="nav-link {% if type == 'recent' %}active{% endif %}">
                             <i class="fas fa-clock me-2"></i>Discussions récentes
                         </a>
@@ -37,19 +37,19 @@
 
                     <h4 class="h6 mb-2">État</h4>
                     <div class="nav flex-column nav-pills">
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': type}) }}" 
                            class="nav-link {% if status is empty %}active{% endif %}">
                             <i class="fas fa-globe me-2"></i>Tous
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'open'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': type, 'status': 'open'}) }}" 
                            class="nav-link {% if status == 'open' %}active{% endif %}">
                             <i class="fas fa-door-open me-2"></i>Ouvertes
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'closed'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': type, 'status': 'closed'}) }}" 
                            class="nav-link {% if status == 'closed' %}active{% endif %}">
                             <i class="fas fa-lock me-2"></i>Fermées
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'archived'}) }}" 
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': type, 'status': 'archived'}) }}" 
                            class="nav-link {% if status == 'archived' %}active{% endif %}">
                             <i class="fas fa-archive me-2"></i>Archivées
                         </a>
@@ -58,7 +58,7 @@
             </div>
 
             {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_choose_forum_new_thread') }}" class="btn bg-roleplay text-white w-100">
+                <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': univers.slug}) }}" class="btn bg-roleplay text-white w-100">
                     <i class="fas fa-plus-circle me-2"></i>Créer une discussion
                 </a>
             {% endif %}
@@ -86,7 +86,7 @@
 
                 <div class="list-group list-group-flush">
                     {% for thread in threads %}
-                        <a href="{{ path('app_thread_show', {'id': thread.id}) }}" 
+                        <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}" 
                            class="list-group-item list-group-item-action p-3 {% if thread.sticky %}bg-light{% endif %}">
                             <div class="d-flex w-100 justify-content-between align-items-start">
                                 <div class="thread-main flex-grow-1">
@@ -182,7 +182,7 @@
                                 </p>
 
                                 {% if is_granted('ROLE_USER') %}
-                                    <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-primary">
+                                    <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': univers.slug}) }}" class="btn btn-primary">
                                         <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle discussion
                                     </a>
                                 {% endif %}

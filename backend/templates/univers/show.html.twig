@@ -57,7 +57,7 @@
                                         <h3 class="h6 mb-1">{{ forum.name }}</h3>
                                         <p class="text-muted small mb-0">{{ forum.description|slice(0, 100) }}{% if forum.description|length > 100 %}...{% endif %}</p>
                                     </div>
-                                    <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-sm btn-outline-primary">Visiter</a>
+                                    <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': forum.id}) }}" class="btn btn-sm btn-outline-primary">Visiter</a>
                                 </li>
                             {% endfor %}
                             

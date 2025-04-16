@@ -7,7 +7,19 @@
             </a>
         </li>
         
-
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item {{ loop.last ? 'active' : '' }}">
+                {% if not loop.last and breadcrumb.url is defined %}
+                    <a href="{{ breadcrumb.url }}">
+                        {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
+                        {{ breadcrumb.name }}
+                    </a>
+                {% else %}
+                    {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
+                    {{ breadcrumb.name }}
+                {% endif %}
+            </li>
+        {% endfor %}
     </ol>
 </nav>
 {% endif %}

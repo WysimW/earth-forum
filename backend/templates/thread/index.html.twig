@@ -10,7 +10,7 @@
         <h1 class="h2 mb-0">Discussions</h1>
         
         {% if is_granted('ROLE_USER') %}
-            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn bg-roleplay text-white">
+            <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': univers.slug}) }}" class="btn bg-roleplay text-white">
                 <i class="fas fa-plus-circle me-2"></i>Nouvelle discussion
             </a>
         {% endif %}
@@ -21,13 +21,13 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <div class="btn-group" role="group">
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'recent'}) }}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-clock me-1"></i>Récentes
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
                             <i class="fas fa-users me-1"></i>Mes participations
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'status': 'open'}) }}" class="btn btn-sm btn-outline-info">
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug, 'status': 'open'}) }}" class="btn btn-sm btn-outline-info">
                             <i class="fas fa-door-open me-1"></i>Ouvertes
                         </a>
                     </div>
@@ -47,7 +47,7 @@
 
         <div class="list-group list-group-flush">
             {% for thread in threads %}
-                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" 
+                <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}" 
                    class="list-group-item list-group-item-action p-3 {% if thread.sticky %}bg-light{% endif %}">
                     <div class="d-flex w-100 justify-content-between align-items-start">
                         <div class="thread-main flex-grow-1">
@@ -126,7 +126,7 @@
                         <h3>Aucune discussion trouvée</h3>
                         <p class="text-muted">Il n'y a pas encore de discussions dans cette section.</p>
                         {% if is_granted('ROLE_USER') %}
-                            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-primary mt-2">
+                            <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': univers.slug}) }}" class="btn btn-primary mt-2">
                                 <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle discussion
                             </a>
                         {% endif %}

@@ -92,7 +92,7 @@
                                 </li>
                                 {% if app.user %}
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ path('app_roleplay_characters') }}">Mes Personnages</a>
+                                        <a class="nav-link" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}">Mes Personnages</a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a>
@@ -112,7 +112,7 @@
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}"><i class="fas fa-columns"></i> Tableau de bord</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_characters') }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-toolbox"></i> Administration</a></li>
@@ -176,17 +176,17 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_characters') }}" class="sidebar-menu-link">
+                        <a href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}" class="sidebar-menu-link">
                             <i class="fas fa-user-astronaut"></i> Mes Personnages
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter') }}?type=participating" class="sidebar-menu-link">
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=participating" class="sidebar-menu-link">
                             <i class="fas fa-users"></i> Mes participations
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter') }}?type=created" class="sidebar-menu-link">
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=created" class="sidebar-menu-link">
                             <i class="fas fa-pen-fancy"></i> Mes scènes
                         </a>
                     </li>
@@ -245,7 +245,7 @@
                             <ul class="list-unstyled small">
                                 <li><a href="{{ path('app_roleplay') }}">Accueil</a></li>
                                 <li><a href="{{ path('app_univers_index') }}">Univers</a></li>
-                                <li><a href="{{ path('app_roleplay_threads') }}"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Scènes RP</a></li>
+                                <li><a href="#" onclick="redirectToRpThreads(event)"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Scènes RP</a></li>
                                 <li><a href="{{ path('app_roleplay') }}#hrp-forums"><i class="fas fa-comments text-hrp"></i> Forums HRP</a></li>
                                 <li><a href="{{ path('app_roleplay_search') }}">Recherche</a></li>
                             </ul>
@@ -276,6 +276,14 @@
             <script src="/js/dc-editor.js"></script>
             <!-- Custom JavaScript -->
             <script>
+                // Fonction pour rediriger vers la page des threads RP avec l'univers par défaut
+                function redirectToRpThreads(event) {
+                    event.preventDefault();
+                    // Rediriger vers la route d'accueil qui affiche tous les univers
+                    // L'utilisateur pourra ensuite choisir un univers spécifique
+                    window.location.href = "{{ path('app_univers_index') }}";
+                }
+                
                 document.addEventListener('DOMContentLoaded', function() {
                     // Enable Bootstrap tooltips
                     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))

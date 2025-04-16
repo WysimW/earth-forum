@@ -74,7 +74,7 @@
                     {% if participatingThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in participatingThreads %}
-                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h5 class="mb-1">{{ thread.title }}</h5>
                                         <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">
@@ -89,7 +89,7 @@
                             {% endfor %}
                         </div>
                         <div class="card-footer bg-light text-end">
-                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
+                            <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': 'dc', 'type': 'participating'}) }}" class="btn btn-sm btn-outline-success">
                                 Voir toutes mes participations <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
@@ -98,7 +98,7 @@
                             <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
                             <h3 class="h5">Vous ne participez à aucune scène</h3>
                             <p class="text-muted mb-3">Rejoignez une scène existante ou créez-en une nouvelle</p>
-                            <a href="{{ path('app_roleplay_threads') }}" class="btn btn-success">
+                            <a href="{{ path('app_roleplay_threads', {'universeSlug': 'dc'}) }}" class="btn btn-success">
                                 <i class="fas fa-search"></i> Explorer les scènes
                             </a>
                         </div>
@@ -111,7 +111,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                     <h2 class="card-title h5 mb-0">Mes créations</h2>
-                    <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-sm btn-outline-light">
+                    <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': 'dc'}) }}" class="btn btn-sm btn-outline-light">
                         <i class="fas fa-plus"></i> Nouvelle
                     </a>
                 </div>
@@ -119,7 +119,7 @@
                     {% if createdThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in createdThreads %}
-                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-0">{{ thread.title }}</h6>
                                         <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %} rounded-pill">
@@ -133,7 +133,7 @@
                             {% endfor %}
                         </div>
                         <div class="card-footer bg-light text-end">
-                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'created'}) }}" class="btn btn-sm btn-outline-info">
+                            <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': 'dc', 'type': 'created'}) }}" class="btn btn-sm btn-outline-info">
                                 Voir toutes mes créations <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
@@ -142,7 +142,7 @@
                             <i class="fas fa-pencil-alt fa-3x text-muted mb-3"></i>
                             <h3 class="h5">Vous n'avez pas encore créé de scène</h3>
                             <p class="text-muted mb-3">Lancez votre première histoire</p>
-                            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-info text-white">
+                            <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': 'dc'}) }}" class="btn btn-info text-white">
                                 <i class="fas fa-plus"></i> Créer une scène
                             </a>
                         </div>
@@ -158,7 +158,7 @@
                     {% if recentThreads|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for thread in recentThreads %}
-                                <a href="{{ path('app_thread_show', {'id': thread.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-0">{{ thread.title }}</h6>
                                         <small class="text-muted">{{ thread.updatedAt|date('d/m/Y') }}</small>
@@ -170,7 +170,7 @@
                             {% endfor %}
                         </div>
                         <div class="card-footer bg-light text-end">
-                            <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': 'dc', 'type': 'recent'}) }}" class="btn btn-sm btn-outline-secondary">
                                 Explorer plus de scènes <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
@@ -179,7 +179,7 @@
                             <i class="fa-solid fa-dice-d20 fa-3x text-muted mb-3"></i>
                             <h3 class="h5">Aucune scène récente</h3>
                             <p class="text-muted mb-3">Soyez le premier à créer une scène</p>
-                            <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-secondary">
+                            <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': 'dc'}) }}" class="btn btn-secondary">
                                 <i class="fas fa-plus"></i> Créer une scène
                             </a>
                         </div>
@@ -196,10 +196,10 @@
                         <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-outline-primary">
                             <i class="fas fa-user-plus"></i> Créer un personnage
                         </a>
-                        <a href="{{ path('app_choose_forum_new_thread') }}" class="btn btn-outline-success">
+                        <a href="{{ path('app_choose_forum_new_thread', {'universeSlug': 'dc'}) }}" class="btn btn-outline-success">
                             <i class="fas fa-plus-circle"></i> Créer une scène
                         </a>
-                        <a href="{{ path('app_roleplay_threads') }}" class="btn btn-outline-info">
+                        <a href="{{ path('app_roleplay_threads', {'universeSlug': 'dc'}) }}" class="btn btn-outline-info">
                             <i class="fas fa-list"></i> Toutes les scènes
                         </a>
                         <a href="{{ path('app_roleplay_search') }}" class="btn btn-outline-secondary">

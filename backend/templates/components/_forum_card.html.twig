@@ -9,7 +9,15 @@
     </div>
     <div class="forum-info">
         <h3 class="forum-title">
-            <a href="{{ path('app_forum_show', {'id': forum.id}) }}">{{ forum.name }}</a>
+            {% if universeSlug is defined %}
+                <a href="{{ path('app_forum_show', {'universeSlug': universeSlug, 'id': forum.id}) }}">{{ forum.name }}</a>
+            {% elseif forum.universe is defined and forum.universe %}
+                <a href="{{ path('app_forum_show', {'universeSlug': forum.universe.slug, 'id': forum.id}) }}">{{ forum.name }}</a>
+            {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
+                <a href="{{ path('app_forum_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.id}) }}">{{ forum.name }}</a>
+            {% else %}
+                {{ forum.name }}
+            {% endif %}
             <span class="badge {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} ms-2">
                 {% if forum.isImportant() %}Important{% elseif forum.isRoleplay() %}RP{% else %}HRP{% endif %}
             </span>
@@ -34,10 +42,27 @@
                 <div class="sub-forum-links">
                     {% set subforumsToUse = forum.tempSubforums is defined and forum.tempSubforums is not null ? forum.tempSubforums : forum.subforums %}
                     {% for subforum in subforumsToUse|slice(0, 5) %}
-                        <a href="{{ path('app_forum_show', {'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
-                            <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
-                            {{ subforum.name }}
-                        </a>
+                        {% if universeSlug is defined %}
+                            <a href="{{ path('app_forum_show', {'universeSlug': universeSlug, 'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                                <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
+                                {{ subforum.name }}
+                            </a>
+                        {% elseif forum.universe is defined and forum.universe %}
+                            <a href="{{ path('app_forum_show', {'universeSlug': forum.universe.slug, 'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                                <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
+                                {{ subforum.name }}
+                            </a>
+                        {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
+                            <a href="{{ path('app_forum_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': subforum.id}) }}" class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                                <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
+                                {{ subforum.name }}
+                            </a>
+                        {% else %}
+                            <span class="badge {% if subforum.isImportant() %}bg-important{% elseif subforum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} me-1 mb-1">
+                                <i class="fas fa-{% if subforum.isImportant() %}thumbtack{% elseif subforum.isRoleplay() %}dice-d20{% else %}comments{% endif %} me-1"></i>
+                                {{ subforum.name }}
+                            </span>
+                        {% endif %}
                     {% endfor %}
                     {% if subforumCount > 5 %}
                         <span class="badge bg-secondary">+{{ subforumCount - 5 }} autres</span>
@@ -55,15 +80,39 @@
                     <div class="last-post-details">
                         <small class="d-block">
                             <strong>Dernière activité :</strong> 
-                            <a href="{{ path('app_thread_show', {'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
+                            {% if universeSlug is defined %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
+                                    {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                                </a>
+                            {% elseif forum.universe is defined and forum.universe %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': forum.universe.slug, 'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
+                                    {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                                </a>
+                            {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
+                                    {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
+                                </a>
+                            {% else %}
                                 {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
-                            </a>
+                            {% endif %}
                         </small>
                         <small class="d-block text-truncate" style="max-width: 100%;">
                             <strong>Dans :</strong>
-                            <a href="{{ path('app_thread_show', {'id': forum.lastPostInfo.threadId}) }}" class="link-light">
+                            {% if universeSlug is defined %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': forum.lastPostInfo.threadId}) }}" class="link-light">
+                                    {{ forum.lastPostInfo.threadTitle }}
+                                </a>
+                            {% elseif forum.universe is defined and forum.universe %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': forum.universe.slug, 'id': forum.lastPostInfo.threadId}) }}" class="link-light">
+                                    {{ forum.lastPostInfo.threadTitle }}
+                                </a>
+                            {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
+                                <a href="{{ path('app_thread_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.lastPostInfo.threadId}) }}" class="link-light">
+                                    {{ forum.lastPostInfo.threadTitle }}
+                                </a>
+                            {% else %}
                                 {{ forum.lastPostInfo.threadTitle }}
-                            </a>
+                            {% endif %}
                         </small>
                         <small class="d-block">
                             <strong>Par :</strong>
@@ -79,9 +128,23 @@
         {% endif %}
     </div>
     <div class="forum-action">
-        <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
-            <i class="fas fa-arrow-right"></i>
-        </a>
+        {% if universeSlug is defined %}
+            <a href="{{ path('app_forum_show', {'universeSlug': universeSlug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        {% elseif forum.universe is defined and forum.universe %}
+            <a href="{{ path('app_forum_show', {'universeSlug': forum.universe.slug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
+            <a href="{{ path('app_forum_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        {% else %}
+            <button class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;" disabled>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        {% endif %}
     </div>
 </div>
 {% endif %}

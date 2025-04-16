@@ -5,8 +5,9 @@
 /**
  * Envoie une requête POST pour publier un post brouillon
  * @param {number} postId - L'identifiant du post à publier
+ * @param {string} universeSlug - Le slug de l'univers
  */
-function publishDraft(postId) {
+function publishDraft(postId, universeSlug) {
     if (!postId) {
         console.error('ID du post non spécifié');
         return;
@@ -32,7 +33,7 @@ function publishDraft(postId) {
     }
     
     // Configuration de la requête
-    fetch(`/post/${postId}/publish`, {
+    fetch(`/univers/${universeSlug}/post/${postId}/publish`, {
         method: 'POST',
         headers: headers,
         credentials: 'same-origin',
@@ -54,18 +55,19 @@ function publishDraft(postId) {
         console.error('Erreur lors de la publication du post:', error);
         // Si l'erreur est probablement liée à l'utilisation de l'API, essayez la méthode de formulaire comme fallback
         console.log('Tentative de fallback avec la méthode de formulaire...');
-        submitPublishForm(postId);
+        submitPublishForm(postId, universeSlug);
     });
 }
 
 /**
  * Méthode de secours qui soumet un formulaire pour publier un brouillon
  * @param {number} postId - L'identifiant du post à publier
+ * @param {string} universeSlug - Le slug de l'univers
  */
-function submitPublishForm(postId) {
+function submitPublishForm(postId, universeSlug) {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `/post/${postId}/publish`;
+    form.action = `/univers/${universeSlug}/post/${postId}/publish`;
     
     // Essayer de récupérer le token CSRF qui pourrait être dans la page
     const possibleToken = document.querySelector(`input[value^='publish_post_${postId}']`);

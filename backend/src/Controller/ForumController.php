@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Forum;
+use App\Entity\Univers;
 use App\Repository\ForumRepository;
 use App\Repository\PostRepository;
 use App\Repository\ThreadRepository;
+use App\Repository\UniversRepository;
 use App\Service\BreadcrumbService;
 use App\Service\LastPostService;
 use App\Service\ForumStatisticsService;
@@ -30,9 +32,27 @@ class ForumController extends AbstractController
         $this->forumStatsService = $forumStatsService;
     }
 
-    #[Route('/forum/{id}', name: 'app_forum_show')]
-    public function show(Forum $forum, Request $request, ForumRepository $forumRepository, ThreadRepository $threadRepository, PostRepository $postRepository): Response
+    #[Route('/univers/{universeSlug}/forum/{id}', name: 'app_forum_show')]
+    public function show(string $universeSlug, Forum $forum, Request $request, UniversRepository $universRepository, ForumRepository $forumRepository, ThreadRepository $threadRepository, PostRepository $postRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Vérifier que le forum appartient bien à cet univers
+        $forumUniverse = $forum->getUniverse();
+        if ($forumUniverse && $forumUniverse->getId() !== $univers->getId()) {
+            throw $this->createNotFoundException('Ce forum n\'appartient pas à cet univers');
+        }
+
+        // Si c'est un forum d'elseworld, vérifier que l'elseworld appartient à l'univers
+        $elseworld = $forum->getElseworld();
+        if ($elseworld && $elseworld->getParentUniverse()->getId() !== $univers->getId()) {
+            throw $this->createNotFoundException('Ce forum appartient à un elseworld qui n\'est pas lié à cet univers');
+        }
+        
         // Récupérer les sous-forums triés par type (important > roleplay > hrp) puis par position
         $subForums = $forumRepository->createQueryBuilder('f')
             ->where('f.parent = :parent')
@@ -91,10 +111,11 @@ class ForumController extends AbstractController
         $forum->stats = $this->forumStatsService->getForumStats($forum->getId());
         
         return $this->render('forum/show.html.twig', [
+            'univers' => $univers,
             'forum' => $forum,
             'subForums' => $subForums,
             'threads' => $threads,
-            'breadcrumbs' => $this->getBreadcrumbsForForum($forum),
+            'breadcrumbs' => $this->getBreadcrumbsForForum($univers, $forum),
             'pagination' => [
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
@@ -103,30 +124,11 @@ class ForumController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'app_roleplay')]
-    public function index(ForumRepository $forumRepository): Response
-    {
-        // Récupérer les forums parents triés par type (important > roleplay > hrp) puis par position
-        $parentForums = $forumRepository->createQueryBuilder('f')
-            ->where('f.parent IS NULL')
-            ->orderBy('CASE f.type 
-                WHEN \'important\' THEN 1 
-                WHEN \'roleplay\' THEN 2 
-                WHEN \'hrp\' THEN 3 
-                ELSE 4 END', 'ASC')
-            ->addOrderBy('f.position', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('forum/index.html.twig', [
-            'parentForums' => $parentForums,
-        ]);
-    }
-
-    private function getBreadcrumbsForForum(Forum $forum, array $additional = []): array
+    private function getBreadcrumbsForForum(Univers $univers, Forum $forum, array $additional = []): array
     {
         $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_roleplay')
+            'Accueil' => $this->generateUrl('app_univers_index'),
+            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()])
         ];
         
         $currentForum = $forum;
@@ -139,11 +141,29 @@ class ForumController extends AbstractController
         
         $parentForums = array_reverse($parentForums);
         
-        foreach ($parentForums as $parentForum) {
-            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', ['id' => $parentForum->getId()]);
+        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
+        if ($forum->getElseworld()) {
+            $elseworld = $forum->getElseworld();
+            $breadcrumbs['Elseworlds'] = $this->generateUrl('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
+            $breadcrumbs[$elseworld->getName()] = $this->generateUrl('app_elseworld_show', [
+                'universeSlug' => $univers->getSlug(),
+                'elseworldSlug' => $elseworld->getSlug()
+            ]);
+        } else {
+            $breadcrumbs['Forums'] = $this->generateUrl('app_univers_forums', ['slug' => $univers->getSlug()]);
         }
         
-        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', ['id' => $forum->getId()]);
+        foreach ($parentForums as $parentForum) {
+            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', [
+                'universeSlug' => $univers->getSlug(),
+                'id' => $parentForum->getId()
+            ]);
+        }
+        
+        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', [
+            'universeSlug' => $univers->getSlug(),
+            'id' => $forum->getId()
+        ]);
         
         foreach ($additional as $name => $url) {
             $breadcrumbs[$name] = $url;

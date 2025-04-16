@@ -26,7 +26,7 @@
                     </div>
                     <div class="thread-info">
                         <h3 class="thread-title">
-                            <a href="{{ path('app_thread_show', {'id': thread.id}) }}">{{ thread.title }}</a>
+                            <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}">{{ thread.title }}</a>
                             
                             {% if thread.sticky %}
                                 <span class="badge bg-warning ms-1">Épinglé</span>

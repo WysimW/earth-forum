@@ -54,7 +54,7 @@
                     <div class="card-body">
                         <div class="list-group">
                             {% for forum in elseworld.forums %}
-                                <a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': forum.id}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h5 class="mb-1">{{ forum.name }}</h5>
                                         <small>{{ forum.threads|length }} sujets</small>
@@ -103,13 +103,13 @@
                     <div class="card-body">
                         <div class="list-group">
                             {% for character in elseworld.characters|slice(0, 5) %}
-                                <a href="{{ path('app_character_show', {'id': character.id}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_character_show', {'universeSlug': univers.slug, 'id': character.id}) }}" class="list-group-item list-group-item-action">
                                     {{ character.name }}
                                 </a>
                             {% endfor %}
                             
                             {% if elseworld.characters|length > 5 %}
-                                <a href="#" class="list-group-item list-group-item-action text-center">
+                                <a href="{{ path('app_characters_list', {'universeSlug': univers.slug}) }}" class="list-group-item list-group-item-action text-center">
                                     <em>Voir tous les {{ elseworld.characters|length }} personnages</em>
                                 </a>
                             {% endif %}

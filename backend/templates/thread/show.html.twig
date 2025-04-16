@@ -90,7 +90,7 @@
     {# Actions rapides #}
     <div class="thread-actions d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ path('app_forum_show', {'id': thread.forum.id}) }}" class="btn btn-outline-secondary">
+            <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': thread.forum.id}) }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Retour au forum
             </a>
             
@@ -99,13 +99,13 @@
                     <i class="fas fa-reply me-1"></i> Répondre
                 </a>
                 
-                <a href="{{ path('app_post_new', {'threadId': thread.id}) }}" class="btn btn-outline-primary ms-2">
+                <a href="{{ path('app_post_new', {'universeSlug': univers.slug, 'threadId': thread.id}) }}" class="btn btn-outline-primary ms-2">
                     <i class="fas fa-edit me-1"></i> Rédaction complète
                 </a>
             {% endif %}
             
             {% if app.user %}
-                <a href="{{ path('app_my_drafts') }}" class="btn btn-outline-secondary ms-2">
+                <a href="{{ path('app_my_drafts', {'universeSlug': univers.slug}) }}" class="btn btn-outline-secondary ms-2">
                     <i class="fas fa-save me-1"></i> Mes brouillons
                 </a>
             {% endif %}
@@ -113,7 +113,7 @@
         
         <div class="btn-group">
             {% if is_granted('EDIT', thread) %}
-                <a href="{{ path('app_thread_edit', {'id': thread.id}) }}" class="btn btn-outline-primary">
+                <a href="{{ path('app_thread_edit', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-1"></i> Modifier
                 </a>
             {% endif %}
@@ -132,13 +132,13 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         {% if thread.status == 'open' %}
                             <li>
-                                <a href="{{ path('app_thread_close', {'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_close', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-lock me-1"></i> Fermer la discussion
                                 </a>
                             </li>
                         {% else %}
                             <li>
-                                <a href="{{ path('app_thread_open', {'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_open', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-lock-open me-1"></i> Rouvrir la discussion
                                 </a>
                             </li>
@@ -146,13 +146,13 @@
                         
                         {% if thread.sticky %}
                             <li>
-                                <a href="{{ path('app_thread_unstick', {'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_unstick', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-thumbtack fa-rotate-90 me-1"></i> Désépingler
                                 </a>
                             </li>
                         {% else %}
                             <li>
-                                <a href="{{ path('app_thread_stick', {'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_stick', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-thumbtack me-1"></i> Épingler
                                 </a>
                             </li>
@@ -160,7 +160,7 @@
                         
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a href="{{ path('app_thread_move', {'id': thread.id}) }}" class="dropdown-item">
+                            <a href="{{ path('app_thread_move', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                 <i class="fas fa-exchange-alt me-1"></i> Déplacer
                             </a>
                         </li>
@@ -259,7 +259,7 @@
                         
                         <div class="post-actions">
                             {% if is_granted('EDIT', post) %}
-                                <a href="{{ path('app_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ path('app_post_edit', {'universeSlug': univers.slug, 'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             {% endif %}
@@ -284,7 +284,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ path('app_post_quote', {'id': post.id}) }}">
+                                        <a class="dropdown-item" href="{{ path('app_post_quote', {'universeSlug': univers.slug, 'id': post.id}) }}">
                                             <i class="fas fa-quote-right me-2"></i> Citer
                                         </a>
                                     </li>
@@ -326,9 +326,9 @@
             </h3>
             
             {% if thread.type == 'roleplay' %}
-                {{ render(controller('App\\Controller\\PostController::replyForm', { 'threadId': thread.id })) }}
+                {{ render(controller('App\\Controller\\PostController::replyForm', { 'universeSlug': univers.slug, 'threadId': thread.id })) }}
             {% else %}
-                {{ render(controller('App\\Controller\\PostController::replyHrpForm', { 'threadId': thread.id })) }}
+                {{ render(controller('App\\Controller\\PostController::replyHrpForm', { 'universeSlug': univers.slug, 'threadId': thread.id })) }}
             {% endif %}
         </div>
     {% elseif not app.user %}
@@ -358,7 +358,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <a href="{{ path('app_thread_delete', {'id': thread.id}) }}" class="btn btn-danger">Supprimer</a>
+                    <a href="{{ path('app_thread_delete', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-danger">Supprimer</a>
                 </div>
             </div>
         </div>
@@ -406,7 +406,7 @@
                     const button = event.relatedTarget;
                     const postId = button.getAttribute('data-post-id');
                     const deleteLink = document.getElementById('deletePostLink');
-                    deleteLink.href = '{{ path('app_post_delete', {'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
+                    deleteLink.href = '{{ path('app_post_delete', {'universeSlug': univers.slug, 'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
                 });
             }
         });

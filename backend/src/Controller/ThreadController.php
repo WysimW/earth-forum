@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Forum;
 use App\Entity\Post;
 use App\Entity\Thread;
+use App\Entity\Univers;
 use App\Form\ThreadRoleplayType;
 use App\Form\ThreadType;
 use App\Form\PostRoleplayType;
@@ -12,6 +13,7 @@ use App\Form\PostType;
 use App\Repository\CharacterRepository;
 use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
+use App\Repository\UniversRepository;
 use App\Service\BreadcrumbService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,35 +35,68 @@ class ThreadController extends AbstractController
         $this->breadcrumbService = $breadcrumbService;
     }
 
-    #[Route('/choisir-forum', name: 'app_choose_forum_new_thread')]
+    #[Route('/univers/{universeSlug}/choisir-forum', name: 'app_choose_forum_new_thread')]
     #[IsGranted('ROLE_USER')]
-    public function chooseForum(ForumRepository $forumRepository): Response
+    public function chooseForum(string $universeSlug, UniversRepository $universRepository, ForumRepository $forumRepository): Response
     {
-        // Récupérer tous les forums disponibles, regroupés par catégorie
-        $forumsRP = $forumRepository->findBy(['isRoleplay' => true], ['name' => 'ASC']);
-        $forumsHRP = $forumRepository->findBy(['isRoleplay' => false], ['name' => 'ASC']);
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Récupérer les forums de cet univers, regroupés par catégorie
+        $forumsRP = $forumRepository->findBy(['universe' => $univers, 'isRoleplay' => true], ['name' => 'ASC']);
+        $forumsHRP = $forumRepository->findBy(['universe' => $univers, 'isRoleplay' => false], ['name' => 'ASC']);
+        
+        // Récupérer également les forums des elseworlds de cet univers
+        $elseworlds = $univers->getElseworlds();
+        $elseworldsForumsRP = [];
+        $elseworldsForumsHRP = [];
+        
+        foreach ($elseworlds as $elseworld) {
+            $elseworldsForumsRP[$elseworld->getId()] = [
+                'elseworld' => $elseworld,
+                'forums' => $forumRepository->findBy(['elseworld' => $elseworld, 'isRoleplay' => true], ['name' => 'ASC'])
+            ];
+            
+            $elseworldsForumsHRP[$elseworld->getId()] = [
+                'elseworld' => $elseworld,
+                'forums' => $forumRepository->findBy(['elseworld' => $elseworld, 'isRoleplay' => false], ['name' => 'ASC'])
+            ];
+        }
         
         return $this->render('thread/choose_forum.html.twig', [
+            'univers' => $univers,
             'forumsRP' => $forumsRP,
             'forumsHRP' => $forumsHRP,
+            'elseworldsForumsRP' => $elseworldsForumsRP,
+            'elseworldsForumsHRP' => $elseworldsForumsHRP,
             'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                'Choisir un forum' => $this->generateUrl('app_choose_forum_new_thread'),
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Choisir un forum' => $this->generateUrl('app_choose_forum_new_thread', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/forum/{id}/nouvelle-discussion', name: 'app_forum_new_thread')]
+    #[Route('/univers/{universeSlug}/forum/{id}/nouvelle-discussion', name: 'app_forum_new_thread')]
     #[IsGranted('ROLE_USER')]
-    public function newThread(Request $request, Forum $forum, CharacterRepository $characterRepository): Response
+    public function newThread(string $universeSlug, Request $request, Forum $forum, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
         if ($forum->getStatus() === 'closed') {
             $this->addFlash('error', 'Ce forum est fermé aux nouvelles discussions.');
-            return $this->redirectToRoute('app_roleplay');
+            return $this->redirectToRoute('app_univers_forums', ['slug' => $universeSlug]);
         }
 
         $thread = new Thread();
@@ -111,28 +146,52 @@ class ThreadController extends AbstractController
 
             $this->addFlash('success', 'Votre discussion a été créée avec succès.');
 
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
         return $this->render('thread/new.html.twig', [
+            'univers' => $univers,
             'form' => $form->createView(),
             'forum' => $forum,
             'isRpForum' => $isRpForum,
             'hasValidatedCharacters' => $hasValidatedCharacters,
             'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                $forum->getName() => $this->generateUrl('app_forum_show', ['id' => $forum->getId()]),
-                'Nouvelle discussion' => $this->generateUrl('app_forum_new_thread', ['id' => $forum->getId()]),
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Forums' => $this->generateUrl('app_univers_forums', ['slug' => $universeSlug]),
+                $forum->getName() => $this->generateUrl('app_forum_show', ['universeSlug' => $universeSlug, 'id' => $forum->getId()]),
+                'Nouvelle discussion' => $this->generateUrl('app_forum_new_thread', ['universeSlug' => $universeSlug, 'id' => $forum->getId()]),
             ]),
         ]);
     }
 
-    #[Route('/thread/{id}', name: 'app_thread_show')]
-    public function show(Thread $thread, Request $request, CharacterRepository $characterRepository): Response
+    #[Route('/univers/{universeSlug}/thread/{id}', name: 'app_thread_show')]
+    public function show(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Vérifier que le thread appartient bien à un forum de cet univers
+        $forum = $thread->getForum();
+        $forumUniverse = $forum->getUniverse();
+        
+        // Si le forum a un univers, vérifier qu'il s'agit bien de l'univers demandé
+        if ($forumUniverse && $forumUniverse->getId() !== $univers->getId()) {
+            throw $this->createNotFoundException('Cette discussion n\'appartient pas à cet univers');
+        }
+        
+        // Si le forum appartient à un elseworld, vérifier que l'elseworld appartient à l'univers
+        $elseworld = $forum->getElseworld();
+        if ($elseworld && $elseworld->getParentUniverse()->getId() !== $univers->getId()) {
+            throw $this->createNotFoundException('Cette discussion appartient à un elseworld qui n\'est pas lié à cet univers');
+        }
+        
         // Gestion spéciale pour les fiches de personnage
         if ($thread->isCharacterSheet()) {
-            return $this->showCharacterSheet($thread, $request);
+            return $this->showCharacterSheet($universeSlug, $thread, $request, $univers);
         }
 
         $isRpThread = $thread->getType() === 'roleplay';
@@ -160,7 +219,7 @@ class ThreadController extends AbstractController
             if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
                 if ($thread->isFull()) {
                     $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
-                    return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+                    return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
                 }
 
                 $thread->addParticipant($post->getCharacter());
@@ -169,79 +228,31 @@ class ThreadController extends AbstractController
             $this->entityManager->persist($post);
             $this->entityManager->flush();
 
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
         return $this->render('thread/show.html.twig', [
+            'univers' => $univers,
             'thread' => $thread,
             'form' => $form->createView(),
             'isRoleplay' => $isRpThread,
             'userCanPost' => $this->getUser() && ($thread->isOpen() ||
                 $thread->getAuthor() === $this->getUser() ||
                 ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
-            'breadcrumbs' => $this->getBreadcrumbsForThread($thread),
+            'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
             'canReply' => $thread->isOpen() || $thread->getAuthor() === $this->getUser(),
             'posts' => $thread->getPosts(),
             'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
         ]);
     }
 
-    #[Route('/thread_roleplay/{id}', name: 'app_roleplay_thread_show')]
-    public function showRolePlay(Thread $thread, Request $request, CharacterRepository $characterRepository): Response
+    #[Route('/univers/{universeSlug}/roleplay/{id}', name: 'app_roleplay_thread_show')]
+    public function showRolePlay(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
     {
-        // Gestion spéciale pour les fiches de personnage
-        if ($thread->isCharacterSheet()) {
-            return $this->showCharacterSheet($thread, $request);
-        }
-
-        $isRpThread = $thread->getType() === 'roleplay';
-        $post = new Post();
-        $post->setThread($thread);
-        $post->setAuthor($this->getUser());
-
-        if ($isRpThread && $this->getUser()) {
-            if ($thread->isOpen()) {
-                $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
-            } else {
-                $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
-            }
-
-            $form = $this->createForm(PostRoleplayType::class, $post, [
-                'characters' => $userCharacters,
-            ]);
-        } else {
-            $form = $this->createForm(PostType::class, $post);
-        }
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
-                if ($thread->isFull()) {
-                    $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
-                    return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
-                }
-
-                $thread->addParticipant($post->getCharacter());
-            }
-
-            $this->entityManager->persist($post);
-            $this->entityManager->flush();
-
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
-        }
-
-        return $this->render('thread/show.html.twig', [
-            'thread' => $thread,
-            'form' => $form->createView(),
-            'isRoleplay' => $isRpThread,
-            'userCanPost' => $this->getUser() && ($thread->isOpen() ||
-                $thread->getAuthor() === $this->getUser() ||
-                ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
-            'breadcrumbs' => $this->getBreadcrumbsForThread($thread),
-            'canReply' => $thread->isOpen() || $thread->getAuthor() === $this->getUser(),
-            'posts' => $thread->getPosts(),
-            'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
+        // Rediriger vers la route standard
+        return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
         ]);
     }
 
@@ -249,7 +260,7 @@ class ThreadController extends AbstractController
     /**
      * Affiche une fiche de personnage
      */
-    private function showCharacterSheet(Thread $thread, Request $request): Response
+    private function showCharacterSheet(string $universeSlug, Thread $thread, Request $request, Univers $univers): Response
     {
         $character = $thread->getCharacterSheet();
         if (!$character) {
@@ -267,7 +278,7 @@ class ThreadController extends AbstractController
             $this->entityManager->persist($post);
             $this->entityManager->flush();
 
-            return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
         $isOwner = $this->getUser() && $character->getUser() === $this->getUser();
@@ -275,14 +286,40 @@ class ThreadController extends AbstractController
 
         // Générer le tableau de breadcrumbs avec le format correct
         $breadcrumbsArray = [
-            ['name' => 'Accueil', 'url' => $this->generateUrl('app_roleplay')],
+            ['name' => 'Accueil', 'url' => $this->generateUrl('app_univers_index')],
+            ['name' => $univers->getName(), 'url' => $this->generateUrl('app_univers_show', ['slug' => $universeSlug])],
         ];
 
         // Ajouter le forum parent s'il existe
         if ($thread->getForum()) {
+            $forum = $thread->getForum();
             $breadcrumbsArray[] = [
-                'name' => $thread->getForum()->getName(),
-                'url' => $this->generateUrl('app_forum_show', ['id' => $thread->getForum()->getId()])
+                'name' => 'Forums',
+                'url' => $this->generateUrl('app_univers_forums', ['slug' => $universeSlug])
+            ];
+            
+            // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
+            if ($forum->getElseworld()) {
+                $elseworld = $forum->getElseworld();
+                $breadcrumbsArray[] = [
+                    'name' => 'Elseworlds',
+                    'url' => $this->generateUrl('app_univers_elseworlds', ['slug' => $universeSlug])
+                ];
+                $breadcrumbsArray[] = [
+                    'name' => $elseworld->getName(),
+                    'url' => $this->generateUrl('app_elseworld_show', [
+                        'universeSlug' => $universeSlug,
+                        'elseworldSlug' => $elseworld->getSlug()
+                    ])
+                ];
+            }
+            
+            $breadcrumbsArray[] = [
+                'name' => $forum->getName(),
+                'url' => $this->generateUrl('app_forum_show', [
+                    'universeSlug' => $universeSlug, 
+                    'id' => $forum->getId()
+                ])
             ];
         }
 
@@ -290,6 +327,7 @@ class ThreadController extends AbstractController
         $breadcrumbsArray[] = $thread->getTitle();
 
         return $this->render('thread/character_sheet.html.twig', [
+            'univers' => $univers,
             'thread' => $thread,
             'character' => $character,
             'posts' => $thread->getPosts(),
@@ -304,9 +342,15 @@ class ThreadController extends AbstractController
     /**
      * Met à jour le statut d'une fiche de personnage
      */
-    #[Route('/thread/{id}/update-character-status', name: 'app_thread_update_character_status', methods: ['POST'])]
-    public function updateCharacterStatus(Thread $thread, Request $request, CharacterRepository $characterRepository, ForumRepository $forumRepository): Response
+    #[Route('/univers/{universeSlug}/thread/{id}/update-character-status', name: 'app_thread_update_character_status', methods: ['POST'])]
+    public function updateCharacterStatus(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository, ForumRepository $forumRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
         if (!$thread->isCharacterSheet()) {
             throw $this->createNotFoundException('Cette discussion n\'est pas une fiche de personnage.');
         }
@@ -351,7 +395,7 @@ class ThreadController extends AbstractController
             default => 'Fiches en attente',
         };
 
-        $targetForum = $forumRepository->findOneBy(['name' => $targetForumName]);
+        $targetForum = $forumRepository->findOneBy(['name' => $targetForumName, 'universe' => $univers]);
         if ($targetForum) {
             $thread->setForum($targetForum);
         }
@@ -389,49 +433,102 @@ class ThreadController extends AbstractController
 
         $this->addFlash('success', 'Le statut de la fiche a été mis à jour avec succès.');
 
-        return $this->redirectToRoute('app_thread_show', ['id' => $thread->getId()]);
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
     }
 
-    #[Route('/thread/{id}/delete', name: 'app_thread_delete', methods: ['POST'])]
+    #[Route('/univers/{universeSlug}/thread/{id}/delete', name: 'app_thread_delete', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function delete(Request $request, Thread $thread): Response
+    public function delete(string $universeSlug, Request $request, Thread $thread, UniversRepository $universRepository): Response
     {
-        if ($thread->getAuthor() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer ce thread.');
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Vérifier que l'utilisateur est autorisé à supprimer le thread
+        if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette discussion.');
         }
 
-        if ($this->isCsrfTokenValid('delete_thread_' . $thread->getId(), $request->request->get('_token'))) {
-            $this->entityManager->remove($thread);
-            $this->entityManager->flush();
-
-            $this->addFlash('success', 'Le thread a été supprimé avec succès.');
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide.');
+        // Vérifier le CSRF token
+        $csrfToken = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete_thread_'.$thread->getId(), $csrfToken)) {
+            throw $this->createAccessDeniedException('Action non autorisée');
         }
 
-        return $this->redirectToRoute('app_roleplay');
+        $this->entityManager->remove($thread);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'La discussion a été supprimée avec succès.');
+
+        return $this->redirectToRoute('app_univers_forums', ['slug' => $universeSlug]);
     }
 
-    #[Route('/threads', name: 'app_roleplay_threads')]
-    public function list(ThreadRepository $threadRepository): Response
+    #[Route('/univers/{universeSlug}/thread/{id}/publish', name: 'app_thread_publish', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function publish(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
-        $threads = $threadRepository->findBy(
-            ['type' => 'roleplay'],
-            ['updatedAt' => 'DESC']
-        );
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Vérifier que l'utilisateur est autorisé à publier le thread
+        if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour publier cette discussion.');
+        }
+        
+        // Vérifier que c'est bien un brouillon
+        if (!$thread->isDraft()) {
+            $this->addFlash('error', 'Cette discussion n\'est pas un brouillon.');
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
+        }
+        
+        // Publier le thread
+        $thread->setIsDraft(false);
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+        
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'La discussion a été publiée avec succès.');
+        
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
+    }
+
+    #[Route('/univers/{universeSlug}/threads', name: 'app_roleplay_threads')]
+    public function list(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Récupérer les threads de type roleplay liés à cet univers
+        $threads = $threadRepository->findRoleplayThreadsByUniverse($univers);
 
         return $this->render('thread/index.html.twig', [
+            'univers' => $univers,
             'threads' => $threads,
             'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                'Scènes RP' => $this->generateUrl('app_roleplay_threads'),
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Scènes RP' => $this->generateUrl('app_roleplay_threads', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/threads/filter', name: 'app_roleplay_threads_filter')]
-    public function filter(Request $request, ThreadRepository $threadRepository): Response
+    #[Route('/univers/{universeSlug}/threads/filter', name: 'app_roleplay_threads_filter')]
+    public function filter(string $universeSlug, Request $request, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
         $type = $request->query->get('type', 'all');
         $status = $request->query->get('status', '');
 
@@ -444,7 +541,7 @@ class ThreadController extends AbstractController
             case 'participating':
                 $title = 'Mes participations';
                 if ($user) {
-                    $threads = $threadRepository->findThreadsWithUserParticipation($user->getId(), $status);
+                    $threads = $threadRepository->findThreadsWithUserParticipationByUniverse($user->getId(), $univers->getId(), $status);
                 }
                 break;
 
@@ -452,48 +549,43 @@ class ThreadController extends AbstractController
                 $title = 'Mes scènes créées';
                 if ($user) {
                     $criteria = ['author' => $user, 'type' => 'roleplay'];
+                    $criteria['forum.universe'] = $univers;
                     if ($status) {
                         $criteria['status'] = $status;
                     }
-                    $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC']);
+                    $threads = $threadRepository->findThreadsByAuthorAndUniverse($user->getId(), $univers->getId(), $status);
                 }
                 break;
 
             case 'recent':
                 $title = 'Scènes récentes';
                 if ($status === 'open') {
-                    $threads = $threadRepository->findActiveThreads(20);
+                    $threads = $threadRepository->findActiveThreadsByUniverse($univers->getId(), 20);
                 } else {
-                    $criteria = ['type' => 'roleplay'];
-                    if ($status) {
-                        $criteria['status'] = $status;
-                    }
-                    $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC'], 20);
+                    $threads = $threadRepository->findRecentThreadsByUniverse($univers->getId(), $status, 20);
                 }
                 break;
 
             default:
                 if ($status === 'open') {
-                    $threads = $threadRepository->findActiveThreads();
+                    $threads = $threadRepository->findActiveThreadsByUniverse($univers->getId());
                 } else {
-                    $criteria = ['type' => 'roleplay'];
-                    if ($status) {
-                        $criteria['status'] = $status;
-                    }
-                    $threads = $threadRepository->findBy($criteria, ['updatedAt' => 'DESC']);
+                    $threads = $threadRepository->findThreadsByUniverse($univers->getId(), $status);
                 }
         }
 
         $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_roleplay'),
-            'Scènes RP' => $this->generateUrl('app_roleplay_threads')
+            'Accueil' => $this->generateUrl('app_univers_index'),
+            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+            'Scènes RP' => $this->generateUrl('app_roleplay_threads', ['universeSlug' => $universeSlug])
         ];
 
         if ($title !== 'Scènes RP') {
-            $breadcrumbs[$title] = $this->generateUrl('app_roleplay_threads_filter', ['type' => $type]);
+            $breadcrumbs[$title] = $this->generateUrl('app_roleplay_threads_filter', ['universeSlug' => $universeSlug, 'type' => $type]);
         }
 
         return $this->render('thread/filter.html.twig', [
+            'univers' => $univers,
             'threads' => $threads,
             'type' => $type,
             'status' => $status,
@@ -502,64 +594,99 @@ class ThreadController extends AbstractController
         ]);
     }
 
-    #[Route('/character-sheets', name: 'app_character_sheets')]
-    public function characterSheets(ThreadRepository $threadRepository, ForumRepository $forumRepository): Response
+    #[Route('/univers/{universeSlug}/character-sheets', name: 'app_character_sheets')]
+    public function characterSheets(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository, ForumRepository $forumRepository): Response
     {
-        $pendingSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches en attente']);
-        $validatedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches validées']);
-        $rejectedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches refusées']);
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        $pendingSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches en attente', 'universe' => $univers]);
+        $validatedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches validées', 'universe' => $univers]);
+        $rejectedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches refusées', 'universe' => $univers]);
 
         $pendingSheets = $pendingSheetsForum ? $threadRepository->findBy(['forum' => $pendingSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
         $validatedSheets = $validatedSheetsForum ? $threadRepository->findBy(['forum' => $validatedSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
         $rejectedSheets = $rejectedSheetsForum ? $threadRepository->findBy(['forum' => $rejectedSheetsForum, 'type' => 'character_sheet'], ['updatedAt' => 'DESC']) : [];
 
         return $this->render('thread/character_sheets.html.twig', [
+            'univers' => $univers,
             'pendingSheets' => $pendingSheets,
             'validatedSheets' => $validatedSheets,
             'rejectedSheets' => $rejectedSheets,
             'canModerate' => $this->isGranted('ROLE_MODERATOR'),
             'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                'Fiches de Personnages' => $this->generateUrl('app_character_sheets'),
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Fiches de Personnages' => $this->generateUrl('app_character_sheets', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/character-sheets/mine', name: 'app_character_sheets_mine')]
+    #[Route('/univers/{universeSlug}/character-sheets/mine', name: 'app_character_sheets_mine')]
     #[IsGranted('ROLE_USER')]
-    public function myCharacterSheets(ThreadRepository $threadRepository): Response
+    public function myCharacterSheets(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
     {
-        $myCharacterSheets = $threadRepository->findCharacterSheetsByUser($this->getUser());
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        $myCharacterSheets = $threadRepository->findCharacterSheetsByUserAndUniverse($this->getUser(), $univers);
 
         return $this->render('thread/my_character_sheets.html.twig', [
+            'univers' => $univers,
             'characterSheets' => $myCharacterSheets,
             'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                'Fiches de Personnages' => $this->generateUrl('app_character_sheets'),
-                'Mes Fiches' => $this->generateUrl('app_character_sheets_mine'),
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Fiches de Personnages' => $this->generateUrl('app_character_sheets', ['universeSlug' => $universeSlug]),
+                'Mes Fiches' => $this->generateUrl('app_character_sheets_mine', ['universeSlug' => $universeSlug]),
             ]),
         ]);
     }
 
-    #[Route('/post/{id}/quote', name: 'app_post_quote')]
+    #[Route('/univers/{universeSlug}/post/{id}/quote', name: 'app_post_quote')]
     #[IsGranted('ROLE_USER')]
-    public function quote(Post $post): Response
+    public function quote(string $universeSlug, Post $post, UniversRepository $universRepository): Response
     {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
         $thread = $post->getThread();
-        $forum = $thread->getForum();
         
         // Rediriger vers le formulaire de réponse avec le contenu cité
         return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
             'id' => $thread->getId(),
             'quote' => $post->getId()
         ]);
     }
 
-    private function getBreadcrumbsForForum(Forum $forum, array $additional = []): array
+    private function getBreadcrumbsForForum(Univers $univers, Forum $forum, array $additional = []): array
     {
         $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_roleplay')
+            'Accueil' => $this->generateUrl('app_univers_index'),
+            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()]),
         ];
+
+        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
+        if ($forum->getElseworld()) {
+            $elseworld = $forum->getElseworld();
+            $breadcrumbs['Elseworlds'] = $this->generateUrl('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
+            $breadcrumbs[$elseworld->getName()] = $this->generateUrl('app_elseworld_show', [
+                'universeSlug' => $univers->getSlug(),
+                'elseworldSlug' => $elseworld->getSlug()
+            ]);
+        } else {
+            $breadcrumbs['Forums'] = $this->generateUrl('app_univers_forums', ['slug' => $univers->getSlug()]);
+        }
 
         $currentForum = $forum;
         $parentForums = [];
@@ -572,10 +699,16 @@ class ThreadController extends AbstractController
         $parentForums = array_reverse($parentForums);
 
         foreach ($parentForums as $parentForum) {
-            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', ['id' => $parentForum->getId()]);
+            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', [
+                'universeSlug' => $univers->getSlug(),
+                'id' => $parentForum->getId()
+            ]);
         }
 
-        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', ['id' => $forum->getId()]);
+        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', [
+            'universeSlug' => $univers->getSlug(),
+            'id' => $forum->getId()
+        ]);
 
         foreach ($additional as $name => $url) {
             $breadcrumbs[$name] = $url;
@@ -584,12 +717,15 @@ class ThreadController extends AbstractController
         return $this->breadcrumbService->generate($breadcrumbs);
     }
 
-    private function getBreadcrumbsForThread(Thread $thread): array
+    private function getBreadcrumbsForThread(Univers $univers, Thread $thread): array
     {
         $forum = $thread->getForum();
-        $breadcrumbs = $this->getBreadcrumbsForForum($forum);
-        $breadcrumbs[$thread->getTitle()] = $this->generateUrl('app_thread_show', ['id' => $thread->getId()]);
-        return $breadcrumbs;
+        return $this->getBreadcrumbsForForum($univers, $forum, [
+            $thread->getTitle() => $this->generateUrl('app_thread_show', [
+                'universeSlug' => $univers->getSlug(),
+                'id' => $thread->getId()
+            ])
+        ]);
     }
     
     /**

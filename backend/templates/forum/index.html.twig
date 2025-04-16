@@ -10,10 +10,10 @@
             
             {% if app.user %}
             <div class="d-flex flex-wrap gap-2 mt-3">
-                <a href="{{ path('app_roleplay_characters') }}" class="btn btn-primary">
+                <a href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}" class="btn btn-primary">
                     <i class="fas fa-user-astronaut me-2"></i> Mes personnages
                 </a>
-                <a href="{{ path('app_roleplay_threads_filter') }}?type=recent&status=open" class="btn btn-outline-primary">
+                <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=recent&status=open" class="btn btn-outline-primary">
                     <i class="fa-solid fa-dice-d20 me-2"></i> Voir les scènes RP actives
                 </a>
             </div>
@@ -118,13 +118,13 @@
             <div class="quick-actions mt-5">
                 <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
                 <div class="action-buttons">
-                    <a href="{{ path('app_roleplay_characters') }}" class="btn btn-outline-primary">
+                    <a href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}" class="btn btn-outline-primary">
                         <i class="fas fa-user-astronaut"></i> Mes personnages
                     </a>
-                    <a href="{{ path('app_roleplay_threads_filter') }}?type=participating" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
+                    <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=participating" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
                         <i class="fas fa-users"></i> Mes participations RP
                     </a>
-                    <a href="{{ path('app_roleplay_threads_filter') }}?type=recent" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
+                    <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=recent" class="btn" style="color: var(--roleplay-accent); border: 1px solid var(--roleplay-accent);">
                         <i class="fas fa-fire"></i> Scènes RP actives
                     </a>
                     <a href="{{ path('app_roleplay') }}#hrp-forums" class="btn" style="color: var(--hrp-accent); border: 1px solid var(--hrp-accent);">

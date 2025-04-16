@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Earth Forum - Accueil{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Bienvenue sur Earth Forum</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Explorez nos différents univers et rejoignez la communauté de roleplay.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Liste des univers -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Nos Univers</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for univers in univers %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="universe-card-placeholder">
+                                        <span>{{ univers.name }}</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ univers.name }}</h5>
+                                        <p class="card-text small">{{ univers.description|u.truncate(100, '...') }}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{ path('app_univers_show', {slug: univers.slug}) }}" class="btn btn-sm btn-primary">Découvrir</a>
+                                            <a href="{{ path('app_univers_forums', {slug: univers.slug}) }}" class="btn btn-sm btn-outline-secondary">Forums</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    Aucun univers n'a encore été créé.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Statistiques globales -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Discussions :</span>
+                        <strong>{{ totalThreads }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Messages :</span>
+                        <strong>{{ totalPosts }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discussions récentes -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Discussions récentes</h3>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for thread in recentThreads %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        {% if thread.forum and thread.forum.universe %}
+                                            {% set universeSlug = thread.forum.universe.slug %}
+                                        {% elseif thread.forum and thread.forum.elseworld and thread.forum.elseworld.parentUniverse %}
+                                            {% set universeSlug = thread.forum.elseworld.parentUniverse.slug %}
+                                        {% else %}
+                                            {% set universeSlug = 'default' %}
+                                        {% endif %}
+                                        <a href="{{ path('app_thread_show', {universeSlug: universeSlug, id: thread.id}) }}" class="text-decoration-none">
+                                            {{ thread.title|u.truncate(30, '...') }}
+                                        </a>
+                                        <div class="small text-muted">
+                                            {{ thread.updatedAt|date('d/m/Y H:i') }}
+                                        </div>
+                                    </div>
+                                    {% if thread.type == 'roleplay' %}
+                                        <span class="badge bg-primary">RP</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">HRP</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">Aucune discussion récente</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ path('app_roleplay_threads', {universeSlug: univers|first ? univers|first.slug : 'default'}) }}" class="btn btn-sm btn-outline-primary">Voir toutes les scènes RP</a>
+                </div>
+            </div>
+
+            <!-- Derniers messages -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Derniers messages</h3>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for post in recentPosts %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        {% if post.thread and post.thread.forum and post.thread.forum.universe %}
+                                            {% set universeSlug = post.thread.forum.universe.slug %}
+                                        {% elseif post.thread and post.thread.forum and post.thread.forum.elseworld and post.thread.forum.elseworld.parentUniverse %}
+                                            {% set universeSlug = post.thread.forum.elseworld.parentUniverse.slug %}
+                                        {% else %}
+                                            {% set universeSlug = 'default' %}
+                                        {% endif %}
+                                        
+                                        {% if post.author %}
+                                            <strong>{{ post.author.pseudo }}</strong>
+                                        {% else %}
+                                            <strong>Anonyme</strong>
+                                        {% endif %}
+                                        
+                                        <div class="small">
+                                            dans 
+                                            <a href="{{ path('app_thread_show', {universeSlug: universeSlug, id: post.thread.id}) }}" class="text-decoration-none">
+                                                {{ post.thread.title|u.truncate(20, '...') }}
+                                            </a>
+                                        </div>
+                                        <div class="small text-muted">
+                                            {{ post.createdAt|date('d/m/Y H:i') }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if post.character %}
+                                        <span class="badge bg-success">{{ post.character.name|u.truncate(15, '...') }}</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">Aucun message récent</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .universe-card-img {
+        height: 160px;
+        object-fit: cover;
+    }
+    .universe-card-placeholder {
+        height: 160px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %} 
