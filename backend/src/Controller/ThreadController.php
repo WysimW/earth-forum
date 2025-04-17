@@ -126,13 +126,25 @@ class ThreadController extends AbstractController
             $post = new Post();
             $post->setThread($thread);
             $post->setAuthor($this->getUser());
+
+           
             
             // Utiliser le contenu du premier post spécifié séparément de la description du thread
             $post->setContent($isRpForum ? $thread->getFirstPostContent() : $thread->getDescription());
 
+            if ($isRpForum) {
+                $post->setType('roleplay');
+            }
+            
             if ($isRpForum && $thread->getCharacterCreator()) {
                 $post->setCharacter($thread->getCharacterCreator());
                 $thread->addParticipant($thread->getCharacterCreator());
+            }
+
+            if ($isRpForum && $thread->getNpcs()) {
+                foreach ($thread->getNpcs() as $npc) {
+                    $post->addNpc($npc);
+                }
             }
 
             // Generate slug from the title

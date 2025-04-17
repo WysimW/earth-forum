@@ -89,12 +89,28 @@ class UnreadMessagesController extends AbstractController
     public function markAllAsRead(): Response
     {
         $user = $this->getUser();
-        $unreadPosts = $this->readPostRepository->findUnreadPostsForUser($user);
         
-        foreach ($unreadPosts as $post) {
+        // Récupérer tous les messages non lus des 3 catégories
+        $standardUnreadPosts = $this->readPostRepository->findUnreadPostsForUser($user);
+        $participatingUnreadPosts = $this->readPostRepository->findUnreadPostsInParticipatingThreads($user);
+        $adminUnreadPosts = $this->readPostRepository->findUnreadAdminPostsForUser($user);
+        
+        // Marquer tous les messages standards comme lus
+        foreach ($standardUnreadPosts as $post) {
             $this->readPostRepository->markAsRead($user, $post);
         }
         
+        // Marquer tous les messages des discussions participatives comme lus
+        foreach ($participatingUnreadPosts as $post) {
+            $this->readPostRepository->markAsRead($user, $post);
+        }
+        
+        // Marquer tous les messages administratifs comme lus
+        foreach ($adminUnreadPosts as $post) {
+            $this->readPostRepository->markAsRead($user, $post);
+        }
+        
+        $this->addFlash('success', 'Tous les messages ont été marqués comme lus');
         return $this->redirectToRoute('app_unread_messages_index');
     }
     
