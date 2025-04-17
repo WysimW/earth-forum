@@ -47,6 +47,19 @@
                     </div>
                 </div>
 
+                {% if form.roles is defined %}
+                <div class="mb-3">
+                    <label class="form-label">Rôles système</label>
+                    <div class="card">
+                        <div class="card-body">
+                            {{ form_widget(form.roles) }}
+                            {{ form_errors(form.roles) }}
+                            <div class="form-text">Ces rôles déterminent les permissions de l'utilisateur sur le forum.</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer</button>
             {{ form_end(form) }}
         </div>

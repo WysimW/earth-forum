@@ -51,6 +51,23 @@
                                     {% else %}
                                         <span class="badge bg-secondary">Aucun</span>
                                     {% endfor %}
+                                    
+                                    {% if user.roles|length > 0 %}
+                                        <hr class="my-1">
+                                        {% for role in user.roles %}
+                                            {% if role != 'ROLE_USER' %}
+                                                {% set badgeClass = 'bg-secondary' %}
+                                                {% if role == 'ROLE_ADMIN' %}
+                                                    {% set badgeClass = 'bg-danger' %}
+                                                {% elseif role == 'ROLE_MODERATOR' %}
+                                                    {% set badgeClass = 'bg-warning text-dark' %}
+                                                {% elseif role == 'ROLE_ANIMATOR' %}
+                                                    {% set badgeClass = 'bg-info text-dark' %}
+                                                {% endif %}
+                                                <span class="badge {{ badgeClass }}">{{ role|replace({'ROLE_': ''}) }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
                                 </td>
                                 <td>{{ user.createdAt ? user.createdAt|date('d/m/Y') : '' }}</td>
                                 <td>
