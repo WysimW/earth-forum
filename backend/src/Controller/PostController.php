@@ -8,6 +8,7 @@ use App\Entity\Npc;
 use App\Form\PostRoleplayType;
 use App\Form\PostType;
 use App\Repository\CharacterRepository;
+use App\Repository\ReadPostRepository;
 use App\Service\BreadcrumbService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,13 +21,16 @@ class PostController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private BreadcrumbService $breadcrumbService;
+    private ReadPostRepository $readPostRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        BreadcrumbService $breadcrumbService
+        BreadcrumbService $breadcrumbService,
+        ReadPostRepository $readPostRepository
     ) {
         $this->entityManager = $entityManager;
         $this->breadcrumbService = $breadcrumbService;
+        $this->readPostRepository = $readPostRepository;
     }
 
     #[Route('/univers/{universeSlug}/thread/{threadId}/post/new', name: 'app_post_new')]
@@ -128,6 +132,11 @@ class PostController extends AbstractController
             
             $this->entityManager->persist($post);
             $this->entityManager->flush();
+            
+            // Marquer le post comme lu pour l'auteur
+            if (!$isDraft) {
+                $this->readPostRepository->markAsRead($this->getUser(), $post);
+            }
             
             if ($isDraft) {
                 $this->addFlash('success', 'Votre brouillon a été enregistré avec succès.');
@@ -235,6 +244,11 @@ class PostController extends AbstractController
         
         $this->entityManager->persist($post);
         $this->entityManager->flush();
+        
+        // Marquer le post comme lu pour l'auteur
+        if (!$isDraft) {
+            $this->readPostRepository->markAsRead($this->getUser(), $post);
+        }
         
         // Si c'est une requête AJAX, renvoyer une réponse JSON
         if ($request->isXmlHttpRequest()) {

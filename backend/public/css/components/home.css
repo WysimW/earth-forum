@@ -1,0 +1,212 @@
+/* Styles pour la page d'accueil */
+
+/* Bannière d'accueil */
+.welcome-banner {
+    background-color: var(--primary-dark-trans);
+    border-left: 4px solid var(--accent-light);
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: var(--transition-normal);
+}
+
+.welcome-banner .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem 1.5rem 1rem;
+}
+
+.welcome-banner .card-header h2 {
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+.welcome-banner .card-body {
+    padding: 1.5rem;
+}
+
+.welcome-banner .lead {
+    color: var(--light-gray);
+    margin-bottom: 0;
+    font-weight: 300;
+}
+
+/* Section Univers */
+.universes-section .card-header {
+    background-color: var(--primary-dark);
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+
+.universes-section .card-body {
+    padding: 1.5rem;
+}
+
+/* Cartes d'univers */
+.universe-card {
+    border: none;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+    background-color: #fff;
+}
+
+.universe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.universe-card-banner {
+    height: 120px;
+    background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    font-weight: bold;
+    font-size: 1.4rem;
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.universe-card-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+}
+
+.universe-card .card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 120px);
+}
+
+.universe-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--primary-dark);
+}
+
+.universe-card .card-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.25rem;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Styles pour les boutons dans les cartes d'univers - Nouvelle approche */
+.universe-card .btn-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.universe-card .btn {
+    text-align: center;
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
+}
+
+.universe-card .btn-primary {
+    background-color: var(--accent-light);
+    border: none;
+    width: 100%;
+}
+
+.universe-card .btn-primary:hover {
+    background-color: var(--accent-green);
+    box-shadow: 0 0 10px var(--glow-blue);
+}
+
+.universe-card .btn-outline-secondary {
+    background-color: transparent;
+    border: 1px solid var(--light-gray);
+    color: var(--primary-medium);
+    width: 100%;
+}
+
+.universe-card .btn-outline-secondary:hover {
+    background-color: rgba(20, 93, 160, 0.1);
+    border-color: var(--primary-medium);
+    color: var(--primary-medium);
+}
+
+/* Sidebar */
+.stats-card,
+.recent-threads-card,
+.recent-posts-card {
+    border: none;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.stats-card .card-header,
+.recent-threads-card .card-header,
+.recent-posts-card .card-header {
+    background-color: var(--primary-dark);
+    border-bottom: none;
+    padding: 0.8rem 1rem;
+}
+
+.stats-card .card-body {
+    padding: 1rem 1.25rem;
+}
+
+.recent-threads-card .list-group-item,
+.recent-posts-card .list-group-item {
+    padding: 0.75rem 1.25rem;
+    border-left: none;
+    border-right: none;
+    border-color: rgba(0, 0, 0, 0.05);
+    transition: var(--transition-fast);
+}
+
+.recent-threads-card .list-group-item:hover,
+.recent-posts-card .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.recent-threads-card .badge.bg-primary {
+    background-color: var(--roleplay-primary) !important;
+}
+
+.recent-threads-card .card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Badges */
+.badge.bg-success {
+    background-color: var(--hrp-primary) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .universe-card-banner {
+        height: 120px;
+    }
+}

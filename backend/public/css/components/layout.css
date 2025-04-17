@@ -173,7 +173,7 @@ header {
     align-items: center;
     color: var(--light-gray);
     text-decoration: none;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0;
     border-radius: var(--border-radius-md);
     transition: all var(--transition-normal);
 }
@@ -935,7 +935,7 @@ footer a:hover {
 /* Styles pour sous-menus dans la sidebar */
 .sidebar-submenu-item {
     list-style: none;
-    padding-left: 1.5rem;
+    padding-left: -0.50rem;
     margin: 0.5rem 0;
 }
 
@@ -944,7 +944,7 @@ footer a:hover {
     text-decoration: none;
     font-size: 0.9rem;
     display: block;
-    padding: 0.5rem 0.75rem;
+    padding: 0.25rem 0;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
 }

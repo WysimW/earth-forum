@@ -35,6 +35,7 @@ class FrontOfficeController extends AbstractController
 
     #[Route('/', name: 'app_roleplay')]
     #[Route('/', name: 'app_home')]
+    #[Route('/', name: 'app_front_office')]
     public function index(UniversRepository $universRepository, ThreadRepository $threadRepository, PostRepository $postRepository): Response
     {
         // Récupérer tous les univers

@@ -44,9 +44,9 @@
             <div class="row small">
                 <div class="col-md-7">
                     <span class="me-3">
-                        <i class="fas fa-user me-1"></i> Créée par: 
+                        <i class="fas fa-user me-1"></i> Créée par : 
                         {% if thread.type == 'roleplay' and thread.characterCreator %}
-                            <span class="character-name">{{ thread.characterCreator.name }}</span> ({{ thread.author.pseudo }})
+                            <span class="thread-show--character-name">{{ thread.characterCreator.name }}</span> ({{ thread.author.pseudo }})
                         {% else %}
                             {{ thread.author.pseudo }}
                         {% endif %}

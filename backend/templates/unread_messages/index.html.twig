@@ -1,0 +1,408 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveaux Messages{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .unread-section {
+        margin-bottom: 2rem;
+    }
+    
+    .unread-section-header {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: var(--border-radius-md);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        backdrop-filter: blur(5px);
+        border-left: 4px solid var(--accent-light);
+    }
+    
+    .unread-standard .unread-section-header {
+        background-color: var(--primary-dark-trans);
+    }
+    
+    .unread-participating .unread-section-header {
+        background-color: rgba(4, 118, 242, 0.8);
+    }
+    
+    .unread-admin .unread-section-header {
+        background-color: rgba(187, 7, 14, 0.8);
+    }
+    
+    .unread-message {
+        padding: 1.2rem;
+        margin-bottom: 0.75rem;
+        border-radius: var(--border-radius-md);
+        background-color: var(--primary-dark-trans);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-fast);
+        border-left: 3px solid transparent;
+        color: var(--text-white);
+    }
+    
+    .unread-standard .unread-message {
+        border-left-color: var(--primary-light);
+    }
+    
+    .unread-participating .unread-message {
+        border-left-color: var(--roleplay-primary);
+    }
+    
+    .unread-admin .unread-message {
+        border-left-color: var(--important-primary);
+    }
+    
+    .unread-message:hover {
+        background-color: var(--primary-dark);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+    
+    .unread-message-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(220, 225, 227, 0.2);
+        padding-bottom: 0.5rem;
+    }
+    
+    .unread-message-user {
+        font-weight: 600;
+        color: var(--text-white);
+    }
+    
+    .unread-message-date {
+        color: var(--light-gray);
+        font-size: 0.85rem;
+    }
+    
+    .unread-message-thread {
+        font-size: 0.9rem;
+        color: var(--light-gray);
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .unread-message-thread a {
+        color: var(--accent-light);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+    
+    .unread-message-thread a:hover {
+        color: var(--roleplay-light);
+        text-decoration: underline;
+    }
+    
+    .unread-message-content {
+        color: var(--light-gray);
+        margin-bottom: 1rem;
+        max-height: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        background-color: rgba(12, 45, 72, 0.5);
+        padding: 0.75rem;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .unread-message-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+    
+    .empty-unread {
+        text-align: center;
+        padding: 2rem;
+        background-color: var(--primary-dark-trans);
+        border-radius: var(--border-radius-md);
+        color: var(--text-white);
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--accent-light);
+        color: var(--accent-light);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--accent-light);
+        color: white;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-medium);
+        border-color: var(--primary-medium);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .card {
+        background-color: var(--primary-dark-trans);
+        color: var(--text-white);
+    }
+    
+    .text-muted {
+        color: var(--light-gray) !important;
+    }
+    
+    /* Switch pour les préférences */
+    .form-switch .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+    
+    .form-switch .form-check-input:checked {
+        background-color: var(--accent-green);
+        border-color: var(--accent-green);
+    }
+    
+    .preferences-card {
+        background-color: rgba(12, 45, 72, 0.5);
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-radius: var(--border-radius-md);
+    }
+    
+    @media (max-width: 768px) {
+        .unread-section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .unread-section-header h2 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .unread-message-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .unread-message-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Nouveaux Messages</h1>
+        
+        {% if standardUnreadPosts|length > 0 or participatingUnreadPosts|length > 0 or adminUnreadPosts|length > 0 %}
+            <a href="{{ path('app_unread_messages_mark_all_read') }}" class="btn btn-primary">
+                <i class="fas fa-check-double me-2"></i>Tout marquer comme lu
+            </a>
+        {% endif %}
+    </div>
+    
+    {# Préférences d'affichage #}
+    <div class="preferences-card">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="filterNonParticipatingMessages" {{ app.user.filterNonParticipatingMessages ? 'checked' : '' }}>
+            <label class="form-check-label ms-2 text-light" for="filterNonParticipatingMessages">
+                <i class="fas fa-filter me-1"></i> Ne pas afficher les messages des discussions où je ne participe pas
+            </label>
+        </div>
+        <small class="text-light mt-1 d-block">
+            Cette option vous permet de ne voir que les messages des discussions importantes et de celles où vous participez déjà.
+        </small>
+    </div>
+    
+    {% if standardUnreadPosts|length == 0 and participatingUnreadPosts|length == 0 and adminUnreadPosts|length == 0 %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-3">Vous n'avez pas de nouveaux messages</h3>
+                <p class="text-muted mb-4">Tous vos messages ont été lus</p>
+                <a href="{{ path('app_front_office') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    {% else %}
+        {# Messages de l'administration #}
+        {% if adminUnreadPosts|length > 0 %}
+            <div class="unread-section unread-admin">
+                <div class="unread-section-header">
+                    <h2><i class="fas fa-bullhorn me-2"></i>Messages importants ({{ adminUnreadPosts|length }})</h2>
+                </div>
+                
+                <div class="unread-messages-list">
+                    {% for post in adminUnreadPosts %}
+                        <div class="unread-message">
+                            <div class="unread-message-header">
+                                <div class="unread-message-user">
+                                    {% if post.character %}
+                                        <i class="fas fa-user-circle me-1"></i>{{ post.character.name }}
+                                    {% else %}
+                                        <i class="fas {% if 'ROLE_ADMIN' in post.author.roles %}fa-shield-alt{% else %}fa-user{% endif %} me-1"></i>{{ post.author.pseudo }}{% if 'ROLE_ADMIN' in post.author.roles %} (Admin){% endif %}
+                                    {% endif %}
+                                </div>
+                                <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                            <div class="unread-message-thread">
+                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                            </div>
+                            <div class="unread-message-content">
+                                {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                            </div>
+                            <div class="unread-message-actions">
+                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-check me-1"></i>Marquer comme lu
+                                </a>
+                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir le message
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {# Messages dans les threads où vous participez #}
+        {% if participatingUnreadPosts|length > 0 %}
+            <div class="unread-section unread-participating">
+                <div class="unread-section-header">
+                    <h2><i class="fas fa-user-friends me-2"></i>Messages dans vos discussions actives ({{ participatingUnreadPosts|length }})</h2>
+                    <small class="text-light">Messages des discussions où vous avez participé ou où vos personnages sont inscrits</small>
+                </div>
+                
+                <div class="unread-messages-list">
+                    {% for post in participatingUnreadPosts %}
+                        <div class="unread-message">
+                            <div class="unread-message-header">
+                                <div class="unread-message-user">
+                                    {% if post.character %}
+                                        <i class="fas fa-user-circle me-1"></i>{{ post.character.name }}
+                                    {% else %}
+                                        <i class="fas fa-user me-1"></i>{{ post.author.pseudo }}
+                                    {% endif %}
+                                </div>
+                                <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                            <div class="unread-message-thread">
+                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                            </div>
+                            <div class="unread-message-content">
+                                {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                            </div>
+                            <div class="unread-message-actions">
+                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-check me-1"></i>Marquer comme lu
+                                </a>
+                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir le message
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {# Messages standard #}
+        {% if standardUnreadPosts|length > 0 %}
+            <div class="unread-section unread-standard" id="standardMessagesSection">
+                <div class="unread-section-header">
+                    <h2><i class="fas fa-envelope me-2"></i>Autres messages ({{ standardUnreadPosts|length }})</h2>
+                </div>
+                
+                <div class="unread-messages-list">
+                    {% for post in standardUnreadPosts %}
+                        <div class="unread-message">
+                            <div class="unread-message-header">
+                                <div class="unread-message-user">
+                                    {% if post.character %}
+                                        <i class="fas fa-user-circle me-1"></i>{{ post.character.name }}
+                                    {% else %}
+                                        <i class="fas fa-user me-1"></i>{{ post.author.pseudo }}
+                                    {% endif %}
+                                </div>
+                                <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                            <div class="unread-message-thread">
+                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                            </div>
+                            <div class="unread-message-content">
+                                {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                            </div>
+                            <div class="unread-message-actions">
+                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-check me-1"></i>Marquer comme lu
+                                </a>
+                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir le message
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion du switch de préférence
+        const filterSwitch = document.getElementById('filterNonParticipatingMessages');
+        const standardMessagesSection = document.getElementById('standardMessagesSection');
+        
+        if (filterSwitch) {
+            // Appliquer la préférence de filtrage au chargement de la page
+            if (filterSwitch.checked && standardMessagesSection) {
+                standardMessagesSection.style.display = 'none';
+            }
+            
+            // Changement de préférence
+            filterSwitch.addEventListener('change', function() {
+                const isChecked = this.checked;
+                
+                // Masquer/Afficher les messages standards selon la préférence
+                if (standardMessagesSection) {
+                    standardMessagesSection.style.display = isChecked ? 'none' : 'block';
+                }
+                
+                // Enregistrer la préférence en base de données
+                fetch('{{ path('app_unread_messages_update_preferences') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'filterNonParticipatingMessages=' + (isChecked ? '1' : '0')
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Préférence enregistrée');
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+            });
+        }
+    });
+</script>
+{% endblock %} 

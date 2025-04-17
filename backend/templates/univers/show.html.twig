@@ -11,20 +11,20 @@
         </ol>
     </nav>
 
-    <header class="mb-5">
-        <h1 class="display-4">{{ univers.name }}</h1>
-        <p class="lead">
+    <div class="universe-header mb-5 p-4 rounded bg-primary-dark shadow-lg border-start border-3 border-accent-light">
+        <h1 class="display-4 mb-2">{{ univers.name }}</h1>
+        <p class="lead text-light-gray mb-4">
             Créé le {{ univers.createdAt ? univers.createdAt|date('d/m/Y') : 'inconnu' }}
         </p>
         <div class="d-flex flex-wrap gap-2 mt-3">
-            <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-primary">
+            <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-accent-light">
                 <i class="fas fa-comments me-2"></i> Voir tous les forums
             </a>
-            <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-outline-secondary">
+            <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-outline-light">
                 <i class="fas fa-globe-americas me-2"></i> Voir les Elseworlds
             </a>
         </div>
-    </header>
+    </div>
 
     <div class="row mb-4">
         <div class="col-md-8">

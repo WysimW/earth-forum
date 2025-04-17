@@ -2,13 +2,18 @@
 
 {% block title %}Earth Forum - Accueil{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/home.css') }}">
+{% endblock %}
+
 {% block body %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">Bienvenue sur Earth Forum</h2>
+            <div class="card welcome-banner mb-4">
+                <div class="card-header text-white">
+                    <h2>Bienvenue sur Earth Forum</h2>
                 </div>
                 <div class="card-body">
                     <p class="lead">
@@ -18,24 +23,24 @@
             </div>
 
             <!-- Liste des univers -->
-            <div class="card mb-4">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <div class="card universes-section mb-4">
+                <div class="card-header text-white d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">Nos Univers</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         {% for univers in univers %}
                             <div class="col-md-6 mb-3">
-                                <div class="card h-100">
-                                    <div class="universe-card-placeholder">
+                                <div class="card universe-card h-100">
+                                    <div class="universe-card-banner">
                                         <span>{{ univers.name }}</span>
                                     </div>
                                     <div class="card-body">
                                         <h5 class="card-title">{{ univers.name }}</h5>
                                         <p class="card-text small">{{ univers.description|u.truncate(100, '...') }}</p>
-                                        <div class="d-flex justify-content-between">
-                                            <a href="{{ path('app_univers_show', {slug: univers.slug}) }}" class="btn btn-sm btn-primary">Découvrir</a>
-                                            <a href="{{ path('app_univers_forums', {slug: univers.slug}) }}" class="btn btn-sm btn-outline-secondary">Forums</a>
+                                        <div class="btn-actions">
+                                            <a href="{{ path('app_univers_show', {slug: univers.slug}) }}" class="btn btn-primary">Découvrir</a>
+                                            <a href="{{ path('app_univers_forums', {slug: univers.slug}) }}" class="btn btn-outline-secondary">Forums</a>
                                         </div>
                                     </div>
                                 </div>
@@ -54,8 +59,8 @@
 
         <div class="col-md-4">
             <!-- Statistiques globales -->
-            <div class="card mb-4">
-                <div class="card-header bg-dark text-white">
+            <div class="card stats-card mb-4">
+                <div class="card-header text-white">
                     <h3 class="mb-0">Statistiques</h3>
                 </div>
                 <div class="card-body">
@@ -71,8 +76,8 @@
             </div>
 
             <!-- Discussions récentes -->
-            <div class="card mb-4">
-                <div class="card-header bg-dark text-white">
+            <div class="card recent-threads-card mb-4">
+                <div class="card-header text-white">
                     <h3 class="mb-0">Discussions récentes</h3>
                 </div>
                 <div class="card-body p-0">
@@ -113,8 +118,8 @@
             </div>
 
             <!-- Derniers messages -->
-            <div class="card mb-4">
-                <div class="card-header bg-dark text-white">
+            <div class="card recent-posts-card mb-4">
+                <div class="card-header text-white">
                     <h3 class="mb-0">Derniers messages</h3>
                 </div>
                 <div class="card-body p-0">
@@ -162,21 +167,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    .universe-card-img {
-        height: 160px;
-        object-fit: cover;
-    }
-    .universe-card-placeholder {
-        height: 160px;
-        background-color: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #333;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-</style>
 {% endblock %} 

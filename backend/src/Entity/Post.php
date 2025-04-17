@@ -52,12 +52,19 @@ class Post implements TimestampableInterface
     #[ORM\ManyToMany(targetEntity: Npc::class)]
     #[ORM\JoinTable(name: 'post_npcs')]
     private Collection $npcs;
+    
+    /**
+     * @var Collection<int, ReadPost>
+     */
+    #[ORM\OneToMany(targetEntity: ReadPost::class, mappedBy: 'post', orphanRemoval: true)]
+    private Collection $readBy;
 
     public function __construct()
     {  
         $this->createdAt = new \DateTimeImmutable(); // Set the default value for createdAt
         $this->updatedAt = new \DateTimeImmutable();  // Set the default value for updatedAt as well
         $this->npcs = new ArrayCollection();
+        $this->readBy = new ArrayCollection();
     }
 
     public function isRoleplay(): bool
@@ -213,6 +220,46 @@ class Post implements TimestampableInterface
         $this->npcs->removeElement($npc);
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, ReadPost>
+     */
+    public function getReadBy(): Collection
+    {
+        return $this->readBy;
+    }
+
+    public function addReadBy(ReadPost $readPost): static
+    {
+        if (!$this->readBy->contains($readPost)) {
+            $this->readBy->add($readPost);
+            $readPost->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReadBy(ReadPost $readPost): static
+    {
+        if ($this->readBy->removeElement($readPost)) {
+            // set the owning side to null (unless already changed)
+            if ($readPost->getPost() === $this) {
+                $readPost->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isReadByUser(User $user): bool
+    {
+        foreach ($this->readBy as $readPost) {
+            if ($readPost->getUser() === $user) {
+                return true;
+            }
+        }
+        return false;
     }
 
     #[ORM\PrePersist]

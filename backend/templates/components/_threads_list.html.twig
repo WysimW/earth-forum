@@ -2,55 +2,50 @@
     {% if threads|length > 0 %}
         <div class="threads-list">
             <div class="threads-header">
-                <div style="width: 50px;"></div>
-                <div style="flex: 3;">Discussion</div>
-                <div style="flex: 1;">Auteur</div>
-                <div class="text-center" style="width: 120px;">Réponses</div>
-                <div class="text-center" style="width: 180px;">Dernière activité</div>
+                <div class="header-type">Type</div>
+                <div class="header-content">Discussion</div>
+                <div class="header-activity">Dernière activité</div>
             </div>
             
             {% for thread in threads %}
-                <div class="thread-row {% if thread.sticky %}thread-sticky{% endif %}">
-                    <div class="thread-icon">
-                        {% if thread.sticky %}
-                            <i class="fas fa-thumbtack text-warning" data-bs-toggle="tooltip" title="Épinglé"></i>
-                        {% elseif thread.type == 'roleplay' %}
-                            <i class="fa-solid fa-dice-d20-masks" data-bs-toggle="tooltip" title="Roleplay"></i>
-                        {% else %}
-                            <i class="fas fa-comment-alt" data-bs-toggle="tooltip" title="Discussion"></i>
-                        {% endif %}
-                        
-                        {% if thread.status == 'closed' %}
-                            <i class="fas fa-lock text-warning ms-2" data-bs-toggle="tooltip" title="Fermé"></i>
-                        {% endif %}
+                <div class="thread-card hover-effect hover-shine {% if thread.type == 'roleplay' %}rp-theme hover-glow-rp{% else %}hrp-theme hover-glow-hrp{% endif %} {% if thread.sticky %}thread-sticky{% endif %} {% if thread.status == 'closed' %}thread-closed{% endif %}" data-thread-id="{{ thread.id }}">
+                    <div class="thread-icon-wrapper {% if thread.type == 'roleplay' %}rp-color{% else %}hrp-color{% endif %}">
+                        <div class="thread-icon">
+                            {% if thread.sticky and thread.status == 'closed' %}
+                                <i class="fas fa-lock" data-bs-toggle="tooltip" title="Discussion verrouillée et épinglée"></i>
+                            {% elseif thread.sticky %}
+                                <i class="fas fa-thumbtack" data-bs-toggle="tooltip" title="Discussion épinglée"></i>
+                            {% elseif thread.status == 'closed' %}
+                                <i class="fas fa-lock" data-bs-toggle="tooltip" title="Discussion verrouillée"></i>
+                            {% elseif thread.type == 'roleplay' %}
+                                <i class="fa-solid fa-dice-d20" data-bs-toggle="tooltip" title="Roleplay"></i>
+                            {% else %}
+                                <i class="fas fa-comment-alt" data-bs-toggle="tooltip" title="Discussion"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="thread-info">
+                    
+                    <div class="thread-content">
                         <h3 class="thread-title">
                             <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}">{{ thread.title }}</a>
-                            
-                            {% if thread.sticky %}
-                                <span class="badge bg-warning ms-1">Épinglé</span>
-                            {% endif %}
-                            
                             {% if thread.status == 'closed' %}
-                                <span class="badge bg-secondary ms-1">Fermé</span>
-                            {% endif %}
-                            
-                            {% if thread.type == 'roleplay' %}
-                                <span class="badge bg-roleplay ms-1" title="Scène Roleplay">RP</span>
-                            {% else %}
-                                <span class="badge bg-hrp ms-1" title="Discussion Hors-Roleplay">HRP</span>
+                                <span class="thread-status-badge"><i class="fas fa-lock" title="Discussion verrouillée"></i></span>
                             {% endif %}
                         </h3>
                         
-                        <div class="thread-meta">
+                        <div class="thread-list--thread-meta">
                             {% if thread.location %}
                                 <span class="thread-location">
                                     <i class="fas fa-map-marker-alt"></i> {{ thread.location.name }}
                                 </span>
                             {% endif %}
+                            
                             <span class="thread-date">
                                 <i class="fas fa-calendar-alt"></i> {{ thread.createdAt|date('d/m/Y') }}
+                            </span>
+                            
+                            <span class="thread-replies">
+                                <i class="fas fa-comments"></i> {{ (thread.posts|length - 1)|default(0) }} réponse{% if (thread.posts|length - 1)|default(0) > 1 %}s{% endif %}
                             </span>
                             
                             {% if thread.type == 'roleplay' and thread.characterParticipants is defined %}
@@ -60,46 +55,83 @@
                                 </span>
                             {% endif %}
                         </div>
+                        
+                        <div class="thread-list--thread-actions">
+                           
+                            
+                            {% if is_granted('ROLE_MODERATOR') or (is_granted('IS_AUTHENTICATED_FULLY') and app.user.id == thread.author.id) %}
+                                <div class="thread-actions">
+                                    <a href="{{ path('app_thread_edit', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if is_granted('ROLE_MODERATOR') %}
+                                        {% if thread.sticky %}
+                                            <a href="{{ path('app_thread_unsticky', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Désépingler">
+                                                <i class="fas fa-thumbtack fa-rotate-90"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ path('app_thread_sticky', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Épingler">
+                                                <i class="fas fa-thumbtack"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if thread.status == 'closed' %}
+                                            <a href="{{ path('app_thread_open', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Rouvrir">
+                                                <i class="fas fa-lock-open"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ path('app_thread_close', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Verrouiller">
+                                                <i class="fas fa-lock"></i>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ path('app_thread_delete', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette discussion ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="thread-author">
-                        {% if thread.type == 'roleplay' and thread.characterCreator %}
-                            <div class="thread-author-avatar">
-                                {% if thread.characterCreator.avatar %}
-                                    <img src="{{ thread.characterCreator.avatar }}" alt="{{ thread.characterCreator.name }}">
-                                {% else %}
-                                    <div class="default-avatar">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <span class="character-name">{{ thread.characterCreator.name }}</span>
-                        {% else %}
-                            <div class="thread-author-avatar">
-                                <div class="default-avatar">
-                                    <i class="fas fa-user"></i>
+                    
+                    <div class="thread-last-activity">
+                        <div class="thread-author-label">
+                            <i class="fas fa-user-edit"></i>  Créé par :               {% if thread.type == 'roleplay' and thread.characterCreator %}
+                                <span class="thread-list--character-name">{{ thread.characterCreator.name }}</span>
+                            {% else %}
+                                <span>{{ thread.author.pseudo }}</span>
+                            {% endif %}
+                        </div>
+                        
+             
+                        
+                        <div class="activity-divider"></div>
+                        
+                        <div class="last-activity-label">
+                            <i class="fas fa-clock"></i> Dernière activité:
+                        </div>
+                        
+                        {% if thread.lastPost is defined and thread.lastPost %}
+                            <div class="last-post-details">
+                                <div>
+                                    <small class="d-block">{{ thread.lastPost.createdAt|date('d/m/Y H:i') }}</small>
+                                    <small class="d-block">
+                                        {% if thread.lastPost.character %}
+                                            <span class="character-name">{{ thread.lastPost.character.name }}</span>
+                                        {% else %}
+                                            {{ thread.lastPost.author.pseudo }}
+                                        {% endif %}
+                                    </small>
                                 </div>
                             </div>
-                            {{ thread.author.pseudo }}
-                        {% endif %}
-                    </div>
-                    <div class="thread-stats text-center">
-                        {{ (thread.posts|length - 1)|default(0) }} <i class="fas fa-comments ms-1"></i>
-                    </div>
-                    <div class="thread-last-post">
-                        {% if thread.lastPost is defined and thread.lastPost %}
-                            <small class="d-block">
-                                {{ thread.lastPost.createdAt|date('d/m/Y H:i') }}
-                            </small>
-                            <small class="d-block">
-                                {% if thread.lastPost.character %}
-                                    <span class="character-name">{{ thread.lastPost.character.name }}</span>
-                                {% else %}
-                                    {{ thread.lastPost.author.pseudo }}
-                                {% endif %}
-                            </small>
                         {% else %}
-                            <small class="text-muted">Pas de réponse</small>
+                            <div class="no-replies">
+                                <small>Pas de réponse</small>
+                            </div>
                         {% endif %}
+                        
+                        <div class="unread-indicator thread-unread-indicator" style="display: none;" title="Contient des messages non lus">
+                            <i class="fas fa-circle-exclamation pulse-animation"></i>
+                            <span class="unread-count"></span>
+                        </div>
                     </div>
                 </div>
             {% endfor %}

@@ -14,6 +14,7 @@ use App\Repository\CharacterRepository;
 use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Repository\UniversRepository;
+use App\Repository\ReadPostRepository;
 use App\Service\BreadcrumbService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -166,7 +167,14 @@ class ThreadController extends AbstractController
     }
 
     #[Route('/univers/{universeSlug}/thread/{id}', name: 'app_thread_show')]
-    public function show(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
+    public function show(
+        string $universeSlug, 
+        Thread $thread, 
+        Request $request, 
+        UniversRepository $universRepository, 
+        CharacterRepository $characterRepository,
+        ReadPostRepository $readPostRepository
+    ): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
         
@@ -187,6 +195,11 @@ class ThreadController extends AbstractController
         $elseworld = $forum->getElseworld();
         if ($elseworld && $elseworld->getParentUniverse()->getId() !== $univers->getId()) {
             throw $this->createNotFoundException('Cette discussion appartient à un elseworld qui n\'est pas lié à cet univers');
+        }
+        
+        // Marquer les messages du thread comme lus pour l'utilisateur connecté
+        if ($this->getUser()) {
+            $readPostRepository->markThreadAsRead($this->getUser(), $thread);
         }
         
         // Gestion spéciale pour les fiches de personnage
@@ -666,6 +679,169 @@ class ThreadController extends AbstractController
             'universeSlug' => $universeSlug,
             'id' => $thread->getId(),
             'quote' => $post->getId()
+        ]);
+    }
+
+    #[Route('/univers/{universeSlug}/thread/{id}/edit', name: 'app_thread_edit')]
+    #[IsGranted('ROLE_USER')]
+    public function edit(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Vérifier que l'utilisateur est l'auteur ou un modérateur
+        if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour éditer cette discussion');
+        }
+        
+        $isRpThread = $thread->getType() === 'roleplay';
+        
+        if ($isRpThread) {
+            $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+            $form = $this->createForm(ThreadRoleplayType::class, $thread, [
+                'characters' => $userCharacters,
+            ]);
+        } else {
+            $form = $this->createForm(ThreadType::class, $thread);
+        }
+        
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Generate slug from the title
+            $slug = $this->generateSlug($thread->getTitle());
+            $thread->setSlug($slug);
+            
+            $thread->setUpdatedAt(new \DateTimeImmutable());
+            $this->entityManager->flush();
+            
+            $this->addFlash('success', 'La discussion a été modifiée avec succès');
+            
+            return $this->redirectToRoute('app_thread_show', [
+                'universeSlug' => $universeSlug,
+                'id' => $thread->getId()
+            ]);
+        }
+        
+        return $this->render('thread/edit.html.twig', [
+            'univers' => $univers,
+            'form' => $form->createView(),
+            'thread' => $thread,
+            'isRpThread' => $isRpThread,
+            'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
+        ]);
+    }
+    
+    #[Route('/univers/{universeSlug}/thread/{id}/sticky', name: 'app_thread_sticky')]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function sticky(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Épingler le thread
+        $thread->setSticky(true);
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'La discussion a été épinglée avec succès');
+        
+        return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
+        ]);
+    }
+    
+    #[Route('/univers/{universeSlug}/thread/{id}/unsticky', name: 'app_thread_unsticky')]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function unsticky(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Désépingler le thread
+        $thread->setSticky(false);
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'La discussion a été désépinglée avec succès');
+        
+        return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
+        ]);
+    }
+    
+    #[Route('/univers/{universeSlug}/thread/{id}/close', name: 'app_thread_close')]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function close(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Fermer le thread
+        $thread->setStatus('closed');
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+        
+        // Ajouter un message système dans le thread
+        $systemPost = new Post();
+        $systemPost->setThread($thread);
+        $systemPost->setAuthor($this->getUser());
+        $systemPost->setContent('<div class="alert alert-warning">Cette discussion a été verrouillée par un modérateur.</div>');
+        
+        $this->entityManager->persist($systemPost);
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'La discussion a été verrouillée avec succès');
+        
+        return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
+        ]);
+    }
+    
+    #[Route('/univers/{universeSlug}/thread/{id}/open', name: 'app_thread_open')]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function open(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        // Rouvrir le thread
+        $thread->setStatus('open');
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+        
+        // Ajouter un message système dans le thread
+        $systemPost = new Post();
+        $systemPost->setThread($thread);
+        $systemPost->setAuthor($this->getUser());
+        $systemPost->setContent('<div class="alert alert-success">Cette discussion a été rouverte par un modérateur.</div>');
+        
+        $this->entityManager->persist($systemPost);
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'La discussion a été rouverte avec succès');
+        
+        return $this->redirectToRoute('app_thread_show', [
+            'universeSlug' => $universeSlug,
+            'id' => $thread->getId()
         ]);
     }
 

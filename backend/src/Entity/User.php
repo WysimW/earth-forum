@@ -79,6 +79,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'users')]
     private Collection $playerRoles;
 
+    /**
+     * @var Collection<int, ReadPost>
+     */
+    #[ORM\OneToMany(targetEntity: ReadPost::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $readPosts;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $filterNonParticipatingMessages = false;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -86,6 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->threads = new ArrayCollection();
         $this->posts = new ArrayCollection();
         $this->playerRoles = new ArrayCollection();
+        $this->readPosts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -355,8 +365,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getReadPosts(): Collection
+    {
+        return $this->readPosts;
+    }
+
+    public function addReadPost(ReadPost $readPost): static
+    {
+        if (!$this->readPosts->contains($readPost)) {
+            $this->readPosts->add($readPost);
+            $readPost->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReadPost(ReadPost $readPost): static
+    {
+        if ($this->readPosts->removeElement($readPost)) {
+            // set the owning side to null (unless already changed)
+            if ($readPost->getUser() === $this) {
+                $readPost->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function hasReadPost(Post $post): bool
+    {
+        foreach ($this->readPosts as $readPost) {
+            if ($readPost->getPost() === $post) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function getUsername(): ?string
     {
         return $this->pseudo;
+    }
+
+    public function getFilterNonParticipatingMessages(): bool
+    {
+        return $this->filterNonParticipatingMessages;
+    }
+
+    public function setFilterNonParticipatingMessages(bool $filterNonParticipatingMessages): static
+    {
+        $this->filterNonParticipatingMessages = $filterNonParticipatingMessages;
+
+        return $this;
     }
 }

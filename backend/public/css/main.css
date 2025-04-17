@@ -2,6 +2,23 @@ p:has(br:only-child) {
     display: none;
 }
 
+@font-face {
+    font-family: 'Trebuchet MS';
+    src: local('Trebuchet MS'), local('TrebuchetMS'),
+         url('https://cdn.jsdelivr.net/npm/@fontsource/trebuchet-ms@4.5.0/files/trebuchet-ms-latin-400-normal.woff2') format('woff2');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+/* Garantir que les polices de l'éditeur sont disponibles */
+.ql-font-arial { font-family: Arial, sans-serif !important; }
+.ql-font-times { font-family: 'Times New Roman', serif !important; }
+.ql-font-courier { font-family: 'Courier New', monospace !important; }
+.ql-font-georgia { font-family: Georgia, serif !important; }
+.ql-font-trebuchet { font-family: 'Trebuchet MS', sans-serif !important; }
+.ql-font-verdana { font-family: Verdana, sans-serif !important; }
+
 /* Styles pour les dialogues avec polices personnalisées */
 [data-font="'Trebuchet MS', sans-serif"] {
     font-family: 'Trebuchet MS', sans-serif !important;
@@ -68,4 +85,43 @@ p:has(br:only-child) {
 /* Uniquement utilisé comme fallback */
 em[style*="color: #FEC60B"] {
     font-family: 'Trebuchet MS', sans-serif !important;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    color: var(--text-white) ;
+}
+
+/* Styles pour l'en-tête de l'univers */
+.universe-header {
+    background-color: var(--primary-dark-trans);
+    color: var(--text-white);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-left: 4px solid var(--accent-light);
+}
+
+.universe-header h1 {
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.universe-header .lead {
+    color: var(--light-gray);
+    font-weight: 300;
+}
+
+.btn-accent-light {
+    background-color: var(--accent-light);
+    color: var(--text-white);
+    border: none;
+    transition: var(--transition-fast);
+}
+
+.btn-accent-light:hover {
+    background-color: var(--accent-green);
+    color: var(--text-white);
+    box-shadow: 0 0 15px var(--glow-blue);
 }

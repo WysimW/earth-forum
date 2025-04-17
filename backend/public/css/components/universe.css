@@ -1,0 +1,31 @@
+
+/* Styles pour l'en-tête de l'univers */
+.universe-header {
+    background-color: var(--primary-dark-trans);
+    color: var(--text-white);
+    position: relative;
+    overflow: hidden;
+}
+
+.universe-header h1 {
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+}
+
+.universe-header .lead {
+    color: var(--light-gray);
+    font-weight: 300;
+}
+
+.btn-accent-light {
+    background-color: var(--accent-light);
+    color: var(--text-white);
+    border: none;
+    transition: var(--transition-fast);
+}
+
+.btn-accent-light:hover {
+    background-color: var(--accent-green);
+    color: var(--text-white);
+    box-shadow: 0 0 15px var(--glow-blue);
+}

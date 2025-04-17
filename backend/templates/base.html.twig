@@ -35,29 +35,13 @@
             <link rel="stylesheet" href="{{ asset('css/components/animations.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/responsive.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/tinymce-theme.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/universe.css') }}">
             
             <!-- Fonts supplémentaires pour l'éditeur Quill -->
-            <style>
-                @font-face {
-                    font-family: 'Trebuchet MS';
-                    src: local('Trebuchet MS'), local('TrebuchetMS'),
-                         url('https://cdn.jsdelivr.net/npm/@fontsource/trebuchet-ms@4.5.0/files/trebuchet-ms-latin-400-normal.woff2') format('woff2');
-                    font-style: normal;
-                    font-weight: 400;
-                    font-display: swap;
-                }
-                
-                /* Garantir que les polices de l'éditeur sont disponibles */
-                .ql-font-arial { font-family: Arial, sans-serif !important; }
-                .ql-font-times { font-family: 'Times New Roman', serif !important; }
-                .ql-font-courier { font-family: 'Courier New', monospace !important; }
-                .ql-font-georgia { font-family: Georgia, serif !important; }
-                .ql-font-trebuchet { font-family: 'Trebuchet MS', sans-serif !important; }
-                .ql-font-verdana { font-family: Verdana, sans-serif !important; }
-            </style>
+
         {% endblock %}
     </head>
-    <body>
+    <body class="{% if app.user %}user-logged-in{% endif %}">
         <div class="main-wrapper">
             <header>
                 <nav class="navbar navbar-expand-lg navbar-dark">
@@ -96,6 +80,17 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link position-relative" href="{{ path('app_unread_messages_index') }}">
+                                            </i> Posts non lus
+                                            {% if total_unread_count() > 0 %}
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                    {{ total_unread_count() }}
+                                                    <span class="visually-hidden">nouveaux posts</span>
+                                                </span>
+                                            {% endif %}
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul>
@@ -190,6 +185,14 @@
                             <i class="fas fa-pen-fancy"></i> Mes scènes
                         </a>
                     </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_unread_messages_index') }}" class="sidebar-menu-link position-relative">
+                            <i class="fas fa-envelope"></i> Posts non lus
+                            {% if total_unread_count() > 0 %}
+                                <span class="badge bg-danger rounded-pill ms-2">{{ total_unread_count() }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
                 </ul>
                 {% endif %}
                 
@@ -274,6 +277,8 @@
             <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
             <!-- Notre éditeur personnalisé basé sur Quill -->
             <script src="/js/dc-editor.js"></script>
+            <!-- Gestion des messages non lus -->
+            <script src="/js/unread-messages.js"></script>
             <!-- Custom JavaScript -->
             <script>
                 // Fonction pour rediriger vers la page des threads RP avec l'univers par défaut
