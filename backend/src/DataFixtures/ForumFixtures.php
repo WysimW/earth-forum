@@ -29,7 +29,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Sous-forums de Metropolis
             [
@@ -40,7 +41,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => 'forum_metropolis'
+                'parent' => 'forum_metropolis',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'LexCorp',
@@ -50,7 +52,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => 'forum_metropolis'
+                'parent' => 'forum_metropolis',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Rues de Metropolis',
@@ -60,7 +63,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 3,
-                'parent' => 'forum_metropolis'
+                'parent' => 'forum_metropolis',
+                'universe' => 'universe_dc'
             ],
             // Gotham City
             [
@@ -71,7 +75,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Sous-forums de Gotham
             [
@@ -82,7 +87,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => 'forum_gotham_city'
+                'parent' => 'forum_gotham_city',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Arkham Asylum',
@@ -92,7 +98,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => 'forum_gotham_city'
+                'parent' => 'forum_gotham_city',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Wayne Enterprises',
@@ -102,7 +109,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 3,
-                'parent' => 'forum_gotham_city'
+                'parent' => 'forum_gotham_city',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Batcave',
@@ -112,7 +120,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 4,
-                'parent' => 'forum_gotham_city'
+                'parent' => 'forum_gotham_city',
+                'universe' => 'universe_dc'
             ],
             // Organisations de héros
             [
@@ -123,7 +132,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 3,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Sous-forums Justice League
             [
@@ -134,7 +144,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => 'forum_justice_league'
+                'parent' => 'forum_justice_league',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Hall of Justice',
@@ -144,7 +155,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => 'forum_justice_league'
+                'parent' => 'forum_justice_league',
+                'universe' => 'universe_dc'
             ],
             // Organisations de vilains
             [
@@ -155,7 +167,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 4,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Sous-forums Super-Vilains
             [
@@ -166,7 +179,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => 'forum_super-vilains'
+                'parent' => 'forum_super-vilains',
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Injustice League',
@@ -176,7 +190,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_terre',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => 'forum_super-vilains'
+                'parent' => 'forum_super-vilains',
+                'universe' => 'universe_dc'
             ],
             // Forums de la catégorie Univers
             [
@@ -187,7 +202,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_univers',
                 'isRoleplay' => true,
                 'position' => 1,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Atlantis',
@@ -197,7 +213,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_univers',
                 'isRoleplay' => true,
                 'position' => 2,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Forums HRP - Informations
             [
@@ -208,7 +225,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_informations',
                 'isRoleplay' => false,
                 'position' => 1,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Actualités DC Comics',
@@ -218,7 +236,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_informations',
                 'isRoleplay' => false,
                 'position' => 2,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Annonces',
@@ -228,7 +247,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_informations',
                 'isRoleplay' => false,
                 'position' => 3,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Forums HRP - Présentations
             [
@@ -239,7 +259,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_présentations',
                 'isRoleplay' => false,
                 'position' => 1,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Fiches personnages',
@@ -249,7 +270,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_présentations',
                 'isRoleplay' => false,
                 'position' => 2,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             // Forums HRP - Jeux
             [
@@ -260,7 +282,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_jeux',
                 'isRoleplay' => false,
                 'position' => 1,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Jeux forumiques',
@@ -270,7 +293,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_jeux',
                 'isRoleplay' => false,
                 'position' => 2,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Guide du débutant',
@@ -280,7 +304,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_informations',
                 'isRoleplay' => false,
                 'position' => 4,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
             [
                 'name' => 'Support technique',
@@ -290,7 +315,8 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
                 'category' => 'category_informations',
                 'isRoleplay' => false,
                 'position' => 5,
-                'parent' => null
+                'parent' => null,
+                'universe' => 'universe_dc'
             ],
         ];
 
@@ -331,13 +357,16 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
         $forum->setPosition($forumData['position']);
         $forum->setSlug($this->slugger->slug($forumData['name'])->lower());
         
+        // Ajouter l'univers
+        if (isset($forumData['universe'])) {
+            $forum->setUniverse($this->getReference($forumData['universe']));
+        }
+        
         if ($forumData['parent'] !== null) {
             $forum->setParent($this->getReference($forumData['parent']));
         }
         
         $manager->persist($forum);
-        
-        // Ne pas créer de référence ici, car cela sera fait dans les méthodes appelantes
         
         return $forum;
     }
