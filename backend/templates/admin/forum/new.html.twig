@@ -59,6 +59,13 @@
 				<div class="form-text">Entrez l'URL complète d'une image pour la bannière du forum</div>
 			</div>
 
+			<div class="mb-3">
+				{{ form_label(form.heroLogo) }}
+				{{ form_widget(form.heroLogo) }}
+				{{ form_errors(form.heroLogo) }}
+				<div class="form-text">Entrez l'URL complète d'une image pour le logo héros du forum (format carré recommandé)</div>
+			</div>
+
 			<div class="row mb-3">
 				<div class="col-md-6">
 					<div class="card bg-light p-3">
