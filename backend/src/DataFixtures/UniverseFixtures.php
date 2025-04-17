@@ -20,7 +20,7 @@ class UniverseFixtures extends Fixture
             ],
             [
                 'name' => 'Marvel',
-                'description' => 'L\'univers des super-héros Marvel comme Spider-Man, Iron Man, Captain America,  et les X-Men. Cet univers inclut des lieux comme New York, Wakanda et Asgard.',
+                'description' => 'L\'univers des super-héros Marvel comme Spider-Man, Iron Man, Captain America, Thor et les X-Men. Cet univers inclut des lieux comme New York, Wakanda et Asgard.',
                 'slug' => 'marvel',
             ]
         ];
