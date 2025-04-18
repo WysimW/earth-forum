@@ -50,15 +50,123 @@ class CharacterController extends AbstractController
     #[Route('/', name: 'app_roleplay_characters', methods: ['GET'])]
     #[Route('/', name: 'app_characters_index', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function index(CharacterRepository $characterRepository, NpcRepository $npcRepository): Response
+    public function index(CharacterRepository $characterRepository, NpcRepository $npcRepository, UniversRepository $universRepository): Response
     {
         $user = $this->getUser();
         $characters = $characterRepository->findBy(['user' => $user]);
         $npcs = $npcRepository->findBy(['user' => $user]);
         
+        // Récupérer tous les univers
+        $universes = $universRepository->findAll();
+        
+        // Structure pour regrouper PJ et PNJ par univers et elseworlds
+        $contentByUniverse = [];
+        $contentWithoutUniverse = [
+            'characters' => [],
+            'npcs' => []
+        ];
+        
+        // Initialiser les tableaux pour chaque univers
+        foreach ($universes as $universe) {
+            $contentByUniverse[$universe->getId()] = [
+                'universe' => $universe,
+                'mainContent' => [
+                    'characters' => [],
+                    'npcs' => [],
+                    'total' => 0
+                ],
+                'elseworlds' => [],
+                'total' => 0
+            ];
+        }
+        
+        // Classer les personnages par univers/elseworld
+        foreach ($characters as $character) {
+            $universe = $character->getUniverse();
+            $elseworld = $character->getElseworld();
+            
+            if ($universe) {
+                $universeId = $universe->getId();
+                
+                if ($elseworld) {
+                    $elseWorldId = $elseworld->getId();
+                    
+                    // Créer l'entrée pour l'elseworld s'il n'existe pas encore
+                    if (!isset($contentByUniverse[$universeId]['elseworlds'][$elseWorldId])) {
+                        $contentByUniverse[$universeId]['elseworlds'][$elseWorldId] = [
+                            'elseworld' => $elseworld,
+                            'characters' => [],
+                            'npcs' => [],
+                            'total' => 0
+                        ];
+                    }
+                    
+                    // Ajouter le personnage à l'elseworld
+                    $contentByUniverse[$universeId]['elseworlds'][$elseWorldId]['characters'][] = $character;
+                    $contentByUniverse[$universeId]['elseworlds'][$elseWorldId]['total']++;
+                } else {
+                    // Si pas d'elseworld, ajouter au contenu principal de l'univers
+                    $contentByUniverse[$universeId]['mainContent']['characters'][] = $character;
+                    $contentByUniverse[$universeId]['mainContent']['total']++;
+                }
+                
+                // Compteur total de l'univers
+                $contentByUniverse[$universeId]['total']++;
+            } else {
+                // Sans univers
+                $contentWithoutUniverse['characters'][] = $character;
+            }
+        }
+        
+        // Classer les PNJ par univers/elseworld
+        foreach ($npcs as $npc) {
+            $universe = $npc->getUniverse();
+            $elseworld = $npc->getElseworld();
+            
+            if ($universe) {
+                $universeId = $universe->getId();
+                
+                if ($elseworld) {
+                    $elseWorldId = $elseworld->getId();
+                    
+                    // Créer l'entrée pour l'elseworld s'il n'existe pas encore
+                    if (!isset($contentByUniverse[$universeId]['elseworlds'][$elseWorldId])) {
+                        $contentByUniverse[$universeId]['elseworlds'][$elseWorldId] = [
+                            'elseworld' => $elseworld,
+                            'characters' => [],
+                            'npcs' => [],
+                            'total' => 0
+                        ];
+                    }
+                    
+                    // Ajouter le PNJ à l'elseworld
+                    $contentByUniverse[$universeId]['elseworlds'][$elseWorldId]['npcs'][] = $npc;
+                    $contentByUniverse[$universeId]['elseworlds'][$elseWorldId]['total']++;
+                } else {
+                    // Si pas d'elseworld, ajouter au contenu principal de l'univers
+                    $contentByUniverse[$universeId]['mainContent']['npcs'][] = $npc;
+                    $contentByUniverse[$universeId]['mainContent']['total']++;
+                }
+                
+                // Compteur total de l'univers
+                $contentByUniverse[$universeId]['total']++;
+            } else {
+                // Sans univers
+                $contentWithoutUniverse['npcs'][] = $npc;
+            }
+        }
+        
+        // Filtrer les univers qui n'ont pas de personnages ni de PNJ
+        $contentByUniverse = array_filter($contentByUniverse, function($item) {
+            return $item['total'] > 0;
+        });
+        
         return $this->render('characters/index.html.twig', [
-            'characters' => $characters,
-            'npcs' => $npcs,
+            'contentByUniverse' => $contentByUniverse,
+            'contentWithoutUniverse' => $contentWithoutUniverse,
+            'totalWithoutUniverse' => count($contentWithoutUniverse['characters']) + count($contentWithoutUniverse['npcs']),
+            'characters' => $characters, // Gardé pour rétrocompatibilité
+            'npcs' => $npcs, // Gardé pour rétrocompatibilité
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
                 'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),

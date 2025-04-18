@@ -24,8 +24,7 @@
 }
 
 .table tbody tr:hover {
-    background-color: rgba(20, 93, 160, 0.4);
-    transform: scale(1.01);
+    background-color: rgba(20, 92, 160, 0.692);
 }
 
 .table td {

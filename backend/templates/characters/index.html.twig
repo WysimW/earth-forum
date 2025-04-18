@@ -47,9 +47,79 @@
     color: #000;
 }
 
-.status-badge.status-draft {
-    background-color: #0dcaf0;
-    color: #000;
+.universe-header {
+    height: 60px;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-dark-trans);
+    border-radius: 0.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid var(--accent-light);
+}
+
+.universe-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.elseworld-header {
+    height: 50px;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(20, 93, 160, 0.6);
+    border-radius: 0.375rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(3px);
+    border-left: 3px solid var(--accent-light);
+    margin-left: 1rem;
+}
+
+.elseworld-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.no-universe-header {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: rgba(108, 117, 125, 0.2);
+    border-radius: 0.5rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 4px solid #6c757d;
+}
+
+.no-universe-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.content-type-divider {
+    margin: 1.5rem 0;
+    padding: 0.5rem 1rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.25rem;
+    font-weight: 500;
+    color: var(--light-gray);
+}
+
+.elseworld-content {
+    padding-left: 1.5rem;
 }
 </style>
 {% endblock %}
@@ -59,12 +129,17 @@
     {# Fil d'Ariane #}
     {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
     
-    {# Section Personnages #}
+    {# Header principal avec boutons pour créer PJ/PNJ #}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Mes Personnages</h1>
-        <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Créer un personnage
-        </a>
+        <h1>Mes Personnages et PNJ</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau personnage
+            </a>
+            <a href="{{ path('app_npc_new') }}" class="btn btn-outline-primary">
+                <i class="fas fa-plus"></i> Nouveau PNJ
+            </a>
+        </div>
     </div>
     
     {% for message in app.flashes('success') %}
@@ -74,201 +149,147 @@
         </div>
     {% endfor %}
     
-    {% if characters|length > 0 %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for character in characters %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">{{ character.name }}</h5>
-                            <div class="d-flex align-items-center">
-                                <span class="status-badge status-{{ character.status }}">
-                                    {% if character.status == 'pending' %}
-                                        En attente
-                                    {% elseif character.status == 'validated' %}
-                                        Validé
-                                     {% elseif character.status == 'draft' %}
-                                        Brouillon
-                                    {% else %}
-                                        Refusé
-                                    {% endif %}
-                                </span>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ character.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ character.id }}">
-                                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_show', {'id': character.id}) }}">Voir</a></li>
-                                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}">Modifier</a></li>
-                                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_relationships', {'id': character.id}) }}">Relations</a></li>
-                                        <li><a class="dropdown-item" href="{{ path('app_dialogue_style_character', {'id': character.id}) }}">Style de dialogue</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form method="post" action="{{ path('app_roleplay_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
-                                                <button class="dropdown-item text-danger">Supprimer</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-auto">
-                                    {% if character.avatar %}
-                                        <img src="{{ character.avatar }}" alt="{{ character.name }}" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
-                                    {% else %}
-                                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                                            <i class="fas fa-user fa-2x"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col">
-                                    {% if character.universe %}
-                                        <div class="mb-2">
-                                            <span class="badge bg-primary">{{ character.universe.name }}</span>
-                                        </div>
-                                    {% endif %}
-                                    <div class="card-text small">
-                                        {% if character.biography %}
-                                            {{ character.biography|striptags|u.truncate(100, '...') }}
-                                        {% else %}
-                                            <span class="text-muted">Aucune biographie disponible</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white">
-                            <div class="btn-group btn-group-sm w-100">
-                                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-eye"></i> Voir
-                                </a>
-                                <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-pen"></i> Éditer
-                                </a>
-                            </div>
-                        </div>
+    {% if characters|length > 0 or npcs|length > 0 %}
+        {# Contenu par univers #}
+        {% for universeData in contentByUniverse %}
+            <div class="universe-section">
+                <div class="universe-header">
+                    <h2><i class="fas fa-globe-americas me-2"></i>{{ universeData.universe.name }}</h2>
+                    <div>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-users me-1"></i> {{ universeData.mainContent.characters|length + 
+                               universeData.elseworlds|reduce((carry, e) => carry + e.characters|length, 0) }} personnage(s)
+                        </span>
+                        <span class="badge bg-light text-dark ms-2">
+                            <i class="fas fa-user-tie me-1"></i> {{ universeData.mainContent.npcs|length + 
+                               universeData.elseworlds|reduce((carry, e) => carry + e.npcs|length, 0) }} PNJ(s)
+                        </span>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
+
+                {# Contenu principal de l'univers (hors Elseworlds) #}
+                {% if universeData.mainContent.total > 0 %}
+                    {% if universeData.mainContent.characters|length > 0 %}
+                        <div class="content-type-divider">
+                            <i class="fas fa-user me-2"></i>Personnages ({{ universeData.mainContent.characters|length }})
+                        </div>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            {% for character in universeData.mainContent.characters %}
+                                {% include 'characters/_character_card.html.twig' with {'character': character} %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if universeData.mainContent.npcs|length > 0 %}
+                        <div class="content-type-divider">
+                            <i class="fas fa-user-tie me-2"></i>PNJ ({{ universeData.mainContent.npcs|length }})
+                        </div>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            {% for npc in universeData.mainContent.npcs %}
+                                {% include 'characters/_npc_card.html.twig' with {'npc': npc} %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                {# Elseworlds de cet univers #}
+                {% if universeData.elseworlds|length > 0 %}
+                    {% for elseWorldId, elseWorldData in universeData.elseworlds %}
+                        <div class="elseworld-section">
+                            <div class="elseworld-header">
+                                <h3><i class="fas fa-map-marked-alt me-2"></i>{{ elseWorldData.elseworld.name }}</h3>
+                                <div>
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-users me-1"></i> {{ elseWorldData.characters|length }} personnage(s)
+                                    </span>
+                                    <span class="badge bg-light text-dark ms-2">
+                                        <i class="fas fa-user-tie me-1"></i> {{ elseWorldData.npcs|length }} PNJ(s)
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="elseworld-content">
+                                {% if elseWorldData.characters|length > 0 %}
+                                    <div class="content-type-divider">
+                                        <i class="fas fa-user me-2"></i>Personnages ({{ elseWorldData.characters|length }})
+                                    </div>
+                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                        {% for character in elseWorldData.characters %}
+                                            {% include 'characters/_character_card.html.twig' with {'character': character} %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if elseWorldData.npcs|length > 0 %}
+                                    <div class="content-type-divider">
+                                        <i class="fas fa-user-tie me-2"></i>PNJ ({{ elseWorldData.npcs|length }})
+                                    </div>
+                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                        {% for npc in elseWorldData.npcs %}
+                                            {% include 'characters/_npc_card.html.twig' with {'npc': npc} %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        {# Contenu sans univers #}
+        {% if totalWithoutUniverse > 0 %}
+            <div class="universe-section">
+                <div class="no-universe-header">
+                    <h2><i class="fas fa-question-circle me-2"></i>Sans univers</h2>
+                    <div>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-users me-1"></i> {{ contentWithoutUniverse.characters|length }} personnage(s)
+                        </span>
+                        <span class="badge bg-light text-dark ms-2">
+                            <i class="fas fa-user-tie me-1"></i> {{ contentWithoutUniverse.npcs|length }} PNJ(s)
+                        </span>
+                    </div>
+                </div>
+
+                {% if contentWithoutUniverse.characters|length > 0 %}
+                    <div class="content-type-divider">
+                        <i class="fas fa-user me-2"></i>Personnages ({{ contentWithoutUniverse.characters|length }})
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for character in contentWithoutUniverse.characters %}
+                            {% include 'characters/_character_card.html.twig' with {'character': character} %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if contentWithoutUniverse.npcs|length > 0 %}
+                    <div class="content-type-divider">
+                        <i class="fas fa-user-tie me-2"></i>PNJ ({{ contentWithoutUniverse.npcs|length }})
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for npc in contentWithoutUniverse.npcs %}
+                            {% include 'characters/_npc_card.html.twig' with {'npc': npc} %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
     {% else %}
         <div class="card shadow-sm">
             <div class="card-body text-center py-5">
-                <h3 class="mb-3">Vous n'avez pas encore créé de personnage</h3>
+                <h3 class="mb-3">Vous n'avez pas encore créé de personnages ni de PNJ</h3>
                 <p class="text-muted mb-4">Créez votre premier personnage pour participer aux scènes de roleplay</p>
-                <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus"></i> Créer mon premier personnage
-                </a>
-            </div>
-        </div>
-    {% endif %}
-
-    {# Section PNJ #}
-    <div class="mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Mes PNJ</h1>
-            <a href="{{ path('app_npc_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Créer un PNJ
-            </a>
-        </div>
-        
-        {% if npcs|length > 0 %}
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for npc in npcs %}
-                    <div class="col">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">{{ npc.name }}</h5>
-                                <div class="d-flex align-items-center">
-                                    <span class="status-badge status-{{ npc.status }}">
-                                        {% if npc.status == 'draft' %}
-                                            Brouillon
-                                        {% elseif npc.status == 'pending' %}
-                                            En attente
-                                        {% elseif npc.status == 'validated' %}
-                                            Validé
-                                        {% elseif npc.status == 'rejected' %}
-                                            Refusé
-                                        {% elseif npc.status == 'abandoned' %}
-                                            Abandonné
-                                        {% elseif npc.status == 'editing' %}
-                                            En édition
-                                        {% endif %}
-                                    </span>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButtonNpc{{ npc.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonNpc{{ npc.id }}">
-                                            <li><a class="dropdown-item" href="{{ path('app_npc_show', {'id': npc.id}) }}">Voir</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_npc_edit', {'id': npc.id}) }}">Modifier</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_dialogue_style_npc', {'id': npc.id}) }}">Style de dialogue</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form method="post" action="{{ path('app_npc_delete', {'id': npc.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce PNJ ?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ npc.id) }}">
-                                                    <button class="dropdown-item text-danger">Supprimer</button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-auto">
-                                        {% if npc.avatar %}
-                                            <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
-                                        {% else %}
-                                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                                                <i class="fas fa-user fa-2x"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col">
-                                        {% if npc.universe %}
-                                            <div class="mb-2">
-                                                <span class="badge bg-primary">{{ npc.universe.name }}</span>
-                                            </div>
-                                        {% endif %}
-                                        <div class="card-text small">
-                                            {% if npc.biography %}
-                                                {{ npc.biography|striptags|u.truncate(100, '...') }}
-                                            {% else %}
-                                                <span class="text-muted">Aucune biographie disponible</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-footer bg-white">
-                                <div class="btn-group btn-group-sm w-100">
-                                    <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Voir
-                                    </a>
-                                    <a href="{{ path('app_npc_edit', {'id': npc.id}) }}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-pen"></i> Éditer
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card shadow-sm">
-                <div class="card-body text-center py-5">
-                    <h3 class="mb-3">Vous n'avez pas encore créé de PNJ</h3>
-                    <p class="text-muted mb-4">Créez votre premier PNJ pour enrichir vos univers</p>
-                    <a href="{{ path('app_npc_new') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus"></i> Créer mon premier PNJ
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ path('app_roleplay_character_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer un personnage
+                    </a>
+                    <a href="{{ path('app_npc_new') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Créer un PNJ
                     </a>
                 </div>
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

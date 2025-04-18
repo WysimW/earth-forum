@@ -1,37 +1,88 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-    Modifier {{ thread.title }}
-{% endblock %}
+{% block title %}Modifier une discussion{% endblock %}
 
 {% block body %}
-<div class="container my-4">
-    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-edit me-2"></i> Modifier la discussion
+                    </h1>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                    <div class="mb-3">
+                        {{ form_label(form.title) }}
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control ' ~ (form.title.vars.valid ? '' : 'is-invalid')}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header {% if thread.type == 'roleplay' %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
-            <h1 class="h3 mb-0">
-                {% if thread.type == 'roleplay' %}
-                    <i class="fa-solid fa-dice-d20 me-2"></i>Modifier la scène
-                {% else %}
-                    <i class="fas fa-edit me-2"></i>Modifier la discussion
-                {% endif %}
-            </h1>
-        </div>
+                    {% if isRpThread and form.characterCreator is defined %}
+                        <div class="mb-3">
+                            {{ form_label(form.characterCreator) }}
+                            {{ form_widget(form.characterCreator, {'attr': {'class': 'form-select ' ~ (form.characterCreator.vars.valid ? '' : 'is-invalid')}}) }}
+                            {{ form_errors(form.characterCreator) }}
+                        </div>
+                    {% endif %}
 
-        <div class="card-body">
-            {% include 'components/_thread_form.html.twig' with {
-                'form': form,
-                'isNew': false,
-                'isRoleplay': thread.type == 'roleplay',
-                'thread': thread,
-                'returnPath': path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id})
-            } %}
+                    {% if form.location is defined %}
+                        <div class="mb-3">
+                            {{ form_label(form.location) }}
+                            {{ form_widget(form.location, {'attr': {'class': 'form-select ' ~ (form.location.vars.valid ? '' : 'is-invalid')}}) }}
+                            {{ form_errors(form.location) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {% if isRpThread and form.firstPostContent is defined %}
+                            {{ form_label(form.firstPostContent) }}
+                            {{ form_widget(form.firstPostContent, {'attr': {'class': 'wysiwyg-editor ' ~ (form.firstPostContent.vars.valid ? '' : 'is-invalid')}}) }}
+                            {{ form_errors(form.firstPostContent) }}
+                        {% else %}
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'wysiwyg-editor ' ~ (form.description.vars.valid ? '' : 'is-invalid')}}) }}
+                            {{ form_errors(form.description) }}
+                        {% endif %}
+                    </div>
+
+                    {% if form.maxParticipants is defined %}
+                        <div class="mb-3">
+                            {{ form_label(form.maxParticipants) }}
+                            {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control ' ~ (form.maxParticipants.vars.valid ? '' : 'is-invalid')}}) }}
+                            {{ form_errors(form.maxParticipants) }}
+                            <div class="form-text">
+                                Laissez vide pour un nombre illimité de participants. 
+                                Mettez 1 pour une scène solo (seul le créateur peut y participer).
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
         </div>
     </div>
-
-    {% include 'components/_delete_thread_modal.html.twig' with {'thread': thread, 'univers': univers} %}
 </div>
+{% endblock %}
 
-{% include 'components/_thread_styles.html.twig' %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWysiwygEditors();
+        });
+    </script>
 {% endblock %}

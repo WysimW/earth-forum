@@ -186,7 +186,7 @@
 		<h5>
 			<i class="fas fa-tasks"></i>
 			Modifier le statut</h5>
-		<form action="{{ path('app_thread_update_character_status', {'id': thread.id}) }}" method="post">
+		<form action="{{ path('app_thread_update_character_status', {'universeSlug': univers.slug, 'id': thread.id}) }}" method="post">
 			<div class="row g-3">
 				<div class="col-md-4">
 					<label for="status" class="form-label">Statut</label>
@@ -457,7 +457,7 @@
 			<h5 class="modal-title" id="characterValidationModalLabel">Valider le personnage</h5>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 		</div>
-		<form action="{{ path('app_thread_update_character_status', {'id': thread.id}) }}" method="post">
+		<form action="{{ path('app_thread_update_character_status', {'universeSlug': univers.slug, 'id': thread.id}) }}" method="post">
 			<div class="modal-body">
 				<p>Vous êtes sur le point de valider le personnage "<strong>{{ character.name }}</strong>".</p>
 				<div class="mb-3">
@@ -479,7 +479,7 @@
 			<h5 class="modal-title" id="characterRejectionModalLabel">Refuser le personnage</h5>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 		</div>
-		<form action="{{ path('app_thread_update_character_status', {'id': thread.id}) }}" method="post">
+		<form action="{{ path('app_thread_update_character_status', {'universeSlug': univers.slug, 'id': thread.id}) }}" method="post">
 			<div class="modal-body">
 				<p>Vous êtes sur le point de refuser le personnage "<strong>{{ character.name }}</strong>".</p>
 				<div class="mb-3">
@@ -503,7 +503,7 @@
 			<h5 class="modal-title" id="characterModifiedLabel">Demander une modification</h5>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 		</div>
-		<form action="{{ path('app_thread_update_character_status', {'id': thread.id}) }}" method="post">
+		<form action="{{ path('app_thread_update_character_status', {'universeSlug': univers.slug, 'id': thread.id}) }}" method="post">
 			<div class="modal-body">
 				<p>Vous êtes sur le point de demander des modifications pour le personnage "<strong>{{ character.name }}</strong>".</p>
 				<div class="mb-3">

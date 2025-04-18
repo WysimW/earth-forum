@@ -49,6 +49,12 @@ class ForumType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
+            ->add('heroLogo', UrlType::class, [
+                'label' => 'URL du logo héros',
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'help' => 'Petit logo qui apparaît sur le forum (généralement 100x100px)'
+            ])
             ->add('category', EntityType::class, [
                 'class' => ForumCategory::class,
                 'choice_label' => 'name',

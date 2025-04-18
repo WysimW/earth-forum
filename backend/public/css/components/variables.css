@@ -7,6 +7,7 @@
 :root {
     /* Couleurs principales */
     --primary-dark: #0C2D48;
+    --primary-dark-trans: rgba(12, 45, 72, 0.8);
     --primary-medium: #145DA0;
     --primary-light: #2980b9;
     --deep-black: #0A0A0A;

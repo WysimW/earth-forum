@@ -1,0 +1,78 @@
+<div class="col">
+    <div class="card h-100 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">{{ npc.name }}</h5>
+            <div class="d-flex align-items-center">
+                <span class="status-badge status-{{ npc.status }}">
+                    {% if npc.status == 'draft' %}
+                        Brouillon
+                    {% elseif npc.status == 'pending' %}
+                        En attente
+                    {% elseif npc.status == 'validated' %}
+                        Validé
+                    {% elseif npc.status == 'rejected' %}
+                        Refusé
+                    {% elseif npc.status == 'abandoned' %}
+                        Abandonné
+                    {% elseif npc.status == 'editing' %}
+                        En édition
+                    {% endif %}
+                </span>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButtonNpc{{ npc.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonNpc{{ npc.id }}">
+                        <li><a class="dropdown-item" href="{{ path('app_npc_show', {'id': npc.id}) }}">Voir</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_npc_edit', {'id': npc.id}) }}">Modifier</a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_dialogue_style_npc', {'id': npc.id}) }}">Style de dialogue</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ path('app_npc_delete', {'id': npc.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce PNJ ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ npc.id) }}">
+                                <button class="dropdown-item text-danger">Supprimer</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-auto">
+                    {% if npc.avatar %}
+                        <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if npc.elseworld %}
+                        <div class="mb-2">
+                            <span class="badge bg-info">{{ npc.elseworld.name }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-text small">
+                        {% if npc.biography %}
+                            {{ npc.biography|striptags|u.truncate(100, '...') }}
+                        {% else %}
+                            <span class="text-muted">Aucune biographie disponible</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <div class="btn-group btn-group-sm w-100">
+                <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-eye"></i> Voir
+                </a>
+                <a href="{{ path('app_npc_edit', {'id': npc.id}) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-pen"></i> Éditer
+                </a>
+            </div>
+        </div>
+    </div>
+</div> 

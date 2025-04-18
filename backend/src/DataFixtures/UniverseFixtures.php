@@ -20,19 +20,9 @@ class UniverseFixtures extends Fixture
             ],
             [
                 'name' => 'Marvel',
-                'description' => 'L\'univers des super-héros Marvel comme Spider-Man, Iron Man, Captain America et les X-Men. Cet univers inclut des lieux comme New York, Wakanda et Asgard.',
+                'description' => 'L\'univers des super-héros Marvel comme Spider-Man, Iron Man, Thor et Captain America et les X-Men. Cet univers inclut des lieux comme New York, Wakanda et Asgard.',
                 'slug' => 'marvel',
-            ],
-            [
-                'name' => 'Star Wars',
-                'description' => 'L\'univers de Star Wars créé par George Lucas, avec ses planètes diverses, ses Jedi, ses Sith et l\'Empire Galactique.',
-                'slug' => 'star-wars',
-            ],
-            [
-                'name' => 'Monde RPG Original',
-                'description' => 'Un univers de fantasy original pour les membres souhaitant créer leurs propres histoires et personnages dans un cadre médiéval fantastique.',
-                'slug' => 'fantasy-rpg',
-            ],
+            ]
         ];
 
         // Création des univers

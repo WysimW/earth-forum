@@ -6,6 +6,7 @@ use App\Entity\Character;
 use App\Entity\CharacterRelation;
 use App\Repository\CharacterRelationRepository;
 use App\Repository\CharacterRepository;
+use App\Service\BreadcrumbService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,8 @@ class CharacterRelationController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CharacterRepository $characterRepository,
-        private CharacterRelationRepository $relationRepository
+        private CharacterRelationRepository $relationRepository,
+        private BreadcrumbService $breadcrumbService
     ) {
     }
 
@@ -47,6 +49,15 @@ class CharacterRelationController extends AbstractController
             return $char->getId() !== $character->getId();
         });
 
+        // Génération des breadcrumbs avec le service
+        $breadcrumbsData = [
+            'Accueil' => $this->generateUrl('app_roleplay'),
+            'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
+            $character->getName() => $this->generateUrl('app_roleplay_character_show', ['id' => $character->getId()]),
+            'Relations' => $this->generateUrl('app_roleplay_character_relationships', ['id' => $character->getId()]),
+        ];
+        $breadcrumbs = $this->breadcrumbService->generate($breadcrumbsData);
+
         return $this->render('characters/relationships.html.twig', [
             'character' => $character,
             'relations' => $relations,
@@ -61,12 +72,7 @@ class CharacterRelationController extends AbstractController
                 'student' => 'Élève',
                 'other' => 'Autre'
             ],
-            'breadcrumbs' => [
-                'Accueil' => $this->generateUrl('app_roleplay'),
-                'Mes Personnages' => $this->generateUrl('app_roleplay_characters'),
-                $character->getName() => $this->generateUrl('app_roleplay_character_show', ['id' => $character->getId()]),
-                'Relations' => $this->generateUrl('app_roleplay_character_relationships', ['id' => $character->getId()]),
-            ],
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 

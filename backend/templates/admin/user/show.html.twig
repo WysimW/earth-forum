@@ -91,6 +91,35 @@
         <div class="col-md-6">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
+                    Rôles système
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for role in user.roles %}
+                            {% if role != 'ROLE_USER' %}
+                                {% set badgeClass = 'bg-secondary' %}
+                                {% if role == 'ROLE_ADMIN' %}
+                                    {% set badgeClass = 'bg-danger' %}
+                                {% elseif role == 'ROLE_MODERATOR' %}
+                                    {% set badgeClass = 'bg-warning text-dark' %}
+                                {% elseif role == 'ROLE_ANIMATOR' %}
+                                    {% set badgeClass = 'bg-info text-dark' %}
+                                {% endif %}
+                                <span class="badge {{ badgeClass }}">{{ role|replace({'ROLE_': ''}) }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">UTILISATEUR</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
                     Activité
                 </div>
                 <div class="card-body">
