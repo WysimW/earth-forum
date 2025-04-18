@@ -88,6 +88,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $filterNonParticipatingMessages = false;
 
+    /**
+     * @var Collection<int, Faction>
+     */
+    #[ORM\OneToMany(targetEntity: Faction::class, mappedBy: 'founder')]
+    private Collection $createdFactions;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $canCreateFaction = false;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -96,6 +105,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->posts = new ArrayCollection();
         $this->playerRoles = new ArrayCollection();
         $this->readPosts = new ArrayCollection();
+        $this->createdFactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -415,6 +425,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFilterNonParticipatingMessages(bool $filterNonParticipatingMessages): static
     {
         $this->filterNonParticipatingMessages = $filterNonParticipatingMessages;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Faction>
+     */
+    public function getCreatedFactions(): Collection
+    {
+        return $this->createdFactions;
+    }
+
+    public function addCreatedFaction(Faction $faction): static
+    {
+        if (!$this->createdFactions->contains($faction)) {
+            $this->createdFactions->add($faction);
+            $faction->setFounder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedFaction(Faction $faction): static
+    {
+        if ($this->createdFactions->removeElement($faction)) {
+            // set the owning side to null (unless already changed)
+            if ($faction->getFounder() === $this) {
+                $faction->setFounder(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function canCreateFaction(): bool
+    {
+        return $this->canCreateFaction;
+    }
+
+    public function setCanCreateFaction(bool $canCreateFaction): static
+    {
+        $this->canCreateFaction = $canCreateFaction;
 
         return $this;
     }

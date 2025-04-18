@@ -53,6 +53,12 @@ class Npc implements TimestampableInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $factions = null;
     
+    /**
+     * @var Collection<int, Faction>
+     */
+    #[ORM\ManyToMany(targetEntity: Faction::class, mappedBy: 'npcs')]
+    private Collection $factionsRelation;
+    
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $occupation = null;
     
@@ -123,6 +129,7 @@ class Npc implements TimestampableInterface
     public function __construct()
     {
         $this->status = self::STATUS_DRAFT;
+        $this->factionsRelation = new ArrayCollection();
     }
 
     // Getters et Setters pour les propriétés héritées de Character
@@ -205,6 +212,33 @@ class Npc implements TimestampableInterface
     public function setFactions(?string $factions): static
     {
         $this->factions = $factions;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Faction>
+     */
+    public function getFactionsRelation(): Collection
+    {
+        return $this->factionsRelation;
+    }
+    
+    public function addFactionRelation(Faction $faction): static
+    {
+        if (!$this->factionsRelation->contains($faction)) {
+            $this->factionsRelation->add($faction);
+            $faction->addNpc($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removeFactionRelation(Faction $faction): static
+    {
+        if ($this->factionsRelation->removeElement($faction)) {
+            $faction->removeNpc($this);
+        }
+        
         return $this;
     }
 

@@ -1,0 +1,192 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Permissions de création de factions | Administration{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Permissions de création de factions</h1>
+        <div>
+            <a href="{{ path('admin_faction_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à la liste des factions
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-shield-lock"></i> Utilisateurs avec permission de créer des factions
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="toggleAllAuthorized" onchange="toggleAllRows('authorized')">
+                <label class="form-check-label" for="toggleAllAuthorized">Tout sélectionner</label>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="authorizedTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Pseudo</th>
+                            <th>Email</th>
+                            <th>Date d'inscription</th>
+                            <th>Factions créées</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set hasAuthorized = false %}
+                        {% for user in users %}
+                            {% if user.canCreateFaction %}
+                                {% set hasAuthorized = true %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>
+                                        <a href="{{ path('admin_user_show', {'id': user.id}) }}">
+                                            {{ user.pseudo }}
+                                        </a>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ user.createdFactions|length }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <form method="post" action="{{ path('admin_faction_toggle_permission', {'id': user.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_permission' ~ user.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir retirer la permission de créer des factions à {{ user.pseudo }} ?')">
+                                                    <i class="bi bi-x-circle"></i> Retirer la permission
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not hasAuthorized %}
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle"></i> Aucun utilisateur n'a la permission de créer des factions.
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-people"></i> Autres utilisateurs
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="toggleAllUnauthorized" onchange="toggleAllRows('unauthorized')">
+                <label class="form-check-label" for="toggleAllUnauthorized">Tout sélectionner</label>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="userSearch" placeholder="Rechercher un utilisateur..." onkeyup="filterUsers()">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped" id="unauthorizedTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Pseudo</th>
+                            <th>Email</th>
+                            <th>Date d'inscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set hasUnauthorized = false %}
+                        {% for user in users %}
+                            {% if not user.canCreateFaction %}
+                                {% set hasUnauthorized = true %}
+                                <tr class="user-row">
+                                    <td>{{ user.id }}</td>
+                                    <td class="user-name">
+                                        <a href="{{ path('admin_user_show', {'id': user.id}) }}">
+                                            {{ user.pseudo }}
+                                        </a>
+                                    </td>
+                                    <td class="user-email">{{ user.email }}</td>
+                                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <form method="post" action="{{ path('admin_faction_toggle_permission', {'id': user.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_permission' ~ user.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check-circle"></i> Accorder la permission
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not hasUnauthorized %}
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle"></i> Tous les utilisateurs ont la permission de créer des factions.
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function filterUsers() {
+            const input = document.getElementById('userSearch');
+            const filter = input.value.toUpperCase();
+            const rows = document.querySelectorAll('#unauthorizedTable .user-row');
+            
+            rows.forEach(row => {
+                const nameCol = row.querySelector('.user-name');
+                const emailCol = row.querySelector('.user-email');
+                const name = nameCol.textContent || nameCol.innerText;
+                const email = emailCol.textContent || emailCol.innerText;
+                
+                if (name.toUpperCase().indexOf(filter) > -1 || email.toUpperCase().indexOf(filter) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function toggleAllRows(tableType) {
+            const toggle = document.getElementById(`toggleAll${tableType.charAt(0).toUpperCase() + tableType.slice(1)}`);
+            const formButtons = document.querySelectorAll(`#${tableType}Table tbody tr:not([style*="display: none"]) button[type="submit"]`);
+            
+            if (toggle.checked && confirm(`Êtes-vous sûr de vouloir ${tableType === 'authorized' ? 'retirer' : 'accorder'} la permission à tous les utilisateurs affichés ?`)) {
+                formButtons.forEach(button => {
+                    button.click();
+                });
+            }
+        }
+    </script>
+{% endblock %} 

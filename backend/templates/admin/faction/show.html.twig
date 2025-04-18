@@ -1,0 +1,278 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Faction {{ faction.name }} | Administration{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Faction "{{ faction.name }}"</h1>
+        <div>
+            <a href="{{ path('admin_faction_edit', {'id': faction.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <a href="{{ path('admin_faction_index') }}" class="btn btn-secondary ms-2">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle"></i> Informations générales
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">ID :</div>
+                        <div class="col-md-9">{{ faction.id }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Nom :</div>
+                        <div class="col-md-9">{{ faction.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Univers :</div>
+                        <div class="col-md-9">
+                            <a href="{{ path('admin_univers_show', {'id': faction.universe.id}) }}">
+                                {{ faction.universe.name }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Fondateur :</div>
+                        <div class="col-md-9">
+                            <a href="{{ path('admin_user_show', {'id': faction.founder.id}) }}">
+                                {{ faction.founder.pseudo }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Alignement :</div>
+                        <div class="col-md-9">
+                            {% if faction.alignment %}
+                                {% set alignmentLabels = {
+                                    'hero': 'Super-héros',
+                                    'villain': 'Super-vilains',
+                                    'antihero': 'Anti-héros',
+                                    'vigilante': 'Vigilante',
+                                    'neutral': 'Neutre',
+                                    'other': 'Autre'
+                                } %}
+                                {{ alignmentLabels[faction.alignment] ?? faction.alignment }}
+                            {% else %}
+                                <span class="text-muted">Non défini</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Portée :</div>
+                        <div class="col-md-9">
+                            {% if faction.scope %}
+                                {% set scopeLabels = {
+                                    'galaxy': 'Galaxie',
+                                    'international': 'International',
+                                    'national': 'National',
+                                    'regional': 'Régional',
+                                    'local': 'Local'
+                                } %}
+                                {{ scopeLabels[faction.scope] ?? faction.scope }}
+                            {% else %}
+                                <span class="text-muted">Non définie</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Statut :</div>
+                        <div class="col-md-9">
+                            {% if faction.status == 'open' %}
+                                <span class="badge bg-success">Ouvert aux inscriptions</span>
+                            {% else %}
+                                <span class="badge bg-danger">Fermé aux inscriptions</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Date de création :</div>
+                        <div class="col-md-9">{{ faction.createdAt|date('d/m/Y H:i') }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Dernière mise à jour :</div>
+                        <div class="col-md-9">
+                            {% if faction.updatedAt %}
+                                {{ faction.updatedAt|date('d/m/Y H:i') }}
+                            {% else %}
+                                <span class="text-muted">Jamais mise à jour</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-card-text"></i> Description
+                </div>
+                <div class="card-body">
+                    {% if faction.description %}
+                        <div class="mb-4">{{ faction.description|nl2br }}</div>
+                    {% else %}
+                        <div class="alert alert-info">Aucune description fournie.</div>
+                    {% endif %}
+
+                    <h5>Objectifs</h5>
+                    {% if faction.objectives %}
+                        <div>{{ faction.objectives|nl2br }}</div>
+                    {% else %}
+                        <div class="alert alert-info">Aucun objectif défini.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-geo-alt"></i> Quartier général
+                </div>
+                <div class="card-body">
+                    {% if faction.headquarters %}
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Lieu :</div>
+                            <div class="col-md-9">
+                                <a href="{{ path('admin_location_show', {'id': faction.headquarters.id}) }}">
+                                    {{ faction.headquarters.name }}
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-3">Aucun quartier général défini.</div>
+                    {% endif %}
+
+                    {% if faction.subforum %}
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Forum associé :</div>
+                            <div class="col-md-9">
+                                <a href="{{ path('admin_forum_show', {'id': faction.subforum.id}) }}">
+                                    {{ faction.subforum.name }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if faction.headquartersDescription %}
+                        <h5>Description du quartier général</h5>
+                        <div>{{ faction.headquartersDescription|nl2br }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-people"></i> Membres
+                </div>
+                <div class="card-body">
+                    <h5>Personnages ({{ faction.characters|length }})</h5>
+                    {% if faction.characters|length > 0 %}
+                        <ul class="list-group mb-3">
+                            {% for character in faction.characters %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ path('admin_character_show', {'id': character.id}) }}">
+                                        {{ character.name }}
+                                    </a>
+                                    <span class="badge bg-primary rounded-pill">
+                                        {% if character.user %}
+                                            {{ character.user.pseudo }}
+                                        {% else %}
+                                            Sans joueur
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info mb-3">Aucun personnage membre.</div>
+                    {% endif %}
+
+                    <h5>PNJ ({{ faction.npcs|length }})</h5>
+                    {% if faction.npcs|length > 0 %}
+                        <ul class="list-group">
+                            {% for npc in faction.npcs %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ path('app_admin_npc_show', {'id': npc.id}) }}">
+                                        {{ npc.name }}
+                                    </a>
+                                    <span class="badge bg-info rounded-pill">{{ npc.user.pseudo }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">Aucun PNJ membre.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-play"></i> Scènes
+                </div>
+                <div class="card-body">
+                    {% if faction.scenes|length > 0 %}
+                        <ul class="list-group">
+                            {% for scene in faction.scenes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ path('admin_thread_show', {'id': scene.id}) }}">
+                                        {{ scene.title }}
+                                    </a>
+                                    <small class="text-muted">{{ scene.createdAt|date('d/m/Y') }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">Aucune scène associée.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle"></i> Actions
+                </div>
+                <div class="card-body">
+                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash"></i> Supprimer cette faction
+                    </button>
+
+                    <!-- Modal de confirmation de suppression -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Êtes-vous sûr de vouloir supprimer la faction <strong>{{ faction.name }}</strong> ?
+                                    <p class="text-danger mt-2"><i class="bi bi-exclamation-triangle"></i> Cette action est irréversible.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <form method="post" action="{{ path('admin_faction_delete', {'id': faction.id}) }}" style="display: inline-block">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ faction.id) }}">
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

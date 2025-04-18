@@ -59,6 +59,12 @@ class Character implements TimestampableInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $factions = null;
     
+    /**
+     * @var Collection<int, Faction>
+     */
+    #[ORM\ManyToMany(targetEntity: Faction::class, mappedBy: 'characters')]
+    private Collection $factionsRelation;
+    
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $civilStatus = null;
     
@@ -136,6 +142,7 @@ class Character implements TimestampableInterface
         $this->posts = new ArrayCollection();
         $this->threads = new ArrayCollection();
         $this->characterSheetThread = new ArrayCollection();
+        $this->factionsRelation = new ArrayCollection();
         $this->status = self::STATUS_DRAFT;
     }
 
@@ -248,6 +255,33 @@ class Character implements TimestampableInterface
     public function setFactions(?string $factions): static
     {
         $this->factions = $factions;
+        
+        return $this;
+    }
+    
+    /**
+     * @return Collection<int, Faction>
+     */
+    public function getFactionsRelation(): Collection
+    {
+        return $this->factionsRelation;
+    }
+    
+    public function addFactionRelation(Faction $faction): static
+    {
+        if (!$this->factionsRelation->contains($faction)) {
+            $this->factionsRelation->add($faction);
+            $faction->addCharacter($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removeFactionRelation(Faction $faction): static
+    {
+        if ($this->factionsRelation->removeElement($faction)) {
+            $faction->removeCharacter($this);
+        }
         
         return $this;
     }

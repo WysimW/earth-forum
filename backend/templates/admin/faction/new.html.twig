@@ -1,0 +1,106 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvelle faction | Administration{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Créer une nouvelle faction</h1>
+        <a href="{{ path('admin_faction_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> Informations de la faction
+        </div>
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.name) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.universe) }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.alignment) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.scope) }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.status) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.founder) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_row(form.description) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_row(form.objectives) }}
+                </div>
+
+                <h4 class="mt-4 mb-3">Quartier général</h4>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.headquarters) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.subforum) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_row(form.headquartersDescription) }}
+                </div>
+
+                <h4 class="mt-4 mb-3">Membres</h4>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.characters) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.npcs) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_row(form.scenes) }}
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Créer la faction
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('.select2').select2({
+                theme: 'bootstrap-5'
+            });
+        });
+    </script>
+{% endblock %} 

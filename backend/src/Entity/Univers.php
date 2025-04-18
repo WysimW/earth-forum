@@ -61,6 +61,12 @@ class Univers
     #[ORM\OneToMany(targetEntity: Elseworld::class, mappedBy: 'parentUniverse')]
     private Collection $elseworlds;
 
+    /**
+     * @var Collection<int, Faction>
+     */
+    #[ORM\OneToMany(targetEntity: Faction::class, mappedBy: 'universe')]
+    private Collection $factions;
+
     public function __construct()
     {   
         $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
@@ -69,6 +75,7 @@ class Univers
         $this->forums = new ArrayCollection();
         $this->locations = new ArrayCollection();
         $this->elseworlds = new ArrayCollection();
+        $this->factions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -267,6 +274,36 @@ class Univers
             // set the owning side to null (unless already changed)
             if ($elseworld->getParentUniverse() === $this) {
                 $elseworld->setParentUniverse(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Faction>
+     */
+    public function getFactions(): Collection
+    {
+        return $this->factions;
+    }
+
+    public function addFaction(Faction $faction): static
+    {
+        if (!$this->factions->contains($faction)) {
+            $this->factions->add($faction);
+            $faction->setUniverse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFaction(Faction $faction): static
+    {
+        if ($this->factions->removeElement($faction)) {
+            // set the owning side to null (unless already changed)
+            if ($faction->getUniverse() === $this) {
+                $faction->setUniverse(null);
             }
         }
 
