@@ -115,13 +115,14 @@ class FactionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/{slug}', name: 'app_faction_show', methods: ['GET'])]
-    public function show(Faction $faction, string $slug): Response
+    #[Route('/{slug}', name: 'app_faction_show', methods: ['GET'])]
+    public function show(string $slug, FactionRepository $factionRepository): Response
     {
+        $faction = $factionRepository->findOneBy(['slug' => $slug]);
+ 
         // Vérifier que le slug est correct, sinon rediriger vers l'URL correcte
         if ($faction->getSlug() !== $slug) {
             return $this->redirectToRoute('app_faction_show', [
-                'id' => $faction->getId(), 
                 'slug' => $faction->getSlug()
             ]);
         }

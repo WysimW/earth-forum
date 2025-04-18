@@ -1,0 +1,283 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lieux{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.universe-header {
+    height: 60px;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-dark-trans);
+    border-radius: 0.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid var(--accent-light);
+}
+
+.universe-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.location-card {
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.location-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.location-image {
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.location-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.7));
+}
+
+.location-content {
+    padding: 1.25rem;
+}
+
+.location-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-white);
+}
+
+.location-info {
+    margin-bottom: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.location-info i {
+    width: 16px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.location-description {
+    color: var(--text-white);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}
+
+.location-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.location-children {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    {# Header principal #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Lieux</h1>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('admin_location_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau lieu
+            </a>
+        {% endif %}
+    </div>
+    
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {# Groupe les lieux par univers #}
+    {% set locationsByUniverse = {} %}
+    {% set locationsWithoutUniverse = [] %}
+    
+    {% for location in locations %}
+        {% if location.universe %}
+            {% set universeId = location.universe.id %}
+            {% if locationsByUniverse[universeId] is not defined %}
+                {% set locationsByUniverse = locationsByUniverse|merge({(universeId): {'universe': location.universe, 'locations': []}}) %}
+            {% endif %}
+            {% set locationsByUniverse = locationsByUniverse|merge({
+                (universeId): {
+                    'universe': locationsByUniverse[universeId].universe,
+                    'locations': locationsByUniverse[universeId].locations|merge([location])
+                }
+            }) %}
+        {% else %}
+            {% set locationsWithoutUniverse = locationsWithoutUniverse|merge([location]) %}
+        {% endif %}
+    {% endfor %}
+    
+    {# Afficher les lieux par univers #}
+    {% for universeId, universeData in locationsByUniverse %}
+        <div class="universe-header">
+            <h2><i class="fas fa-globe-americas me-2"></i>{{ universeData.universe.name }}</h2>
+            <a href="{{ path('app_univers_show', {'slug': universeData.universe.slug}) }}" class="btn btn-sm btn-light">
+                <i class="fas fa-eye me-1"></i> Voir l'univers
+            </a>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+            {% for location in universeData.locations %}
+                <div class="col">
+                    <div class="location-card">
+                        <div class="location-image" 
+                            {% if location.image %}
+                                style="background-image: url('{{ asset(location.image) }}');"
+                            {% else %}
+                                style="background-image: url('{{ asset('images/default-location-banner.jpg') }}');"
+                            {% endif %}
+                        ></div>
+                        <div class="location-content">
+                            <h3 class="location-title">{{ location.name }}</h3>
+                            
+                            {% if location.city or location.country %}
+                                <div class="location-info">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    {% if location.city %}{{ location.city }}{% endif %}
+                                    {% if location.city and location.country %}, {% endif %}
+                                    {% if location.country %}{{ location.country }}{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="location-description">
+                                {% if location.description %}
+                                    {{ location.description|striptags|length > 150 ? location.description|striptags|slice(0, 150) ~ '...' : location.description|striptags }}
+                                {% else %}
+                                    <em class="text-muted">Aucune description disponible</em>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="location-footer">
+                                {% if location.children|length > 0 %}
+                                    <div class="location-children">
+                                        <i class="fas fa-map me-1"></i> {{ location.children|length }} lieu(x) associé(s)
+                                    </div>
+                                {% else %}
+                                    <div></div>
+                                {% endif %}
+                                
+                                <a href="{{ path('app_location_show', {'id': location.id, 'slug': location.slug}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    
+    {# Afficher les lieux sans univers #}
+    {% if locationsWithoutUniverse|length > 0 %}
+        <div class="universe-header">
+            <h2><i class="fas fa-map me-2"></i>Autres lieux</h2>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for location in locationsWithoutUniverse %}
+                <div class="col">
+                    <div class="location-card">
+                        <div class="location-image" 
+                            {% if location.image %}
+                                style="background-image: url('{{ asset(location.image) }}');"
+                            {% else %}
+                                style="background-image: url('{{ asset('images/default-location-banner.jpg') }}');"
+                            {% endif %}
+                        ></div>
+                        <div class="location-content">
+                            <h3 class="location-title">{{ location.name }}</h3>
+                            
+                            {% if location.city or location.country %}
+                                <div class="location-info">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    {% if location.city %}{{ location.city }}{% endif %}
+                                    {% if location.city and location.country %}, {% endif %}
+                                    {% if location.country %}{{ location.country }}{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="location-description">
+                                {% if location.description %}
+                                    {{ location.description|striptags|length > 150 ? location.description|striptags|slice(0, 150) ~ '...' : location.description|striptags }}
+                                {% else %}
+                                    <em class="text-muted">Aucune description disponible</em>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="location-footer">
+                                {% if location.children|length > 0 %}
+                                    <div class="location-children">
+                                        <i class="fas fa-map me-1"></i> {{ location.children|length }} lieu(x) associé(s)
+                                    </div>
+                                {% else %}
+                                    <div></div>
+                                {% endif %}
+                                
+                                <a href="{{ path('app_location_show', {'id': location.id, 'slug': location.slug}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if locations|length == 0 %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> Aucun lieu n'est disponible pour le moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

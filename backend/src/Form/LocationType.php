@@ -52,7 +52,7 @@ class LocationType extends AbstractType
                 'attr' => ['class' => 'form-select'],
                 'help' => 'Si ce lieu est contenu dans un autre lieu (ex: une taverne dans une ville)',
             ])
-            ->add('univers', EntityType::class, [
+            ->add('universe', EntityType::class, [
                 'class' => Univers::class,
                 'choice_label' => 'name',
                 'label' => 'Univers',

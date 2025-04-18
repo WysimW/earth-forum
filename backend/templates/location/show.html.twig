@@ -1,0 +1,344 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ location.name }} - Lieu{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.location-header {
+    position: relative;
+    padding: 2rem;
+    background-color: var(--primary-dark-trans);
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    min-height: 200px;
+}
+
+.location-header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.location-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+}
+
+.location-header h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.location-info {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--light-gray);
+}
+
+.location-info i {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.location-card {
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--primary);
+}
+
+.location-card-header {
+    padding: 1rem 1.5rem;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+}
+
+.location-card-header i {
+    margin-right: 0.5rem;
+}
+
+.location-card-body {
+    padding: 1.5rem;
+}
+
+.child-locations {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.child-location-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.child-location-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.child-location-img {
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.child-location-img::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.7));
+}
+
+.child-location-content {
+    padding: 1rem;
+}
+
+.child-location-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.child-location-text {
+    font-size: 0.9rem;
+    color: var(--light-gray);
+    margin-bottom: 1rem;
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.scenes-list {
+    margin-top: 1rem;
+}
+
+.scene-item {
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.scene-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.scene-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.scene-meta {
+    font-size: 0.8rem;
+    color: var(--light-gray);
+    display: flex;
+    justify-content: space-between;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    {# Messages flash #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {# En-tête du lieu #}
+    <div class="location-header" 
+    {% if location.image %}
+        style="background-image: url('{{ asset(location.image) }}');"
+    {% else %}
+        style="background-image: url('{{ asset('images/default-location-banner.jpg') }}');"
+    {% endif %}
+    >
+        <div class="location-header-content">
+            <h1>{{ location.name }}</h1>
+            
+            {% if location.city or location.country %}
+                <div class="location-info mb-1">
+                    <i class="fas fa-map-marker-alt"></i> 
+                    {% if location.city %}{{ location.city }}{% endif %}
+                    {% if location.city and location.country %}, {% endif %}
+                    {% if location.country %}{{ location.country }}{% endif %}
+                </div>
+            {% endif %}
+            
+            {% if location.universe %}
+                <div class="location-info">
+                    <i class="fas fa-globe"></i> Univers: 
+                    <a href="{{ path('app_univers_show', {'slug': location.universe.slug}) }}" class="text-white">
+                        {{ location.universe.name }}
+                    </a>
+                </div>
+            {% endif %}
+            
+            {% if location.parent %}
+                <div class="location-info">
+                    <i class="fas fa-level-up-alt"></i> Lieu parent: 
+                    <a href="{{ path('app_location_show', {'id': location.parent.id, 'slug': location.parent.slug}) }}" class="text-white">
+                        {{ location.parent.name }}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            {# Description #}
+            <div class="location-card">
+                <div class="location-card-header">
+                    <i class="fas fa-info-circle"></i> Description
+                </div>
+                <div class="location-card-body">
+                    {% if location.description %}
+                        {{ location.description|raw }}
+                    {% else %}
+                        <p class="text-muted">Aucune description disponible.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Scènes associées #}
+            <div class="location-card">
+                <div class="location-card-header">
+                    <i class="fas fa-theater-masks"></i> Scènes associées
+                </div>
+                <div class="location-card-body">
+                    {% if location.threads|length > 0 %}
+                        <div class="scenes-list">
+                            {% for thread in location.threads %}
+                                {% if thread.type == 'roleplay' %}
+                                    <div class="scene-item">
+                                        <div class="scene-title">
+                                            <a href="{{ path('app_thread_show', {'id': thread.id, 'slug': thread.slug, 'universeSlug': thread.universe.slug}) }}">
+                                                {{ thread.title }}
+                                            </a>
+                                        </div>
+                                        <div class="scene-meta">
+                                            <span>
+                                                <i class="fas fa-calendar me-1"></i> {{ thread.createdAt|date('d/m/Y') }}
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-comment me-1"></i> {{ thread.posts|length }} message(s)
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune scène n'est associée à ce lieu pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {# Lieux enfants #}
+            <div class="location-card">
+                <div class="location-card-header">
+                    <i class="fas fa-map"></i> Lieux associés
+                </div>
+                <div class="location-card-body">
+                    {% if location.children|length > 0 %}
+                        <div class="child-locations">
+                            {% for childLocation in location.children %}
+                                <div class="child-location-card">
+                                    <div class="child-location-img" 
+                                        {% if childLocation.image %}
+                                            style="background-image: url('{{ asset(childLocation.image) }}');"
+                                        {% else %}
+                                            style="background-image: url('{{ asset('images/default-location-banner.jpg') }}');"
+                                        {% endif %}
+                                    ></div>
+                                    <div class="child-location-content">
+                                        <div class="child-location-title">
+                                            <a href="{{ path('app_location_show', {'id': childLocation.id, 'slug': childLocation.slug}) }}">
+                                                {{ childLocation.name }}
+                                            </a>
+                                        </div>
+                                        <div class="child-location-text">
+                                            {% if childLocation.description %}
+                                                {{ childLocation.description|striptags|length > 100 ? childLocation.description|striptags|slice(0, 100) ~ '...' : childLocation.description|striptags }}
+                                            {% else %}
+                                                <em class="text-muted">Aucune description disponible</em>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{{ path('app_location_show', {'id': childLocation.id, 'slug': childLocation.slug}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i> Voir
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Ce lieu n'a pas de lieux enfants.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Actions administratives #}
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class="location-card">
+                    <div class="location-card-header">
+                        <i class="fas fa-cog"></i> Administration
+                    </div>
+                    <div class="location-card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('admin_location_edit', {'id': location.id}) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit me-1"></i> Modifier ce lieu
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Factions - {{ univers.name }}{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    {# Bannière de l'univers #}
+    <div class="universe-banner">
+        <h1>Factions de l'univers {{ univers.name }}</h1>
+        <p class="description">
+            {% if univers.description %}
+                {{ univers.description|striptags|slice(0, 150) ~ (univers.description|striptags|length > 150 ? '...' : '') }}
+            {% else %}
+                Découvrez les différentes factions de cet univers.
+            {% endif %}
+        </p>
+    </div>
+    
+    {# Messages flash #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {# Entête avec bouton pour créer une faction #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">{{ factions|length }} faction(s) disponible(s)</h2>
+        </div>
+        <div>
+            {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
+                <a href="{{ path('app_faction_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle faction
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Filtres #}
+    <div class="filters">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Alignement</label>
+                <select name="alignment" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="hero">Super-héros</option>
+                    <option value="villain">Super-vilains</option>
+                    <option value="antihero">Anti-héros</option>
+                    <option value="vigilante">Vigilante</option>
+                    <option value="neutral">Neutre</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Statut</label>
+                <select name="status" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="open">Ouverts aux inscriptions</option>
+                    <option value="closed">Fermés aux inscriptions</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i> Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    {# Liste des factions #}
+    {% if factions|length > 0 %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for faction in factions %}
+                <div class="col">
+                    <div class="card faction-card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ faction.name }}</h5>
+                            {% if faction.alignment %}
+                                <span class="faction-badge alignment-{{ faction.alignment }}">
+                                    {% if faction.alignment == 'hero' %}Super-héros
+                                    {% elseif faction.alignment == 'villain' %}Super-vilain
+                                    {% elseif faction.alignment == 'antihero' %}Anti-héros
+                                    {% elseif faction.alignment == 'vigilante' %}Vigilante
+                                    {% elseif faction.alignment == 'neutral' %}Neutre
+                                    {% else %}Autre{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                {% if faction.description %}
+                                    {{ faction.description|striptags|length > 150 ? faction.description|striptags|slice(0, 150) ~ '...' : faction.description|striptags }}
+                                {% else %}
+                                    <em class="text-muted">Aucune description disponible</em>
+                                {% endif %}
+                            </p>
+                            
+                            <div class="mt-2">
+                                <div class="mb-1">
+                                    <i class="fas fa-users me-1 text-primary"></i> 
+                                    <small>{{ faction.characters|length }} membre(s)</small>
+                                </div>
+                                
+                                {% if faction.npcs|length > 0 %}
+                                    <div>
+                                        <i class="fas fa-user-tie me-1 text-secondary"></i> 
+                                        <small>{{ faction.npcs|length }} PNJ(s)</small>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if faction.scope %}
+                                    <div>
+                                        <i class="fas fa-map-marker-alt me-1 text-info"></i> 
+                                        <small>
+                                            {% if faction.scope == 'galaxy' %}Portée galactique
+                                            {% elseif faction.scope == 'international' %}Portée internationale
+                                            {% elseif faction.scope == 'national' %}Portée nationale
+                                            {% elseif faction.scope == 'regional' %}Portée régionale
+                                            {% elseif faction.scope == 'local' %}Portée locale
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span class="faction-badge status-{{ faction.status }}">
+                                {{ faction.status == 'open' ? 'Ouvert' : 'Fermé' }}
+                            </span>
+                            <a href="{{ path('app_faction_show', {'id': faction.id, 'slug': faction.slug}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> Voir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-3">Aucune faction n'a encore été créée pour cet univers</h3>
+                <p class="text-muted mb-4">Soyez le premier à créer une faction dans l'univers {{ univers.name }} !</p>
+                {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
+                    <a href="{{ path('app_faction_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer une faction
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

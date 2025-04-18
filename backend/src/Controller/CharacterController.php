@@ -508,6 +508,7 @@ class CharacterController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_roleplay_character_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_character_show', methods: ['GET'])]
     public function show(Character $character, ThreadRepository $threadRepository): Response
     {
         $threads = $threadRepository->findByParticipantId($character->getId());

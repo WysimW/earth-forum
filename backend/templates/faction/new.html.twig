@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Faction{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+    
+    <div class="faction-creation-header">
+        <h1>Créer une nouvelle faction</h1>
+        <p class="subtitle">Rassemblez des héros ou des vilains sous une même bannière</p>
+    </div>
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+    
+    {{ form_start(form, {'attr': {'class': 'faction-form'}}) }}
+    <div class="faction-grid">
+        {# Section Identité #}
+        <div class="faction-section">
+            <h2 class="faction-section-title">
+                <i class="fas fa-id-card"></i> Identité
+            </h2>
+            <div class="faction-info-grid">
+                <div class="mb-3">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.name) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.universe) }}
+                    {{ form_widget(form.universe, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.universe) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.alignment) }}
+                    {{ form_widget(form.alignment, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.alignment) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.scope) }}
+                    {{ form_widget(form.scope, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.scope) }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.status) }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.status) }}
+                </div>
+            </div>
+        </div>
+        
+        {# Section Quartier général #}
+        <div class="faction-section">
+            <h2 class="faction-section-title">
+                <i class="fas fa-building"></i> Quartier général
+            </h2>
+            <div class="mb-3">
+                {{ form_label(form.headquarters) }}
+                {{ form_widget(form.headquarters, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.headquarters) }}
+                <small class="form-text text-muted">Sélectionnez un lieu existant ou laissez vide pour créer une faction sans QG défini.</small>
+            </div>
+            
+            <div class="mb-3">
+                {{ form_label(form.headquartersDescription) }}
+                {{ form_widget(form.headquartersDescription, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                {{ form_errors(form.headquartersDescription) }}
+            </div>
+        </div>
+        
+        {# Section Description #}
+        <div class="faction-section full-width">
+            <h2 class="faction-section-title">
+                <i class="fas fa-file-alt"></i> Description
+            </h2>
+            <div class="mb-3">
+                {{ form_widget(form.description, {'attr': {
+                    'class': 'form-control wysiwyg-editor',
+                    'rows': 8,
+                    'placeholder': 'Décrivez votre faction, son histoire, ses valeurs...',
+                    'data-mode': 'roleplay'
+                }}) }}
+                {{ form_errors(form.description) }}
+            </div>
+        </div>
+        
+        {# Section Objectifs #}
+        <div class="faction-section full-width">
+            <h2 class="faction-section-title">
+                <i class="fas fa-bullseye"></i> Objectifs
+            </h2>
+            <div class="mb-3">
+                {{ form_widget(form.objectives, {'attr': {
+                    'class': 'form-control wysiwyg-editor',
+                    'rows': 5,
+                    'placeholder': 'Quels sont les objectifs et missions de votre faction ?',
+                    'data-mode': 'roleplay'
+                }}) }}
+                {{ form_errors(form.objectives) }}
+            </div>
+        </div>
+        
+        {% if is_granted('ROLE_ADMIN') %}
+            {# Section Administration (visible uniquement pour les admins) #}
+            <div class="faction-section full-width">
+                <h2 class="faction-section-title">
+                    <i class="fas fa-cog"></i> Administration
+                </h2>
+                <div class="faction-info-grid">
+                    <div class="mb-3">
+                        {{ form_label(form.founder) }}
+                        {{ form_widget(form.founder, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.founder) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.subforum) }}
+                        {{ form_widget(form.subforum, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.subforum) }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            {# Champs cachés pour les utilisateurs normaux #}
+            {{ form_widget(form.founder) }}
+            {{ form_widget(form.subforum) }}
+        {% endif %}
+    </div>
+
+    <div class="faction-form-actions">
+        <a href="{{ path('app_factions_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Créer la faction
+        </button>
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des éditeurs Quill.js si nécessaire
+    if (typeof window.initWysiwygEditors === 'function') {
+        window.initWysiwygEditors();
+    }
+    
+    // Initialisation de Select2 pour les sélecteurs multiples
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.select2').select2({
+            theme: 'bootstrap-5'
+        });
+    }
+});
+</script>
+{% endblock %} 

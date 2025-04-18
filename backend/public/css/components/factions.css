@@ -1,0 +1,644 @@
+/* Styles pour les factions */
+
+/* En-tête et bannière de faction */
+.faction-header {
+    position: relative;
+    background: linear-gradient(90deg, rgba(12, 45, 72, 0.8), rgba(20, 93, 160, 0.6));
+    padding: 1.5rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(220, 225, 227, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background-size: cover;
+    background-position: center;
+    color: white;
+    margin-bottom: 1.5rem;
+    z-index: 1;
+}
+
+.faction-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+    border-radius: var(--border-radius-md);
+    z-index: -1;
+}
+
+.faction-header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.faction-header h1 {
+    color: var(--text-white);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.faction-header .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.faction-header .faction-status {
+    box-shadow: none;
+}
+
+.faction-info {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.faction-info i {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+/* Badges de faction */
+.faction-status {
+    margin-top: 1rem;
+}
+
+.faction-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.faction-badge.alignment {
+    background-color: rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
+    border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+.faction-badge.scope {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #6f42c1;
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+.faction-badge.headquarters {
+    background-color: rgba(25, 135, 84, 0.2);
+    color: #198754;
+    border: 1px solid rgba(25, 135, 84, 0.3);
+}
+
+/* Conteneur principal */
+.container.my-4 {
+    padding-bottom: 2rem; /* Espace entre le contenu et le footer */
+}
+
+/* Cartes et boîtes d'information */
+.faction-info-box {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: left;
+}
+
+.faction-info-row {
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.faction-info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.faction-info-label {
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: inline-block;
+    width: 120px;
+}
+
+.faction-info-value {
+    display: inline-block;
+}
+
+.faction-info p:empty,
+.faction-info p:has(br:only-child) {
+    display: none;
+}
+
+.faction-description p:empty,
+.faction-description p:has(br:only-child) {
+    display: none;
+}
+
+/* Cartes de faction et composants */
+.faction-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    position: relative; /* Assure que le contenu reste dans la carte */
+}
+
+.faction-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: var(--roleplay-accent);
+}
+
+.faction-card-header {
+    background: linear-gradient(90deg, rgba(12, 45, 72, 0.8), rgba(20, 93, 160, 0.6));
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+}
+
+.faction-card-header i {
+    margin-right: 0.5rem;
+}
+
+.faction-card-body {
+    padding: 1rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    max-width: 100%;
+}
+
+.faction-card-title {
+    color: var(--text-white);
+    font-family: var(--font-title);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.faction-card-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.faction-card-description {
+    color: var(--text-white);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}
+
+/* Styles pour les membres de faction */
+.members-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem; /* Espace supplémentaire pour éviter le chevauchement */
+}
+
+.members-tabs {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.members-tabs .nav-link {
+    color: var(--text-white);
+    background-color: rgba(0, 0, 0, 0.2);
+    border: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    padding: 0.75rem 1.25rem;
+    margin-right: 0.25rem;
+}
+
+.members-tabs .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.members-tabs .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--roleplay-accent);
+    border-bottom: 2px solid var(--roleplay-accent);
+}
+
+.tab-content {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.tab-pane {
+    max-width: 100%;
+}
+
+.member-card {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.member-card:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+    object-fit: cover;
+    max-width: 100%;
+}
+
+.member-info {
+    flex: 1;
+    overflow: hidden; /* Empêche le débordement du texte */
+}
+
+.member-name {
+    font-weight: 500;
+    color: var(--text-white);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-role {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.placeholder-message {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+/* Fix pour les messages d'alerte */
+.alert {
+    word-break: break-word;
+}
+
+/* Styles pour les onglets */
+.faction-tabs {
+    margin-bottom: 0;
+}
+
+.faction-tab-item {
+    margin-right: 0.5rem;
+}
+
+.faction-tab-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-white);
+    background-color: transparent;
+    border: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.faction-tab-link:hover {
+    color: var(--roleplay-accent);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.faction-tab-link.active {
+    color: var(--roleplay-accent);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid var(--roleplay-accent);
+}
+
+.faction-tab-link i {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* Styles pour le formulaire de création/édition */
+.faction-creation-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.faction-creation-header h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.faction-creation-header .subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.faction-form {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.faction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.faction-section {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+}
+
+.faction-section.full-width {
+    grid-column: span 2;
+}
+
+.faction-section-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+    color: var(--roleplay-accent);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.faction-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.faction-form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+}
+
+/* Styles pour la fiche de faction */
+.faction-sheet {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: 2rem;
+    margin: 1.5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.faction-sheet-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.faction-sheet-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-white);
+}
+
+.faction-sheet-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.faction-sheet-info {
+    margin-bottom: 1.5rem;
+}
+
+.faction-sheet-info p {
+    margin-bottom: 0.5rem;
+}
+
+.faction-sheet-section {
+    margin-bottom: 1.5rem;
+}
+
+.faction-sheet-section h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--roleplay-accent);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.faction-sheet-content {
+    padding: 0.5rem 0;
+}
+
+.faction-sheet-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Styles pour la liste des factions */
+.universe-header {
+    height: 60px;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-dark-trans);
+    border-radius: 0.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid var(--accent-light);
+}
+
+.universe-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.universe-banner {
+    background: linear-gradient(90deg, rgba(12, 45, 72, 0.8), rgba(20, 93, 160, 0.6));
+    border-radius: var(--border-radius-md);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.universe-banner h1 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-white);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.universe-banner .description {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.filters {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Alignement badges */
+.alignment-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.alignment-hero {
+    background-color: rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
+    border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+.alignment-villain {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.alignment-antihero {
+    background-color: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+.alignment-vigilante {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.alignment-neutral {
+    background-color: rgba(20, 195, 142, 0.2);
+    color: #14c38e;
+    border: 1px solid rgba(20, 195, 142, 0.3);
+}
+
+.alignment-other {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #6f42c1;
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+/* Scope badges */
+.scope-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.scope-galaxy {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #6f42c1;
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+.scope-international {
+    background-color: rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
+    border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+.scope-national {
+    background-color: rgba(20, 195, 142, 0.2);
+    color: #14c38e;
+    border: 1px solid rgba(20, 195, 142, 0.3);
+}
+
+.scope-regional {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.scope-local {
+    background-color: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+/* Status badges */
+.status-open {
+    background-color: rgba(25, 135, 84, 0.2);
+    color: #198754;
+    border: 1px solid rgba(25, 135, 84, 0.3);
+}
+
+.status-closed {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Correction pour le z-index du modal */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+/* Ajustements pour les mobiles */
+@media (max-width: 768px) {
+    .member-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .member-avatar {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .member-info {
+        margin-bottom: 0.5rem;
+    }
+} 

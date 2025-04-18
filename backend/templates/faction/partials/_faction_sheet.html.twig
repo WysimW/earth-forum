@@ -1,0 +1,79 @@
+<div class="faction-sheet">
+    <div class="faction-sheet-header">
+        <h2>{{ faction.name }}</h2>
+        <div class="faction-sheet-badges">
+            {% if faction.alignment %}
+                <span class="faction-badge alignment-{{ faction.alignment }}">
+                    {% if faction.alignment == 'hero' %}Super-héros
+                    {% elseif faction.alignment == 'villain' %}Super-vilain
+                    {% elseif faction.alignment == 'antihero' %}Anti-héros
+                    {% elseif faction.alignment == 'vigilante' %}Vigilante
+                    {% elseif faction.alignment == 'neutral' %}Neutre
+                    {% else %}Autre{% endif %}
+                </span>
+            {% endif %}
+            
+            {% if faction.scope %}
+                <span class="faction-badge">
+                    {% if faction.scope == 'galaxy' %}Portée galactique
+                    {% elseif faction.scope == 'international' %}Portée internationale
+                    {% elseif faction.scope == 'national' %}Portée nationale
+                    {% elseif faction.scope == 'regional' %}Portée régionale
+                    {% elseif faction.scope == 'local' %}Portée locale
+                    {% endif %}
+                </span>
+            {% endif %}
+            
+            <span class="faction-badge status-{{ faction.status }}">
+                {{ faction.status == 'open' ? 'Ouvert aux recrutements' : 'Fermé aux recrutements' }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="faction-sheet-info">
+        <p><strong>Univers :</strong> {{ faction.universe.name }}</p>
+        <p><strong>Fondateur :</strong> {{ faction.founder.pseudo }}</p>
+        {% if faction.headquarters %}
+            <p><strong>Quartier général :</strong> {{ faction.headquarters.name }}</p>
+        {% endif %}
+        <p><strong>Membres :</strong> {{ faction.characters|length }} personnage(s){% if faction.npcs|length > 0 %} et {{ faction.npcs|length }} PNJ(s){% endif %}</p>
+    </div>
+    
+    {% if faction.description %}
+        <div class="faction-sheet-section">
+            <h3>Description</h3>
+            <div class="faction-sheet-content">
+                {{ faction.description|raw }}
+            </div>
+        </div>
+    {% endif %}
+    
+    {% if faction.objectives %}
+        <div class="faction-sheet-section">
+            <h3>Objectifs</h3>
+            <div class="faction-sheet-content">
+                {{ faction.objectives|raw }}
+            </div>
+        </div>
+    {% endif %}
+    
+    {% if faction.headquartersDescription %}
+        <div class="faction-sheet-section">
+            <h3>Quartier général</h3>
+            <div class="faction-sheet-content">
+                {{ faction.headquartersDescription|raw }}
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="faction-sheet-footer">
+        <p>Cette fiche a été générée automatiquement et représente l'état actuel de la faction.</p>
+        <p>Pour plus d'informations ou pour rejoindre la faction, 
+        {% if faction.id is defined and faction.id is not null and faction.slug is defined and faction.slug is not null %}
+            <a href="{{ path('app_faction_show', {'id': faction.id, 'slug': faction.slug}) }}">consultez la page de la faction</a>.
+        {% else %}
+            <span>consultez la page de la faction</span>.
+        {% endif %}
+        </p>
+    </div>
+</div>

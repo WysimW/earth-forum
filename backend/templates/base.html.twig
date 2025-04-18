@@ -36,6 +36,7 @@
             <link rel="stylesheet" href="{{ asset('css/components/responsive.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/tinymce-theme.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/universe.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/components/factions.css') }}">
             
             <!-- Fonts supplémentaires pour l'éditeur Quill -->
 
@@ -79,6 +80,9 @@
                                         <a class="nav-link" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}">Mes Personnages</a>
                                     </li>
                                     <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_factions_index') }}">Factions</a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a>
                                     </li>
                                     <li class="nav-item">
@@ -108,6 +112,7 @@
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}"><i class="fas fa-columns"></i> Tableau de bord</a></li>
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_factions_index') }}"><i class="fas fa-users"></i> Factions</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-toolbox"></i> Administration</a></li>
@@ -159,6 +164,11 @@
                             {% endif %}
                         </ul>
                     </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_factions_index') }}" class="sidebar-menu-link">
+                            <i class="fas fa-shield-alt"></i> Factions
+                        </a>
+                    </li>
                 </ul>
                 
                 
@@ -193,6 +203,13 @@
                             {% endif %}
                         </a>
                     </li>
+                    {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_faction_new') }}" class="sidebar-menu-link">
+                            <i class="fas fa-plus-circle"></i> Créer une faction
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 {% endif %}
                 
@@ -248,6 +265,7 @@
                             <ul class="list-unstyled small">
                                 <li><a href="{{ path('app_roleplay') }}">Accueil</a></li>
                                 <li><a href="{{ path('app_univers_index') }}">Univers</a></li>
+                                <li><a href="{{ path('app_factions_index') }}">Factions</a></li>
                                 <li><a href="#" onclick="redirectToRpThreads(event)"><i class="fa-solid fa-dice-d20 text-roleplay"></i> Scènes RP</a></li>
                                 <li><a href="{{ path('app_roleplay') }}#hrp-forums"><i class="fas fa-comments text-hrp"></i> Forums HRP</a></li>
                                 <li><a href="{{ path('app_roleplay_search') }}">Recherche</a></li>

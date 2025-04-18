@@ -309,6 +309,16 @@ class Thread implements TimestampableInterface
         return $this->posts;
     }
 
+    /**
+     * Retourne le nombre total de posts dans ce thread
+     * 
+     * @return int
+     */
+    public function getPostsCount(): int
+    {
+        return $this->posts->count();
+    }
+
     public function addPost(Post $post): static
     {
         if (!$this->posts->contains($post)) {

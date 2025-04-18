@@ -53,10 +53,14 @@ class Location
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $slug = "default";
 
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: Character::class)]
+    private Collection $characters;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
         $this->threads = new ArrayCollection();
+        $this->characters = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -245,5 +249,35 @@ class Location
             $slugger = new AsciiSlugger();
             $this->slug = strtolower($slugger->slug($this->name));
         }
+    }
+
+    /**
+     * @return Collection<int, Character>
+     */
+    public function getCharacters(): Collection
+    {
+        return $this->characters;
+    }
+
+    public function addCharacter(Character $character): static
+    {
+        if (!$this->characters->contains($character)) {
+            $this->characters->add($character);
+            $character->setLocation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCharacter(Character $character): static
+    {
+        if ($this->characters->removeElement($character)) {
+            // set the owning side to null (unless already changed)
+            if ($character->getLocation() === $this) {
+                $character->setLocation(null);
+            }
+        }
+
+        return $this;
     }
 }

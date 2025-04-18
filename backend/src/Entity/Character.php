@@ -89,6 +89,9 @@ class Character implements TimestampableInterface
     #[ORM\ManyToOne(inversedBy: 'characters')]
     private ?User $user = null;
     
+    #[ORM\ManyToOne(inversedBy: 'characters')]
+    private ?Location $location = null;
+    
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatar = null;
     
@@ -366,6 +369,18 @@ class Character implements TimestampableInterface
     public function setElseworld(?Elseworld $elseworld): static
     {
         $this->elseworld = $elseworld;
+
+        return $this;
+    }
+
+    public function getLocation(): ?Location
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?Location $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }

@@ -185,6 +185,9 @@ class FactionType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Faction::class,
+            'front_office' => false,
         ]);
+        
+        $resolver->setAllowedTypes('front_office', 'bool');
     }
 } 
