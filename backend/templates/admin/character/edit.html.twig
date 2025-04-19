@@ -81,6 +81,11 @@
                             {{ form_widget(form.pseudonyms, {'attr': {'class': 'form-control'}}) }}
                             {{ form_errors(form.pseudonyms) }}
                         </div>
+                        <div class="col-12">
+                            {{ form_label(form.actualPseudo, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.actualPseudo, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.actualPseudo) }}
+                        </div>
                         <div class="col-md-6">
                             {{ form_label(form.gender, null, {'label_attr': {'class': 'form-label'}}) }}
                             {{ form_widget(form.gender, {'attr': {'class': 'form-select'}}) }}

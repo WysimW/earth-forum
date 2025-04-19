@@ -6,6 +6,7 @@ use App\Entity\Faction;
 use App\Entity\Forum;
 use App\Entity\Thread;
 use App\Entity\Post;
+use App\Entity\Univers;
 use App\Form\FactionType;
 use App\Repository\FactionRepository;
 use App\Repository\ForumRepository;
@@ -104,7 +105,7 @@ class FactionController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Votre faction a été créée avec succès !');
-            return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('faction/new.html.twig', [
@@ -115,22 +116,66 @@ class FactionController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}', name: 'app_faction_show', methods: ['GET'])]
-    public function show(string $slug, FactionRepository $factionRepository): Response
+    #[Route('/univers/{universeSlug}/faction/{factionSlug}', name: 'app_faction_show')]
+    public function show(string $universeSlug, string $factionSlug, UniversRepository $universRepository, FactionRepository $factionRepository): Response
     {
-        $faction = $factionRepository->findOneBy(['slug' => $slug]);
- 
-        // Vérifier que le slug est correct, sinon rediriger vers l'URL correcte
-        if ($faction->getSlug() !== $slug) {
-            return $this->redirectToRoute('app_faction_show', [
-                'slug' => $faction->getSlug()
-            ]);
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
         
+        $faction = $factionRepository->findOneBy(['slug' => $factionSlug, 'universe' => $univers]);
+        
+        if (!$faction) {
+            throw $this->createNotFoundException('La faction demandée n\'existe pas');
+        }
+        
+        // Récupérer les threads associés à cette faction
+        $threads = $faction->getScenes();
+        
         return $this->render('faction/show.html.twig', [
+            'univers' => $univers,
             'faction' => $faction,
-            'univers' => $faction->getUniverse(),
-            'breadcrumbs' => $this->getBreadcrumbsFaction($faction)
+            'threads' => $threads,
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+                'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $universeSlug]),
+                $faction->getName() => $this->generateUrl('app_faction_show', ['universeSlug' => $universeSlug, 'factionSlug' => $factionSlug]),
+            ]),
+        ]);
+    }
+
+    #[Route('/univers/{universeSlug}/faction/{factionSlug}/debug', name: 'app_faction_debug')]
+    public function debug(string $universeSlug, string $factionSlug, UniversRepository $universRepository, FactionRepository $factionRepository): Response
+    {
+        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        
+        if (!$univers) {
+            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+        
+        $faction = $factionRepository->findOneBy(['slug' => $factionSlug, 'universe' => $univers]);
+        
+        if (!$faction) {
+            throw $this->createNotFoundException('La faction demandée n\'existe pas');
+        }
+        
+        // Vérification et correction des threads liés à la faction
+        $scenes = [];
+        foreach ($faction->getScenes() as $scene) {
+            $scenes[] = [
+                'id' => $scene->getId(),
+                'title' => $scene->getTitle(),
+                'contains_faction' => $scene->getFactions()->contains($faction)
+            ];
+        }
+        
+        return $this->render('faction/debug.html.twig', [
+            'univers' => $univers,
+            'faction' => $faction,
+            'scenes' => $scenes,
         ]);
     }
 
@@ -144,7 +189,7 @@ class FactionController extends AbstractController
         // Vérifier que l'utilisateur est le fondateur de la faction ou un administrateur
         if ($faction->getFounder() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Vous n\'avez pas la permission de modifier cette faction.');
-            return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+            return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
         }
         
         $form = $this->createForm(FactionType::class, $faction, [
@@ -160,7 +205,7 @@ class FactionController extends AbstractController
             $this->updateFactionThread($faction);
 
             $this->addFlash('success', 'La faction a été mise à jour avec succès.');
-            return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('faction/edit.html.twig', [
@@ -179,7 +224,7 @@ class FactionController extends AbstractController
         // Vérifier que l'utilisateur est le fondateur de la faction ou un administrateur
         if ($faction->getFounder() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Vous n\'avez pas la permission de supprimer cette faction.');
-            return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+            return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
         }
         
         if ($this->isCsrfTokenValid('delete'.$faction->getId(), $request->request->get('_token'))) {
@@ -205,7 +250,7 @@ class FactionController extends AbstractController
             ]);
         }
 
-        return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+        return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
     }
 
     #[Route('/{id}/join', name: 'app_faction_join', methods: ['POST'])]
@@ -217,32 +262,32 @@ class FactionController extends AbstractController
             
             if (!$characterId) {
                 $this->addFlash('error', 'Vous devez sélectionner un personnage.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             $character = $characterRepository->find($characterId);
             
             if (!$character) {
                 $this->addFlash('error', 'Le personnage sélectionné n\'existe pas.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Vérifier que le personnage appartient bien à l'utilisateur
             if ($character->getUser() !== $this->getUser()) {
                 $this->addFlash('error', 'Ce personnage ne vous appartient pas.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Vérifier que le personnage n'est pas déjà dans la faction
             if ($faction->getCharacters()->contains($character)) {
                 $this->addFlash('error', 'Ce personnage est déjà membre de la faction.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Vérifier que la faction est ouverte aux inscriptions
             if ($faction->getStatus() !== Faction::STATUS_OPEN) {
                 $this->addFlash('error', 'Cette faction n\'est pas ouverte aux inscriptions.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Ajouter le personnage à la faction
@@ -252,7 +297,7 @@ class FactionController extends AbstractController
             $this->addFlash('success', $character->getName() . ' a rejoint la faction ' . $faction->getName() . ' avec succès.');
         }
         
-        return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+        return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
     }
 
     #[Route('/{id}/leave', name: 'app_faction_leave', methods: ['POST'])]
@@ -264,26 +309,26 @@ class FactionController extends AbstractController
             
             if (!$characterId) {
                 $this->addFlash('error', 'Vous devez sélectionner un personnage.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             $character = $characterRepository->find($characterId);
             
             if (!$character) {
                 $this->addFlash('error', 'Le personnage sélectionné n\'existe pas.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Vérifier que le personnage appartient bien à l'utilisateur
             if ($character->getUser() !== $this->getUser()) {
                 $this->addFlash('error', 'Ce personnage ne vous appartient pas.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Vérifier que le personnage est bien dans la faction
             if (!$faction->getCharacters()->contains($character)) {
                 $this->addFlash('error', 'Ce personnage n\'est pas membre de la faction.');
-                return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+                return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
             }
             
             // Retirer le personnage de la faction
@@ -293,7 +338,7 @@ class FactionController extends AbstractController
             $this->addFlash('success', $character->getName() . ' a quitté la faction ' . $faction->getName() . ' avec succès.');
         }
         
-        return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+        return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
     }
 
     #[Route('/{id}/toggle-status', name: 'app_faction_toggle_status', methods: ['POST'])]
@@ -305,7 +350,7 @@ class FactionController extends AbstractController
         // Vérifier que l'utilisateur est le fondateur de la faction ou un administrateur
         if ($faction->getFounder() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Vous n\'avez pas la permission de modifier cette faction.');
-            return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+            return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
         }
         
         if ($this->isCsrfTokenValid('toggle_status'.$faction->getId(), $request->request->get('_token'))) {
@@ -319,7 +364,7 @@ class FactionController extends AbstractController
             $this->addFlash('success', 'La faction est maintenant ' . $statusMessage . ' aux inscriptions.');
         }
         
-        return $this->redirectToRoute('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]);
+        return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
     }
 
     /**
@@ -456,7 +501,7 @@ class FactionController extends AbstractController
             'Accueil' => $this->generateUrl('app_univers_index'),
             $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()]),
             'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $univers->getSlug()]),
-            $faction->getName() => $this->generateUrl('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()])
+            $faction->getName() => $this->generateUrl('app_faction_show', ['universeSlug' => $univers->getSlug(), 'factionSlug' => $faction->getSlug()])
         ];
         
         foreach ($additional as $name => $url) {

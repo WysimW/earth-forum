@@ -51,6 +51,11 @@
                             <span class="badge bg-info">{{ character.elseworld.name }}</span>
                         </div>
                     {% endif %}
+                    {% if character.actualPseudo %}
+                        <div class="mb-1">
+                            <small class="text-muted">{{ character.actualPseudo }}</small>
+                        </div>
+                    {% endif %}
                     <div class="card-text small">
                         {% if character.biography %}
                             {{ character.biography|striptags|u.truncate(100, '...') }}

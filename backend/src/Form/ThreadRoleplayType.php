@@ -7,6 +7,7 @@ use App\Entity\Location;
 use App\Entity\Thread;
 use App\Entity\Univers;
 use App\Entity\Npc;
+use App\Entity\Faction;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -99,6 +100,20 @@ class ThreadRoleplayType extends AbstractType
                     'data-choices' => 'true'
                 ]
             ])
+            ->add('factions', EntityType::class, [
+                'label' => 'Factions liées',
+                'class' => Faction::class,
+                'choices' => $options['factions'],
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+                'help' => 'Sélectionnez les factions liées à cette scène',
+                'attr' => [
+                    'class' => 'form-select',
+                    'data-choices' => 'true'
+                ]
+            ])
             ->add('maxParticipants', IntegerType::class, [
                 'label' => 'Nombre maximum de participants',
                 'required' => false,
@@ -138,6 +153,7 @@ class ThreadRoleplayType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Thread::class,
             'characters' => [], // Liste des personnages de l'utilisateur
+            'factions' => [], // Liste des factions de l'univers
         ]);
     }
 }

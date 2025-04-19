@@ -1,12 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau PNJ{% endblock %}
+{% block title %}{% if faction is defined %}Nouveau PNJ pour {{ faction.name }}{% else %}Nouveau PNJ{% endif %}{% endblock %}
 
 {% block body %}
 <div class="container my-4">
+    {# Fils d'Ariane #}
+    {% if breadcrumbs is defined %}
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                {% for label, url in breadcrumbs %}
+                    {% if loop.last %}
+                        <li class="breadcrumb-item active" aria-current="page">{{ label }}</li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{{ url }}">{{ label }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+    {% endif %}
+
     <div class="character-creation-header mb-4">
-        <h1 class="text-roleplay">Créer un nouveau PNJ</h1>
-        <p class="subtitle">Donnez vie à votre univers</p>
+        {% if faction is defined %}
+            <h1 class="text-roleplay">Créer un PNJ pour {{ faction.name }}</h1>
+            <p class="subtitle">Ce PNJ sera automatiquement lié à la faction et validé</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Les PNJ de faction sont visibles par tous les membres et peuvent être utilisés dans les scènes. Ils sont considérés comme faisant partie du lore de la faction.
+            </div>
+        {% elseif elseworld is defined %}
+            <h1 class="text-roleplay">Créer un PNJ pour {{ elseworld.name }}</h1>
+            <p class="subtitle">Ce PNJ sera lié à l'Elseworld {{ elseworld.name }}</p>
+        {% else %}
+            <h1 class="text-roleplay">Créer un nouveau PNJ</h1>
+            <p class="subtitle">Donnez vie à votre univers</p>
+        {% endif %}
     </div>
     
     {{ form_start(form, {'attr': {'class': 'character-form'}}) }}

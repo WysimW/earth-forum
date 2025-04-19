@@ -120,7 +120,7 @@
                     {% if app.user.createdFactions is defined and app.user.createdFactions|length > 0 %}
                         <div class="list-group list-group-flush">
                             {% for faction in app.user.createdFactions %}
-                                <a href="{{ path('app_faction_show', {'id': faction.id, 'slug': faction.slug}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1">{{ faction.name }}</h6>

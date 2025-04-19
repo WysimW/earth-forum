@@ -30,14 +30,43 @@
 .faction-header-content {
     position: relative;
     z-index: 2;
+    padding: 2rem;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
+/* Conteneur principal pour le texte */
+.faction-header-main {
+    flex: 1;
+}
+
+/* Style du logo à droite */
+.faction-logo {
+    margin-left: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.faction-logo img {
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Style pour les titres dans le header */
 .faction-header h1 {
-    color: var(--text-white);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    font-family: var(--font-title);
+    font-family: var(--font-title, 'Orbitron', sans-serif);
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
     letter-spacing: 1px;
-    margin-bottom: 0.5rem;
+    text-transform: uppercase;
 }
 
 .faction-header .badge {
@@ -640,5 +669,15 @@
     
     .member-info {
         margin-bottom: 0.5rem;
+    }
+    
+    .faction-header-content {
+        flex-direction: column;
+    }
+    
+    .faction-logo {
+        margin-left: 0;
+        margin-top: 1.5rem;
+        align-items: center;
     }
 } 

@@ -32,50 +32,58 @@
     {% endif %}
     >
         <div class="faction-header-content">
-            <h1>{{ faction.name }}</h1>
-            <div class="d-flex align-items-center mb-3">
-                {% if faction.alignment %}
-                    <span class="faction-badge alignment-{{ faction.alignment }}">
-                        {% if faction.alignment == 'hero' %}Super-héros
-                        {% elseif faction.alignment == 'villain' %}Super-vilain
-                        {% elseif faction.alignment == 'antihero' %}Anti-héros
-                        {% elseif faction.alignment == 'vigilante' %}Vigilante
-                        {% elseif faction.alignment == 'neutral' %}Neutre
-                        {% else %}Autre{% endif %}
+            <div class="faction-header-main">
+                <h1>{{ faction.name }}</h1>
+                <div class="d-flex align-items-center mb-3">
+                    {% if faction.alignment %}
+                        <span class="faction-badge alignment-{{ faction.alignment }}">
+                            {% if faction.alignment == 'hero' %}Super-héros
+                            {% elseif faction.alignment == 'villain' %}Super-vilain
+                            {% elseif faction.alignment == 'antihero' %}Anti-héros
+                            {% elseif faction.alignment == 'vigilante' %}Vigilante
+                            {% elseif faction.alignment == 'neutral' %}Neutre
+                            {% else %}Autre{% endif %}
+                        </span>
+                    {% endif %}
+                    
+                    <span class="faction-badge status-{{ faction.status }}">
+                        {{ faction.status == 'open' ? 'Ouvert aux recrutements' : 'Fermé aux recrutements' }}
                     </span>
-                {% endif %}
-                
-                <span class="faction-badge status-{{ faction.status }}">
-                    {{ faction.status == 'open' ? 'Ouvert aux recrutements' : 'Fermé aux recrutements' }}
-                </span>
-                
-                {% if faction.scope %}
-                    <span class="faction-badge">
-                        {% if faction.scope == 'galaxy' %}Portée galactique
-                        {% elseif faction.scope == 'international' %}Portée internationale
-                        {% elseif faction.scope == 'national' %}Portée nationale
-                        {% elseif faction.scope == 'regional' %}Portée régionale
-                        {% elseif faction.scope == 'local' %}Portée locale
-                        {% endif %}
-                    </span>
-                {% endif %}
-            </div>
-            
-            <div class="faction-info mb-1">
-                <i class="fas fa-globe"></i> Univers: <a href="{{ path('app_univers_show', {'slug': faction.universe.slug}) }}" class="text-white">{{ faction.universe.name }}</a>
-            </div>
-            
-            <div class="faction-info">
-                <i class="fas fa-user"></i> Fondateur: {{ faction.founder.pseudo }}
-            </div>
-            
-            {% if faction.characters|length > 0 or faction.npcs|length > 0 %}
-                <div class="faction-info mt-2">
-                    <i class="fas fa-users"></i> {{ faction.characters|length }} membre(s)
-                    {% if faction.npcs|length > 0 %}
-                        et {{ faction.npcs|length }} PNJ(s)
+                    
+                    {% if faction.scope %}
+                        <span class="faction-badge">
+                            {% if faction.scope == 'galaxy' %}Portée galactique
+                            {% elseif faction.scope == 'international' %}Portée internationale
+                            {% elseif faction.scope == 'national' %}Portée nationale
+                            {% elseif faction.scope == 'regional' %}Portée régionale
+                            {% elseif faction.scope == 'local' %}Portée locale
+                            {% endif %}
+                        </span>
                     {% endif %}
                 </div>
+                
+                <div class="faction-info mb-1">
+                    <i class="fas fa-globe"></i> Univers: <a href="{{ path('app_univers_show', {'slug': faction.universe.slug}) }}" class="text-white">{{ faction.universe.name }}</a>
+                </div>
+                
+                <div class="faction-info">
+                    <i class="fas fa-user"></i> Fondateur: {{ faction.founder.pseudo }}
+                </div>
+                
+                {% if faction.characters|length > 0 or faction.npcs|length > 0 %}
+                    <div class="faction-info mt-2">
+                        <i class="fas fa-users"></i> {{ faction.characters|length }} membre(s)
+                        {% if faction.npcs|length > 0 %}
+                            et {{ faction.npcs|length }} PNJ(s)
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if faction.logo %}
+            <div class="faction-logo">
+                <img src="{{ faction.logo }}" alt="Logo {{ faction.name }}" class="img-fluid" style="max-height: 120px;">
+            </div>
             {% endif %}
         </div>
     </div>
@@ -141,7 +149,7 @@
                                             <img src="{{ character.avatar ? character.avatar : asset('images/default-avatar.png') }}" alt="{{ character.name }}" class="member-avatar">
                                             <div class="member-info">
                                                 <div class="member-name">{{ character.name }}</div>
-                                                <div class="member-role">{{ character.occupation }}</div>
+                                                <div class="member-role">{{ character.actualPseudo }}</div>
                                             </div>
                                             <a href="{{ path('app_character_show', {'id': character.id, 'slug': character.slug}) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye"></i>
@@ -308,6 +316,10 @@
                         <div class="d-grid gap-2">
                             <a href="{{ path('app_faction_edit', {'id': faction.id}) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit me-1"></i> Modifier la faction
+                            </a>
+                            
+                            <a href="{{ path('app_npc_new_faction', {'faction_id': faction.id}) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-user-plus me-1"></i> Créer un PNJ
                             </a>
                             
                             <form method="post" action="{{ path('app_faction_toggle_status', {'id': faction.id}) }}">

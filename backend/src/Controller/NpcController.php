@@ -77,6 +77,70 @@ class NpcController extends AbstractController
         ]);
     }
 
+    #[Route('/new/faction/{faction_id}', name: 'app_npc_new_faction', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function newForFaction(Request $request, EntityManagerInterface $entityManager, int $faction_id): Response
+    {
+        $faction = $entityManager->getRepository(\App\Entity\Faction::class)->find($faction_id);
+        
+        if (!$faction) {
+            throw $this->createNotFoundException('Faction non trouvée');
+        }
+        
+        // Vérifier que l'utilisateur est le fondateur de la faction ou un admin
+        if ($faction->getFounder() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à créer un PNJ pour cette faction');
+        }
+        
+        $npc = new Npc();
+        // On définit l'utilisateur comme étant le fondateur de la faction
+        // pour que le PNJ appartienne à la faction et non à l'utilisateur qui le crée
+        $npc->setUser($faction->getFounder());
+        $npc->setUniverse($faction->getUniverse());
+        
+        // Préparation du formulaire
+        $form = $this->createForm(NpcType::class, $npc);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Ajouter le PNJ à la faction
+            $npc->addFactionRelation($faction);
+            
+            // Définir le statut initial
+            $npc->setStatus(Npc::STATUS_VALIDATED); // Auto-validation pour les PNJ de faction
+            $npc->setValidatedAt(new \DateTimeImmutable());
+            
+            // Ajouter une note dans la description indiquant que ce PNJ appartient à la faction
+            if ($npc->getBiography()) {
+                $biographyNote = "<p><em>Ce PNJ appartient à la faction " . $faction->getName() . ".</em></p>";
+                $npc->setBiography($npc->getBiography() . $biographyNote);
+            } else {
+                $npc->setBiography("<p><em>Ce PNJ appartient à la faction " . $faction->getName() . ".</em></p>");
+            }
+            
+            $entityManager->persist($npc);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Le PNJ a été créé avec succès et ajouté à la faction ' . $faction->getName());
+            return $this->redirectToRoute('app_faction_show', [
+                'id' => $faction->getId(),
+                'slug' => $faction->getSlug()
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('npc/new.html.twig', [
+            'npc' => $npc,
+            'form' => $form,
+            'faction' => $faction,
+            'breadcrumbs' => [
+                'Accueil' => $this->generateUrl('app_home'),
+                'Factions' => $this->generateUrl('app_factions_index'),
+                $faction->getName() => $this->generateUrl('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]),
+                'Nouveau PNJ' => $this->generateUrl('app_npc_new_faction', ['faction_id' => $faction->getId()]),
+            ],
+        ]);
+    }
+
     #[Route('/{id}', name: 'app_npc_show', methods: ['GET'])]
     public function show(Npc $npc): Response
     {

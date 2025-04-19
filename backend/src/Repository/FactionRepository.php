@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Faction;
+use App\Entity\User;
+use App\Entity\Univers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -100,6 +102,27 @@ class FactionRepository extends ServiceEntityRepository
             ->innerJoin('f.npcs', 'n')
             ->andWhere('n.id = :npcId')
             ->setParameter('npcId', $npcId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Trouve les factions associées à un utilisateur dans un univers donné
+     * Soit parce qu'il en est le fondateur, soit parce qu'il a un personnage qui en est membre
+     */
+    public function findFactionsForUser(User $user, Univers $univers): array
+    {
+        // Requête pour trouver les factions où l'utilisateur est fondateur OU
+        // a un personnage qui est membre de la faction
+        return $this->createQueryBuilder('f')
+            ->leftJoin('f.characters', 'c')
+            ->leftJoin('c.user', 'u')
+            ->where('f.universe = :universe')
+            ->andWhere('(f.founder = :user OR u.id = :userId)')
+            ->setParameter('universe', $univers)
+            ->setParameter('user', $user)
+            ->setParameter('userId', $user->getId())
+            ->orderBy('f.name', 'ASC')
             ->getQuery()
             ->getResult();
     }

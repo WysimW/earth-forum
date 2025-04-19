@@ -37,3 +37,24 @@
 
 {% include 'components/_thread_styles.html.twig' %}
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWysiwygEditors();
+            
+            // Initialisation pour les sélecteurs multiples avec select2
+            if (document.querySelector('[data-select2]')) {
+                const selects = document.querySelectorAll('[data-select2]');
+                selects.forEach(select => {
+                    $(select).select2({
+                        width: '100%',
+                        placeholder: 'Sélectionnez...',
+                        allowClear: true
+                    });
+                });
+            }
+        });
+    </script>
+{% endblock %}

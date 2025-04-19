@@ -15,6 +15,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityRepository;
@@ -83,6 +84,24 @@ class FactionType extends AbstractType
                     'class' => 'form-control',
                     'rows' => 3
                 ],
+            ])
+            ->add('logo', UrlType::class, [
+                'label' => 'Logo (URL)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'https://exemple.com/logo.png'
+                ],
+                'help' => 'URL de l\'image du logo de la faction'
+            ])
+            ->add('icon', UrlType::class, [
+                'label' => 'Icône (URL)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'https://exemple.com/icon.png'
+                ],
+                'help' => 'URL de l\'icône de la faction'
             ])
             ->add('headquarters', EntityType::class, [
                 'class' => Location::class,

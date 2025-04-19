@@ -55,10 +55,21 @@
         {% if isNew %}
             <div class="mb-3">
                 {{ form_label(form.npcs) }}
-                {{ form_widget(form.npcs, {'attr': {'class': 'form-select'}}) }}
+                {{ form_widget(form.npcs, {'attr': {'class': 'form-select', 'data-select2': 'true'}}) }}
                 {{ form_errors(form.npcs) }}
                 <small class="form-text text-muted">
                     Sélectionnez les PNJ qui participeront à cette scène
+                </small>
+            </div>
+        {% endif %}
+        
+        {% if form.factions is defined %}
+            <div class="mb-3">
+                {{ form_label(form.factions) }}
+                {{ form_widget(form.factions, {'attr': {'class': 'form-select', 'data-select2': 'true'}}) }}
+                {{ form_errors(form.factions) }}
+                <small class="form-text text-muted">
+                    Sélectionnez les factions liées à cette scène
                 </small>
             </div>
         {% endif %}

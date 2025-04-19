@@ -59,6 +59,12 @@
                     {{ form_widget(form.pseudonyms, {'attr': {'class': 'form-control character-input'}}) }}
                     {{ form_errors(form.pseudonyms) }}
                 </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.actualPseudo) }}</div>
+                    {{ form_widget(form.actualPseudo, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.actualPseudo) }}
+                </div>
             </div>
         </div>
 

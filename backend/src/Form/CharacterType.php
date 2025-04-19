@@ -53,6 +53,14 @@ class CharacterType extends AbstractType
                     'placeholder' => 'Alias, noms de code, surnoms...'
                 ]
             ])
+            ->add('actualPseudo', TextType::class, [
+                'label' => 'Pseudonyme actuel',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Pseudonyme actuellement utilisé'
+                ],
+                'help' => 'Le nom sous lequel votre personnage est connu actuellement'
+            ])
             ->add('age', TextType::class, [
                 'label' => 'Âge',
                 'required' => false,

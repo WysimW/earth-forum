@@ -1,0 +1,558 @@
+                /* Style personnalisé Select2 adapté au design system Earth Forum */
+                .select2-container--default .select2-selection--single,
+                .select2-container--default .select2-selection--multiple,
+                .select2-container--bootstrap-5 .select2-selection--single,
+                .select2-container--bootstrap-5 .select2-selection--multiple {
+                    background-color: rgba(var(--primary-dark-rgb), 0.7) !important;
+                    border: var(--border-width-sm, 1px) solid var(--primary-light, #2980b9) !important;
+                    border-radius: var(--border-radius-md, 0.5rem) !important;
+                    min-height: 38px !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1)) !important;
+                    transition: var(--transition-normal, 0.3s ease) !important;
+                }
+
+                .select2-container--default .select2-selection--single:hover,
+                .select2-container--default .select2-selection--multiple:hover,
+                .select2-container--bootstrap-5 .select2-selection--single:hover,
+                .select2-container--bootstrap-5 .select2-selection--multiple:hover {
+                    border-color: var(--accent-blue, #0476F2) !important;
+                    box-shadow: 0 0 8px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                    background-color: rgba(var(--primary-dark-rgb), 0.8) !important;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__rendered,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+                    line-height: 38px !important;
+                    padding-left: 12px !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__placeholder,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder,
+                .select2-container--default .select2-selection--multiple .select2-selection__placeholder,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__placeholder {
+                    color: var(--light-gray, #DCE1E3) !important;
+                    opacity: var(--opacity-medium, 0.5) !important;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__arrow,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+                    height: 36px !important;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__arrow b,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+                    border-color: var(--accent-light, #2588F5) transparent transparent transparent !important;
+                }
+
+                /* Badges de sélection améliorés */
+                .select2-container--default .select2-selection--multiple .select2-selection__choice,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+                    background: linear-gradient(135deg, var(--primary-medium, #145DA0), var(--accent-blue, #0476F2)) !important;
+                    border: none !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    border-radius: var(--border-radius-sm, 0.25rem) !important;
+                    padding: 4px 10px !important;
+                    margin-top: 4px !important;
+                    margin-right: 5px !important;
+                    font-family: var(--font-main, 'Inter', sans-serif) !important;
+                    box-shadow: 0 0 8px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                    position: relative !important;
+                    overflow: hidden !important;
+                }
+
+                .select2-container--default .select2-selection--multiple .select2-selection__choice::after,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 20%;
+                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+                    border-radius: var(--border-radius-sm, 0.25rem) var(--border-radius-sm, 0.25rem) 0 0;
+                    pointer-events: none;
+                }
+
+                /* Croix de suppression améliorées avec Font Awesome */
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+                    color: var(--text-white, #FFFFFF) !important;
+                    margin-right: 8px !important;
+                    padding: 0 8px !important;
+                    transition: var(--transition-fast, 0.2s ease) !important;
+                    font-weight: normal !important;
+                    font-size: 14px !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    height: 100% !important;
+                    position: relative !important;
+                    background: rgba(0, 0, 0, 0.2) !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    text-decoration: none !important;
+                    width: 22px !important;
+                    overflow: hidden !important;
+                }
+                
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+                    background-color: rgba(255, 255, 255, 0.25) !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5) inset !important;
+                }
+                
+                /* On masque le texte/contenu original */
+                .select2-selection__choice__remove > span {
+                    display: none !important;
+                }
+                
+                /* Ajouter l'icône Font Awesome avec alternatives pour FA5/FA6 */
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove::before,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::before {
+                    content: "\f00d" !important; /* Code pour fa-times/fa-xmark */
+                    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+                    font-weight: 900 !important;
+                    display: inline-block !important;
+                    font-size: 10px !important;
+                    line-height: 1 !important;
+                    text-indent: 0 !important;
+                }
+                
+                /* Style alternatif si Font Awesome n'est pas chargé */
+                .no-fontawesome .select2-container--default .select2-selection--multiple .select2-selection__choice__remove::before,
+                .no-fontawesome .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::before {
+                    content: "×" !important;
+                    font-family: Arial, sans-serif !important;
+                    font-size: 16px !important;
+                }
+                
+                /* Style amélioré pour le champ de recherche avec icône de loupe */
+                .select2-container--default .select2-search--dropdown,
+                .select2-container--bootstrap-5 .select2-search--dropdown {
+                    position: relative !important;
+                    padding: 5px 5px !important;
+                    background: rgba(var(--primary-dark-rgb), 0.8) !important;
+                    border-bottom: 1px solid rgba(var(--primary-light), 0.2) !important;
+                }
+                
+                /* Style du champ de recherche */
+                .select2-container--default .select2-search--dropdown .select2-search__field,
+                .select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field {
+                    background-color: rgba(var(--primary-dark-rgb), 0.6) !important;
+                    background-image: linear-gradient(to bottom, rgba(var(--primary-medium-rgb), 0.3), rgba(var(--primary-dark-rgb), 0.4)) !important;
+                    border: 1px solid var(--primary-light, #2980b9) !important;
+                    border-radius: var(--border-radius-md, 0.5rem) !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    padding: 10px 14px !important;
+                    padding-right: 40px !important; /* Espace pour l'icône */
+                    margin: 5px !important;
+                    width: calc(100% - 10px) !important;
+                    box-shadow: 0 0 8px rgba(var(--primary-dark-rgb), 0.3) inset, 0 0 5px var(--glow-blue, rgba(20, 93, 160, 0.3)) !important;
+                    font-family: var(--font-main, 'Inter', sans-serif) !important;
+                    transition: all var(--transition-normal, 0.3s ease) !important;
+                    backdrop-filter: blur(2px) !important;
+                    font-size: 0.95rem !important;
+                }
+                
+                /* Positionnement et style du conteneur d'icône */
+                .select2-container--default .select2-search--dropdown::after,
+                .select2-container--bootstrap-5 .select2-search--dropdown::after {
+                    content: "\f002" !important; /* fa-search */
+                    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+                    font-weight: 900 !important;
+                    position: absolute !important;
+                    right: 18px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    color: var(--accent-light, #2588F5) !important;
+                    pointer-events: none !important;
+                    font-size: 14px !important;
+                    z-index: 5 !important;
+                    text-shadow: 0 0 4px rgba(var(--accent-blue-rgb), 0.6) !important;
+                    opacity: 0.8 !important;
+                }
+                
+                /* Alternative avec une approche différente en cas de problème */
+                .select2-search__field-icon-container {
+                    position: relative !important;
+                }
+                
+                /* Utilisation de JS pour ajouter l'icône si le CSS ne fonctionne pas */
+                .select2-search__field-icon {
+                    position: absolute !important;
+                    right: 15px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    color: var(--accent-light, #2588F5) !important;
+                    opacity: 0.8 !important;
+                    pointer-events: none !important;
+                }
+                
+                /* État de focus du champ de recherche */
+                .select2-container--default .select2-search--dropdown .select2-search__field:focus,
+                .select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field:focus {
+                    border-color: var(--accent-blue, #0476F2) !important;
+                    box-shadow: 0 0 0 0.15rem rgba(var(--accent-blue-rgb), 0.3), 
+                                0 0 15px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                    outline: none !important;
+                    background-color: rgba(var(--primary-dark-rgb), 0.8) !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                }
+                
+                /* Animation lorsque le champ obtient le focus */
+                .select2-container--default .select2-search--dropdown .select2-search__field:focus ~ ::before,
+                .select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field:focus ~ ::before {
+                    color: var(--accent-blue, #0476F2) !important;
+                    opacity: 1 !important;
+                    transform: translateY(-50%) scale(1.1) !important;
+                }
+                
+                /* Correction du champ de recherche inline dans les select multiples */
+                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-search--inline .select2-search__field {
+                    color: var(--text-white, #FFFFFF) !important;
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    font-family: var(--font-main, 'Inter', sans-serif) !important;
+                    margin-top: 5px !important;
+                    margin-left: 8px !important;
+                    min-width: 150px !important;
+                    width: auto !important; /* Correction critique */
+                    height: 26px !important;
+                    padding: 4px !important;
+                    font-size: 0.95rem !important;
+                    line-height: 1.2 !important;
+                    cursor: text !important;
+                }
+                
+                /* Règles explicites pour contrer le style "width: 0.75em" */
+                textarea.select2-search__field {
+                    width: auto !important;
+                    min-width: 150px !important;
+                    max-width: 100% !important;
+                }
+                
+                /* Empêcher les problèmes d'affichage du champ de recherche inline */
+                .select2-container--default .select2-selection--multiple .select2-search.select2-search--inline,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-search.select2-search--inline {
+                    flex: 1 !important;
+                    min-width: 150px !important;
+                    width: auto !important;
+                }
+                
+                /* Forcer le bon dimensionnement du span parent */
+                .select2-search.select2-search--inline {
+                    width: auto !important;
+                    min-width: 150px !important;
+                    display: inline-flex !important;
+                    flex: 1 !important;
+                }
+                
+                /* Forcer la prise en compte de nos styles */
+                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field[style*="width"],
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-search--inline .select2-search__field[style*="width"] {
+                    width: auto !important;
+                    min-width: 150px !important;
+                }
+                
+                /* Améliorer le focus du champ de recherche inline */
+                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field:focus,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-search--inline .select2-search__field:focus {
+                    outline: none !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+                
+                /* Empêcher les problèmes de taille/débordement du champ de recherche interne */
+                .select2-container--default .select2-selection--multiple .select2-search--inline,
+                .select2-container--bootstrap-5 .select2-selection--multiple .select2-search--inline {
+                    float: none !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    min-height: 36px !important;
+                    flex: 1 !important;
+                    flex-grow: 1 !important;
+                    width: auto !important;
+                }
+                
+                /* Assurer que le champ interne a le bon style quand il est vide */
+                .select2-container--default.select2-container--focus .select2-selection--multiple,
+                .select2-container--bootstrap-5.select2-container--focus .select2-selection--multiple {
+                    min-height: 38px !important;
+                    padding-bottom: 4px !important;
+                }
+                
+                /* Style du dropdown lui-même */
+                .select2-dropdown {
+                    opacity: 0;
+                    animation: select2FadeIn 0.25s ease-out forwards;
+                }
+                
+                @keyframes select2FadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-5px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                /* Placeholder du champ de recherche */
+                .select2-container--default .select2-search--inline .select2-search__field::placeholder,
+                .select2-container--bootstrap-5 .select2-search--inline .select2-search__field::placeholder {
+                    color: var(--light-gray, #DCE1E3) !important;
+                    opacity: 0.6 !important;
+                }
+                
+                /* Ajuster les résultats pour avoir un meilleur espacement vertical */
+                .select2-results__options {
+                    max-height: 250px !important;
+                    overflow-y: auto !important;
+                    padding: 5px 0 !important;
+                    scrollbar-width: thin !important;
+                    scrollbar-color: var(--primary-light, #2980b9) var(--primary-dark, #0C2D48) !important;
+                }
+                
+                .select2-results__options::-webkit-scrollbar {
+                    width: 8px !important;
+                }
+                
+                .select2-results__options::-webkit-scrollbar-track {
+                    background-color: rgba(var(--primary-dark-rgb), 0.5) !important;
+                    border-radius: 10px !important;
+                }
+                
+                .select2-results__options::-webkit-scrollbar-thumb {
+                    background-color: var(--primary-light, #2980b9) !important;
+                    border-radius: 10px !important;
+                    border: 2px solid rgba(var(--primary-dark-rgb), 0.5) !important;
+                }
+                
+                /* Style pour la croix de fermeture du champ de recherche */
+                .select2-container--default .select2-selection--single .select2-selection__clear,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__clear {
+                    color: var(--light-gray, #DCE1E3) !important;
+                    font-weight: bold !important;
+                    margin-right: 10px !important;
+                    cursor: pointer !important;
+                    transition: var(--transition-fast, 0.2s ease) !important;
+                }
+                
+                .select2-container--default .select2-selection--single .select2-selection__clear:hover,
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__clear:hover {
+                    color: var(--text-white, #FFFFFF) !important;
+                }
+                
+                /* Croix dans le champ de recherche multiple - correction */
+                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+                    color: var(--text-white, #FFFFFF) !important;
+                    font-family: var(--font-main, 'Inter', sans-serif) !important;
+                    margin-top: 5px !important;
+                    margin-left: 5px !important;
+                }
+                
+                /* Alignement des badges */
+                .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+                    padding: 0 5px !important;
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    gap: 5px !important;
+                    align-items: center !important;
+                }
+                
+                .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                    margin-right: 0 !important;
+                    margin-top: 5px !important;
+                    margin-bottom: 5px !important;
+                }
+
+                .select2-container--default .select2-results__option,
+                .select2-container--bootstrap-5 .select2-results__option {
+                    background-color: transparent !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    padding: 8px 12px !important;
+                    transition: var(--transition-fast, 0.2s) ease !important;
+                }
+
+                .select2-container--default .select2-results__option--highlighted[aria-selected],
+                .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+                    background: linear-gradient(90deg, var(--primary-medium, #145DA0), var(--accent-blue, #0476F2)) !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                    box-shadow: 0 0 8px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                }
+
+                .select2-container--bootstrap-5 .select2-dropdown,
+                .select2-container--default .select2-dropdown {
+                    background-color: rgba(var(--primary-dark-rgb), 0.85) !important;
+                    border-color: var(--primary-light, #2980b9) !important;
+                    border-radius: var(--border-radius-md, 0.5rem) !important;
+                    box-shadow: var(--shadow-md, 0 5px 15px rgba(0, 0, 0, 0.2)), 
+                               0 0 12px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                    backdrop-filter: blur(10px) !important;
+                }
+
+                /* Style spécifique pour les sections Roleplay */
+                .bg-roleplay .select2-container--default .select2-selection--multiple .select2-selection__choice,
+                .bg-roleplay .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice,
+                .select2-roleplay .select2-selection--multiple .select2-selection__choice {
+                    background: linear-gradient(135deg, var(--roleplay-secondary, #2588F5), var(--roleplay-primary, #0476F2)) !important;
+                    box-shadow: 0 0 8px var(--roleplay-glow, rgba(4, 118, 242, 0.6)) !important;
+                    position: relative !important;
+                    z-index: 2 !important;
+                }
+
+                .select2-roleplay .select2-selection--multiple .select2-selection__choice::before {
+                    content: '';
+                    position: absolute;
+                    top: -1px;
+                    left: -1px;
+                    right: -1px;
+                    bottom: -1px;
+                    background: linear-gradient(45deg, transparent 30%, rgba(var(--roleplay-primary-rgb), 0.5), transparent 70%);
+                    background-size: 200% 200%;
+                    animation: shineEffect 2s infinite;
+                    border-radius: var(--border-radius-sm, 0.25rem);
+                    z-index: -1;
+                    opacity: 0.6;
+                }
+
+                @keyframes shineEffect {
+                    0% {
+                        background-position: 200% 0;
+                    }
+                    100% {
+                        background-position: -200% 0;
+                    }
+                }
+
+                .select2-roleplay .select2-selection--single,
+                .select2-roleplay .select2-selection--multiple {
+                    border-color: var(--roleplay-primary, #0476F2) !important;
+                    background-color: rgba(var(--roleplay-primary-rgb), 0.15) !important;
+                }
+
+                .select2-roleplay .select2-selection--single:hover,
+                .select2-roleplay .select2-selection--multiple:hover {
+                    box-shadow: 0 0 12px var(--roleplay-glow, rgba(4, 118, 242, 0.6)) !important;
+                    border-color: var(--roleplay-accent, #4A9CF7) !important;
+                    background-color: rgba(var(--roleplay-primary-rgb), 0.2) !important;
+                }
+
+                /* Style spécifique pour les sections HRP */
+                .bg-hrp .select2-container--default .select2-selection--multiple .select2-selection__choice,
+                .bg-hrp .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice,
+                .select2-hrp .select2-selection--multiple .select2-selection__choice {
+                    background: linear-gradient(135deg, var(--hrp-secondary, #01734d), var(--hrp-primary, #015f40)) !important;
+                    box-shadow: 0 0 8px var(--hrp-glow, rgba(1, 95, 64, 0.6)) !important;
+                }
+
+                .select2-hrp .select2-selection--single,
+                .select2-hrp .select2-selection--multiple {
+                    border-color: var(--hrp-primary, #015f40) !important;
+                    background-color: rgba(var(--hrp-primary-rgb), 0.15) !important;
+                }
+
+                .select2-hrp .select2-selection--single:hover,
+                .select2-hrp .select2-selection--multiple:hover {
+                    box-shadow: 0 0 12px var(--hrp-glow, rgba(1, 95, 64, 0.6)) !important;
+                    border-color: var(--hrp-accent, #01885a) !important;
+                    background-color: rgba(var(--hrp-primary-rgb), 0.2) !important;
+                }
+
+                /* Styles pour select2 utilisé dans les factions */
+                .faction-info-grid .select2-container {
+                    width: 100% !important;
+                    margin-bottom: 0.5rem !important;
+                }
+
+                .faction-info-grid .select2-container .select2-selection--multiple {
+                    min-height: 80px !important;
+                    background: linear-gradient(180deg, rgba(var(--primary-dark-rgb), 0.7), rgba(var(--deep-black), 0.7)) !important;
+                }
+
+                /* Styles pour la liste déroulante */
+                .select2-dropdown-dark.select2-dropdown {
+                    background: linear-gradient(180deg, rgba(var(--primary-dark-rgb), 0.9), rgba(var(--deep-black), 0.9)) !important;
+                    backdrop-filter: blur(10px) !important;
+                    border-color: var(--primary-light, #2980b9) !important;
+                    box-shadow: var(--shadow-md, 0 5px 15px rgba(0, 0, 0, 0.2)), 
+                                0 0 15px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                }
+
+                /* Améliorer le texte de recherche */
+                .select2-search__field {
+                    font-family: var(--font-main, 'Inter', sans-serif) !important;
+                    background-color: rgba(var(--primary-dark-rgb), 0.5) !important;
+                    color: var(--text-white, #FFFFFF) !important;
+                }
+
+                /* Style de focus */
+                .select2-container--default.select2-container--focus .select2-selection--multiple,
+                .select2-container--default.select2-container--focus .select2-selection--single {
+                    border-color: var(--accent-blue, #0476F2) !important;
+                    box-shadow: 0 0 0 0.2rem rgba(var(--accent-blue-rgb), 0.25), 
+                                0 0 12px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
+                    background-color: rgba(var(--primary-dark-rgb), 0.8) !important;
+                }
+
+                /* Style pour option désactivée */
+                .select2-container--default .select2-results__option[aria-disabled=true] {
+                    color: var(--light-gray, #DCE1E3) !important;
+                    opacity: var(--opacity-dim, 0.3) !important;
+                }
+
+                /* Style pour le message "aucun résultat" */
+                .select2-container--default .select2-results__message {
+                    color: var(--light-gray, #DCE1E3) !important;
+                    padding: 10px !important;
+                    font-style: italic !important;
+                    opacity: var(--opacity-medium, 0.5) !important;
+                }
+
+                /* Animation de transition */
+                .select2-results__option {
+                    transition: background-color var(--transition-fast, 0.2s) ease !important;
+                }
+
+                /* Style pour option sélectionnée */
+                .select2-container--default .select2-results__option[aria-selected=true] {
+                    background-color: rgba(var(--primary-medium-rgb), 0.3) !important;
+                    color: var(--accent-light, #2588F5) !important;
+                    font-weight: 500 !important;
+                }
+
+                /* Style spécial pour faction-info-grid */
+                .faction-info-grid .select2-container {
+                    width: 100% !important;
+                    margin-bottom: 0.5rem !important;
+                }
+
+                .faction-info-grid .select2-container .select2-selection--multiple {
+                    min-height: 80px !important;
+                    background: linear-gradient(180deg, rgba(var(--primary-dark-rgb), 0.7), rgba(var(--deep-black), 0.7)) !important;
+                }
+
+                /* Adaptation mobile */
+                @media (max-width: 768px) {
+                    .select2-container {
+                        width: 100% !important;
+                    }
+                    
+                    .select2-container--default .select2-selection--single,
+                    .select2-container--default .select2-selection--multiple,
+                    .select2-container--bootstrap-5 .select2-selection--single,
+                    .select2-container--bootstrap-5 .select2-selection--multiple {
+                        min-height: 44px !important;
+                    }
+                    
+                    .select2-container--default .select2-selection--single .select2-selection__rendered,
+                    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+                        line-height: 44px !important;
+                    }
+                }

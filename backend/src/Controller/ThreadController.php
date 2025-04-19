@@ -15,6 +15,7 @@ use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Repository\UniversRepository;
 use App\Repository\ReadPostRepository;
+use App\Repository\FactionRepository;
 use App\Service\BreadcrumbService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -83,7 +84,14 @@ class ThreadController extends AbstractController
 
     #[Route('/univers/{universeSlug}/forum/{id}/nouvelle-discussion', name: 'app_forum_new_thread')]
     #[IsGranted('ROLE_USER')]
-    public function newThread(string $universeSlug, Request $request, Forum $forum, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
+    public function newThread(
+        string $universeSlug, 
+        Request $request, 
+        Forum $forum, 
+        UniversRepository $universRepository, 
+        CharacterRepository $characterRepository,
+        FactionRepository $factionRepository
+    ): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
         
@@ -113,8 +121,14 @@ class ThreadController extends AbstractController
             if (count($userCharacters) !== 0) {
                 $hasValidatedCharacters = true;
             }
+            
+            // Récupérer les factions disponibles pour l'utilisateur dans cet univers
+            // (celles qu'il a fondées ou dont ses personnages sont membres)
+            $userFactions = $factionRepository->findFactionsForUser($this->getUser(), $univers);
+            
             $form = $this->createForm(ThreadRoleplayType::class, $thread, [
                 'characters' => $userCharacters,
+                'factions' => $userFactions,
             ]);
         } else {
             $form = $this->createForm(ThreadType::class, $thread);
@@ -126,8 +140,6 @@ class ThreadController extends AbstractController
             $post = new Post();
             $post->setThread($thread);
             $post->setAuthor($this->getUser());
-
-           
             
             // Utiliser le contenu du premier post spécifié séparément de la description du thread
             $post->setContent($isRpForum ? $thread->getFirstPostContent() : $thread->getDescription());
@@ -144,6 +156,14 @@ class ThreadController extends AbstractController
             if ($isRpForum && $thread->getNpcs()) {
                 foreach ($thread->getNpcs() as $npc) {
                     $post->addNpc($npc);
+                }
+            }
+            
+            // S'assurer que les factions sont correctement associées au thread
+            if ($isRpForum && $thread->getFactions()) {
+                foreach ($thread->getFactions() as $faction) {
+                    // Forcer l'ajout du thread dans les scènes de la faction
+                    $faction->addScene($thread);
                 }
             }
 
@@ -696,7 +716,14 @@ class ThreadController extends AbstractController
 
     #[Route('/univers/{universeSlug}/thread/{id}/edit', name: 'app_thread_edit')]
     #[IsGranted('ROLE_USER')]
-    public function edit(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
+    public function edit(
+        string $universeSlug, 
+        Thread $thread, 
+        Request $request, 
+        UniversRepository $universRepository, 
+        CharacterRepository $characterRepository,
+        FactionRepository $factionRepository
+    ): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
         
@@ -713,8 +740,14 @@ class ThreadController extends AbstractController
         
         if ($isRpThread) {
             $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+            
+            // Récupérer les factions disponibles pour l'utilisateur dans cet univers
+            // (celles qu'il a fondées ou dont ses personnages sont membres)
+            $userFactions = $factionRepository->findFactionsForUser($this->getUser(), $univers);
+            
             $form = $this->createForm(ThreadRoleplayType::class, $thread, [
                 'characters' => $userCharacters,
+                'factions' => $userFactions,
             ]);
         } else {
             $form = $this->createForm(ThreadType::class, $thread);
@@ -723,6 +756,14 @@ class ThreadController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            // S'assurer que les factions sont correctement associées au thread
+            if ($isRpThread && $thread->getFactions()) {
+                foreach ($thread->getFactions() as $faction) {
+                    // Forcer l'ajout du thread dans les scènes de la faction
+                    $faction->addScene($thread);
+                }
+            }
+            
             // Generate slug from the title
             $slug = $this->generateSlug($thread->getTitle());
             $thread->setSlug($slug);

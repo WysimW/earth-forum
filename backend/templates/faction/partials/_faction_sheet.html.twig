@@ -1,5 +1,10 @@
 <div class="faction-sheet">
     <div class="faction-sheet-header">
+        {% if faction.logo %}
+        <div class="faction-logo">
+            <img src="{{ faction.logo }}" alt="Logo {{ faction.name }}" class="img-fluid">
+        </div>
+        {% endif %}
         <h2>{{ faction.name }}</h2>
         <div class="faction-sheet-badges">
             {% if faction.alignment %}
@@ -70,7 +75,7 @@
         <p>Cette fiche a été générée automatiquement et représente l'état actuel de la faction.</p>
         <p>Pour plus d'informations ou pour rejoindre la faction, 
         {% if faction.id is defined and faction.id is not null and faction.slug is defined and faction.slug is not null %}
-            <a href="{{ path('app_faction_show', {'id': faction.id, 'slug': faction.slug}) }}">consultez la page de la faction</a>.
+            <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}">consultez la page de la faction</a>.
         {% else %}
             <span>consultez la page de la faction</span>.
         {% endif %}

@@ -74,6 +74,12 @@ class Faction implements TimestampableInterface
     #[ORM\ManyToMany(targetEntity: Thread::class)]
     private Collection $scenes;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $logo = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $icon = null;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -275,6 +281,30 @@ class Faction implements TimestampableInterface
     {
         $this->subforum = $subforum;
 
+        return $this;
+    }
+
+    public function getLogo(): ?string
+    {
+        return $this->logo;
+    }
+
+    public function setLogo(?string $logo): static
+    {
+        $this->logo = $logo;
+        
+        return $this;
+    }
+
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function setIcon(?string $icon): static
+    {
+        $this->icon = $icon;
+        
         return $this;
     }
 

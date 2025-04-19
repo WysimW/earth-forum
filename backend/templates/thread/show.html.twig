@@ -79,6 +79,15 @@
                 </span>
             {% endif %}
             
+            {% if thread.factions is not empty %}
+                <span class="badge bg-primary me-2" title="Factions">
+                    <i class="fas fa-users me-1"></i> 
+                    {% for faction in thread.factions %}
+                        <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" class="badge bg-secondary text-decoration-none link-light">{{ faction.name }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </span>
+            {% endif %}
+            
             {% if thread.type == 'roleplay' and thread.visibleToCharactersOnly %}
                 <span class="badge bg-dark" title="Visibilité">
                     <i class="fas fa-user-shield me-1"></i> Visible uniquement par les personnages participants

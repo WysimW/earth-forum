@@ -94,11 +94,16 @@ class Thread implements TimestampableInterface
     #[ORM\JoinTable(name: 'thread_npcs')]
     private Collection $npcs;
 
+    #[ORM\ManyToMany(targetEntity: Faction::class, inversedBy: 'scenes')]
+    #[ORM\JoinTable(name: 'thread_factions')]
+    private Collection $factions;
+
     public function __construct()
     {  
         $this->posts = new ArrayCollection();
         $this->participants = new ArrayCollection();
         $this->npcs = new ArrayCollection();
+        $this->factions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -385,6 +390,33 @@ class Thread implements TimestampableInterface
     public function removeNpc(Npc $npc): static
     {
         $this->npcs->removeElement($npc);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Faction>
+     */
+    public function getFactions(): Collection
+    {
+        return $this->factions;
+    }
+
+    public function addFaction(Faction $faction): static
+    {
+        if (!$this->factions->contains($faction)) {
+            $this->factions->add($faction);
+            $faction->addScene($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFaction(Faction $faction): static
+    {
+        if ($this->factions->removeElement($faction)) {
+            $faction->removeScene($this);
+        }
 
         return $this;
     }

@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Débogage Faction {{ faction.name }} - DC Earth{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    <h1>Débogage de la faction {{ faction.name }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Informations générales</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>ID:</strong> {{ faction.id }}</p>
+            <p><strong>Nom:</strong> {{ faction.name }}</p>
+            <p><strong>Slug:</strong> {{ faction.slug }}</p>
+            <p><strong>Univers:</strong> {{ faction.universe.name }}</p>
+            <p><strong>Fondateur:</strong> {{ faction.founder.pseudo }}</p>
+            <p><strong>Nombre de personnages:</strong> {{ faction.characters|length }}</p>
+            <p><strong>Nombre de PNJ:</strong> {{ faction.npcs|length }}</p>
+            <p><strong>Nombre de scènes associées:</strong> {{ faction.scenes|length }}</p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Scènes/Threads associés</h2>
+        </div>
+        <div class="card-body">
+            {% if scenes|length > 0 %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Faction associée (vérification bidirectionnelle)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scene in scenes %}
+                            <tr>
+                                <td>{{ scene.id }}</td>
+                                <td>{{ scene.title }}</td>
+                                <td>
+                                    {% if scene.contains_faction %}
+                                        <span class="badge bg-success">OK</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">NON</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': scene.id}) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-warning">
+                    Aucune scène associée à cette faction.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <a href="{{ path('app_faction_show', {'universeSlug': univers.slug, 'factionSlug': faction.slug}) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la faction
+    </a>
+</div>
+{% endblock %} 

@@ -58,6 +58,26 @@
             </div>
         </div>
         
+        {# Section Images #}
+        <div class="faction-section">
+            <h2 class="faction-section-title">
+                <i class="fas fa-images"></i> Images
+            </h2>
+            <div class="mb-3">
+                {{ form_label(form.logo) }}
+                {{ form_widget(form.logo, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.logo) }}
+                <small class="form-text text-muted">{{ form_help(form.logo) }}</small>
+            </div>
+            
+            <div class="mb-3">
+                {{ form_label(form.icon) }}
+                {{ form_widget(form.icon, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.icon) }}
+                <small class="form-text text-muted">{{ form_help(form.icon) }}</small>
+            </div>
+        </div>
+        
         {# Section Quartier général #}
         <div class="faction-section">
             <h2 class="faction-section-title">

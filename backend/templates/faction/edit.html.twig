@@ -59,6 +59,36 @@
             </div>
         </div>
         
+        {# Section Images #}
+        <div class="faction-section">
+            <h2 class="faction-section-title">
+                <i class="fas fa-images"></i> Images
+            </h2>
+            <div class="mb-3">
+                {{ form_label(form.logo) }}
+                {{ form_widget(form.logo, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.logo) }}
+                <small class="form-text text-muted">{{ form_help(form.logo) }}</small>
+                {% if faction.logo %}
+                <div class="mt-2">
+                    <img src="{{ faction.logo }}" alt="Logo actuel" class="img-thumbnail" style="max-height: 100px;">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form_label(form.icon) }}
+                {{ form_widget(form.icon, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.icon) }}
+                <small class="form-text text-muted">{{ form_help(form.icon) }}</small>
+                {% if faction.icon %}
+                <div class="mt-2">
+                    <img src="{{ faction.icon }}" alt="Icône actuelle" class="img-thumbnail" style="max-height: 50px;">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
         {# Section Quartier général #}
         <div class="faction-section">
             <h2 class="faction-section-title">
@@ -169,7 +199,7 @@
 
     <div class="faction-form-actions">
         <div>
-            <a href="{{ path('app_faction_show', {'id': faction.id, 'slug': faction.slug}) }}" class="btn btn-outline-secondary">
+            <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" class="btn btn-outline-secondary">
                 <i class="fas fa-times"></i> Annuler
             </a>
             

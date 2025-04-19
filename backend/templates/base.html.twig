@@ -14,6 +14,14 @@
             <link href="/css/components/quill-editor.css" rel="stylesheet">
             <!-- Font Awesome (CDN gratuit) -->
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <!-- Select2 CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+            <!-- Select2 Bootstrap 5 Theme CSS -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+            <!-- Select2 Theme personnalisé Earth Forum -->
+            <style>
+
+            </style>
             <!-- Styles généraux -->
             <link rel="stylesheet" href="/css/main.css">
             <!-- Google Fonts -->
@@ -36,9 +44,7 @@
             <link rel="stylesheet" href="{{ asset('css/components/tinymce-theme.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/universe.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/factions.css') }}">
-            
-            <!-- Fonts supplémentaires pour l'éditeur Quill -->
-
+            <link rel="stylesheet" href="{{ asset('css/libraries/select2-custom.css') }}">
         {% endblock %}
     </head>
     <body class="{% if app.user %}user-logged-in{% endif %}">
@@ -288,8 +294,14 @@
         </div>
 
         {% block javascripts %}
+            <!-- jQuery (requis pour Select2) -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
             <!-- Bootstrap Bundle with Popper -->
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Select2 JS -->
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            <!-- Select2 Bootstrap 5 Theme -->
+            <script src="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.js"></script>
             <!-- Quill.js (éditeur WYSIWYG gratuit) -->
             <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
             <!-- Notre éditeur personnalisé basé sur Quill -->
@@ -312,6 +324,67 @@
                     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                         return new bootstrap.Tooltip(tooltipTriggerEl)
                     });
+                    
+                    // Initialisation globale de Select2
+                    if (document.querySelector('[data-select2], .select2')) {
+                        // Initialiser les éléments qui utilisent data-select2
+                        $('[data-select2]').select2({
+                            width: '100%',
+                            placeholder: 'Sélectionnez...',
+                            allowClear: true,
+                            dropdownCssClass: 'select2-dropdown-dark',
+                            language: {
+                                noResults: function() {
+                                    return "Aucun résultat trouvé";
+                                }
+                            }
+                        });
+                        
+                        // Initialiser les éléments qui utilisent la classe select2 
+                        // mais pas déjà initialisés
+                        $('.select2:not(.select2-hidden-accessible)').select2({
+                            width: '100%',
+                            placeholder: 'Sélectionnez...',
+                            allowClear: true,
+                            dropdownCssClass: 'select2-dropdown-dark',
+                            language: {
+                                noResults: function() {
+                                    return "Aucun résultat trouvé";
+                                }
+                            }
+                        });
+                        
+                        // Appliquer des styles spécifiques selon le contexte
+                        $('.bg-roleplay, .btn-roleplay').closest('form').find('.select2-container').addClass('select2-roleplay');
+                        $('.bg-hrp, .btn-hrp').closest('form').find('.select2-container').addClass('select2-hrp');
+                        
+                        // Ajouter l'icône de recherche de manière dynamique si le CSS ne fonctionne pas
+                        $(document).on('select2:open', function() {
+                            setTimeout(function() {
+                                if ($('.select2-search__field-icon').length === 0) {
+                                    $('.select2-search--dropdown').addClass('select2-search__field-icon-container');
+                                    $('.select2-search--dropdown').append('<i class="fas fa-search select2-search__field-icon"></i>');
+                                }
+                            }, 0);
+                        });
+                        
+                        // Fixer le problème de largeur du champ de recherche inline
+                        $(document).on('select2:open', function() {
+                            $('.select2-search__field').css('width', 'auto');
+                        });
+                        
+                        // Corriger la largeur du champ après chaque interaction
+                        $(document).on('click', '.select2-selection--multiple', function() {
+                            setTimeout(function() {
+                                $('.select2-search--inline textarea.select2-search__field').each(function() {
+                                    $(this).css({
+                                        'width': 'auto',
+                                        'min-width': '150px'
+                                    });
+                                });
+                            }, 0);
+                        });
+                    }
                     
                     // Mobile sidebar toggle
                     const sidebarToggle = document.getElementById('sidebarToggle');
