@@ -58,10 +58,10 @@ header {
 }
 
 .nav-link {
-    color: var(--light-gray) ;
+    color: var(--light-gray);
     font-weight: 500;
     letter-spacing: 1px;
-    padding: var(--spacing-sm) var(--spacing-md) ;
+    padding: var(--spacing-sm) var(--spacing-md);
     transition: color var(--transition-normal), text-shadow var(--transition-normal);
     position: relative;
     font-family: var(--font-special);
@@ -72,7 +72,8 @@ header {
     text-shadow: 0 0 10px var(--glow-blue);
 }
 
-.nav-link:before {
+/* Effet de soulignement unique pour les liens de navigation */
+.nav-link::after {
     content: '';
     position: absolute;
     width: 0;
@@ -80,12 +81,12 @@ header {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--accent-green);
+    background-color: var(--accent-blue);
     transition: width var(--transition-normal);
-    box-shadow: 0 0 8px var(--glow-green);
+    box-shadow: 0 0 8px var(--glow-blue);
 }
 
-.nav-link:hover:before {
+.nav-link:hover::after {
     width: 70%;
 }
 
@@ -114,6 +115,7 @@ header {
 }
 
 /* Style de la ligne de soulignement */
+/* Cette règle est dupliquée, elle est déjà définie plus haut
 .nav-link:after {
     content: '';
     position: absolute;
@@ -130,6 +132,7 @@ header {
 .nav-link:hover:after {
     width: 70%;
 }
+*/
 
 /* Sidebar */
 .sidebar {
@@ -196,7 +199,7 @@ header {
     text-transform: uppercase;
     font-size: 0.8rem;
     letter-spacing: 1px;
-    color: var(--accent-green);
+    color: var(--accent-blue);
     padding: var(--spacing-md) var(--spacing-xl) var(--spacing-sm);
     opacity: var(--opacity-light);
 }
@@ -262,7 +265,7 @@ footer a:hover {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-green);
+    background: var(--accent-blue);
 }
 
 /* Glass Panel */

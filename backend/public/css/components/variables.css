@@ -15,11 +15,16 @@
     --text-white: #FFFFFF;
 
     /* Accents et états */
-    --accent-green: #0476F2;
+    --accent-blue: #0476F2;
     --accent-light: #2588F5;
     --warning: #f39c12;
     --danger: #e74c3c;
     --info: #3498db;
+    
+    /* Valeurs RGB pour les opérations de transparence */
+    --primary-dark-rgb: 12, 45, 72;
+    --primary-medium-rgb: 20, 93, 160;
+    --accent-blue-rgb: 4, 118, 242;
 
     /* Couleurs RP */
     --roleplay-primary: #0476F2;
@@ -29,6 +34,7 @@
     --roleplay-glow: rgba(4, 118, 242, 0.6);
     --roleplay-transparent: rgba(11, 20, 85, 0.15);
     --roleplay-hover: rgba(11, 20, 85, 0.2);
+    --roleplay-primary-rgb: 4, 118, 242;
 
     /* Couleurs HRP */
     --hrp-primary: #015f40;
@@ -37,6 +43,7 @@
     --hrp-light: #01a067;
     --hrp-glow: rgba(1, 95, 64, 0.6);
     --hrp-hover: rgba(1, 95, 64, 0.2);
+    --hrp-primary-rgb: 1, 95, 64;
 
     /* Couleurs Important */
     --important-primary: #BB070E;
@@ -45,6 +52,7 @@
     --important-accent: #E00B1B;
     --important-glow: rgba(187, 7, 14, 0.6);
     --important-hover: rgba(187, 7, 14, 0.2);
+    --important-primary-rgb: 187, 7, 14;
 
     /* Effets de lueur */
     --glow-blue: rgba(20, 93, 160, 0.6);
@@ -54,6 +62,7 @@
     --font-main: 'Inter', sans-serif;
     --font-title: 'Bebas Neue', sans-serif;
     --font-special: 'Bebas Neue', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
 
     /* Espacements */
     --spacing-xs: 0.25rem;
@@ -111,4 +120,8 @@
     --sidebar-width: 250px;
     --card-padding: var(--spacing-lg);
     --section-margin: var(--spacing-xxl);
+    
+    /* Arrière-plans translucides */
+    --bg-dark-trans: rgba(10, 10, 10, 0.8);
+    --bg-primary-trans: rgba(12, 45, 72, 0.7);
 }

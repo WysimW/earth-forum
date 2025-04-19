@@ -6,12 +6,6 @@
         {% else %}
             <i class="fas fa-{% if forum.isImportant() %}thumbtack{% elseif forum.isRoleplay() %}dice-d20{% else %}comments{% endif %}"></i>
         {% endif %}
-        
-        {# Indicateur de messages non lus - invisible par défaut, sera affiché par JavaScript #}
-        <div class="unread-indicator" style="display: none;" title="Contient des messages non lus">
-            <i class="fas fa-circle-exclamation pulse-animation"></i>
-            <span class="unread-count"></span>
-        </div>
     </div>
     <div class="forum-info">
         <h3 class="forum-title">
@@ -80,9 +74,17 @@
         {% if forum.lastPostInfo %}
             <div class="forum-last-post">
                 <div class="d-flex align-items-start gap-2">
-                    <div class="last-post-icon">
+                    {# Indicateur de messages non lus - invisible par défaut, sera affiché par JavaScript #}
+                    <div class="unread-indicator last-post-icon" style="display: none;" title="Contient des messages non lus">
+                        <i class="fas fa-circle-exclamation pulse-animation"></i>
+                        <span class="unread-count"></span>
+                    </div>
+                    
+                    {# Icône de dernier message - sera masquée par JavaScript quand l'indicateur est visible #}
+                    <div class="last-post-icon last-clock-icon">
                         <i class="fas fa-clock"></i>
                     </div>
+                    
                     <div class="last-post-details">
                         <small class="d-block">
                             <strong>Dernière activité :</strong> 

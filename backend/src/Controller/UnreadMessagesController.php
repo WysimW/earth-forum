@@ -291,10 +291,11 @@ class UnreadMessagesController extends AbstractController
             // Si ce n'est pas un thread épinglé, vérifier si l'utilisateur y participe
             if (!$isSticky) {
                 // Vérifier si l'utilisateur a des personnages participants
+                // On utilise une requête directe sur Thread->participants plutôt que Character->threadsParticipating
                 $hasParticipants = $entityManager->createQueryBuilder()
                     ->select('COUNT(c.id)')
-                    ->from('App\Entity\Character', 'c')
-                    ->join('c.threadsParticipating', 't')
+                    ->from('App\Entity\Thread', 't')
+                    ->join('t.participants', 'c')
                     ->where('t.id = :threadId')
                     ->andWhere('c.user = :user')
                     ->setParameter('threadId', $id)

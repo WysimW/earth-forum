@@ -54,9 +54,7 @@
                                     {{ thread.characterParticipants|length }} participant{% if thread.characterParticipants|length > 1 %}s{% endif %}
                                 </span>
                             {% endif %}
-                        </div>
-                        
-                        <div class="thread-list--thread-actions">
+                                                    <div class="thread-list--thread-actions">
                            
                             
                             {% if is_granted('ROLE_MODERATOR') or (is_granted('IS_AUTHENTICATED_FULLY') and app.user.id == thread.author.id) %}
@@ -90,6 +88,9 @@
                                 </div>
                             {% endif %}
                         </div>
+                        </div>
+                        
+
                     </div>
                     
                     <div class="thread-last-activity">
@@ -105,15 +106,24 @@
                         
                         <div class="activity-divider"></div>
                         
-                        <div class="last-activity-label">
-                            <i class="fas fa-clock"></i> Dernière activité:
+                        <div class="last-activity-wrapper d-flex align-items-center">
+                            <div class="unread-indicator thread-unread-indicator thread-clock-replacement hidden" style="display: none;" title="Contient des messages non lus">
+                                <i class="fas fa-circle-exclamation pulse-animation"></i>
+                                <span class="unread-count">0</span>
+                            </div>
+                            
+                            <div class="thread-clock-icon" style="display: inline-flex;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            
+                            <span class="ms-1">Dernière activité :</span>
                         </div>
                         
                         {% if thread.lastPost is defined and thread.lastPost %}
                             <div class="last-post-details">
                                 <div>
                                     <small class="d-block">{{ thread.lastPost.createdAt|date('d/m/Y H:i') }}</small>
-                                    <small class="d-block">
+                                    <small class="d-block">Par : 
                                         {% if thread.lastPost.character %}
                                             <span class="character-name">{{ thread.lastPost.character.name }}</span>
                                         {% else %}
@@ -127,11 +137,6 @@
                                 <small>Pas de réponse</small>
                             </div>
                         {% endif %}
-                        
-                        <div class="unread-indicator thread-unread-indicator" style="display: none;" title="Contient des messages non lus">
-                            <i class="fas fa-circle-exclamation pulse-animation"></i>
-                            <span class="unread-count"></span>
-                        </div>
                     </div>
                 </div>
             {% endfor %}

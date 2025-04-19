@@ -154,22 +154,37 @@ class UnreadMessagesManager {
             // Troisième passe : mettre à jour l'affichage des indicateurs
             forumCards.forEach(card => {
                 const forumId = card.getAttribute('data-forum-id');
-                const indicator = card.querySelector('.unread-indicator');
-                const countElement = card.querySelector('.unread-count');
+                const unreadIndicator = card.querySelector('.unread-indicator');
+                const clockIcon = card.querySelector('.last-clock-icon');
+                const countElement = unreadIndicator ? unreadIndicator.querySelector('.unread-count') : null;
                 
-                if (!indicator) return;
+                if (!unreadIndicator) return;
                 
                 // Vérifier si ce forum ou l'un de ses sous-forums a des messages non lus
                 if (this.forumsWithUnreadMessages.has(forumId)) {
-                    indicator.style.display = 'inline-flex';
+                    // Afficher l'indicateur de messages non lus
+                    unreadIndicator.style.display = 'inline-flex';
+                    
+                    // Masquer l'icône d'horloge si elle existe
+                    if (clockIcon) {
+                        clockIcon.style.display = 'none';
+                    }
                     
                     // Chercher le résultat correspondant pour obtenir le compteur
                     const result = results.find(r => r && r.forumId === forumId);
-                    if (result && countElement && result.data.count > 0) {
-                        countElement.textContent = result.data.count > 99 ? '99+' : result.data.count;
+                    if (result && countElement) {
+                        // Toujours afficher le compteur
+                        const count = result.data.count || 0;
+                        countElement.textContent = count > 99 ? '99+' : count;
                     }
                 } else {
-                    indicator.style.display = 'none';
+                    // Masquer l'indicateur de messages non lus
+                    unreadIndicator.style.display = 'none';
+                    
+                    // Afficher l'icône d'horloge si elle existe
+                    if (clockIcon) {
+                        clockIcon.style.display = 'inline-flex';
+                    }
                 }
             });
         });
@@ -194,14 +209,25 @@ class UnreadMessagesManager {
         this.threadsWithUnreadMessages.clear();
         
         // Vérifier chaque thread individuellement
-        const promises = [];
-        
         threadCards.forEach(card => {
             const threadId = card.getAttribute('data-thread-id');
             if (!threadId) return;
             
+            const indicator = card.querySelector('.thread-unread-indicator');
+            const clockIcon = card.querySelector('.thread-clock-icon');
+            const countElement = indicator ? indicator.querySelector('.unread-count') : null;
+            
+            if (!indicator || !clockIcon) return;
+            
+            // S'assurer que l'indicateur est masqué au départ
+            indicator.classList.add('hidden');
+            indicator.style.display = 'none';
+            
+            // S'assurer que l'icône d'horloge est visible au départ
+            clockIcon.style.display = 'inline-flex';
+            
             // Faire une requête AJAX pour vérifier les messages non lus
-            const promise = fetch(`/unread-messages/check-thread/${threadId}`, {
+            fetch(`/unread-messages/check-thread/${threadId}`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -209,41 +235,33 @@ class UnreadMessagesManager {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.hasUnread) {
+                // Vérifier si le thread a des messages non lus ET que le compteur est > 0
+                if (data.hasUnread && data.count > 0) {
                     // Ajouter ce thread à la liste des threads avec messages non lus
                     this.threadsWithUnreadMessages.add(threadId);
+                    
+                    // Mettre à jour le compteur
+                    if (countElement) {
+                        countElement.textContent = data.count > 99 ? '99+' : data.count;
+                    }
+                    
+                    // Afficher l'indicateur et masquer l'icône d'horloge
+                    indicator.classList.remove('hidden');
+                    indicator.style.display = 'inline-flex';
+                    clockIcon.style.display = 'none';
+                } else {
+                    // Masquer l'indicateur et afficher l'icône d'horloge
+                    indicator.classList.add('hidden');
+                    indicator.style.display = 'none';
+                    clockIcon.style.display = 'inline-flex';
                 }
-                return { threadId, data };
             })
             .catch(error => {
                 console.error('Erreur lors de la vérification des messages non lus:', error);
-                return null;
-            });
-            
-            promises.push(promise);
-        });
-        
-        // Mettre à jour l'affichage des indicateurs une fois toutes les requêtes terminées
-        Promise.all(promises).then(results => {
-            threadCards.forEach(card => {
-                const threadId = card.getAttribute('data-thread-id');
-                const indicator = card.querySelector('.thread-unread-indicator');
-                const countElement = indicator ? indicator.querySelector('.unread-count') : null;
-                
-                if (!indicator) return;
-                
-                // Vérifier si ce thread a des messages non lus
-                if (this.threadsWithUnreadMessages.has(threadId)) {
-                    indicator.style.display = 'inline-flex';
-                    
-                    // Chercher le résultat correspondant pour obtenir le compteur
-                    const result = results.find(r => r && r.threadId === threadId);
-                    if (result && countElement && result.data.count > 0) {
-                        countElement.textContent = result.data.count > 99 ? '99+' : result.data.count;
-                    }
-                } else {
-                    indicator.style.display = 'none';
-                }
+                // En cas d'erreur, afficher l'icône d'horloge par défaut
+                indicator.classList.add('hidden');
+                indicator.style.display = 'none';
+                clockIcon.style.display = 'inline-flex';
             });
         });
         

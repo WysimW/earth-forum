@@ -53,13 +53,13 @@
 
 /* Boutons succès */
 .btn-success {
-    background-color: var(--accent-green);
+    background-color: var(--accent-blue);
     color: var(--text-white);
 }
 
 .btn-success:hover {
-    background-color: var(--accent-green);
-    box-shadow: 0 0 15px var(--glow-green);
+    background-color: var(--accent-blue);
+    box-shadow: 0 0 15px var(--glow-blue);
 }
 
 /* Boutons outline */
@@ -75,14 +75,14 @@
 }
 
 .btn-outline-success {
-    color: var(--accent-green);
-    border: 1px solid var(--accent-green);
+    color: var(--accent-blue);
+    border: 1px solid var(--accent-blue);
 }
 
 .btn-outline-success:hover {
-    background-color: var(--accent-green);
+    background-color: var(--accent-blue);
     color: var(--text-white);
-    box-shadow: 0 0 15px var(--glow-green);
+    box-shadow: 0 0 15px var(--glow-blue);
 }
 
 /* Badges */
@@ -96,8 +96,8 @@
 }
 
 .badge.bg-success {
-    background-color: var(--accent-green) !important;
-    box-shadow: 0 0 8px var(--glow-green);
+    background-color: var(--accent-blue) !important;
+    box-shadow: 0 0 8px var(--glow-blue);
 }
 
 .badge.bg-warning {
