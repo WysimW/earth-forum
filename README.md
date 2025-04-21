@@ -21,14 +21,15 @@ docker-compose up --build
 php bin/console make:entity
 
 php bin/console make:migration
-php bin/console doctrine:migrations:migrate
-php bin/console doctrine:database:create
+cphp bin/console doctrine:database:create
 php bin/console doctrine:schema:update --force
 
 php bin/console doctrine:fixtures:load
 
 php bin/console cache:clear
 
+php bin/console doctrine:fixtures:load --group=main-fixtures
+php bin/console doctrine:fixtures:load --group=RandomPostsFixtures
  php bin/console doctrine:fixtures:load --append --group=RandomPostsFixtures
 
  fake change v4

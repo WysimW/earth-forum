@@ -87,7 +87,7 @@
                 <div class="list-group list-group-flush">
                     {% for thread in threads %}
                         <a href="{{ path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id}) }}" 
-                           class="list-group-item list-group-item-action p-3 {% if thread.sticky %}bg-light{% endif %}">
+                           class="list-group-item list-group-item-action p-3 {% if thread.sticky %}{% endif %}">
                             <div class="d-flex w-100 justify-content-between align-items-start">
                                 <div class="thread-main flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-1">

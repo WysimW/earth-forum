@@ -45,9 +45,64 @@
             <link rel="stylesheet" href="{{ asset('css/components/universe.css') }}">
             <link rel="stylesheet" href="{{ asset('css/components/factions.css') }}">
             <link rel="stylesheet" href="{{ asset('css/libraries/select2-custom.css') }}">
+            
+            <!-- Script pour appliquer l'état de la sidebar immédiatement -->
+            <script>
+                (function() {
+                    // Masquer temporairement le contenu pendant le chargement
+                    document.documentElement.classList.add('loading-sidebar');
+                    
+                    // Récupérer l'état de la sidebar depuis localStorage
+                    const savedSidebarState = localStorage.getItem('sidebarState');
+                    if (savedSidebarState) {
+                        // Appliquer la classe appropriée au document avant le rendu initial
+                        if (savedSidebarState === 'compact') {
+                            document.documentElement.classList.add('sidebar-loading-compact');
+                        } else if (savedSidebarState === 'closed') {
+                            document.documentElement.classList.add('sidebar-loading-closed');
+                        }
+                    }
+                    
+                    // Révéler le contenu après un court délai pour permettre au CSS de s'appliquer
+                    setTimeout(function() {
+                        document.documentElement.classList.remove('loading-sidebar');
+                    }, 50);
+                })();
+            </script>
+            <style>
+                /* Style pour masquer le contenu pendant le chargement initial */
+                html.loading-sidebar .main-wrapper {
+                    opacity: 0;
+                }
+                
+                .main-wrapper {
+                    transition: opacity 0.2s ease;
+                }
+                
+                /* Styles pour éviter le flash pendant le chargement */
+                html.sidebar-loading-compact .main-wrapper {
+                    grid-template-columns: var(--sidebar-compact-width) 1fr !important;
+                }
+                html.sidebar-loading-compact .sidebar {
+                    width: var(--sidebar-compact-width) !important;
+                }
+                html.sidebar-loading-compact .sidebar-title {
+                    display: none !important;
+                }
+                html.sidebar-loading-compact .sidebar-menu-text {
+                    display: none !important;
+                }
+                
+                html.sidebar-loading-closed .main-wrapper {
+                    grid-template-columns: 0 1fr !important;
+                }
+                html.sidebar-loading-closed .sidebar {
+                    transform: translateX(-100%) !important;
+                }
+            </style>
         {% endblock %}
     </head>
-    <body class="{% if app.user %}user-logged-in{% endif %}">
+    <body class="{% if app.user %}user-logged-in{% endif %}"{% if savedSidebarState is defined %} data-sidebar-state="{{ savedSidebarState }}"{% endif %}>
         <div class="main-wrapper">
             <header>
                 <nav class="navbar navbar-expand-lg navbar-dark">
@@ -70,8 +125,22 @@
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="universDropdown">
                                         <li><a class="dropdown-item" href="{{ path('app_univers_index') }}"><i class="fas fa-globe"></i> Tous les univers</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        {% if all_univers is defined %}
+                                        
+                                        {% set favorite_universes = user_favorite_universes() %}
+                                        
+                                        {% if favorite_universes|length > 0 %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><h6 class="dropdown-header">Vos univers</h6></li>
+                                            {% for univers in favorite_universes %}
+                                                <li><a class="dropdown-item" href="{{ path('app_univers_forums', {'slug': univers.slug}) }}">
+                                                    <i class="fas fa-star"></i> {{ univers.name }}
+                                                </a></li>
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                        {% if all_univers is defined and all_univers|length > 0 %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><h6 class="dropdown-header">Tous les univers</h6></li>
                                             {% for univers in all_univers %}
                                                 <li><a class="dropdown-item" href="{{ path('app_univers_forums', {'slug': univers.slug}) }}">
                                                     <i class="fas fa-globe-americas"></i> {{ univers.name }}
@@ -80,28 +149,9 @@
                                         {% endif %}
                                     </ul>
                                 </li>
-                                {% if app.user %}
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}">Mes Personnages</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ path('app_factions_index') }}">Factions</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ path('app_roleplay_dashboard') }}">Tableau de bord</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link position-relative" href="{{ path('app_unread_messages_index') }}">
-                                            </i> Posts non lus
-                                            {% if total_unread_count() > 0 %}
-                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                    {{ total_unread_count() }}
-                                                    <span class="visually-hidden">nouveaux posts</span>
-                                                </span>
-                                            {% endif %}
-                                        </a>
-                                    </li>
-                                {% endif %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_factions_index') }}">Factions</a>
+                                </li>
                             </ul>
                             <div class="navbar-nav ms-auto">
                                 <div class="nav-item me-2">
@@ -117,7 +167,7 @@
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}"><i class="fas fa-columns"></i> Tableau de bord</a></li>
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_factions_index') }}"><i class="fas fa-users"></i> Factions</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_my_factions_index') }}"><i class="fas fa-shield-alt"></i> Mes Factions</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-toolbox"></i> Administration</a></li>
@@ -139,41 +189,37 @@
             <aside class="sidebar">
                 <div class="sidebar-header">
                     <h3 class="sidebar-title">Navigation</h3>
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Réduire la sidebar">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                 </div>
                 
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-title">Navigation</li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay') }}" class="sidebar-menu-link">
-                            <i class="fas fa-globe"></i> Accueil
+                        <a href="{{ path('app_roleplay') }}" class="sidebar-menu-link" data-title="Accueil">
+                            <i class="fas fa-globe"></i> <span class="sidebar-menu-text">Accueil</span>
                         </a>
                     </li>
-                    <li class="sidebar-menu-item dropdown">
-                        <a href="#" class="sidebar-menu-link dropdown-toggle" id="sidebarUniversDropdown" data-bs-toggle="collapse" data-bs-target="#universDropdownMenu">
-                            <i class="fas fa-globe-americas"></i> Univers <span class="dropdown-arrow">▼</span>
-                        </a>
-                        <ul class="collapse" id="universDropdownMenu">
-                            <li class="sidebar-submenu-item">
-                                <a href="{{ path('app_univers_index') }}" class="sidebar-submenu-link">
-                                    <i class="fas fa-list"></i> Tous les univers
-                                </a>
-                            </li>
-                            {% if all_univers is defined %}
-                                {% for univers in all_univers %}
-                                    <li class="sidebar-submenu-item">
-                                        <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="sidebar-submenu-link">
-                                            <i class="fas fa-globe-americas"></i> {{ univers.name }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-                        </ul>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a href="{{ path('app_factions_index') }}" class="sidebar-menu-link">
-                            <i class="fas fa-shield-alt"></i> Factions
-                        </a>
-                    </li>
+                    
+                    {% set favorite_universes = user_favorite_universes() %}
+                    
+                    {% if favorite_universes|length > 0 %}
+                        {% for univers in favorite_universes %}
+                        <li class="sidebar-menu-item">
+                            <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="sidebar-menu-link" data-title="{{ univers.name }}">
+                                <i class="fas fa-globe-americas"></i> <span class="sidebar-menu-text">{{ univers.name }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="sidebar-menu-item">
+                            <a href="{{ path('app_univers_index') }}" class="sidebar-menu-link" data-title="Univers">
+                                <i class="fas fa-globe-americas"></i> <span class="sidebar-menu-text">Univers</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
                 </ul>
                 
                 
@@ -181,37 +227,42 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-title">Vos contenus</li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_dashboard') }}" class="sidebar-menu-link">
-                            <i class="fas fa-columns"></i> Tableau de bord
+                        <a href="{{ path('app_roleplay_dashboard') }}" class="sidebar-menu-link" data-title="Tableau de bord">
+                            <i class="fas fa-columns"></i> <span class="sidebar-menu-text">Tableau de bord</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}" class="sidebar-menu-link">
-                            <i class="fas fa-user-astronaut"></i> Mes Personnages
+                        <a href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}" class="sidebar-menu-link" data-title="Mes Personnages">
+                            <i class="fas fa-user-astronaut"></i> <span class="sidebar-menu-text">Mes Personnages</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=participating" class="sidebar-menu-link">
-                            <i class="fas fa-users"></i> Mes participations
+                        <a href="{{ path('app_my_factions_index') }}" class="sidebar-menu-link" data-title="Mes Factions">
+                            <i class="fas fa-shield-alt"></i> <span class="sidebar-menu-text">Mes Factions</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=created" class="sidebar-menu-link">
-                            <i class="fas fa-pen-fancy"></i> Mes scènes
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=participating" class="sidebar-menu-link" data-title="Mes participations">
+                            <i class="fas fa-users"></i> <span class="sidebar-menu-text">Mes participations</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_unread_messages_index') }}" class="sidebar-menu-link position-relative">
-                            <i class="fas fa-envelope"></i> Posts non lus
+                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=created" class="sidebar-menu-link" data-title="Mes scènes">
+                            <i class="fas fa-pen-fancy"></i> <span class="sidebar-menu-text">Mes scènes</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_unread_messages_index') }}" class="sidebar-menu-link position-relative" data-title="Posts non lus">
+                            <i class="fas fa-envelope"></i> <span class="sidebar-menu-text">Posts non lus</span>
                             {% if total_unread_count() > 0 %}
-                                <span class="badge bg-danger rounded-pill ms-2">{{ total_unread_count() }}</span>
+                                <span class="badge bg-danger rounded-pill ms-2 notification-badge" data-count="{{ total_unread_count() }}">{{ total_unread_count() }}</span>
                             {% endif %}
                         </a>
                     </li>
                     {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_faction_new') }}" class="sidebar-menu-link">
-                            <i class="fas fa-plus-circle"></i> Créer une faction
+                        <a href="{{ path('app_faction_new') }}" class="sidebar-menu-link" data-title="Créer une faction">
+                            <i class="fas fa-plus-circle"></i> <span class="sidebar-menu-text">Créer une faction</span>
                         </a>
                     </li>
                     {% endif %}
@@ -223,21 +274,25 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-title">Administration</li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('admin_dashboard') }}" class="sidebar-menu-link">
-                            <i class="fas fa-toolbox"></i> Panneau d'admin
+                        <a href="{{ path('admin_dashboard') }}" class="sidebar-menu-link" data-title="Panneau d'admin">
+                            <i class="fas fa-toolbox"></i> <span class="sidebar-menu-text">Panneau d'admin</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('admin_user_index') }}" class="sidebar-menu-link">
-                            <i class="fas fa-users-cog"></i> Gestion utilisateurs
+                        <a href="{{ path('admin_user_index') }}" class="sidebar-menu-link" data-title="Gestion utilisateurs">
+                            <i class="fas fa-users-cog"></i> <span class="sidebar-menu-text">Gestion utilisateurs</span>
                         </a>
                     </li>
                 </ul>
                 {% endif %}
             </aside>
             
-            <button class="sidebar-collapse" id="sidebarToggle">
+            <button class="sidebar-collapse" id="sidebarCollapseToggle" title="Afficher/Masquer la sidebar">
                 <i class="fas fa-bars"></i>
+            </button>
+            
+            <button class="sidebar-reopen" id="sidebarReopenButton" title="Ouvrir la sidebar">
+                <i class="fas fa-chevron-right"></i>
             </button>
 
             <main class="content">
@@ -325,6 +380,9 @@
                         return new bootstrap.Tooltip(tooltipTriggerEl)
                     });
                     
+                    // S'assurer que les classes temporaires sont supprimées
+                    document.documentElement.classList.remove('loading-sidebar', 'sidebar-loading-compact', 'sidebar-loading-closed');
+                    
                     // Initialisation globale de Select2
                     if (document.querySelector('[data-select2], .select2')) {
                         // Initialiser les éléments qui utilisent data-select2
@@ -388,19 +446,104 @@
                     
                     // Mobile sidebar toggle
                     const sidebarToggle = document.getElementById('sidebarToggle');
+                    const sidebarCollapseToggle = document.getElementById('sidebarCollapseToggle');
+                    const sidebarReopenButton = document.getElementById('sidebarReopenButton');
                     const sidebar = document.querySelector('.sidebar');
+                    const mainWrapper = document.querySelector('.main-wrapper');
                     
-                    if (sidebarToggle && sidebar) {
+                    // Load saved sidebar state from localStorage
+                    const savedSidebarState = localStorage.getItem('sidebarState');
+                    if (savedSidebarState) {
+                        if (savedSidebarState === 'compact') {
+                            mainWrapper.classList.add('sidebar-compact');
+                            if (sidebarToggle) {
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                                sidebarToggle.title = "Fermer la sidebar";
+                            }
+                        } else if (savedSidebarState === 'closed') {
+                            mainWrapper.classList.add('sidebar-closed');
+                            if (sidebarToggle) {
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                                sidebarToggle.title = "Ouvrir la sidebar";
+                            }
+                        }
+                    }
+                    
+                    // Handle sidebar toggle button (compact/full)
+                    if (sidebarToggle) {
                         sidebarToggle.addEventListener('click', function() {
-                            sidebar.classList.toggle('show');
+                            if (mainWrapper.classList.contains('sidebar-closed')) {
+                                // If closed, go to full state
+                                mainWrapper.classList.remove('sidebar-closed');
+                                mainWrapper.classList.remove('sidebar-compact');
+                                localStorage.setItem('sidebarState', 'full');
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                                sidebarToggle.title = "Réduire la sidebar";
+                            } else if (mainWrapper.classList.contains('sidebar-compact')) {
+                                // If compact, go to closed state
+                                mainWrapper.classList.add('sidebar-closed');
+                                mainWrapper.classList.remove('sidebar-compact');
+                                localStorage.setItem('sidebarState', 'closed');
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                                sidebarToggle.title = "Ouvrir la sidebar";
+                            } else {
+                                // If full, go to compact state
+                                mainWrapper.classList.add('sidebar-compact');
+                                localStorage.setItem('sidebarState', 'compact');
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                                sidebarToggle.title = "Fermer la sidebar";
+                            }
                         });
                     }
                     
-                    // Close sidebar when clicking outside on mobile
+                    // Handle reopen button
+                    if (sidebarReopenButton) {
+                        sidebarReopenButton.addEventListener('click', function() {
+                            // Rouvrir la sidebar en mode complet
+                            mainWrapper.classList.remove('sidebar-closed');
+                            localStorage.setItem('sidebarState', 'full');
+                            if (sidebarToggle) {
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                                sidebarToggle.title = "Réduire la sidebar";
+                            }
+                        });
+                    }
+                    
+                    // Handle sidebar collapse toggle (show/hide on mobile)
+                    if (sidebarCollapseToggle && sidebar) {
+                        sidebarCollapseToggle.addEventListener('click', function() {
+                            // Si la sidebar est en mode fermé, la rouvrir en mode complet
+                            if (mainWrapper.classList.contains('sidebar-closed')) {
+                                mainWrapper.classList.remove('sidebar-closed');
+                                localStorage.setItem('sidebarState', 'full');
+                                if (sidebarToggle) {
+                                    sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                                    sidebarToggle.title = "Réduire la sidebar";
+                                }
+                            } else {
+                                // Comportement normal pour le basculement mobile
+                                sidebar.classList.toggle('show');
+                            }
+                        });
+                    }
+                    
+                    // Add a global click handler for when sidebar is closed
                     document.addEventListener('click', function(event) {
+                        // Si on clique sur le burger et que la sidebar est fermée
+                        if (event.target.closest('#sidebarCollapseToggle') && mainWrapper.classList.contains('sidebar-closed')) {
+                            mainWrapper.classList.remove('sidebar-closed');
+                            localStorage.setItem('sidebarState', 'full');
+                            if (sidebarToggle) {
+                                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                                sidebarToggle.title = "Réduire la sidebar";
+                            }
+                        }
+                        
+                        // Close sidebar when clicking outside on mobile
                         if (sidebar.classList.contains('show') && 
                             !sidebar.contains(event.target) && 
-                            event.target !== sidebarToggle) {
+                            event.target !== sidebarCollapseToggle &&
+                            !event.target.closest('#sidebarCollapseToggle')) {
                             sidebar.classList.remove('show');
                         }
                     });

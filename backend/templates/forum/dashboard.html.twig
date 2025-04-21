@@ -117,13 +117,32 @@
                     {% endif %}
                 </div>
                 <div class="card-body p-0">
-                    {% if app.user.createdFactions is defined and app.user.createdFactions|length > 0 %}
+                    {% if userFactions is defined and userFactions|length > 0 %}
+                        <style>
+                            .faction-item.owner {
+                                background-color: rgba(255, 193, 7, 0.05);
+                                border-left: 3px solid #ffc107;
+                            }
+                            .faction-crown {
+                                color: #ffc107;
+                                display: inline-block;
+                                margin-right: 0.25rem;
+                                vertical-align: middle;
+                            }
+                        </style>
                         <div class="list-group list-group-flush">
-                            {% for faction in app.user.createdFactions %}
-                                <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" class="list-group-item list-group-item-action">
+                            {% for faction in userFactions %}
+                                {% set isOwner = faction.founder.id == app.user.id %}
+                                <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" 
+                                   class="list-group-item list-group-item-action {% if isOwner %}owner{% endif %}">
                                     <div class="d-flex w-100 justify-content-between align-items-center">
                                         <div>
-                                            <h6 class="mb-1">{{ faction.name }}</h6>
+                                            <h6 class="mb-1">
+                                                {% if isOwner %}
+                                                    <i class="fas fa-crown faction-crown" title="Vous êtes le fondateur"></i>
+                                                {% endif %}
+                                                {{ faction.name }}
+                                            </h6>
                                             <small class="text-muted">
                                                 <i class="fas fa-globe"></i> {{ faction.universe.name }}
                                                 {% if faction.alignment %}
@@ -143,33 +162,55 @@
                                                 </span>
                                                 {% endif %}
                                             </small>
+                                            {% if not isOwner %}
+                                                <div class="mt-1">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user-astronaut me-1"></i> Personnages: 
+                                                        {% set userCharactersInFaction = [] %}
+                                                        {% for character in faction.characters %}
+                                                            {% if character.user.id == app.user.id %}
+                                                                {% set userCharactersInFaction = userCharactersInFaction|merge([character]) %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        {% for character in userCharactersInFaction %}
+                                                            {{ character.name }}{% if not loop.last %}, {% endif %}
+                                                        {% endfor %}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
                                         </div>
-                                        <span class="badge {% if faction.status == 'open' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
-                                            {{ faction.characters|length }} membre(s)
-                                        </span>
+                                        <div>
+                                            <span class="badge {% if faction.status == 'open' %}bg-success{% else %}bg-danger{% endif %} rounded-pill me-2">
+                                                {{ faction.status == 'open' ? 'Ouvert' : 'Fermé' }}
+                                            </span>
+                                            <span class="badge bg-info rounded-pill">
+                                                {{ faction.characters|length }} membre(s)
+                                            </span>
+                                        </div>
                                     </div>
                                 </a>
                             {% endfor %}
                         </div>
                         <div class="card-footer bg-light text-end">
-                            <a href="{{ path('app_factions_index') }}" class="btn btn-sm btn-outline-primary">
-                                Voir toutes les factions <i class="fas fa-arrow-right"></i>
+                            <a href="{{ path('app_my_factions_index') }}" class="btn btn-sm btn-outline-primary">
+                                Voir toutes mes factions <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
-                            <h3 class="h5">Vous n'avez pas encore créé de faction</h3>
-                            <p class="text-muted mb-3">Créez votre première faction pour rassembler des personnages</p>
-                            {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
-                                <a href="{{ path('app_faction_new') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> Créer ma première faction
-                                </a>
-                            {% else %}
-                                <a href="{{ path('app_factions_index') }}" class="btn btn-primary">
+                            <h3 class="h5">Vous n'appartenez à aucune faction</h3>
+                            <p class="text-muted mb-3">Rejoignez une faction existante ou créez la vôtre</p>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="{{ path('app_factions_index') }}" class="btn btn-outline-primary">
                                     <i class="fas fa-search"></i> Découvrir les factions
                                 </a>
-                            {% endif %}
+                                {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
+                                    <a href="{{ path('app_faction_new') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Créer une faction
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endif %}
                 </div>

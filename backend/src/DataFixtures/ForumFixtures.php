@@ -7,8 +7,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class ForumFixtures extends Fixture implements DependentFixtureInterface
+class ForumFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     private SluggerInterface $slugger;
 
@@ -376,5 +377,10 @@ class ForumFixtures extends Fixture implements DependentFixtureInterface
         return [
             ForumCategoryFixtures::class,
         ];
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

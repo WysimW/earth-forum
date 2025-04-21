@@ -36,6 +36,9 @@ class Thread implements TimestampableInterface
     #[ORM\JoinColumn(nullable: true)]
     private ?Univers $universe = null;
 
+    #[ORM\ManyToOne]
+    private ?Elseworld $elseworld = null;
+
     #[ORM\ManyToOne(inversedBy: 'threads')]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['forum_detail'])]
@@ -143,7 +146,17 @@ class Thread implements TimestampableInterface
     public function setUniverse(?Univers $universe): static
     {
         $this->universe = $universe;
+        return $this;
+    }
 
+    public function getElseworld(): ?Elseworld
+    {
+        return $this->elseworld;
+    }
+
+    public function setElseworld(?Elseworld $elseworld): static
+    {
+        $this->elseworld = $elseworld;
         return $this;
     }
 

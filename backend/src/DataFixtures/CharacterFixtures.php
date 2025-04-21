@@ -9,8 +9,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class CharacterFixtures extends Fixture implements DependentFixtureInterface
+class CharacterFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -172,5 +173,10 @@ class CharacterFixtures extends Fixture implements DependentFixtureInterface
         return [
             UserFixtures::class,
         ];
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

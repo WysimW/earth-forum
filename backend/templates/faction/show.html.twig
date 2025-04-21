@@ -2,7 +2,6 @@
 
 {% block title %}{{ faction.name }} - Faction{% endblock %}
 
-
 {% block body %}
 <div class="container my-4">
     {# Fil d'Ariane #}
@@ -90,36 +89,8 @@
     
     <div class="row">
         <div class="col-lg-8">
-            {# Description #}
-            <div class="faction-card">
-                <div class="faction-card-header">
-                    <i class="fas fa-file-alt"></i> Description
-                </div>
-                <div class="faction-card-body">
-                    {% if faction.description %}
-                        {{ faction.description|raw }}
-                    {% else %}
-                        <p class="text-muted">Aucune description disponible.</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            {# Objectifs #}
-            <div class="faction-card">
-                <div class="faction-card-header">
-                    <i class="fas fa-bullseye"></i> Objectifs
-                </div>
-                <div class="faction-card-body">
-                    {% if faction.objectives %}
-                        {{ faction.objectives|raw }}
-                    {% else %}
-                        <p class="text-muted">Aucun objectif défini.</p>
-                    {% endif %}
-                </div>
-            </div>
-            
             {# Membres et PNJ #}
-            <div class="members-section">
+            <div class="members-section mb-4">
                 <ul class="nav nav-tabs members-tabs" id="membersTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="characters-tab" data-bs-toggle="tab" data-bs-target="#characters-tab-pane" type="button" role="tab" aria-controls="characters-tab-pane" aria-selected="true">
@@ -207,6 +178,38 @@
                             </div>
                         </div>
                     {% endif %}
+                </div>
+            </div>
+            
+            {# Description et Objectifs dans des tabs #}
+            <div class="members-section mb-4">
+                <ul class="nav nav-tabs members-tabs" id="factionInfoTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-tab-pane" type="button" role="tab" aria-controls="description-tab-pane" aria-selected="true">
+                            <i class="fas fa-file-alt me-1"></i> Description
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="objectives-tab" data-bs-toggle="tab" data-bs-target="#objectives-tab-pane" type="button" role="tab" aria-controls="objectives-tab-pane" aria-selected="false">
+                            <i class="fas fa-bullseye me-1"></i> Objectifs
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="factionInfoTabContent">
+                    <div class="tab-pane fade show active" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0">
+                        {% if faction.description %}
+                            {{ faction.description|raw }}
+                        {% else %}
+                            <p class="text-muted">Aucune description disponible.</p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="objectives-tab-pane" role="tabpanel" aria-labelledby="objectives-tab" tabindex="0">
+                        {% if faction.objectives %}
+                            {{ faction.objectives|raw }}
+                        {% else %}
+                            <p class="text-muted">Aucun objectif défini.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

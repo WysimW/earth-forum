@@ -8,8 +8,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class ThreadAndPostFixtures extends Fixture implements DependentFixtureInterface
+class ThreadAndPostFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     private SluggerInterface $slugger;
 
@@ -276,5 +277,10 @@ class ThreadAndPostFixtures extends Fixture implements DependentFixtureInterface
             UserFixtures::class,
             CharacterFixtures::class
         ];
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

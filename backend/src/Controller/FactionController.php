@@ -367,6 +367,44 @@ class FactionController extends AbstractController
         return $this->redirectToRoute('app_faction_show', ['universeSlug' => $faction->getUniverse()->getSlug(), 'factionSlug' => $faction->getSlug()]);
     }
 
+    #[Route('/my-factions', name: 'app_my_factions_index', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function myFactions(FactionRepository $factionRepository, UniversRepository $universRepository, CharacterRepository $characterRepository): Response
+    {
+        /** @var \App\Entity\User */
+        $user = $this->getUser();
+        
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page.');
+        }
+        
+        // Récupérer tous les personnages de l'utilisateur
+        $userCharacters = $characterRepository->findBy(['user' => $user]);
+        
+        // Récupérer toutes les factions auxquelles appartiennent ces personnages
+        $userFactions = [];
+        foreach ($userCharacters as $character) {
+            foreach ($character->getFactionsRelation() as $faction) {
+                $userFactions[$faction->getId()] = $faction;
+            }
+        }
+        
+        // Récupérer également les factions dont l'utilisateur est le fondateur
+        $ownedFactions = $factionRepository->findBy(['founder' => $user]);
+        foreach ($ownedFactions as $faction) {
+            $userFactions[$faction->getId()] = $faction;
+        }
+        
+        // Récupérer tous les univers
+        $universes = $universRepository->findAll();
+        
+        return $this->render('faction/my_factions.html.twig', [
+            'universes' => $universes,
+            'factions' => array_values($userFactions),
+            'breadcrumbs' => $this->getBreadcrumbs(['Mes factions' => ''])
+        ]);
+    }
+
     /**
      * S'assure qu'un forum 'Factions' existe pour l'univers
      */

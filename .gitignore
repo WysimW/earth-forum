@@ -1,0 +1,27 @@
+# Docker
+docker-compose.override.yml
+docker-compose.yml
+.env
+docker/mysql/data/
+
+# Symfony
+/backend/var/
+/backend/vendor/
+/backend/.env
+/backend/.env.local
+/backend/.env.*.local
+/backend/config/secrets/prod/prod.decrypt.private.php
+/backend/public/bundles/
+/backend/var/cache/*
+/backend/var/log/*
+/backend/var/sessions/*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db 

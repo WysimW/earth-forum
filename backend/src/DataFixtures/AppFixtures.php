@@ -4,8 +4,9 @@ namespace App\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class AppFixtures extends Fixture
+class AppFixtures extends Fixture implements FixtureGroupInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -13,5 +14,10 @@ class AppFixtures extends Fixture
         // pour chaque entité (UserFixtures, ForumFixtures, etc.)
         
         $manager->flush();
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 }

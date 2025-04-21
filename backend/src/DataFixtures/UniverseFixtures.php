@@ -6,8 +6,9 @@ use App\Entity\Univers;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class UniverseFixtures extends Fixture
+class UniverseFixtures extends Fixture implements FixtureGroupInterface
 {
     public function load(ObjectManager $manager): void
     {   
@@ -43,5 +44,10 @@ class UniverseFixtures extends Fixture
         }
 
         $manager->flush();
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

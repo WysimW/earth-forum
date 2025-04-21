@@ -7,8 +7,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class ForumCategoryFixtures extends Fixture implements DependentFixtureInterface
+class ForumCategoryFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -80,5 +81,10 @@ class ForumCategoryFixtures extends Fixture implements DependentFixtureInterface
         return [
             CategoriesTypeFixtures::class,
         ];
+    }
+    
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

@@ -7,6 +7,7 @@ use App\Entity\Forum;
 use App\Entity\Thread;
 use App\Entity\Character;
 use App\Entity\Npc;
+use App\Entity\Univers;
 use App\Form\CharacterType;
 use App\Form\NpcType;
 use App\Service\BreadcrumbService;
@@ -191,8 +192,8 @@ class CharacterController extends AbstractController
             
             $this->entityManager->persist($character);
             
-            // Ensure character forums exist and get the pending forum
-            $forums = $this->characterForumManager->ensureCharacterForumsExist();
+            // Ensure character forums exist and get the pending forum for this universe
+            $forums = $this->characterForumManager->ensureCharacterForumsExistForUniverse($character->getUniverse());
             $pendingForum = $forums['pending'];
 
             // Create character sheet thread
@@ -204,6 +205,7 @@ class CharacterController extends AbstractController
             $characterSheetThread->setStatus('open');
             $characterSheetThread->setCharacterSheet($character);
             $characterSheetThread->setSlug($this->slugger->slug('fiche-' . $character->getName())->lower());
+            $characterSheetThread->setUniverse($character->getUniverse());
             
             // Create first post with character details
             $initialPost = new Post();
@@ -240,6 +242,7 @@ class CharacterController extends AbstractController
         $character = new Character();
         $character->setUser($this->getUser());
         $character->setElseworld($elseworld);
+        $character->setUniverse($elseworld->getParentUniverse());
         
         $form = $this->createForm(CharacterType::class, $character);
         $form->handleRequest($request);
@@ -251,8 +254,8 @@ class CharacterController extends AbstractController
             
             $this->entityManager->persist($character);
             
-            // Ensure character forums exist and get the pending forum
-            $forums = $this->characterForumManager->ensureCharacterForumsExist();
+            // Ensure character forums exist and get the pending forum for this universe
+            $forums = $this->characterForumManager->ensureCharacterForumsExistForUniverse($character->getUniverse());
             $pendingForum = $forums['pending'];
 
             // Create character sheet thread
@@ -264,6 +267,10 @@ class CharacterController extends AbstractController
             $characterSheetThread->setStatus('open');
             $characterSheetThread->setCharacterSheet($character);
             $characterSheetThread->setSlug($this->slugger->slug('fiche-' . $character->getName())->lower());
+            if (method_exists($characterSheetThread, 'setElseworld')) {
+                $characterSheetThread->setElseworld($elseworld);
+            }
+            $characterSheetThread->setUniverse($character->getUniverse());
             
             // Create first post with character details
             $initialPost = new Post();
@@ -318,7 +325,7 @@ class CharacterController extends AbstractController
             $characterSheetThread = $character->getMainCharacterSheetThread();
             if ($characterSheetThread) {
                 // Move to appropriate forum based on status
-                $targetForum = $this->getForumByCharacterStatus($character->getStatus());
+                $targetForum = $this->getForumByCharacterStatus($character->getStatus(), $character->getUniverse());
                 if ($targetForum) {
                     $characterSheetThread->setForum($targetForum);
                 }
@@ -399,7 +406,7 @@ class CharacterController extends AbstractController
         // Update thread forum
         $characterSheetThread = $character->getMainCharacterSheetThread();
         if ($characterSheetThread) {
-            $targetForum = $this->getForumByCharacterStatus($newStatus);
+            $targetForum = $this->getForumByCharacterStatus($newStatus, $character->getUniverse());
             if ($targetForum) {
                 $characterSheetThread->setForum($targetForum);
             }
@@ -495,7 +502,7 @@ class CharacterController extends AbstractController
         return $this->redirectToRoute('app_roleplay_character_show', ['id' => $character->getId()]);
     }
 
-    private function getForumByCharacterStatus(string $status): ?Forum
+    private function getForumByCharacterStatus(string $status, ?Univers $universe = null): ?Forum
     {
         $forumName = match($status) {
             Character::STATUS_DRAFT, Character::STATUS_EDITING, Character::STATUS_PENDING => 'Fiches en attente',
@@ -504,7 +511,17 @@ class CharacterController extends AbstractController
             default => null,
         };
         
-        return $forumName ? $this->forumRepository->findOneBy(['name' => $forumName]) : null;
+        if (!$forumName) {
+            return null;
+        }
+        
+        // Search for a forum with the given name and universe
+        $criteria = ['name' => $forumName];
+        if ($universe) {
+            $criteria['universe'] = $universe;
+        }
+        
+        return $this->forumRepository->findOneBy($criteria);
     }
 
     #[Route('/{id}', name: 'app_roleplay_character_show', methods: ['GET'])]

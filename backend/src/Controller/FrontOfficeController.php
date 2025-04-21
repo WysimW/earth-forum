@@ -64,7 +64,9 @@ class FrontOfficeController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function dashboard(
         CharacterRepository $characterRepository, 
-        ThreadRepository $threadRepository
+        ThreadRepository $threadRepository,
+        \App\Repository\FactionRepository $factionRepository,
+        \App\Repository\UniversRepository $universRepository
     ): Response
     {   
         /** @var \App\Entity\User $user */
@@ -89,11 +91,30 @@ class FrontOfficeController extends AbstractController
         // Récupérer les threads récemment actifs
         $recentThreads = $threadRepository->findRecentActiveThreads(5);
         
+        // Récupérer toutes les factions auxquelles appartiennent les personnages de l'utilisateur
+        $userFactions = [];
+        foreach ($characters as $character) {
+            foreach ($character->getFactionsRelation() as $faction) {
+                $userFactions[$faction->getId()] = $faction;
+            }
+        }
+        
+        // Récupérer également les factions dont l'utilisateur est le fondateur
+        $ownedFactions = $factionRepository->findBy(['founder' => $user]);
+        foreach ($ownedFactions as $faction) {
+            $userFactions[$faction->getId()] = $faction;
+        }
+        
+        // Récupérer tous les univers pour organiser les factions
+        $universes = $universRepository->findAll();
+        
         return $this->render('forum/dashboard.html.twig', [
             'characters' => $characters,
             'createdThreads' => $createdThreads,
             'participatingThreads' => $participatingThreads,
             'recentThreads' => $recentThreads,
+            'userFactions' => array_values($userFactions),
+            'universes' => $universes,
             'breadcrumbs' => $this->breadcrumbService->generate([
                 'Accueil' => $this->generateUrl('app_roleplay'),
                 'Tableau de bord' => $this->generateUrl('app_roleplay_dashboard'),

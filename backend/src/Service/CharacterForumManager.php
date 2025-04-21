@@ -3,9 +3,11 @@
 namespace App\Service;
 
 use App\Entity\Forum;
+use App\Entity\Univers;
 use App\Entity\ForumCategory;
 use App\Repository\ForumCategoryRepository;
 use App\Repository\ForumRepository;
+use App\Repository\UniversRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -14,17 +16,20 @@ class CharacterForumManager
     private EntityManagerInterface $entityManager;
     private ForumRepository $forumRepository;
     private ForumCategoryRepository $categoryRepository;
+    private UniversRepository $universRepository;
     private SluggerInterface $slugger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ForumRepository $forumRepository,
         ForumCategoryRepository $categoryRepository,
+        UniversRepository $universRepository,
         SluggerInterface $slugger
     ) {
         $this->entityManager = $entityManager;
         $this->forumRepository = $forumRepository;
         $this->categoryRepository = $categoryRepository;
+        $this->universRepository = $universRepository;
         $this->slugger = $slugger;
     }
 
@@ -78,20 +83,29 @@ class CharacterForumManager
         return $category;
     }
     
-    private function getOrCreatePresentationForum(): Forum
+    private function getOrCreatePresentationForum(?Univers $universe = null): Forum
     {
-        // Chercher d'abord par nom plutôt que par slug
-        $forum = $this->forumRepository->findOneBy(['name' => 'Présentation']);
+        // Chercher d'abord par nom et univers si spécifié
+        $criteria = ['name' => 'Présentation'];
+        if ($universe) {
+            $criteria['universe'] = $universe;
+        }
+        
+        $forum = $this->forumRepository->findOneBy($criteria);
         
         if (!$forum) {
-            $slug = $this->generateUniqueSlug('presentation', Forum::class);
+            $slug = $this->generateUniqueSlug('presentation' . ($universe ? '-' . $universe->getSlug() : ''), Forum::class);
             $forum = new Forum();
             $forum->setName('Présentation');
-            $forum->setDescription('Forum de présentation des personnages');
+            $forum->setDescription('Forum de présentation des personnages' . ($universe ? ' de l\'univers ' . $universe->getName() : ''));
             $forum->setPosition(0);
             $forum->setSlug($slug);
             $forum->setCategory($this->getCharacterForumCategory());
             $forum->setStatus('open');
+            
+            if ($universe) {
+                $forum->setUniverse($universe);
+            }
             
             $this->entityManager->persist($forum);
             $this->entityManager->flush();
@@ -100,20 +114,30 @@ class CharacterForumManager
         return $forum;
     }
 
-    private function getOrCreateCharacterSubForum(string $name, string $description, int $position, Forum $parentForum): Forum
+    private function getOrCreateCharacterSubForum(string $name, string $description, int $position, Forum $parentForum, ?Univers $universe = null): Forum
     {
-        // Chercher d'abord par nom plutôt que par slug
-        $forum = $this->forumRepository->findOneBy(['name' => $name]);
+        // Chercher d'abord par nom, parent et univers si spécifié
+        $criteria = ['name' => $name, 'parent' => $parentForum];
+        if ($universe) {
+            $criteria['universe'] = $universe;
+        }
+        
+        $forum = $this->forumRepository->findOneBy($criteria);
         
         if (!$forum) {
-            $slug = $this->generateUniqueSlug($name, Forum::class);
+            $suffix = $universe ? '-' . $universe->getSlug() : '';
+            $slug = $this->generateUniqueSlug($name . $suffix, Forum::class);
             $forum = new Forum();
             $forum->setName($name);
-            $forum->setDescription($description);
+            $forum->setDescription($description . ($universe ? ' de l\'univers ' . $universe->getName() : ''));
             $forum->setPosition($position);
             $forum->setSlug($slug);
-            $forum->setParent($parentForum); // Définir le forum parent au lieu de la catégorie
+            $forum->setParent($parentForum);
             $forum->setStatus('open');
+            
+            if ($universe) {
+                $forum->setUniverse($universe);
+            }
             
             $this->entityManager->persist($forum);
             $this->entityManager->flush();
@@ -126,35 +150,52 @@ class CharacterForumManager
         return $forum;
     }
 
-    public function ensureCharacterForumsExist(): array
+    /**
+     * Ensure character forums exist for a specific universe
+     * @param Univers|null $universe The universe to create forums for
+     * @return array The forums created or found
+     */
+    public function ensureCharacterForumsExistForUniverse(?Univers $universe = null): array
     {
         $forums = [];
         
-        // Créer ou récupérer le forum principal de présentation
-        $presentationForum = $this->getOrCreatePresentationForum();
+        // Créer ou récupérer le forum principal de présentation pour cet univers
+        $presentationForum = $this->getOrCreatePresentationForum($universe);
         
         // Créer ou récupérer les sous-forums
         $forums['pending'] = $this->getOrCreateCharacterSubForum(
             'Fiches en attente',
             'Fiches de personnages en cours de création ou en attente de validation',
             0,
-            $presentationForum
+            $presentationForum,
+            $universe
         );
         
         $forums['validated'] = $this->getOrCreateCharacterSubForum(
             'Fiches validées',
             'Fiches de personnages validées',
             1,
-            $presentationForum
+            $presentationForum,
+            $universe
         );
         
         $forums['rejected'] = $this->getOrCreateCharacterSubForum(
             'Fiches refusées',
             'Fiches de personnages refusées ou abandonnées',
             2,
-            $presentationForum
+            $presentationForum,
+            $universe
         );
         
         return $forums;
+    }
+
+    /**
+     * Méthode legacy, garde pour compatibilité
+     * @deprecated Use ensureCharacterForumsExistForUniverse() instead
+     */
+    public function ensureCharacterForumsExist(): array
+    {
+        return $this->ensureCharacterForumsExistForUniverse();
     }
 }
