@@ -96,7 +96,7 @@
                     width: 22px !important;
                     overflow: hidden !important;
                 }
-                
+
                 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover,
                 .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
                     background-color: rgba(255, 255, 255, 0.25) !important;
@@ -481,7 +481,7 @@
                     background: linear-gradient(180deg, rgba(var(--primary-dark-rgb), 0.9), rgba(var(--deep-black), 0.9)) !important;
                     backdrop-filter: blur(10px) !important;
                     border-color: var(--primary-light, #2980b9) !important;
-                    box-shadow: var(--shadow-md, 0 5px 15px rgba(0, 0, 0, 0.2)), 
+                    box-shadow: var(--shadow-md, 0 5px 15px rgba(0, 0, 0, 0.2)),
                                 0 0 15px var(--glow-blue, rgba(20, 93, 160, 0.6)) !important;
                 }
 

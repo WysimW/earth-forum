@@ -29,6 +29,8 @@ php bin/console doctrine:fixtures:load
 php bin/console cache:clear
 
 php bin/console doctrine:fixtures:load --group=main-fixtures
+php bin/console doctrine:fixtures:load --group=main-fixtures
+
 php bin/console doctrine:fixtures:load --group=RandomPostsFixtures
  php bin/console doctrine:fixtures:load --append --group=RandomPostsFixtures
 
