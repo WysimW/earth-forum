@@ -31,6 +31,7 @@
         "symfony/security-csrf": "7.1.*",
         "symfony/serializer": "7.1.*",
         "symfony/twig-bundle": "7.1.*",
+        "symfony/ux-turbo": "*",
         "symfony/validator": "7.1.*",
         "symfony/yaml": "7.1.*",
         "twig/extra-bundle": "^3.20",
@@ -87,6 +88,7 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "fzaninotto/faker": "^1.5",
         "symfony/maker-bundle": "^1.60",
         "symfony/stopwatch": "7.1.*",
         "symfony/web-profiler-bundle": "7.1.*"

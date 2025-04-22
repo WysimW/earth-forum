@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Messaging\ConversationParticipant;
+use App\Entity\Messaging\Message;
+use App\Entity\Messaging\Conversation;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -100,6 +103,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $canCreateRpForum = false;
 
+    /**
+     * @var Collection<int, ConversationParticipant>
+     */
+    #[ORM\OneToMany(targetEntity: ConversationParticipant::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $conversationParticipations;
+
+    /**
+     * @var Collection<int, Message>
+     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'author')]
+    private Collection $messages;
+
+    /**
+     * @var Collection<int, Conversation>
+     */
+    #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'creator')]
+    private Collection $createdConversations;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -109,6 +130,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->playerRoles = new ArrayCollection();
         $this->readPosts = new ArrayCollection();
         $this->createdFactions = new ArrayCollection();
+        $this->conversationParticipations = new ArrayCollection();
+        $this->messages = new ArrayCollection();
+        $this->createdConversations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -482,6 +506,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCanCreateRpForum(bool $canCreateRpForum): static
     {
         $this->canCreateRpForum = $canCreateRpForum;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConversationParticipant>
+     */
+    public function getConversationParticipations(): Collection
+    {
+        return $this->conversationParticipations;
+    }
+
+    public function addConversationParticipation(ConversationParticipant $participation): static
+    {
+        if (!$this->conversationParticipations->contains($participation)) {
+            $this->conversationParticipations->add($participation);
+            $participation->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConversationParticipation(ConversationParticipant $participation): static
+    {
+        if ($this->conversationParticipations->removeElement($participation)) {
+            // set the owning side to null (unless already changed)
+            if ($participation->getUser() === $this) {
+                $participation->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getAuthor() === $this) {
+                $message->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Conversation>
+     */
+    public function getCreatedConversations(): Collection
+    {
+        return $this->createdConversations;
+    }
+
+    public function addCreatedConversation(Conversation $conversation): static
+    {
+        if (!$this->createdConversations->contains($conversation)) {
+            $this->createdConversations->add($conversation);
+            $conversation->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedConversation(Conversation $conversation): static
+    {
+        if ($this->createdConversations->removeElement($conversation)) {
+            // set the owning side to null (unless already changed)
+            if ($conversation->getCreator() === $this) {
+                $conversation->setCreator(null);
+            }
+        }
 
         return $this;
     }

@@ -259,6 +259,16 @@
                             {% endif %}
                         </a>
                     </li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_messaging_conversations_index') }}" class="sidebar-menu-link position-relative" data-title="Messagerie">
+                            <i class="fas fa-comments"></i> <span class="sidebar-menu-text">Messagerie</span>
+                            {% if messaging_unread_count() > 0 %}
+                                <span class="badge bg-danger rounded-pill ms-2 notification-badge messaging-badge">{{ messaging_unread_count() }}</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill ms-2 notification-badge messaging-badge" style="display: none;">0</span>
+                            {% endif %}
+                        </a>
+                    </li>
                     {% if is_granted('ROLE_USER') and app.user.canCreateFaction() %}
                     <li class="sidebar-menu-item">
                         <a href="{{ path('app_faction_new') }}" class="sidebar-menu-link" data-title="Créer une faction">
@@ -363,6 +373,8 @@
             <script src="/js/dc-editor.js"></script>
             <!-- Gestion des messages non lus -->
             <script src="/js/unread-messages.js"></script>
+            <!-- Gestion des messages non lus de la messagerie -->
+            <script src="/js/messaging-unread.js"></script>
             <!-- Custom JavaScript -->
             <script>
                 // Fonction pour rediriger vers la page des threads RP avec l'univers par défaut

@@ -1,0 +1,13 @@
+{% extends '@!Turbo/stream.html.twig' %}
+
+{% block data %}
+    <div class="message-content">
+        {{ message.content|raw }}
+    </div>
+    
+    {% if message.isEdited %}
+        <div class="message-edited">
+            <small><em>Modifié le {{ message.updatedAt|date('d/m/Y H:i') }}</em></small>
+        </div>
+    {% endif %}
+{% endblock %} 

@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messagerie{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="{{ asset('css/components/messaging.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="messaging-container">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {
+        'breadcrumbs': [
+            {'label': 'Accueil', 'path': path('app_home')},
+            {'label': 'Messagerie', 'path': null}
+        ]
+    } %}
+    
+    <div class="messaging-header">
+        <h1>Messagerie</h1>
+        <div class="messaging-actions">
+            <a href="{{ path('app_messaging_conversation_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle conversation
+            </a>
+        </div>
+    </div>
+    
+    <div class="messaging-grid">
+        <div class="conversation-list-container">
+            <div class="conversation-list-header">
+                <h2>Conversations</h2>
+                <div class="conversation-search">
+                    <input type="text" id="conversation-search" placeholder="Rechercher..." class="form-control">
+                </div>
+            </div>
+            
+            <div class="conversation-list">
+                {% if conversations is empty %}
+                    <div class="empty-state">
+                        <i class="far fa-comment-dots"></i>
+                        <p>Aucune conversation pour le moment</p>
+                        <a href="{{ path('app_messaging_conversation_new') }}" class="btn btn-sm btn-primary">Démarrer une conversation</a>
+                    </div>
+                {% else %}
+                    {% for conversation in conversations %}
+                        <a href="{{ path('app_messaging_conversation_show', {'id': conversation.id}) }}" 
+                           class="conversation-item{% if unreadMessages[conversation.id] is defined and unreadMessages[conversation.id] > 0 %} has-unread{% endif %}">
+                            <div class="conversation-icon">
+                                {% if conversation.icon %}
+                                    <img src="{{ conversation.icon }}" alt="{{ conversation.name }}">
+                                {% else %}
+                                    {% if conversation.type == 'private' %}
+                                        <i class="fas fa-user"></i>
+                                    {% elseif conversation.type == 'group' %}
+                                        <i class="fas fa-users"></i>
+                                    {% else %}
+                                        <i class="fas fa-hashtag"></i>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="conversation-info">
+                                <div class="conversation-name">
+                                    {{ conversation.name }}
+                                    {% if conversation.type == 'public' %}
+                                        <span class="badge bg-info">Public</span>
+                                    {% endif %}
+                                </div>
+                                <div class="conversation-preview">
+                                    {% if conversation.universe %}
+                                        <span class="universe-label">{{ conversation.universe.name }}</span>
+                                    {% endif %}
+                                    {% if conversation.description %}
+                                        {{ conversation.description|striptags|slice(0, 50) }}{% if conversation.description|length > 50 %}...{% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if unreadMessages[conversation.id] is defined and unreadMessages[conversation.id] > 0 %}
+                                <div class="conversation-unread">
+                                    <span class="badge rounded-pill bg-danger">{{ unreadMessages[conversation.id] }}</span>
+                                </div>
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="conversation-content-container">
+            {% if conversations is empty %}
+                <div class="empty-state-large">
+                    <i class="far fa-comments"></i>
+                    <h2>Bienvenue dans votre messagerie</h2>
+                    <p>Commencez par créer une nouvelle conversation ou sélectionnez-en une existante.</p>
+                    <p>Vous pouvez envoyer des messages privés à d'autres utilisateurs, créer des conversations de groupe ou rejoindre des canaux publics.</p>
+                </div>
+            {% else %}
+                <div class="select-conversation-prompt">
+                    <i class="fas fa-arrow-left"></i>
+                    <p>Sélectionnez une conversation pour afficher les messages</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Recherche dans les conversations
+        const searchInput = document.getElementById('conversation-search');
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            conversationItems.forEach(item => {
+                const conversationName = item.querySelector('.conversation-name').textContent.toLowerCase();
+                const conversationPreview = item.querySelector('.conversation-preview').textContent.toLowerCase();
+                
+                if (conversationName.includes(searchTerm) || conversationPreview.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

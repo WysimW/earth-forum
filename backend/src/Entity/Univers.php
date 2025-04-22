@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Messaging\Conversation;
 
 
 #[ORM\Entity(repositoryClass: UniversRepository::class)]
@@ -67,6 +68,12 @@ class Univers
     #[ORM\OneToMany(targetEntity: Faction::class, mappedBy: 'universe')]
     private Collection $factions;
 
+    /**
+     * @var Collection<int, Conversation>
+     */
+    #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'universe')]
+    private Collection $conversations;
+
     public function __construct()
     {   
         $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
@@ -76,6 +83,7 @@ class Univers
         $this->locations = new ArrayCollection();
         $this->elseworlds = new ArrayCollection();
         $this->factions = new ArrayCollection();
+        $this->conversations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -304,6 +312,36 @@ class Univers
             // set the owning side to null (unless already changed)
             if ($faction->getUniverse() === $this) {
                 $faction->setUniverse(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Conversation>
+     */
+    public function getConversations(): Collection
+    {
+        return $this->conversations;
+    }
+
+    public function addConversation(Conversation $conversation): static
+    {
+        if (!$this->conversations->contains($conversation)) {
+            $this->conversations->add($conversation);
+            $conversation->setUniverse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConversation(Conversation $conversation): static
+    {
+        if ($this->conversations->removeElement($conversation)) {
+            // set the owning side to null (unless already changed)
+            if ($conversation->getUniverse() === $this) {
+                $conversation->setUniverse(null);
             }
         }
 

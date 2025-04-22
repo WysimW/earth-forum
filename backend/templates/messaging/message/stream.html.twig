@@ -1,0 +1,44 @@
+{% extends '@!Turbo/stream.html.twig' %}
+
+{% block data %}
+    <div class="message {% if message.author == app.user %}message-sent{% else %}message-received{% endif %}" id="message-{{ message.id }}">
+        <div class="message-header">
+            {% if message.isRoleplay and message.character %}
+                <div class="message-author">
+                    <img src="{{ message.character.avatar ? asset('uploads/characters/' ~ message.character.avatar) : asset('images/default-character.png') }}" alt="{{ message.character.name }}" class="message-avatar">
+                    <strong>{{ message.character.name }}</strong>
+                </div>
+            {% else %}
+                <div class="message-author">
+                    <img src="{{ message.author.avatar ? asset('uploads/avatars/' ~ message.author.avatar) : asset('images/default-avatar.png') }}" alt="{{ message.author.username }}" class="message-avatar">
+                    <strong>{{ message.author.username }}</strong>
+                </div>
+            {% endif %}
+            <span class="message-date">{{ message.createdAt|date('d/m/Y H:i') }}</span>
+        </div>
+        
+        <div class="message-content">
+            {{ message.content|raw }}
+        </div>
+        
+        {% if message.isEdited %}
+            <div class="message-edited">
+                <small><em>Modifié le {{ message.updatedAt|date('d/m/Y H:i') }}</em></small>
+            </div>
+        {% endif %}
+        
+        {% if not message.isDeleted and message.author == app.user %}
+            <div class="message-actions">
+                <a href="{{ path('app_messaging_message_edit', {'id': message.id}) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <form action="{{ path('app_messaging_message_delete', {'id': message.id}) }}" method="post" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce message ?')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %} 

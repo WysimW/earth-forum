@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ conversation.name }} - Messagerie{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="{{ asset('css/components/messaging.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="messaging-container">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {
+        'breadcrumbs': [
+            {'label': 'Accueil', 'path': path('app_home')},
+            {'label': 'Messagerie', 'path': path('app_messaging_conversations_index')},
+            {'label': conversation.name, 'path': null}
+        ]
+    } %}
+
+    <div class="conversation-header">
+        <div class="conversation-title">
+            <a href="{{ path('app_messaging_conversations_index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <div>
+                <h2>{{ conversation.name }}</h2>
+                <div class="conversation-meta">
+                    {% if conversation.universe %}
+                        <span class="universe-label">{{ conversation.universe.name }}</span> •
+                    {% endif %}
+                    {{ participants|length }} participants
+                </div>
+            </div>
+        </div>
+        <div class="conversation-header-actions">
+            {% if currentParticipant.role == 'admin' %}
+                <a href="{{ path('app_messaging_conversation_edit', {'id': conversation.id}) }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+            {% endif %}
+            
+            <form action="{{ path('app_messaging_conversation_leave', {'id': conversation.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette conversation ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('leave' ~ conversation.id) }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Quitter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="messages-container" id="messagesContainer">
+        {% if messages|length > 0 %}
+            {% for message in messages %}
+                <div class="message {% if message.author == app.user %}message-sent{% else %}message-received{% endif %}" id="message-{{ message.id }}">
+                    <div class="message-header">
+                        {% if message.isRoleplay and message.character %}
+                            <div class="message-author">
+                                <img src="{{ message.character.avatar ? asset('uploads/characters/' ~ message.character.avatar) : asset('images/default-character.png') }}" alt="{{ message.character.name }}" class="message-avatar">
+                                <strong>{{ message.character.name }}</strong>
+                            </div>
+                        {% else %}
+                            <div class="message-author">
+                                <img src="{{ message.author.avatar ? asset('uploads/avatars/' ~ message.author.avatar) : asset('images/default-avatar.png') }}" alt="{{ message.author.username }}" class="message-avatar">
+                                <strong>{{ message.author.username }}</strong>
+                            </div>
+                        {% endif %}
+                        <span class="message-date">{{ message.createdAt|date('d/m/Y H:i') }}</span>
+                    </div>
+                    
+                    <div class="message-content">
+                        {{ message.content|raw }}
+                    </div>
+                    
+                    {% if message.isEdited %}
+                        <div class="message-edited">
+                            <small><em>Modifié le {{ message.updatedAt|date('d/m/Y H:i') }}</em></small>
+                        </div>
+                    {% endif %}
+                    
+                    {% if not message.isDeleted and message.author == app.user %}
+                        <div class="message-actions">
+                            <a href="{{ path('app_messaging_message_edit', {'id': message.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ path('app_messaging_message_delete', {'id': message.id}) }}" method="post" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce message ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-muted">Aucun message dans cette conversation. Soyez le premier à écrire !</p>
+        {% endif %}
+    </div>
+
+    <div class="message-input-container">
+        {{ form_start(form, {'attr': {'class': 'message-form', 'id': 'messageForm'}}) }}
+            {{ form_widget(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Votre message...'}}) }}
+            
+            {% if form.character is defined %}
+                <div class="character-selector">
+                    {{ form_widget(form.character, {'attr': {'class': 'form-select form-select-sm'}}) }}
+                </div>
+            {% endif %}
+            
+            {% if form.files is defined %}
+                <div class="file-upload-container">
+                    {{ form_widget(form.files, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            {% endif %}
+            
+            <div class="message-form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Envoyer
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll automatique vers le bas pour les messages
+        const messagesContainer = document.getElementById('messagesContainer');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Gestion du formulaire avec Turbo
+        const form = document.getElementById('messageForm');
+        if (form) {
+            form.addEventListener('turbo:submit-end', function() {
+                // Réinitialiser le formulaire après soumission réussie
+                form.reset();
+                
+                // Scrolle vers le bas après l'envoi d'un message
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+    });
+</script>
+{% endblock %} 

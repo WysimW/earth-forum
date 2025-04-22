@@ -9,14 +9,14 @@
         
         {% for breadcrumb in breadcrumbs %}
             <li class="breadcrumb-item {{ loop.last ? 'active' : '' }}">
-                {% if not loop.last and breadcrumb.url is defined %}
-                    <a href="{{ breadcrumb.url }}">
+                {% if not loop.last and breadcrumb.path is defined and breadcrumb.path is not null %}
+                    <a href="{{ breadcrumb.path }}">
                         {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
-                        {{ breadcrumb.name }}
+                        {{ breadcrumb.label }}
                     </a>
                 {% else %}
                     {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
-                    {{ breadcrumb.name }}
+                    {{ breadcrumb.label }}
                 {% endif %}
             </li>
         {% endfor %}

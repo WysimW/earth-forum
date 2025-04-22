@@ -1,0 +1,4 @@
+# Configuration pour Symfony UX Turbo
+turbo:
+    broadcast:
+        enabled: false  # Activer si vous utilisez Mercure ou d'autres systèmes de diffusion en temps réel 

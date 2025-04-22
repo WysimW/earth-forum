@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle conversation{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="{{ asset('css/components/messaging.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="messaging-container">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {
+        'breadcrumbs': [
+            {'label': 'Accueil', 'path': path('app_home')},
+            {'label': 'Messagerie', 'path': path('app_messaging_conversations_index')},
+            {'label': 'Nouvelle conversation', 'path': null}
+        ]
+    } %}
+    
+    <div class="messaging-header">
+        <h1>Nouvelle conversation</h1>
+    </div>
+    
+    <div class="conversation-form-container">
+        {{ form_start(form, {'attr': {'class': 'conversation-form'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.name, 'Nom de la conversation') }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Donnez un nom à votre conversation'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            {% if form.type is defined %}
+            <div class="mb-3">
+                {{ form_label(form.type, 'Type de conversation') }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-check-inline'}}) }}
+                {{ form_errors(form.type) }}
+                <div class="form-text">
+                    <small>Les conversations privées sont limitées à deux personnes. Les groupes permettent d'inviter plusieurs personnes.</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if form.universe is defined %}
+            <div class="mb-3">
+                {{ form_label(form.universe, 'Univers (optionnel)') }}
+                {{ form_widget(form.universe, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.universe) }}
+                <div class="form-text">
+                    <small>Associer la conversation à un univers particulier permet de l'organiser plus facilement.</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mb-3">
+                {{ form_label(form.description, 'Description (optionnelle)') }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Décrivez le sujet de la conversation'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form_label(form.icon, 'Icône (URL, optionnelle)') }}
+                {{ form_widget(form.icon, {'attr': {'class': 'form-control', 'placeholder': 'https://example.com/votre-image.jpg'}}) }}
+                {{ form_errors(form.icon) }}
+                <div class="form-text">
+                    <small>URL d'une image qui servira d'icône pour cette conversation.</small>
+                </div>
+            </div>
+            
+            {% if form.participants is defined %}
+            <div class="mb-3">
+                {{ form_label(form.participants, 'Participants') }}
+                {{ form_widget(form.participants, {'attr': {'class': 'form-select select2', 'multiple': 'multiple'}}) }}
+                {{ form_errors(form.participants) }}
+                <div class="form-text">
+                    <small>Sélectionnez les utilisateurs que vous souhaitez ajouter à cette conversation.</small>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <a href="{{ path('app_messaging_conversations_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Créer la conversation
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation de Select2 si disponible
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Sélectionnez des participants',
+                width: '100%'
+            });
+        }
+        
+        // Si c'est une conversation privée, limiter à un seul participant
+        const typeRadios = document.querySelectorAll('input[name$="[type]"]');
+        const participantsSelect = document.querySelector('.select2');
+        
+        if (typeRadios.length && participantsSelect) {
+            typeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'private') {
+                        $(participantsSelect).select2({
+                            maximumSelectionLength: 1,
+                            placeholder: 'Sélectionnez un destinataire',
+                            width: '100%'
+                        });
+                    } else {
+                        $(participantsSelect).select2({
+                            placeholder: 'Sélectionnez des participants',
+                            width: '100%'
+                        });
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %} 

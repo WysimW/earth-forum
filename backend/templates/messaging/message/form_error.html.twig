@@ -1,0 +1,12 @@
+{% extends '@!Turbo/stream.html.twig' %}
+
+{% block data %}
+    <div class="alert alert-danger">
+        <p>Une erreur est survenue lors de l'envoi du message :</p>
+        <ul class="form-errors">
+            {% for error in form.content.vars.errors %}
+                <li>{{ error.message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %} 
