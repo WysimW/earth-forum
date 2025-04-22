@@ -35,4 +35,4 @@ php bin/console doctrine:fixtures:load --group=RandomPostsFixtures
  php bin/console doctrine:fixtures:load --append --group=RandomPostsFixtures
 php bin/console doctrine:fixtures:load --group=messaging --append
 
- fake change v4
+ fake change v5
