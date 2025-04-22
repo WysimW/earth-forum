@@ -110,7 +110,7 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             $conversation->setType(Conversation::TYPE_PRIVATE);
             
             // Créer une date dans le dernier mois
-            $createdAt = new \DateTimeImmutable('-' . mt_rand(1, 30) . ' days');
+            $createdAt = new \DateTimeImmutable('-' . mt_rand(20, 30) . ' days');
             $conversation->setCreatedAt($createdAt);
             $conversation->setUpdatedAt($createdAt);
             
@@ -121,18 +121,29 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             $creatorParticipant->setConversation($conversation);
             $creatorParticipant->setUser($creator);
             $creatorParticipant->setRole(ConversationParticipant::ROLE_ADMIN);
-            $creatorParticipant->setLastReadAt($createdAt);
+            // On ne fixe pas encore la date de dernière lecture
             $manager->persist($creatorParticipant);
 
             $recipientParticipant = new ConversationParticipant();
             $recipientParticipant->setConversation($conversation);
             $recipientParticipant->setUser($recipient);
             $recipientParticipant->setRole(ConversationParticipant::ROLE_MEMBER);
-            $recipientParticipant->setLastReadAt($createdAt);
+            // On ne fixe pas encore la date de dernière lecture
             $manager->persist($recipientParticipant);
 
-            // Création de 3 à 10 messages dans cette conversation
-            $this->createMessages($manager, $conversation, [$creator, $recipient], mt_rand(3, 10));
+            // Création de messages dans cette conversation
+            $messageCount = mt_rand(8, 15); // Assez de messages pour avoir des non lus
+            $messageDates = $this->createMessages($manager, $conversation, [$creator, $recipient], $messageCount);
+            
+            // Maintenant, on peut fixer la dernière lecture à ~60% des messages pour garantir des non lus
+            $midpointIndex = (int)($messageCount * 0.6);
+            $lastReadDate = $messageDates[$midpointIndex];
+            
+            // Pour le créateur, dernier message lu à ~60% de la conversation
+            $creatorParticipant->setLastReadAt($lastReadDate);
+            // Pour le destinataire, dernier message lu à ~40% de la conversation
+            $earlierReadDate = $messageDates[(int)($messageCount * 0.4)];
+            $recipientParticipant->setLastReadAt($earlierReadDate);
         }
     }
 
@@ -167,7 +178,7 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             $conversation->setType(Conversation::TYPE_GROUP);
             
             // Créer une date dans le dernier mois
-            $createdAt = new \DateTimeImmutable('-' . mt_rand(1, 30) . ' days');
+            $createdAt = new \DateTimeImmutable('-' . mt_rand(20, 30) . ' days');
             $conversation->setCreatedAt($createdAt);
             $conversation->setUpdatedAt($createdAt);
             
@@ -175,6 +186,9 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             
             $manager->persist($conversation);
 
+            // Tableau pour stocker les entités participants
+            $participantEntities = [];
+            
             // Ajout des participants
             foreach ($participants as $index => $participant) {
                 $participantEntity = new ConversationParticipant();
@@ -185,19 +199,30 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
                 $role = ($index === 0) ? ConversationParticipant::ROLE_ADMIN : ConversationParticipant::ROLE_MEMBER;
                 $participantEntity->setRole($role);
                 
-                // Dernière lecture aléatoire pour simuler des messages non lus (70% de chance d'avoir des non lus)
-                if (mt_rand(1, 10) <= 7) {
-                    $lastReadDate = new \DateTime('-' . mt_rand(1, 3) . ' days');
-                } else {
-                    $lastReadDate = $createdAt;
-                }
-                $participantEntity->setLastReadAt($lastReadDate);
-                
+                // On ne fixe pas encore la dernière lecture
                 $manager->persist($participantEntity);
+                
+                $participantEntities[] = $participantEntity;
             }
 
-            // Création de 5 à 20 messages dans cette conversation
-            $this->createMessages($manager, $conversation, $participants, mt_rand(5, 20));
+            // Création de messages dans cette conversation
+            $messageCount = mt_rand(12, 25); // Plus de messages pour les groupes
+            $messageDates = $this->createMessages($manager, $conversation, $participants, $messageCount);
+            
+            // Maintenant, pour chaque participant, on fixe une dernière lecture différente
+            // pour s'assurer que chacun a des messages non lus
+            foreach ($participantEntities as $index => $entity) {
+                // Calculer un point entre 30% et 80% des messages selon le participant
+                $percentage = 0.3 + ($index * 0.1); // 0.3, 0.4, 0.5, etc.
+                if ($percentage > 0.8) $percentage = 0.8; // Max 80%
+                
+                $readIndex = (int)($messageCount * $percentage);
+                if ($readIndex >= count($messageDates)) {
+                    $readIndex = count($messageDates) - 1;
+                }
+                
+                $entity->setLastReadAt($messageDates[$readIndex]);
+            }
         }
     }
 
@@ -219,13 +244,16 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
         $conversation->setCreatedAt($createdAt);
         
         // Date de mise à jour plus récente
-        $updatedAt = new \DateTime('-' . mt_rand(1, 10) . ' days');
+        $updatedAt = new \DateTime('-' . mt_rand(1, 5) . ' days');
         $conversation->setUpdatedAt($updatedAt);
         
         $conversation->setUniverse($universe);
         
         $manager->persist($conversation);
 
+        // Tableau pour stocker les entités participants
+        $participantEntities = [];
+        
         // Ajout de tous les utilisateurs comme participants
         foreach ($users as $index => $user) {
             $participant = new ConversationParticipant();
@@ -243,28 +271,56 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             
             $participant->setRole($role);
             
-            // Dernière lecture aléatoire (60% de chance d'avoir des non lus)
-            if (mt_rand(1, 10) <= 6) {
-                $lastReadDate = new \DateTime('-' . mt_rand(2, 20) . ' days');
-            } else {
-                $lastReadDate = $createdAt;
-            }
-            $participant->setLastReadAt($lastReadDate);
-            
+            // On ne fixe pas encore la dernière lecture
             $manager->persist($participant);
+            
+            $participantEntities[] = $participant;
         }
 
-        // Création de 10 à 30 messages dans cette conversation
-        $this->createMessages($manager, $conversation, $users, mt_rand(10, 30));
+        // Création de messages dans cette conversation
+        $messageCount = mt_rand(20, 40); // Beaucoup de messages pour la conversation publique
+        $messageDates = $this->createMessages($manager, $conversation, $users, $messageCount);
+        
+        // Distribution des dates de dernière lecture pour assurer des messages non lus
+        foreach ($participantEntities as $index => $entity) {
+            // Différentes positions de lecture selon l'utilisateur pour créer de la variété
+            $readPosition = ($index % 5); // 0, 1, 2, 3, 4
+            
+            switch ($readPosition) {
+                case 0: // N'a lu que 20% des messages
+                    $readIndex = (int)($messageCount * 0.2);
+                    break;
+                case 1: // A lu 40% des messages
+                    $readIndex = (int)($messageCount * 0.4);
+                    break;
+                case 2: // A lu 60% des messages
+                    $readIndex = (int)($messageCount * 0.6);
+                    break;
+                case 3: // A lu 75% des messages
+                    $readIndex = (int)($messageCount * 0.75);
+                    break;
+                case 4: // A lu 90% des messages
+                    $readIndex = (int)($messageCount * 0.9);
+                    break;
+            }
+            
+            if ($readIndex >= count($messageDates)) {
+                $readIndex = count($messageDates) - 1;
+            }
+            
+            $entity->setLastReadAt($messageDates[$readIndex]);
+        }
     }
 
     /**
      * Crée des messages dans une conversation
+     * @return array Tableau des dates des messages (du plus ancien au plus récent)
      */
-    private function createMessages(ObjectManager $manager, Conversation $conversation, array $participants, int $count): void
+    private function createMessages(ObjectManager $manager, Conversation $conversation, array $participants, int $count): array
     {
         // Commencer à la date de création de la conversation
         $messageDate = clone $conversation->getCreatedAt();
+        $messageDates = []; // Pour stocker toutes les dates des messages
         
         for ($i = 0; $i < $count; $i++) {
             $authorIndex = array_rand($participants);
@@ -285,6 +341,7 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             }
             
             $message->setCreatedAt($messageDateTime);
+            $messageDates[] = $messageDateTime; // Stocker la date du message
             
             // Mettre à jour la date pour le prochain message
             $messageDate = $messageDateTime;
@@ -311,5 +368,7 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
                 $conversation->setUpdatedAt($messageDateTime);
             }
         }
+        
+        return $messageDates;
     }
 } 
