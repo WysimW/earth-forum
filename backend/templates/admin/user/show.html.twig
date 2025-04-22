@@ -157,4 +157,28 @@
             </form>
         </div>
     </div>
+
+    <div class="d-grid gap-2 mt-3">
+        <form method="post" action="{{ path('admin_user_toggle_faction_permission', {'id': user.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle_faction_permission' ~ user.id) }}">
+            <button type="submit" class="btn btn-{{ user.canCreateFaction ? 'danger' : 'success' }} w-100">
+                {% if user.canCreateFaction %}
+                    <i class="bi bi-x-circle-fill"></i> Retirer la permission de créer une faction
+                {% else %}
+                    <i class="bi bi-check-circle-fill"></i> Donner la permission de créer une faction
+                {% endif %}
+            </button>
+        </form>
+        
+        <form method="post" action="{{ path('admin_user_toggle_rp_forum_permission', {'id': user.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle_rp_forum_permission' ~ user.id) }}">
+            <button type="submit" class="btn btn-{{ user.canCreateRpForum ? 'danger' : 'success' }} w-100">
+                {% if user.canCreateRpForum %}
+                    <i class="bi bi-x-circle-fill"></i> Retirer la permission de créer un forum RP
+                {% else %}
+                    <i class="bi bi-check-circle-fill"></i> Donner la permission de créer un forum RP
+                {% endif %}
+            </button>
+        </form>
+    </div>
 {% endblock %}

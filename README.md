@@ -23,7 +23,7 @@ php bin/console make:entity
 php bin/console make:migration
 cphp bin/console doctrine:database:create
 php bin/console doctrine:schema:update --force
-
+php bin/console doctrine:migrations:migrate
 php bin/console doctrine:fixtures:load
 
 php bin/console cache:clear

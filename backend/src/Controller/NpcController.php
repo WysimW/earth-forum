@@ -123,8 +123,8 @@ class NpcController extends AbstractController
 
             $this->addFlash('success', 'Le PNJ a été créé avec succès et ajouté à la faction ' . $faction->getName());
             return $this->redirectToRoute('app_faction_show', [
-                'id' => $faction->getId(),
-                'slug' => $faction->getSlug()
+                'universeSlug' => $faction->getUniverse()->getSlug(),
+                'factionSlug' => $faction->getSlug()
             ], Response::HTTP_SEE_OTHER);
         }
 
@@ -135,7 +135,10 @@ class NpcController extends AbstractController
             'breadcrumbs' => [
                 'Accueil' => $this->generateUrl('app_home'),
                 'Factions' => $this->generateUrl('app_factions_index'),
-                $faction->getName() => $this->generateUrl('app_faction_show', ['id' => $faction->getId(), 'slug' => $faction->getSlug()]),
+                $faction->getName() => $this->generateUrl('app_faction_show', [
+                    'universeSlug' => $faction->getUniverse()->getSlug(),
+                    'factionSlug' => $faction->getSlug()
+                ]),
                 'Nouveau PNJ' => $this->generateUrl('app_npc_new_faction', ['faction_id' => $faction->getId()]),
             ],
         ]);

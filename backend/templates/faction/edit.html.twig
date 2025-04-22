@@ -96,9 +96,14 @@
             </h2>
             <div class="mb-3">
                 {{ form_label(form.headquarters) }}
-                {{ form_widget(form.headquarters, {'attr': {'class': 'form-control'}}) }}
+                <div class="input-group">
+                    {{ form_widget(form.headquarters, {'attr': {'class': 'form-control'}}) }}
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createLocationModal">
+                        <i class="fas fa-plus"></i> Nouveau
+                    </button>
+                </div>
                 {{ form_errors(form.headquarters) }}
-                <small class="form-text text-muted">Sélectionnez un lieu existant ou laissez vide pour une faction sans QG défini.</small>
+                <small class="form-text text-muted">Sélectionnez un lieu existant ou créez-en un nouveau avec le bouton "Nouveau".</small>
             </div>
             
             <div class="mb-3">
@@ -155,7 +160,12 @@
                     
                     <div class="mb-3">
                         {{ form_label(form.subforum) }}
-                        {{ form_widget(form.subforum, {'attr': {'class': 'form-control'}}) }}
+                        <div class="input-group">
+                            {{ form_widget(form.subforum, {'attr': {'class': 'form-control'}}) }}
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createForumModal">
+                                <i class="fas fa-plus"></i> Nouveau
+                            </button>
+                        </div>
                         {{ form_errors(form.subforum) }}
                     </div>
                 </div>
@@ -239,6 +249,101 @@
             </div>
         </div>
     {% endif %}
+
+    {# Modal pour créer un nouveau lieu #}
+    <div class="modal fade" id="createLocationModal" tabindex="-1" aria-labelledby="createLocationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createLocationModalLabel">Créer un nouveau lieu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="location-form">
+                        <div class="mb-3">
+                            <label for="location-name" class="form-label">Nom du lieu</label>
+                            <input type="text" class="form-control" id="location-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location-universe" class="form-label">Univers</label>
+                            <select class="form-control" id="location-universe" required>
+                                {% for univers in form.universe.vars.choices %}
+                                    <option value="{{ univers.value }}" {% if univers.value == faction.universe.id %}selected{% endif %}>{{ univers.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="location-description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="save-location">Créer le lieu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Modal pour créer un nouveau forum #}
+    <div class="modal fade" id="createForumModal" tabindex="-1" aria-labelledby="createForumModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createForumModalLabel">Créer un nouveau forum</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="forum-form">
+                        <div class="mb-3">
+                            <label for="forum-name" class="form-label">Nom du forum</label>
+                            <input type="text" class="form-control" id="forum-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="forum-universe" class="form-label">Univers</label>
+                            <select class="form-control" id="forum-universe" required>
+                                {% for univers in form.universe.vars.choices %}
+                                    <option value="{{ univers.value }}" {% if univers.value == faction.universe.id %}selected{% endif %}>{{ univers.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="forum-parent" class="form-label">Forum parent (optionnel)</label>
+                            <select class="form-control" id="forum-parent">
+                                <option value="">Aucun (forum racine)</option>
+                                <!-- Les options seront chargées dynamiquement par AJAX -->
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="forum-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="forum-description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="forum-type" class="form-label">Type</label>
+                            <select class="form-control" id="forum-type">
+                                <option value="normal" {% if not is_granted('ROLE_ADMIN') %}disabled{% endif %}>Normal</option>
+                                <option value="important" {% if not is_granted('ROLE_ADMIN') %}disabled{% endif %}>Important</option>
+                                <option value="roleplay" {% if not app.user.canCreateRpForum and not is_granted('ROLE_ADMIN') %}disabled{% endif %}>Roleplay</option>
+                            </select>
+                            {% if not is_granted('ROLE_ADMIN') %}
+                            <small class="form-text text-muted">Seuls les administrateurs peuvent créer des forums normaux ou importants.</small>
+                            {% endif %}
+                            {% if not app.user.canCreateRpForum and not is_granted('ROLE_ADMIN') %}
+                            <small class="form-text text-muted">Vous n'avez pas d'autorisation pour créer un forum Roleplay. Contactez un administrateur.</small>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="save-forum">Créer le forum</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -257,6 +362,153 @@ document.addEventListener('DOMContentLoaded', function() {
             theme: 'bootstrap-5'
         });
     }
+    
+    // Pour les utilisateurs non-admin, forcer la sélection du type roleplay
+    {% if not is_granted('ROLE_ADMIN') %}
+    const forumTypeSelect = document.getElementById('forum-type');
+    if (forumTypeSelect) {
+        forumTypeSelect.value = 'roleplay';
+        
+        // Désactiver les autres options
+        Array.from(forumTypeSelect.options).forEach(option => {
+            if (option.value !== 'roleplay') {
+                option.disabled = true;
+            }
+        });
+    }
+    {% endif %}
+    
+    // Gestion de la création d'un nouveau lieu
+    document.getElementById('save-location').addEventListener('click', function() {
+        const name = document.getElementById('location-name').value;
+        const universe = document.getElementById('location-universe').value;
+        const description = document.getElementById('location-description').value;
+        
+        if (!name || !universe) {
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+        
+        // Envoyer la requête AJAX pour créer le lieu
+        fetch('{{ path('app_location_create_ajax') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token('location_create') }}'
+            },
+            body: JSON.stringify({
+                name: name,
+                universe: universe,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Ajouter le nouveau lieu à la liste déroulante
+                const selectElement = document.getElementById('{{ form.headquarters.vars.id }}');
+                const option = new Option(data.location.name, data.location.id, true, true);
+                selectElement.add(option);
+                
+                // Fermer le modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createLocationModal'));
+                modal.hide();
+                
+                // Notification de succès
+                alert('Le lieu a été créé avec succès.');
+            } else {
+                alert('Erreur lors de la création du lieu: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la création du lieu.');
+        });
+    });
+
+    // Gestion de la création d'un nouveau forum
+    document.getElementById('save-forum').addEventListener('click', function() {
+        const name = document.getElementById('forum-name').value;
+        const universe = document.getElementById('forum-universe').value;
+        const parent = document.getElementById('forum-parent').value;
+        const description = document.getElementById('forum-description').value;
+        const type = document.getElementById('forum-type').value;
+        
+        if (!name || !universe) {
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+        
+        // Envoyer la requête AJAX pour créer le forum
+        fetch('{{ path('app_forum_create_ajax') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token('forum_create') }}'
+            },
+            body: JSON.stringify({
+                name: name,
+                universe: universe,
+                parent: parent || null,
+                description: description,
+                type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Ajouter le nouveau forum à la liste déroulante
+                const selectElement = document.getElementById('{{ form.subforum.vars.id }}');
+                const option = new Option(data.forum.name, data.forum.id, true, true);
+                selectElement.add(option);
+                
+                // Fermer le modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createForumModal'));
+                modal.hide();
+                
+                // Notification de succès
+                alert('Le forum a été créé avec succès.');
+            } else {
+                alert('Erreur lors de la création du forum: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la création du forum.');
+        });
+    });
+    
+    // Charger les forums parents en fonction de l'univers sélectionné
+    document.getElementById('forum-universe').addEventListener('change', function() {
+        const universeId = this.value;
+        const parentForumSelect = document.getElementById('forum-parent');
+        
+        // Vider les options actuelles sauf la première
+        while (parentForumSelect.options.length > 1) {
+            parentForumSelect.remove(1);
+        }
+        
+        if (!universeId) return;
+        
+        // Charger les forums de cet univers
+        fetch('{{ path('app_forums_by_universe_ajax') }}?universe=' + universeId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Ajouter les forums comme options
+                    data.forums.forEach(forum => {
+                        const option = new Option(forum.name, forum.id);
+                        parentForumSelect.add(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des forums:', error);
+            });
+    });
+    
+    // Déclencher l'événement de changement pour charger les forums au chargement de la page
+    document.getElementById('forum-universe').dispatchEvent(new Event('change'));
 });
 </script>
 {% endblock %} 

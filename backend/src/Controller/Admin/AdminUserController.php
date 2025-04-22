@@ -135,4 +135,32 @@ class AdminUserController extends AbstractController
 
         return $this->redirectToRoute('admin_user_index');
     }
+
+    #[Route('/{id}/toggle-faction-permission', name: 'toggle_faction_permission', methods: ['POST'])]
+    public function toggleFactionPermission(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_faction_permission'.$user->getId(), $request->request->get('_token'))) {
+            $user->setCanCreateFaction(!$user->canCreateFaction());
+            $entityManager->flush();
+            
+            $status = $user->canCreateFaction() ? 'accordée' : 'retirée';
+            $this->addFlash('success', 'La permission de créer une faction a été ' . $status . ' à ' . $user->getPseudo());
+        }
+        
+        return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+    }
+    
+    #[Route('/{id}/toggle-rp-forum-permission', name: 'toggle_rp_forum_permission', methods: ['POST'])]
+    public function toggleRpForumPermission(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_rp_forum_permission'.$user->getId(), $request->request->get('_token'))) {
+            $user->setCanCreateRpForum(!$user->canCreateRpForum());
+            $entityManager->flush();
+            
+            $status = $user->canCreateRpForum() ? 'accordée' : 'retirée';
+            $this->addFlash('success', 'La permission de créer un forum RP a été ' . $status . ' à ' . $user->getPseudo());
+        }
+        
+        return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+    }
 }

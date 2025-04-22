@@ -39,6 +39,7 @@
                             <th>Email</th>
                             <th>Date d'inscription</th>
                             <th>Factions créées</th>
+                            <th>Forum RP</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -58,6 +59,13 @@
                                     <td>{{ user.createdAt|date('d/m/Y') }}</td>
                                     <td>
                                         <span class="badge bg-info">{{ user.createdFactions|length }}</span>
+                                    </td>
+                                    <td>
+                                        {% if user.canCreateRpForum %}
+                                            <span class="badge bg-success">Autorisé</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Non autorisé</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <div class="form-check form-switch">
@@ -111,6 +119,7 @@
                             <th>Pseudo</th>
                             <th>Email</th>
                             <th>Date d'inscription</th>
+                            <th>Forum RP</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -129,12 +138,25 @@
                                     <td class="user-email">{{ user.email }}</td>
                                     <td>{{ user.createdAt|date('d/m/Y') }}</td>
                                     <td>
+                                        {% if user.canCreateRpForum %}
+                                            <span class="badge bg-success">Autorisé</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Non autorisé</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         <div class="form-check form-switch">
                                             <form method="post" action="{{ path('admin_faction_toggle_permission', {'id': user.id}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('toggle_permission' ~ user.id) }}">
                                                 <button type="submit" class="btn btn-sm btn-success">
                                                     <i class="bi bi-check-circle"></i> Accorder la permission
                                                 </button>
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" name="give_rp_forum_permission" id="give_rp_forum_{{ user.id }}" value="1">
+                                                    <label class="form-check-label small" for="give_rp_forum_{{ user.id }}">
+                                                        Accorder aussi la permission de créer un forum RP
+                                                    </label>
+                                                </div>
                                             </form>
                                         </div>
                                     </td>

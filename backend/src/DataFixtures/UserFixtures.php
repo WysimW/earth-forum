@@ -97,7 +97,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
             $user->setEmail($userData['email']);
             $user->setRoles($userData['roles']);
             $user->setPseudo($userData['pseudo']);
-            $user->setAvatar($userData['avatar']);
+            $user->setAvatar($userData['avatar'] ?? null);
             $user->setPassword(
                 $this->passwordHasher->hashPassword(
                     $user,
@@ -106,6 +106,8 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
             );
             $user->setCreatedAt(new \DateTimeImmutable(sprintf('-%d days', rand(1, 365))));
             $user->setLastLogin(new \DateTime(sprintf('-%d days', rand(0, 30))));
+            $user->setCanCreateFaction($userData['can_create_faction'] ?? false);
+            $user->setCanCreateRpForum($userData['can_create_rp_forum'] ?? false);
 
             $manager->persist($user);
             

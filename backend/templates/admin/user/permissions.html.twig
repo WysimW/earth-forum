@@ -1,0 +1,47 @@
+                        <tr>
+                            <th>ID</th>
+                            <th>Pseudo</th>
+                            <th>Email</th>
+                            <th>Date d'inscription</th>
+                            <th>Faction</th>
+                            <th>Forum RP</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>
+                                    <a href="{{ path('admin_user_show', {'id': user.id}) }}">
+                                        {{ user.pseudo }}
+                                    </a>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                <td>
+                                    {% if user.canCreateFaction %}
+                                        <span class="badge bg-success">Autorisé</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non autorisé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.canCreateRpForum %}
+                                        <span class="badge bg-success">Autorisé</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non autorisé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %} 

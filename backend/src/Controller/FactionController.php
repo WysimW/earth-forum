@@ -102,6 +102,10 @@ class FactionController extends AbstractController
             
             $this->entityManager->persist($faction);
             $this->entityManager->persist($thread);
+            
+            // Révoquer l'autorisation de créer une faction
+            $user->setCanCreateFaction(false);
+            
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Votre faction a été créée avec succès !');

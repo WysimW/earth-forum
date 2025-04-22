@@ -97,6 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $canCreateFaction = false;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $canCreateRpForum = false;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -467,6 +470,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCanCreateFaction(bool $canCreateFaction): static
     {
         $this->canCreateFaction = $canCreateFaction;
+
+        return $this;
+    }
+
+    public function canCreateRpForum(): bool
+    {
+        return $this->canCreateRpForum;
+    }
+
+    public function setCanCreateRpForum(bool $canCreateRpForum): static
+    {
+        $this->canCreateRpForum = $canCreateRpForum;
 
         return $this;
     }

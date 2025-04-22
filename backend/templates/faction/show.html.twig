@@ -232,6 +232,14 @@
                     {% else %}
                         <p class="text-muted">Aucun quartier général défini.</p>
                     {% endif %}
+                    
+                    {% if faction.subforum %}
+                        <div class="mt-2">
+                            <a href="{{ path('app_forum_show', {'universeSlug': faction.universe.slug, 'id': faction.subforum.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-comments me-1"></i> Accéder au forum de faction
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             

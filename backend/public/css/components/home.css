@@ -204,6 +204,115 @@
     background-color: var(--hrp-primary) !important;
 }
 
+/* Styles spécifiques pour la section des derniers messages */
+.recent-posts-card {
+    background-color: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-left: 2px solid var(--accent-light);
+}
+
+.recent-posts-card .card-header {
+    background-color: var(--primary-dark);
+}
+
+.recent-posts-card .card-header h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 400;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.recent-posts-card .list-group-item {
+    padding: 0.85rem 1.25rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    background-color: rgba(12, 45, 72, 0.85);
+    color: var(--light-gray);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.recent-posts-card .list-group-item:hover {
+    background-color: rgba(20, 93, 160, 0.5);
+    border-left-color: var(--accent-light);
+    box-shadow: 0 0 8px rgba(37, 136, 245, 0.2);
+}
+
+.recent-posts-card .list-group-item strong {
+    color: var(--text-white);
+    font-size: 0.95rem;
+}
+
+.recent-posts-card .small {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    color: var(--light-gray);
+}
+
+.recent-posts-card .text-muted {
+    font-size: 0.8rem;
+    color: rgba(220, 225, 227, 0.6) !important;
+}
+
+.recent-posts-card .badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    align-self: flex-start;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-fast);
+}
+
+.recent-posts-card .badge.bg-success:hover {
+    box-shadow: 0 0 10px var(--hrp-primary);
+}
+
+.recent-posts-card a {
+    color: var(--accent-light);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.recent-posts-card a:hover {
+    color: var(--accent-blue);
+    text-decoration: underline !important;
+    text-shadow: 0 0 5px rgba(4, 118, 242, 0.5);
+}
+
+/* Amélioration des autres cartes pour assurer la cohérence */
+.stats-card,
+.recent-threads-card {
+    background-color: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-left: 2px solid var(--accent-light);
+}
+
+.stats-card .card-body {
+    color: var(--light-gray);
+}
+
+.recent-threads-card .list-group-item {
+    background-color: rgba(12, 45, 72, 0.85);
+    color: var(--light-gray);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.recent-threads-card .list-group-item:hover {
+    background-color: rgba(20, 93, 160, 0.5);
+    border-left: 3px solid var(--accent-light);
+}
+
+.recent-threads-card .card-footer {
+    background-color: rgba(12, 45, 72, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .universe-card-banner {

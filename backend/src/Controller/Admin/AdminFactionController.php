@@ -109,17 +109,36 @@ class AdminFactionController extends AbstractController
         return $this->redirectToRoute('admin_faction_index', [], Response::HTTP_SEE_OTHER);
     }
 
-
-
     #[Route('/toggle-permission/{id}', name: 'admin_faction_toggle_permission', methods: ['POST'])]
     public function togglePermission(User $user, Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_permission'.$user->getId(), $request->request->get('_token'))) {
-            $user->setCanCreateFaction(!$user->canCreateFaction());
+            // Si on donne la permission, vérifier si on doit aussi donner la permission forum RP
+            $giveRpForumPermission = $request->request->getBoolean('give_rp_forum_permission', false);
+            
+            // Inverser la permission de création de faction
+            $newPermissionValue = !$user->canCreateFaction();
+            $user->setCanCreateFaction($newPermissionValue);
+            
+            // Si on accorde la permission de faction ET que l'option forum RP est cochée
+            if ($newPermissionValue && $giveRpForumPermission) {
+                $user->setCanCreateRpForum(true);
+            }
+            // Si on retire la permission de faction, retirer aussi la permission de forum RP
+            elseif (!$newPermissionValue) {
+                $user->setCanCreateRpForum(false);
+            }
+            
             $entityManager->flush();
             
             $status = $user->canCreateFaction() ? 'accordée' : 'retirée';
-            $this->addFlash('success', "La permission de créer des factions a été {$status} à {$user->getPseudo()}.");
+            $message = "La permission de créer des factions a été {$status} à {$user->getPseudo()}.";
+            
+            if ($user->canCreateFaction() && $user->canCreateRpForum()) {
+                $message .= " La permission de créer un forum RP a également été accordée.";
+            }
+            
+            $this->addFlash('success', $message);
         }
         
         return $this->redirectToRoute('admin_faction_permissions', [], Response::HTTP_SEE_OTHER);
