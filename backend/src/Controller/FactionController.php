@@ -48,7 +48,9 @@ class FactionController extends AbstractController
         return $this->render('faction/index.html.twig', [
             'universes' => $universes,
             'factions' => $factions,
-            'breadcrumbs' => $this->getBreadcrumbs()
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Factions' => $this->generateUrl('app_factions_index')
+            ])
         ]);
     }
 
@@ -66,7 +68,9 @@ class FactionController extends AbstractController
         return $this->render('faction/by_universe.html.twig', [
             'univers' => $univers,
             'factions' => $factions,
-            'breadcrumbs' => $this->getBreadcrumbsUniverse($univers)
+            'breadcrumbs' => $this->breadcrumbService->generateForUniverse($univers, [
+                'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $univers->getSlug()])
+            ])
         ]);
     }
 
@@ -116,7 +120,10 @@ class FactionController extends AbstractController
             'faction' => $faction,
             'form' => $form,
             'universes' => $universRepository->findAll(),
-            'breadcrumbs' => $this->getBreadcrumbs(['Créer une faction' => ''])
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Factions' => $this->generateUrl('app_factions_index'),
+                'Créer une faction' => ''
+            ])
         ]);
     }
 
@@ -142,12 +149,7 @@ class FactionController extends AbstractController
             'univers' => $univers,
             'faction' => $faction,
             'threads' => $threads,
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
-                'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $universeSlug]),
-                $faction->getName() => $this->generateUrl('app_faction_show', ['universeSlug' => $universeSlug, 'factionSlug' => $factionSlug]),
-            ]),
+            'breadcrumbs' => $this->breadcrumbService->generateForFaction($faction),
         ]);
     }
 
@@ -215,7 +217,7 @@ class FactionController extends AbstractController
         return $this->render('faction/edit.html.twig', [
             'faction' => $faction,
             'form' => $form,
-            'breadcrumbs' => $this->getBreadcrumbsFaction($faction, ['Modifier' => ''])
+            'breadcrumbs' => $this->breadcrumbService->generateForFaction($faction, ['Modifier' => ''])
         ]);
     }
 
@@ -405,7 +407,10 @@ class FactionController extends AbstractController
         return $this->render('faction/my_factions.html.twig', [
             'universes' => $universes,
             'factions' => array_values($userFactions),
-            'breadcrumbs' => $this->getBreadcrumbs(['Mes factions' => ''])
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Factions' => $this->generateUrl('app_factions_index'),
+                'Mes factions' => ''
+            ])
         ]);
     }
 
@@ -495,61 +500,5 @@ class FactionController extends AbstractController
                 $this->entityManager->flush();
             }
         }
-    }
-
-    /**
-     * Génère les breadcrumbs de base
-     */
-    private function getBreadcrumbs(array $additional = []): array
-    {
-        $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            'Factions' => $this->generateUrl('app_factions_index')
-        ];
-        
-        foreach ($additional as $name => $url) {
-            $breadcrumbs[$name] = $url;
-        }
-        
-        return $this->breadcrumbService->generate($breadcrumbs);
-    }
-
-    /**
-     * Génère les breadcrumbs pour un univers
-     */
-    private function getBreadcrumbsUniverse($univers, array $additional = []): array
-    {
-        $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()]),
-            'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $univers->getSlug()])
-        ];
-        
-        foreach ($additional as $name => $url) {
-            $breadcrumbs[$name] = $url;
-        }
-        
-        return $this->breadcrumbService->generate($breadcrumbs);
-    }
-
-    /**
-     * Génère les breadcrumbs pour une faction
-     */
-    private function getBreadcrumbsFaction(Faction $faction, array $additional = []): array
-    {
-        $univers = $faction->getUniverse();
-        
-        $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()]),
-            'Factions' => $this->generateUrl('app_factions_by_universe', ['universeSlug' => $univers->getSlug()]),
-            $faction->getName() => $this->generateUrl('app_faction_show', ['universeSlug' => $univers->getSlug(), 'factionSlug' => $faction->getSlug()])
-        ];
-        
-        foreach ($additional as $name => $url) {
-            $breadcrumbs[$name] = $url;
-        }
-        
-        return $this->breadcrumbService->generate($breadcrumbs);
     }
 } 

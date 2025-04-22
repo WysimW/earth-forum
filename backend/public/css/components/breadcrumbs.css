@@ -1,0 +1,119 @@
+/* Breadcrumbs */
+.breadcrumb-nav {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb {
+    background-color: rgba(10, 10, 10, 0.7);
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(20, 93, 160, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+
+.breadcrumb::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(41, 128, 185, 0.5), transparent);
+    opacity: 0.8;
+}
+
+.breadcrumb-item {
+    font-family: var(--font-special);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item a {
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--text-white);
+    text-shadow: 0 0 10px var(--accent-blue);
+    background-color: rgba(4, 118, 242, 0.1);
+}
+
+.breadcrumb-item a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.5rem;
+    right: 0.5rem;
+    height: 1px;
+    background-color: var(--accent-blue);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.breadcrumb-item a:hover::after {
+    transform: scaleX(1);
+}
+
+.breadcrumb-item a:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(4, 118, 242, 0.5);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-size: 1.2em;
+    color: var(--light-gray);
+    margin: 0 0.5rem;
+    opacity: 0.6;
+}
+
+.breadcrumb-item.active {
+    color: var(--light-gray);
+    padding: 0.25rem 0.5rem;
+}
+
+.breadcrumb-item i {
+    margin-right: 0.4rem;
+    color: var(--accent-blue);
+}
+
+.breadcrumb-item:first-child a {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item:first-child i {
+    font-size: 1.1em;
+    color: var(--accent-light);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .breadcrumb {
+        padding: 0.6rem 1rem;
+    }
+    
+    .breadcrumb-item {
+        font-size: 0.8rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        margin: 0 0.3rem;
+    }
+}

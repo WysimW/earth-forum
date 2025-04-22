@@ -3,9 +3,19 @@ namespace App\Service;
 
 use App\Entity\Forum;
 use App\Entity\Thread;
+use App\Entity\Faction;
+use App\Entity\Univers;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class BreadcrumbService
 {   
+    private UrlGeneratorInterface $urlGenerator;
+    
+    public function __construct(UrlGeneratorInterface $urlGenerator)
+    {
+        $this->urlGenerator = $urlGenerator;
+    }
+    
     /**
      * Generate breadcrumbs from an associative array
      * 
@@ -22,6 +32,47 @@ class BreadcrumbService
             ];
         }
         return $breadcrumbs;
+    }
+    
+    /**
+     * Génère les fils d'Ariane pour une faction
+     */
+    public function generateForFaction(Faction $faction, array $additional = []): array
+    {
+        $univers = $faction->getUniverse();
+        
+        $breadcrumbs = [
+            $univers->getName() => $this->urlGenerator->generate('app_univers_show', ['slug' => $univers->getSlug()]),
+            'Factions' => $this->urlGenerator->generate('app_factions_by_universe', ['universeSlug' => $univers->getSlug()]),
+            $faction->getName() => $this->urlGenerator->generate('app_faction_show', [
+                'universeSlug' => $univers->getSlug(), 
+                'factionSlug' => $faction->getSlug()
+            ])
+        ];
+        
+        // Ajouter les éléments supplémentaires
+        foreach ($additional as $name => $url) {
+            $breadcrumbs[$name] = $url;
+        }
+        
+        return $this->generate($breadcrumbs);
+    }
+    
+    /**
+     * Génère les fils d'Ariane pour un univers
+     */
+    public function generateForUniverse(Univers $univers, array $additional = []): array
+    {
+        $breadcrumbs = [
+            $univers->getName() => $this->urlGenerator->generate('app_univers_show', ['slug' => $univers->getSlug()])
+        ];
+        
+        // Ajouter les éléments supplémentaires
+        foreach ($additional as $name => $url) {
+            $breadcrumbs[$name] = $url;
+        }
+        
+        return $this->generate($breadcrumbs);
     }
     
     public function generateBreadcrumbs(Forum $forum): array

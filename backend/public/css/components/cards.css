@@ -445,42 +445,7 @@
    /* transform: translateX(5px); */
 }
 
-/* Breadcrumbs */
-.breadcrumb {
-    background-color: rgba(10, 10, 10, 0.5);
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgba(220, 225, 227, 0.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1.5rem;
-}
 
-.breadcrumb-item {
-    font-family: var(--font-special);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-}
-
-.breadcrumb-item a {
-    color: var(--primary-light);
-    text-decoration: none;
-    transition: all 0.3s;
-}
-
-.breadcrumb-item a:hover {
-    color: var(--text-white);
-    text-shadow: 0 0 10px var(--glow-blue);
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-    content: "›";
-    font-size: 1.2em;
-    color: var(--light-gray);
-}
-
-.breadcrumb-item.active {
-    color: var(--light-gray);
-}
 
 /* Alerts */
 .alert {

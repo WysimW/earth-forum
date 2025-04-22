@@ -12,9 +12,8 @@
     {# Fil d'Ariane #}
     {% include 'components/_breadcrumb.html.twig' with {
         'breadcrumbs': [
-            {'label': 'Accueil', 'path': path('app_home')},
-            {'label': 'Messagerie', 'path': path('app_messaging_conversations_index')},
-            {'label': conversation.name, 'path': null}
+            {'name': 'Messagerie', 'url': path('app_messaging_conversations_index')},
+            {'name': conversation.name, 'url': null}
         ]
     } %}
 

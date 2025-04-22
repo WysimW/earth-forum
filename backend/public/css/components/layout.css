@@ -451,43 +451,6 @@ footer a:hover {
     margin-bottom: 1.5rem;
 }
 
-/* Fil d'Ariane */
-.breadcrumb {
-    background-color: rgba(10, 10, 10, 0.5);
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-radius: var(--border-radius-md);
-    border: var(--border-width-sm) solid rgba(220, 225, 227, 0.1);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: var(--spacing-xl);
-}
-
-.breadcrumb-item {
-    font-family: var(--font-special);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-}
-
-.breadcrumb-item a {
-    color: var(--primary-light);
-    text-decoration: none;
-    transition: all var(--transition-normal);
-}
-
-.breadcrumb-item a:hover {
-    color: var(--text-white);
-    text-shadow: 0 0 10px var(--glow-blue);
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-    content: "›";
-    font-size: 1.2em;
-    color: var(--light-gray);
-}
-
-.breadcrumb-item.active {
-    color: var(--light-gray);
-}
-
 /* Conteneurs */
 .container {
     width: 100%;

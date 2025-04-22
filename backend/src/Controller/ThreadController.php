@@ -42,32 +42,32 @@ class ThreadController extends AbstractController
     public function chooseForum(string $universeSlug, UniversRepository $universRepository, ForumRepository $forumRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Récupérer les forums de cet univers, regroupés par catégorie
         $forumsRP = $forumRepository->findBy(['universe' => $univers, 'isRoleplay' => true], ['name' => 'ASC']);
         $forumsHRP = $forumRepository->findBy(['universe' => $univers, 'isRoleplay' => false], ['name' => 'ASC']);
-        
+
         // Récupérer également les forums des elseworlds de cet univers
         $elseworlds = $univers->getElseworlds();
         $elseworldsForumsRP = [];
         $elseworldsForumsHRP = [];
-        
+
         foreach ($elseworlds as $elseworld) {
             $elseworldsForumsRP[$elseworld->getId()] = [
                 'elseworld' => $elseworld,
                 'forums' => $forumRepository->findBy(['elseworld' => $elseworld, 'isRoleplay' => true], ['name' => 'ASC'])
             ];
-            
+
             $elseworldsForumsHRP[$elseworld->getId()] = [
                 'elseworld' => $elseworld,
                 'forums' => $forumRepository->findBy(['elseworld' => $elseworld, 'isRoleplay' => false], ['name' => 'ASC'])
             ];
         }
-        
+
         return $this->render('thread/choose_forum.html.twig', [
             'univers' => $univers,
             'forumsRP' => $forumsRP,
@@ -85,20 +85,19 @@ class ThreadController extends AbstractController
     #[Route('/univers/{universeSlug}/forum/{id}/nouvelle-discussion', name: 'app_forum_new_thread')]
     #[IsGranted('ROLE_USER')]
     public function newThread(
-        string $universeSlug, 
-        Request $request, 
-        Forum $forum, 
-        UniversRepository $universRepository, 
+        string $universeSlug,
+        Request $request,
+        Forum $forum,
+        UniversRepository $universRepository,
         CharacterRepository $characterRepository,
         FactionRepository $factionRepository
-    ): Response
-    {
+    ): Response {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -121,11 +120,11 @@ class ThreadController extends AbstractController
             if (count($userCharacters) !== 0) {
                 $hasValidatedCharacters = true;
             }
-            
+
             // Récupérer les factions disponibles pour l'utilisateur dans cet univers
             // (celles qu'il a fondées ou dont ses personnages sont membres)
             $userFactions = $factionRepository->findFactionsForUser($this->getUser(), $univers);
-            
+
             $form = $this->createForm(ThreadRoleplayType::class, $thread, [
                 'characters' => $userCharacters,
                 'factions' => $userFactions,
@@ -140,14 +139,14 @@ class ThreadController extends AbstractController
             $post = new Post();
             $post->setThread($thread);
             $post->setAuthor($this->getUser());
-            
+
             // Utiliser le contenu du premier post spécifié séparément de la description du thread
             $post->setContent($isRpForum ? $thread->getFirstPostContent() : $thread->getDescription());
 
             if ($isRpForum) {
                 $post->setType('roleplay');
             }
-            
+
             if ($isRpForum && $thread->getCharacterCreator()) {
                 $post->setCharacter($thread->getCharacterCreator());
                 $thread->addParticipant($thread->getCharacterCreator());
@@ -158,7 +157,7 @@ class ThreadController extends AbstractController
                     $post->addNpc($npc);
                 }
             }
-            
+
             // S'assurer que les factions sont correctement associées au thread
             if ($isRpForum && $thread->getFactions()) {
                 foreach ($thread->getFactions() as $faction) {
@@ -170,7 +169,7 @@ class ThreadController extends AbstractController
             // Generate slug from the title
             $slug = $this->generateSlug($thread->getTitle());
             $thread->setSlug($slug);
-            
+
             $thread->setAuthor($this->getUser());
             // La date est déjà initialisée dans le constructeur
             $this->entityManager->persist($thread);
@@ -200,40 +199,39 @@ class ThreadController extends AbstractController
 
     #[Route('/univers/{universeSlug}/thread/{id}', name: 'app_thread_show')]
     public function show(
-        string $universeSlug, 
-        Thread $thread, 
-        Request $request, 
-        UniversRepository $universRepository, 
+        string $universeSlug,
+        Thread $thread,
+        Request $request,
+        UniversRepository $universRepository,
         CharacterRepository $characterRepository,
         ReadPostRepository $readPostRepository
-    ): Response
-    {
+    ): Response {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Vérifier que le thread appartient bien à un forum de cet univers
         $forum = $thread->getForum();
         $forumUniverse = $forum->getUniverse();
-        
+
         // Si le forum a un univers, vérifier qu'il s'agit bien de l'univers demandé
         if ($forumUniverse && $forumUniverse->getId() !== $univers->getId()) {
             throw $this->createNotFoundException('Cette discussion n\'appartient pas à cet univers');
         }
-        
+
         // Si le forum appartient à un elseworld, vérifier que l'elseworld appartient à l'univers
         $elseworld = $forum->getElseworld();
         if ($elseworld && $elseworld->getParentUniverse()->getId() !== $univers->getId()) {
             throw $this->createNotFoundException('Cette discussion appartient à un elseworld qui n\'est pas lié à cet univers');
         }
-        
+
         // Marquer les messages du thread comme lus pour l'utilisateur connecté
         if ($this->getUser()) {
             $readPostRepository->markThreadAsRead($this->getUser(), $thread);
         }
-        
+
         // Gestion spéciale pour les fiches de personnage
         if ($thread->isCharacterSheet()) {
             return $this->showCharacterSheet($universeSlug, $thread, $request, $univers);
@@ -342,7 +340,7 @@ class ThreadController extends AbstractController
                 'name' => 'Forums',
                 'url' => $this->generateUrl('app_univers_forums', ['slug' => $universeSlug])
             ];
-            
+
             // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
             if ($forum->getElseworld()) {
                 $elseworld = $forum->getElseworld();
@@ -358,11 +356,11 @@ class ThreadController extends AbstractController
                     ])
                 ];
             }
-            
+
             $breadcrumbsArray[] = [
                 'name' => $forum->getName(),
                 'url' => $this->generateUrl('app_forum_show', [
-                    'universeSlug' => $universeSlug, 
+                    'universeSlug' => $universeSlug,
                     'id' => $forum->getId()
                 ])
             ];
@@ -391,11 +389,11 @@ class ThreadController extends AbstractController
     public function updateCharacterStatus(string $universeSlug, Thread $thread, Request $request, UniversRepository $universRepository, CharacterRepository $characterRepository, ForumRepository $forumRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         if (!$thread->isCharacterSheet()) {
             throw $this->createNotFoundException('Cette discussion n\'est pas une fiche de personnage.');
         }
@@ -486,11 +484,11 @@ class ThreadController extends AbstractController
     public function delete(string $universeSlug, Request $request, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Vérifier que l'utilisateur est autorisé à supprimer le thread
         if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette discussion.');
@@ -498,7 +496,7 @@ class ThreadController extends AbstractController
 
         // Vérifier le CSRF token
         $csrfToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete_thread_'.$thread->getId(), $csrfToken)) {
+        if (!$this->isCsrfTokenValid('delete_thread_' . $thread->getId(), $csrfToken)) {
             throw $this->createAccessDeniedException('Action non autorisée');
         }
 
@@ -515,30 +513,30 @@ class ThreadController extends AbstractController
     public function publish(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Vérifier que l'utilisateur est autorisé à publier le thread
         if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour publier cette discussion.');
         }
-        
+
         // Vérifier que c'est bien un brouillon
         if (!$thread->isDraft()) {
             $this->addFlash('error', 'Cette discussion n\'est pas un brouillon.');
             return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
-        
+
         // Publier le thread
         $thread->setIsDraft(false);
         $thread->setUpdatedAt(new \DateTimeImmutable());
-        
+
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'La discussion a été publiée avec succès.');
-        
+
         return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
     }
 
@@ -546,11 +544,11 @@ class ThreadController extends AbstractController
     public function list(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Récupérer les threads de type roleplay liés à cet univers
         $threads = $threadRepository->findRoleplayThreadsByUniverse($univers);
 
@@ -569,11 +567,11 @@ class ThreadController extends AbstractController
     public function filter(string $universeSlug, Request $request, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         $type = $request->query->get('type', 'all');
         $status = $request->query->get('status', '');
 
@@ -620,8 +618,6 @@ class ThreadController extends AbstractController
         }
 
         $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
             'Scènes RP' => $this->generateUrl('app_roleplay_threads', ['universeSlug' => $universeSlug])
         ];
 
@@ -643,11 +639,11 @@ class ThreadController extends AbstractController
     public function characterSheets(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository, ForumRepository $forumRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         $pendingSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches en attente', 'universe' => $univers]);
         $validatedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches validées', 'universe' => $univers]);
         $rejectedSheetsForum = $forumRepository->findOneBy(['name' => 'Fiches refusées', 'universe' => $univers]);
@@ -675,11 +671,11 @@ class ThreadController extends AbstractController
     public function myCharacterSheets(string $universeSlug, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         $myCharacterSheets = $threadRepository->findCharacterSheetsByUserAndUniverse($this->getUser(), $univers);
 
         return $this->render('thread/my_character_sheets.html.twig', [
@@ -699,13 +695,13 @@ class ThreadController extends AbstractController
     public function quote(string $universeSlug, Post $post, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         $thread = $post->getThread();
-        
+
         // Rediriger vers le formulaire de réponse avec le contenu cité
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
@@ -717,34 +713,33 @@ class ThreadController extends AbstractController
     #[Route('/univers/{universeSlug}/thread/{id}/edit', name: 'app_thread_edit')]
     #[IsGranted('ROLE_USER')]
     public function edit(
-        string $universeSlug, 
-        Thread $thread, 
-        Request $request, 
-        UniversRepository $universRepository, 
+        string $universeSlug,
+        Thread $thread,
+        Request $request,
+        UniversRepository $universRepository,
         CharacterRepository $characterRepository,
         FactionRepository $factionRepository
-    ): Response
-    {
+    ): Response {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Vérifier que l'utilisateur est l'auteur ou un modérateur
         if ($thread->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_MODERATOR')) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour éditer cette discussion');
         }
-        
+
         $isRpThread = $thread->getType() === 'roleplay';
-        
+
         if ($isRpThread) {
             $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
-            
+
             // Récupérer les factions disponibles pour l'utilisateur dans cet univers
             // (celles qu'il a fondées ou dont ses personnages sont membres)
             $userFactions = $factionRepository->findFactionsForUser($this->getUser(), $univers);
-            
+
             $form = $this->createForm(ThreadRoleplayType::class, $thread, [
                 'characters' => $userCharacters,
                 'factions' => $userFactions,
@@ -752,9 +747,9 @@ class ThreadController extends AbstractController
         } else {
             $form = $this->createForm(ThreadType::class, $thread);
         }
-        
+
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             // S'assurer que les factions sont correctement associées au thread
             if ($isRpThread && $thread->getFactions()) {
@@ -763,22 +758,22 @@ class ThreadController extends AbstractController
                     $faction->addScene($thread);
                 }
             }
-            
+
             // Generate slug from the title
             $slug = $this->generateSlug($thread->getTitle());
             $thread->setSlug($slug);
-            
+
             $thread->setUpdatedAt(new \DateTimeImmutable());
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'La discussion a été modifiée avec succès');
-            
+
             return $this->redirectToRoute('app_thread_show', [
                 'universeSlug' => $universeSlug,
                 'id' => $thread->getId()
             ]);
         }
-        
+
         return $this->render('thread/edit.html.twig', [
             'univers' => $univers,
             'form' => $form->createView(),
@@ -787,111 +782,111 @@ class ThreadController extends AbstractController
             'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
         ]);
     }
-    
+
     #[Route('/univers/{universeSlug}/thread/{id}/sticky', name: 'app_thread_sticky')]
     #[IsGranted('ROLE_MODERATOR')]
     public function sticky(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Épingler le thread
         $thread->setSticky(true);
         $thread->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'La discussion a été épinglée avec succès');
-        
+
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
             'id' => $thread->getId()
         ]);
     }
-    
+
     #[Route('/univers/{universeSlug}/thread/{id}/unsticky', name: 'app_thread_unsticky')]
     #[IsGranted('ROLE_MODERATOR')]
     public function unsticky(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Désépingler le thread
         $thread->setSticky(false);
         $thread->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'La discussion a été désépinglée avec succès');
-        
+
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
             'id' => $thread->getId()
         ]);
     }
-    
+
     #[Route('/univers/{universeSlug}/thread/{id}/close', name: 'app_thread_close')]
     #[IsGranted('ROLE_MODERATOR')]
     public function close(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Fermer le thread
         $thread->setStatus('closed');
         $thread->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
-        
+
         // Ajouter un message système dans le thread
         $systemPost = new Post();
         $systemPost->setThread($thread);
         $systemPost->setAuthor($this->getUser());
         $systemPost->setContent('<div class="alert alert-warning">Cette discussion a été verrouillée par un modérateur.</div>');
-        
+
         $this->entityManager->persist($systemPost);
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'La discussion a été verrouillée avec succès');
-        
+
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
             'id' => $thread->getId()
         ]);
     }
-    
+
     #[Route('/univers/{universeSlug}/thread/{id}/open', name: 'app_thread_open')]
     #[IsGranted('ROLE_MODERATOR')]
     public function open(string $universeSlug, Thread $thread, UniversRepository $universRepository): Response
     {
         $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
-        
+
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
         }
-        
+
         // Rouvrir le thread
         $thread->setStatus('open');
         $thread->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
-        
+
         // Ajouter un message système dans le thread
         $systemPost = new Post();
         $systemPost->setThread($thread);
         $systemPost->setAuthor($this->getUser());
         $systemPost->setContent('<div class="alert alert-success">Cette discussion a été rouverte par un modérateur.</div>');
-        
+
         $this->entityManager->persist($systemPost);
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', 'La discussion a été rouverte avec succès');
-        
+
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
             'id' => $thread->getId()
@@ -956,7 +951,7 @@ class ThreadController extends AbstractController
             ])
         ]);
     }
-    
+
     /**
      * Generate a URL-friendly slug from a string
      * 
@@ -967,24 +962,24 @@ class ThreadController extends AbstractController
     {
         // Remove accents
         $text = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9-] remove; Lower()', $text);
-        
+
         // Replace spaces with hyphens
         $text = str_replace(' ', '-', $text);
-        
+
         // Remove any remaining non-alphanumeric characters except for hyphens
         $text = preg_replace('/[^a-z0-9-]/', '', $text);
-        
+
         // Remove multiple consecutive hyphens
         $text = preg_replace('/-+/', '-', $text);
-        
+
         // Trim hyphens from beginning and end
         $text = trim($text, '-');
-        
+
         // Ensure slug isn't empty
         if (empty($text)) {
             $text = 'discussion-' . time();
         }
-        
+
         return $text;
     }
 }

@@ -1,23 +1,26 @@
 {% if breadcrumbs is defined and breadcrumbs|length > 0 %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{{ path('app_roleplay') }}">
-                <i class="fas fa-home"></i> Accueil
+<nav aria-label="navigation fil d'ariane" class="breadcrumb-nav">
+    <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a href="{{ path('app_roleplay') }}" itemprop="item" title="Accueil">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span itemprop="name">Accueil</span>
             </a>
+            <meta itemprop="position" content="1" />
         </li>
         
         {% for breadcrumb in breadcrumbs %}
-            <li class="breadcrumb-item {{ loop.last ? 'active' : '' }}">
-                {% if not loop.last and breadcrumb.path is defined and breadcrumb.path is not null %}
-                    <a href="{{ breadcrumb.path }}">
-                        {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
-                        {{ breadcrumb.label }}
+            <li class="breadcrumb-item {{ loop.last ? 'active' : '' }}" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                {% if not loop.last and breadcrumb.url is defined and breadcrumb.url is not null %}
+                    <a href="{{ breadcrumb.url }}" itemprop="item">
+                        {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1" aria-hidden="true"></i>{% endif %}
+                        <span itemprop="name">{{ breadcrumb.name }}</span>
                     </a>
                 {% else %}
-                    {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1"></i>{% endif %}
-                    {{ breadcrumb.label }}
+                    {% if breadcrumb.icon is defined %}<i class="{{ breadcrumb.icon }} me-1" aria-hidden="true"></i>{% endif %}
+                    <span itemprop="name">{{ breadcrumb.name }}</span>
                 {% endif %}
+                <meta itemprop="position" content="{{ loop.index + 1 }}" />
             </li>
         {% endfor %}
     </ol>
