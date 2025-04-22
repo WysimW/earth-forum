@@ -5,12 +5,12 @@
         <div class="message-header">
             {% if message.isRoleplay and message.character %}
                 <div class="message-author">
-                    <img src="{{ message.character.avatar ? asset('uploads/characters/' ~ message.character.avatar) : asset('images/default-character.png') }}" alt="{{ message.character.name }}" class="message-avatar">
+                    <img src="{{ message.character.avatar ?: asset('images/default-character.png') }}" alt="{{ message.character.name }}" class="message-avatar">
                     <strong>{{ message.character.name }}</strong>
                 </div>
             {% else %}
                 <div class="message-author">
-                    <img src="{{ message.author.avatar ? asset('uploads/avatars/' ~ message.author.avatar) : asset('images/default-avatar.png') }}" alt="{{ message.author.username }}" class="message-avatar">
+                    <img src="{{ message.author.avatar ?: asset('images/default-avatar.png') }}" alt="{{ message.author.username }}" class="message-avatar">
                     <strong>{{ message.author.username }}</strong>
                 </div>
             {% endif %}
