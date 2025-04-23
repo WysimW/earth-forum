@@ -73,7 +73,10 @@ class ThreadRoleplayType extends AbstractType
                 'choice_label' => 'name',
                 'placeholder' => 'Choisissez un lieu',
                 'required' => false,
-                'help' => 'Lieu où se déroule cette scène'
+                'help' => 'Lieu où se déroule cette scène',
+                'attr' => [
+                    'class' => 'form-select select2'
+                ]
             ])
             ->add('characterCreator', EntityType::class, [
                 'label' => 'Personnage participant',
@@ -84,7 +87,7 @@ class ThreadRoleplayType extends AbstractType
                 'required' => false,
                 'help' => 'Quel personnage utilise-t-on pour débuter cette scène ?',
                 'attr' => [
-                    'class' => 'character-select'
+                    'class' => 'form-select select2'
                 ]
             ])
             ->add('npcs', EntityType::class, [
@@ -96,8 +99,8 @@ class ThreadRoleplayType extends AbstractType
                 'required' => false,
                 'help' => 'Sélectionnez les PNJ qui participent à cette scène',
                 'attr' => [
-                    'class' => 'form-select',
-                    'data-choices' => 'true'
+                    'class' => 'form-select select2',
+                    'data-placeholder' => 'Sélectionner des PNJ'
                 ]
             ])
             ->add('factions', EntityType::class, [
@@ -110,8 +113,8 @@ class ThreadRoleplayType extends AbstractType
                 'required' => false,
                 'help' => 'Sélectionnez les factions liées à cette scène',
                 'attr' => [
-                    'class' => 'form-select',
-                    'data-choices' => 'true'
+                    'class' => 'form-select select2',
+                    'data-placeholder' => 'Sélectionner des factions'
                 ]
             ])
             ->add('maxParticipants', IntegerType::class, [
@@ -144,7 +147,10 @@ class ThreadRoleplayType extends AbstractType
                     'Archivé' => 'archived'
                 ],
                 'data' => 'open',
-                'help' => 'Un thread fermé n\'accepte plus de nouveaux participants'
+                'help' => 'Un thread fermé n\'accepte plus de nouveaux participants',
+                'attr' => [
+                    'class' => 'form-select select2'
+                ]
             ]);
     }
 

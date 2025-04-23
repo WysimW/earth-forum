@@ -1,27 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier une discussion{% endblock %}
+{% block title %}
+    {% if isRpThread %}
+        Modifier une scène RP
+    {% else %}
+        Modifier une discussion
+    {% endif %}
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card shadow border-0 mb-4">
-                <div class="card-header bg-dark text-white">
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-edit me-2"></i> Modifier la discussion
-                    </h1>
-                </div>
-                <div class="card-body">
-                    {% include 'components/_thread_form.html.twig' with {
-                        'form': form,
-                        'isNew': false,
-                        'isRoleplay': isRpThread,
-                        'thread': thread,
-                        'returnPath': path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id})
-                    } %}
-                </div>
-            </div>
+<div class="container my-4">
+    {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
+
+    <div class="card shadow-sm">
+        <div class="card-header {% if isRpThread %}bg-roleplay{% else %}bg-hrp{% endif %} text-white">
+            <h1 class="h3 mb-0">
+                {% if isRpThread %}
+                    <i class="fa-solid fa-dice-d20 me-2"></i>Modifier la scène RP
+                {% else %}
+                    <i class="fas fa-edit me-2"></i>Modifier la discussion
+                {% endif %}
+            </h1>
+        </div>
+        <div class="card-body">
+            {% include 'components/_thread_form.html.twig' with {
+                'form': form,
+                'isNew': false,
+                'isRoleplay': isRpThread,
+                'thread': thread,
+                'returnPath': path('app_thread_show', {'universeSlug': univers.slug, 'id': thread.id})
+            } %}
         </div>
     </div>
 </div>
@@ -32,20 +40,95 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
+        // Initialisation de Select2 avec debugging pour résoudre les problèmes de sélection
         document.addEventListener('DOMContentLoaded', function() {
-            initializeWysiwygEditors();
+            console.log("DOM chargé - début d'initialisation de Select2");
             
-            // Initialisation pour les sélecteurs multiples avec select2
-            if (document.querySelector('[data-select2]')) {
-                const selects = document.querySelectorAll('[data-select2]');
-                selects.forEach(select => {
-                    $(select).select2({
-                        width: '100%',
-                        placeholder: 'Sélectionnez...',
-                        allowClear: true
-                    });
-                });
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery n\'est pas chargé !');
+                document.body.insertAdjacentHTML('beforeend', '<div class="alert alert-danger position-fixed bottom-0 end-0 m-3">Erreur: jQuery n\'est pas chargé !</div>');
+                return;
             }
+            
+            if (typeof $.fn.select2 === 'undefined') {
+                console.error('Select2 n\'est pas chargé !');
+                document.body.insertAdjacentHTML('beforeend', '<div class="alert alert-danger position-fixed bottom-0 end-0 m-3">Erreur: Select2 n\'est pas chargé !</div>');
+                return;
+            }
+            
+            console.log("Select2 est disponible, recherche des sélecteurs");
+            
+            // Détruire toutes les instances existantes de Select2 pour éviter les doublons
+            $('.select2-hidden-accessible').each(function() {
+                console.log("Destruction de Select2 existant sur", this.id || 'élément sans ID');
+                $(this).select2('destroy');
+            });
+            
+            // Débloquer les éléments potentiellement bloqués
+            $('.select2-container').remove();
+            
+            // Sélectionner tous les selects avec la classe .select2
+            var $selects = $('select.select2');
+            console.log("Nombre de sélecteurs trouvés:", $selects.length);
+            
+            $selects.each(function(index) {
+                var $select = $(this);
+                var selectId = $select.attr('id') || 'select-sans-id-' + index;
+                console.log("Traitement du sélecteur:", selectId);
+                
+                // Débogage des options
+                var optionsCount = $select.find('option').length;
+                console.log("Nombre d'options pour", selectId, ":", optionsCount);
+                
+                try {
+                    // Configuration simplifiée mais plus robuste
+                    $select.select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        dropdownParent: $('body'), // Forcer le parent pour éviter les problèmes de z-index
+                        closeOnSelect: false, // Faciliter les sélections multiples
+                        selectOnClose: true // Aider à la sélection
+                    }).on('select2:opening', function(e) {
+                        console.log("Ouverture du dropdown pour", selectId);
+                    }).on('select2:open', function() {
+                        console.log("Dropdown ouvert pour", selectId);
+                        // Correction pour l'accessibilité
+                        $('.select2-container--open').removeAttr('aria-hidden');
+                        $('.select2-search__field').attr('aria-label', 'Rechercher');
+                        
+                        // Donner le focus au champ de recherche s'il existe
+                        setTimeout(function() {
+                            $('.select2-search__field').focus();
+                        }, 10);
+                    }).on('select2:select', function(e) {
+                        console.log("Option sélectionnée:", e.params.data.text, "pour", selectId);
+                    }).on('select2:unselect', function(e) {
+                        console.log("Option désélectionnée:", e.params.data.text, "pour", selectId);
+                    });
+                    
+                    console.log("Select2 initialisé avec succès sur", selectId);
+                } catch (e) {
+                    console.error("Erreur lors de l'initialisation de Select2 sur", selectId, ":", e);
+                }
+            });
+            
+            // Correction globale pour les problèmes de focus
+            $(document).on('focus', '.select2-search__field', function() {
+                console.log("Focus sur un champ de recherche Select2");
+                $(this).closest('.select2-container').removeAttr('aria-hidden');
+            });
+            
+            // Astuce: forcer la mise à jour des instances Select2 après un court délai
+            setTimeout(function() {
+                $selects.each(function() {
+                    try {
+                        $(this).trigger('change');
+                    } catch(e) {
+                        console.warn("Impossible de déclencher le changement sur", this.id);
+                    }
+                });
+                console.log("Mise à jour forcée des instances Select2 terminée");
+            }, 200);
         });
     </script>
 {% endblock %}

@@ -10,8 +10,10 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 
@@ -33,8 +35,35 @@ class ThreadType extends AbstractType
                     ]),
                 ]
             ])
-
-;
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
+                'attr' => [
+                    'rows' => 4,
+                    'class' => 'form-control'
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez saisir une description pour votre discussion']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La description doit faire au moins {{ limit }} caractères'
+                    ])
+                ],
+                'help' => 'Une brève description de la discussion, visible dans le résumé du thread'
+            ])
+            ->add('firstPostContent', TextareaType::class, [
+                'label' => 'Contenu du premier message',
+                'attr' => [
+                    'rows' => 8,
+                    'class' => 'wysiwyg-editor'
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez saisir un contenu pour commencer votre discussion']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'Le premier message doit faire au moins {{ limit }} caractères'
+                    ])
+                ]
+            ]);
 
         // Ajouter des champs supplémentaires si c'est un thread de roleplay
         if ($options['is_roleplay']) {
@@ -79,8 +108,9 @@ class ThreadType extends AbstractType
                     ]
                 ]);
         } else {
-            $builder
-                ->add('type', ChoiceType::class, [
+            // Pour les threads non-RP, type est accessible seulement aux admins
+            if ($options['is_admin']) {
+                $builder->add('type', ChoiceType::class, [
                     'label' => 'Type de thread',
                     'choices' => [
                         'Normal' => 'normal',
@@ -88,7 +118,15 @@ class ThreadType extends AbstractType
                     ],
                     'attr' => ['class' => 'form-select'],
                     'data' => 'normal'
-                ])
+                ]);
+            } else {
+                // Pour les utilisateurs normaux, le type est toujours "normal"
+                $builder->add('type', HiddenType::class, [
+                    'data' => 'normal'
+                ]);
+            }
+            
+            $builder
                 ->add('status', ChoiceType::class, [
                     'label' => 'Statut',
                     'choices' => [
@@ -112,6 +150,7 @@ class ThreadType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Thread::class,
             'is_roleplay' => false,
+            'is_admin' => false,
         ]);
     }
 }

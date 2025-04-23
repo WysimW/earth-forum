@@ -95,7 +95,7 @@
 
 .breadcrumb-item:first-child a {
     display: flex;
-    align-items: center;
+    align-items: start;
 }
 
 .breadcrumb-item:first-child i {

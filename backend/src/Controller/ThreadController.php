@@ -147,7 +147,9 @@ class ThreadController extends AbstractController
                 'factions' => $userFactions,
             ]);
         } else {
-            $form = $this->createForm(ThreadType::class, $thread);
+            $form = $this->createForm(ThreadType::class, $thread, [
+                'is_admin' => $this->isGranted('ROLE_ADMIN')
+            ]);
         }
 
         $form->handleRequest($request);
@@ -794,7 +796,9 @@ class ThreadController extends AbstractController
                 'factions' => $userFactions,
             ]);
         } else {
-            $form = $this->createForm(ThreadType::class, $thread);
+            $form = $this->createForm(ThreadType::class, $thread, [
+                'is_admin' => $this->isGranted('ROLE_ADMIN')
+            ]);
         }
 
         $form->handleRequest($request);

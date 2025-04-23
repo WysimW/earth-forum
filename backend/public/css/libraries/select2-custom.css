@@ -556,3 +556,112 @@
                         line-height: 44px !important;
                     }
                 }
+
+                /**
+                 * Styles personnalisés pour Select2
+                 */
+
+                /* Conteneur Select2 */
+                .select2-container {
+                    width: 100% !important;
+                    margin-bottom: 0.5rem;
+                }
+
+                /* Styles pour le thème sombre */
+                .select2-dropdown-dark {
+                    border-radius: 4px;
+                    border: 1px solid #343a40;
+                    background-color: #2b3035;
+                    color: #f8f9fa;
+                }
+
+                /* Styles pour les options */
+                .select2-results__option {
+                    padding: 8px 12px;
+                    transition: background-color 0.2s;
+                }
+
+                .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                    background-color: #495057;
+                }
+
+                /* Style pour les options sélectionnées */
+                .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                    background-color: #495057;
+                    border: 1px solid #6c757d;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    margin: 4px 4px 0 0;
+                }
+
+                /* Style pour la sélection multiple */
+                .select2-container--default .select2-selection--multiple {
+                    min-height: 38px;
+                    border: 1px solid #495057;
+                    background-color: #2b3035;
+                    color: #f8f9fa;
+                }
+
+                /* Style pour l'icône de suppression */
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                    color: #f8f9fa;
+                    margin-right: 5px;
+                }
+
+                /* Style pour le champ de recherche */
+                .select2-container--default .select2-search--dropdown .select2-search__field {
+                    border: 1px solid #495057;
+                    background-color: #212529;
+                    color: #f8f9fa;
+                    padding: 8px;
+                    border-radius: 4px;
+                }
+
+                /* Style pour le conteneur de recherche */
+                .select2-search__field-icon-container {
+                    position: relative;
+                }
+
+                /* Icône de recherche */
+                .select2-search__field-icon {
+                    position: absolute;
+                    right: 10px;
+                    top: 10px;
+                    color: #adb5bd;
+                }
+
+                /* Styles spécifiques pour le mode RP */
+                .select2-roleplay-container .select2-container--default .select2-selection,
+                .select2-roleplay .select2-selection {
+                    border-color: var(--roleplay-primary);
+                }
+
+                .select2-roleplay-container .select2-container--default .select2-selection--multiple .select2-selection__choice,
+                .select2-roleplay .select2-selection--multiple .select2-selection__choice {
+                    background-color: var(--roleplay-primary);
+                    border-color: var(--roleplay-secondary);
+                }
+
+                /* Styles spécifiques pour le mode HRP */
+                .select2-hrp-container .select2-container--default .select2-selection,
+                .select2-hrp .select2-selection {
+                    border-color: var(--hrp-primary);
+                }
+
+                .select2-hrp-container .select2-container--default .select2-selection--multiple .select2-selection__choice,
+                .select2-hrp .select2-selection--multiple .select2-selection__choice {
+                    background-color: var(--hrp-primary);
+                    border-color: var(--hrp-secondary);
+                }
+
+                /* Fix pour le champ de recherche dans les sélecteurs multiples */
+                .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+                    width: 100% !important;
+                    min-width: 150px;
+                    background-color: transparent;
+                }
+
+                /* Fix pour le rendu des tags dans les sélecteurs multiples */
+                .select2-container--default.select2-container--focus .select2-selection--multiple {
+                    border: 1px solid #5c636a;
+                }

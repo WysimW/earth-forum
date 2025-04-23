@@ -9,7 +9,7 @@
         {% if isNew %}
             <div class="mb-3">
                 {{ form_label(form.characterCreator) }}
-                {{ form_widget(form.characterCreator, {'attr': {'class': 'form-select'}}) }}
+                {{ form_widget(form.characterCreator, {'attr': {'class': 'form-select select2'}}) }}
                 {{ form_errors(form.characterCreator) }}
                 
                 {% if not hasValidatedCharacters is defined or not hasValidatedCharacters %}
@@ -48,14 +48,20 @@
 
         <div class="mb-3">
             {{ form_label(form.location) }}
-            {{ form_widget(form.location, {'attr': {'class': 'form-select'}}) }}
+            {{ form_widget(form.location, {'attr': {'class': 'form-select select2'}}) }}
             {{ form_errors(form.location) }}
         </div>
 
-        {% if isNew %}
-            <div class="mb-3">
+        {% if isNew and form.npcs is defined %}
+            <div class="mb-3 select2-roleplay-container">
                 {{ form_label(form.npcs) }}
-                {{ form_widget(form.npcs, {'attr': {'class': 'form-select', 'data-select2': 'true'}}) }}
+                {{ form_widget(form.npcs, {
+                    'attr': {
+                        'class': 'form-select select2',
+                        'multiple': 'multiple',
+                        'data-placeholder': 'Sélectionnez des PNJ...'
+                    }
+                }) }}
                 {{ form_errors(form.npcs) }}
                 <small class="form-text text-muted">
                     Sélectionnez les PNJ qui participeront à cette scène
@@ -64,9 +70,15 @@
         {% endif %}
         
         {% if form.factions is defined %}
-            <div class="mb-3">
+            <div class="mb-3 select2-roleplay-container">
                 {{ form_label(form.factions) }}
-                {{ form_widget(form.factions, {'attr': {'class': 'form-select', 'data-select2': 'true'}}) }}
+                {{ form_widget(form.factions, {
+                    'attr': {
+                        'class': 'form-select select2',
+                        'multiple': 'multiple',
+                        'data-placeholder': 'Sélectionnez des factions...'
+                    }
+                }) }}
                 {{ form_errors(form.factions) }}
                 <small class="form-text text-muted">
                     Sélectionnez les factions liées à cette scène
@@ -121,22 +133,42 @@
         </div>
     {% endif %}
 
-    {% if is_granted('ROLE_MODERATOR') %}
-        <div class="mb-3">
-            {{ form_widget(form.sticky, {'attr': {'class': 'form-check-input'}}) }}
-            {{ form_label(form.sticky, null, {'label_attr': {'class': 'form-check-label'}}) }}
-        </div>
-        
-        {% if form.status is defined %}
+    {# Champ sticky - Affiché seulement pour les admins #}
+    {% if form.sticky is defined %}
+        {% if is_granted('ROLE_ADMIN') %}
             <div class="mb-3">
-                {{ form_label(form.status) }}
-                {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
-                {{ form_errors(form.status) }}
-                <small class="form-text text-muted">
-                    Un thread fermé n'accepte plus de nouveaux participants
-                </small>
+                {{ form_widget(form.sticky, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_label(form.sticky, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                {{ form_errors(form.sticky) }}
             </div>
+        {% else %}
+            {{ form_widget(form.sticky, {'attr': {'style': 'display:none'}}) }}
         {% endif %}
+    {% endif %}
+    
+    {# Champ type - Affiché en tant que champ caché pour les non-admin dans les forums non-RP #}
+    {% if form.type is defined %}
+        {% if is_granted('ROLE_ADMIN') or isRoleplay %}
+            <div class="mb-3">
+                {{ form_label(form.type) }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-select select2'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+        {% else %}
+            {{ form_widget(form.type) }}
+        {% endif %}
+    {% endif %}
+    
+    {# Champ status #}
+    {% if form.status is defined %}
+        <div class="mb-3">
+            {{ form_label(form.status) }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-select select2'}}) }}
+            {{ form_errors(form.status) }}
+            <small class="form-text text-muted">
+                Un thread fermé n'accepte plus de nouveaux participants
+            </small>
+        </div>
     {% endif %}
 
     <div class="d-flex justify-content-between">
