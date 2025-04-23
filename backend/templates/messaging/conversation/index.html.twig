@@ -5,6 +5,8 @@
 {% block stylesheets %}
 {{ parent() }}
 <link rel="stylesheet" href="{{ asset('css/components/messaging.css') }}">
+
+
 {% endblock %}
 
 {% block body %}
@@ -29,12 +31,32 @@
         <div class="conversation-list-container">
             <div class="conversation-list-header">
                 <h2>Conversations</h2>
+                <div class="conversation-filters mb-2">
+                    <select id="universe-filter" class="form-select form-select-sm">
+                        <option value="all">Tous les univers</option>
+                        {% set universes = [] %}
+                        {% for conversation in conversations %}
+                            {% if conversation.universe and conversation.universe.name not in universes %}
+                                {% set universes = universes|merge([conversation.universe.name]) %}
+                                <option value="{{ conversation.universe.name }}">{{ conversation.universe.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="conversation-search">
                     <input type="text" id="conversation-search" placeholder="Rechercher..." class="form-control">
                 </div>
+                <div id="active-filters" class="mt-2 d-none">
+                    <small class="text-muted">
+                        <span id="visible-count">{{ conversations|length }}</span> conversation(s) affichée(s) 
+                        <button id="clear-all-filters" class="btn btn-sm btn-link text-muted p-0 ms-2">
+                            <i class="fas fa-times-circle"></i> Effacer les filtres
+                        </button>
+                    </small>
+                </div>
             </div>
             
-            <div class="conversation-list">
+            <div class="conversation-list" id="conversationList">
                 {% if conversations is empty %}
                     <div class="empty-state">
                         <i class="far fa-comment-dots"></i>
@@ -43,8 +65,10 @@
                     </div>
                 {% else %}
                     {% for conversation in conversations %}
-                        <a href="{{ path('app_messaging_conversation_show', {'id': conversation.id}) }}" 
-                           class="conversation-item{% if unreadMessages[conversation.id] is defined and unreadMessages[conversation.id] > 0 %} has-unread{% endif %}">
+                        <div class="conversation-item{% if unreadMessages[conversation.id] is defined and unreadMessages[conversation.id] > 0 %} has-unread{% endif %}" 
+                             data-id="{{ conversation.id }}" 
+                             data-name="{{ conversation.name }}"
+                             data-universe="{{ conversation.universe ? conversation.universe.name : '' }}">
                             <div class="conversation-icon">
                                 {% if conversation.icon %}
                                     <img src="{{ conversation.icon }}" alt="{{ conversation.name }}">
@@ -57,14 +81,21 @@
                                         <i class="fas fa-hashtag"></i>
                                     {% endif %}
                                 {% endif %}
+                                
+                                <div class="conversation-type-indicator" title="{{ conversation.type == 'private' ? 'Conversation privée' : (conversation.type == 'group' ? 'Groupe' : 'Conversation publique') }}">
+                                    {% if conversation.type == 'private' %}
+                                        <i class="fas fa-lock text-muted"></i>
+                                    {% elseif conversation.type == 'group' %}
+                                        <i class="fas fa-users text-muted"></i>
+                                    {% else %}
+                                        <i class="fas fa-globe text-muted"></i>
+                                    {% endif %}
+                                </div>
                             </div>
                             
                             <div class="conversation-info">
                                 <div class="conversation-name">
                                     {{ conversation.name }}
-                                    {% if conversation.type == 'public' %}
-                                        <span class="badge bg-info">Public</span>
-                                    {% endif %}
                                 </div>
                                 <div class="conversation-preview">
                                     {% if conversation.universe %}
@@ -78,56 +109,816 @@
                             
                             {% if unreadMessages[conversation.id] is defined and unreadMessages[conversation.id] > 0 %}
                                 <div class="conversation-unread">
-                                    <span class="badge rounded-pill bg-danger">{{ unreadMessages[conversation.id] }}</span>
+                                    <span class="badge rounded-pill bg-danger shadow-sm">{{ unreadMessages[conversation.id] }}</span>
                                 </div>
                             {% endif %}
-                        </a>
+                        </div>
                     {% endfor %}
                 {% endif %}
             </div>
         </div>
         
-        <div class="conversation-content-container">
-            {% if conversations is empty %}
-                <div class="empty-state-large">
-                    <i class="far fa-comments"></i>
-                    <h2>Bienvenue dans votre messagerie</h2>
-                    <p>Commencez par créer une nouvelle conversation ou sélectionnez-en une existante.</p>
-                    <p>Vous pouvez envoyer des messages privés à d'autres utilisateurs, créer des conversations de groupe ou rejoindre des canaux publics.</p>
-                </div>
-            {% else %}
+        <div class="conversation-content-container" id="conversationContainer">
+            <div id="conversationPlaceholder" class="{% if conversations is empty %}d-none{% endif %}">
                 <div class="select-conversation-prompt">
                     <i class="fas fa-arrow-left"></i>
                     <p>Sélectionnez une conversation pour afficher les messages</p>
                 </div>
-            {% endif %}
+            </div>
+            
+            <div id="emptyState" class="empty-state-large {% if conversations is not empty %}d-none{% endif %}">
+                <i class="far fa-comments"></i>
+                <h2>Bienvenue dans votre messagerie</h2>
+                <p>Commencez par créer une nouvelle conversation ou sélectionnez-en une existante.</p>
+                <p>Vous pouvez envoyer des messages privés à d'autres utilisateurs, créer des conversations de groupe ou rejoindre des canaux publics.</p>
+            </div>
+            
+            <div id="conversationContent" class="d-none">
+                <div class="conversation-header-ajax">
+                    <div class="conversation-title-ajax">
+                        <button id="backToConversations" class="btn btn-sm btn-outline-secondary d-md-none">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h2 id="conversationName"></h2>
+                            <div class="conversation-meta">
+                                <span id="conversationType" class="conversation-type small text-muted me-2"></span>
+                                <span id="conversationUniverse" class="universe-label d-none"></span>
+                                <span id="participantsCount"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="conversation-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="conversationActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="conversationActionsDropdown">
+                                <li><a id="editConversationLink" class="dropdown-item" href="#"><i class="fas fa-edit"></i> Modifier</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a id="leaveConversationLink" class="dropdown-item text-danger" href="#" 
+                                       data-action="leave" 
+                                       data-confirm="Êtes-vous sûr de vouloir quitter cette conversation ?">
+                                        <i class="fas fa-sign-out-alt"></i> Quitter
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages-wrapper">
+                    <div class="messages-load-more d-none" id="loadMoreMessages">
+                        <div class="d-flex align-items-center justify-content-center p-2">
+                            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                                <span class="visually-hidden">Chargement des messages...</span>
+                            </div>
+                            <span class="ms-2 text-muted small">Chargement...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="messages-container" id="messagesContainer"></div>
+                </div>
+
+                <div class="message-input-container">
+                    <form id="messageForm" class="message-form">
+                        <textarea id="messageContent" class="form-control" placeholder="Votre message..." required></textarea>
+                        
+                        <div id="characterSelector" class="character-selector d-none">
+                            <select id="messageCharacter" class="form-select form-select-sm">
+                                <option value="">En tant que vous-même</option>
+                                <!-- Options pour les personnages seront ajoutées dynamiquement -->
+                            </select>
+                        </div>
+                        
+                        <div class="message-form-actions">
+                            <small class="text-muted d-block mb-1">Entrée pour envoyer, Shift+Entrée pour nouvelle ligne</small>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Envoyer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Template pour le rendu des messages -->
+<template id="messageTemplate">
+    <div class="message" id="">
+        <div class="message-header">
+            <div class="message-author">
+                <img src="" alt="" class="message-avatar">
+                <strong class="message-author-name"></strong>
+            </div>
+            <span class="message-date"></span>
+        </div>
+        
+        <div class="message-content"></div>
+        
+        <div class="message-edited d-none">
+            <small><em></em></small>
+        </div>
+        
+        <div class="message-actions d-none">
+            <a href="#" class="btn btn-sm btn-outline-secondary edit-message-btn">
+                <i class="fas fa-edit"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger delete-message-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+</template>
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Recherche dans les conversations
-        const searchInput = document.getElementById('conversation-search');
-        const conversationItems = document.querySelectorAll('.conversation-item');
+document.addEventListener('DOMContentLoaded', function() {
+    // Éléments DOM
+    const conversationList = document.getElementById('conversationList');
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    const searchInput = document.getElementById('conversation-search');
+    const universeFilter = document.getElementById('universe-filter');
+    const conversationContent = document.getElementById('conversationContent');
+    const conversationPlaceholder = document.getElementById('conversationPlaceholder');
+    const emptyState = document.getElementById('emptyState');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const loadMoreMessages = document.getElementById('loadMoreMessages');
+    const messageForm = document.getElementById('messageForm');
+    const messageContent = document.getElementById('messageContent');
+    
+    // Variables globales
+    let currentConversationId = null;
+    let currentOffset = 0;
+    let canLoadMore = false;
+    const messageLimit = 10; // Limite réduite à 10 messages
+    let lastMessageId = 0;
+    let pollingInterval = null;
+    let currentSearchTerm = '';
+    let currentUniverseFilter = 'all';
+    let isLoadingMoreMessages = false; // Flag pour éviter les chargements multiples
+    
+    // Template pour les messages
+    const messageTemplate = document.getElementById('messageTemplate');
+    
+    // Écouter les événements de mise à jour des messages non lus
+    document.addEventListener('messaging-unread-updated', function(event) {
+        if (!event.detail || !event.detail.conversations) return;
         
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        const conversations = event.detail.conversations;
+        
+        // Mettre à jour les badges de conversation
+        conversationItems.forEach(item => {
+            const conversationId = item.dataset.id;
+            if (!conversationId) return;
             
-            conversationItems.forEach(item => {
-                const conversationName = item.querySelector('.conversation-name').textContent.toLowerCase();
-                const conversationPreview = item.querySelector('.conversation-preview').textContent.toLowerCase();
-                
-                if (conversationName.includes(searchTerm) || conversationPreview.includes(searchTerm)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
+            // Ne pas mettre à jour la conversation active car elle est déjà marquée comme lue
+            if (currentConversationId === conversationId) return;
+            
+            const unreadCount = conversations[conversationId] || 0;
+            const unreadBadge = item.querySelector('.conversation-unread');
+            
+            if (unreadCount > 0) {
+                // Afficher le badge avec le nombre correct
+                if (unreadBadge) {
+                    const badgeSpan = unreadBadge.querySelector('.badge');
+                    if (badgeSpan) {
+                        badgeSpan.textContent = unreadCount;
+                        unreadBadge.classList.remove('d-none');
+                    } else {
+                        // Créer le badge s'il n'existe pas
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'badge rounded-pill bg-danger shadow-sm';
+                        newBadge.textContent = unreadCount;
+                        unreadBadge.appendChild(newBadge);
+                        unreadBadge.classList.remove('d-none');
+                    }
                 }
-            });
+                
+                // Ajouter la classe has-unread
+                item.classList.add('has-unread');
+            } else {
+                // Masquer le badge s'il n'y a pas de messages non lus
+                if (unreadBadge) {
+                    unreadBadge.classList.add('d-none');
+                }
+                
+                // Retirer la classe has-unread
+                item.classList.remove('has-unread');
+            }
         });
     });
+    
+    // Filtrage combiné (recherche + univers)
+    function filterConversations() {
+        const searchTerm = currentSearchTerm.toLowerCase();
+        const universeFilter = currentUniverseFilter;
+        let visibleCount = 0;
+        
+        conversationItems.forEach(item => {
+            const conversationName = item.querySelector('.conversation-name').textContent.toLowerCase();
+            const conversationPreview = item.querySelector('.conversation-preview').textContent.toLowerCase();
+            const conversationUniverse = item.dataset.universe ? item.dataset.universe.toLowerCase() : '';
+            
+            // Vérifier si la conversation correspond aux deux filtres
+            const matchesSearch = searchTerm === '' || 
+                                 conversationName.includes(searchTerm) || 
+                                 conversationPreview.includes(searchTerm);
+                                 
+            const matchesUniverse = universeFilter === 'all' || 
+                                   conversationUniverse === universeFilter.toLowerCase();
+            
+            if (matchesSearch && matchesUniverse) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le compteur de conversations visibles
+        const activeFiltersContainer = document.getElementById('active-filters');
+        const visibleCountElement = document.getElementById('visible-count');
+        
+        visibleCountElement.textContent = visibleCount;
+        
+        // Afficher/masquer l'indicateur de filtres actifs
+        if (searchTerm !== '' || universeFilter !== 'all') {
+            activeFiltersContainer.classList.remove('d-none');
+        } else {
+            activeFiltersContainer.classList.add('d-none');
+        }
+        
+        // Afficher un message si aucune conversation ne correspond aux filtres
+        const emptyFilterMessage = document.getElementById('empty-filter-message');
+        if (visibleCount === 0) {
+            if (!emptyFilterMessage) {
+                const noResultsMessage = document.createElement('div');
+                noResultsMessage.id = 'empty-filter-message';
+                noResultsMessage.className = 'empty-state';
+                noResultsMessage.innerHTML = `
+                    <i class="far fa-comment-dots"></i>
+                    <p>Aucune conversation ne correspond à vos critères</p>
+                    <button id="clear-filters" class="btn btn-sm btn-outline-secondary">Effacer les filtres</button>
+                `;
+                conversationList.appendChild(noResultsMessage);
+                
+                // Ajouter l'écouteur d'événement pour effacer les filtres
+                document.getElementById('clear-filters').addEventListener('click', clearAllFilters);
+            }
+        } else if (emptyFilterMessage) {
+            emptyFilterMessage.remove();
+        }
+    }
+    
+    // Fonction pour effacer tous les filtres
+    function clearAllFilters() {
+        searchInput.value = '';
+        universeFilter.value = 'all';
+        currentSearchTerm = '';
+        currentUniverseFilter = 'all';
+        filterConversations();
+    }
+    
+    // Écouteur d'événement pour le bouton "Effacer les filtres"
+    document.getElementById('clear-all-filters').addEventListener('click', clearAllFilters);
+    
+    // Recherche dans les conversations
+    searchInput.addEventListener('input', function() {
+        currentSearchTerm = this.value.toLowerCase();
+        filterConversations();
+    });
+    
+    // Filtre par univers
+    universeFilter.addEventListener('change', function() {
+        currentUniverseFilter = this.value;
+        filterConversations();
+    });
+    
+    // Charger une conversation
+    function loadConversation(conversationId) {
+        if (currentConversationId === conversationId) return;
+        
+        // Arrêter le polling précédent si existant
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+        
+        currentConversationId = conversationId;
+        currentOffset = 0;
+        lastMessageId = 0;
+        
+        // Mettre à jour l'interface
+        conversationPlaceholder.classList.add('d-none');
+        emptyState.classList.add('d-none');
+        conversationContent.classList.remove('d-none');
+        
+        // Ajouter la classe active à la conversation sélectionnée
+        conversationItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.id === conversationId) {
+                item.classList.add('active');
+                
+                // Mettre à jour les infos de la conversation
+                document.getElementById('conversationName').textContent = item.dataset.name;
+                
+                // Récupérer et afficher le type de conversation
+                const conversationType = item.querySelector('.conversation-type-indicator')?.getAttribute('title') || '';
+                const typeIconClasses = item.querySelector('.conversation-type-indicator i')?.className || '';
+                
+                if (conversationType) {
+                    document.getElementById('conversationType').innerHTML = `<i class="${typeIconClasses}"></i> ${conversationType}`;
+                } else {
+                    document.getElementById('conversationType').innerHTML = '';
+                }
+                
+                const universe = item.dataset.universe;
+                if (universe) {
+                    document.getElementById('conversationUniverse').textContent = universe;
+                    document.getElementById('conversationUniverse').classList.remove('d-none');
+                } else {
+                    document.getElementById('conversationUniverse').classList.add('d-none');
+                }
+                
+                // Mettre à jour les liens
+                document.getElementById('editConversationLink').href = `/messaging/conversations/${conversationId}/edit`;
+                document.getElementById('leaveConversationLink').dataset.id = conversationId;
+                
+                // Marquer la conversation comme lue dans l'interface
+                const unreadBadge = item.querySelector('.conversation-unread');
+                if (unreadBadge) {
+                    unreadBadge.classList.add('d-none');
+                }
+                item.classList.remove('has-unread');
+                
+                // Notifier le gestionnaire de messages non lus si disponible
+                if (window.messagingUnreadManager) {
+                    window.messagingUnreadManager.markConversationAsRead(conversationId);
+                }
+            }
+        });
+        
+        // Vider le conteneur de messages
+        messagesContainer.innerHTML = '';
+        
+        // Charger les messages
+        loadMessages(conversationId);
+        
+        // Démarrer le polling pour cette conversation
+        startMessagePolling(conversationId);
+        
+        // Sur mobile, masquer la liste des conversations
+        if (window.innerWidth < 768) {
+            document.querySelector('.conversation-list-container').classList.add('d-none');
+            document.querySelector('.conversation-content-container').classList.add('w-100');
+        }
+    }
+    
+    // Fonction de polling pour les nouveaux messages
+    function startMessagePolling(conversationId) {
+        pollingInterval = setInterval(() => {
+            if (!conversationId) return;
+            
+            // Requête pour vérifier les nouveaux messages
+            fetch(`/messaging/conversations/${conversationId}/messages/new?since=${lastMessageId}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    // Vérifier si l'utilisateur est déjà en bas avant d'ajouter les nouveaux messages
+                    const shouldScroll = isUserAtBottom();
+                    
+                    // Ajouter les nouveaux messages
+                    const fragment = document.createDocumentFragment();
+                    
+                    data.messages.forEach(message => {
+                        // Ne pas ajouter les messages envoyés par l'utilisateur actuel
+                        // car ils sont déjà affichés
+                        if (!document.getElementById(`message-${message.id}`)) {
+                            const messageEl = renderMessage(message);
+                            fragment.appendChild(messageEl);
+                            
+                            // Mettre à jour le dernier ID de message
+                            if (message.id > lastMessageId) {
+                                lastMessageId = message.id;
+                            }
+                        }
+                    });
+                    
+                    // Ajouter les nouveaux messages à la fin
+                    messagesContainer.appendChild(fragment);
+                    
+                    // Toujours défiler vers le bas quand de nouveaux messages sont reçus
+                    scrollToBottom();
+                    
+                    // Si un nouveau message est reçu et que la conversation n'est pas visible, 
+                    // ajouter une notification sonore ou visuelle
+                    if (document.hidden) {
+                        // On pourrait ajouter une notification ici
+                        // Par exemple changer le titre de la page ou jouer un son
+                        notifyNewMessage();
+                        
+                        // Mettre à jour les badges globaux si disponible
+                        if (window.messagingUnreadManager) {
+                            window.messagingUnreadManager.updateUnreadCount(true);
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du polling des messages:', error);
+            });
+        }, 5000); // Vérifier toutes les 5 secondes
+    }
+    
+    // Fonction simple pour notifier l'utilisateur d'un nouveau message
+    function notifyNewMessage() {
+        // Changer temporairement le titre de la page
+        const originalTitle = document.title;
+        document.title = "🔔 Nouveau message - " + originalTitle;
+        
+        // Rétablir le titre original quand l'utilisateur revient sur la page
+        window.addEventListener('focus', function onFocus() {
+            document.title = originalTitle;
+            window.removeEventListener('focus', onFocus);
+        });
+    }
+    
+    // Vérifier si l'utilisateur est en bas du conteneur de messages
+    function isUserAtBottom() {
+        const tolerance = 50; // pixels de tolérance
+        return (messagesContainer.scrollTop + messagesContainer.clientHeight + tolerance) >= messagesContainer.scrollHeight;
+    }
+    
+    // Charger les messages d'une conversation
+    function loadMessages(conversationId, append = false) {
+        if (isLoadingMoreMessages) return;
+        
+        isLoadingMoreMessages = true;
+        
+        // Afficher l'indicateur de chargement si on charge des messages plus anciens
+        if (append) {
+            loadMoreMessages.classList.remove('d-none');
+        } else {
+            // Afficher un indicateur de chargement
+            messagesContainer.innerHTML = '<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+        }
+        
+        const url = `/messaging/conversations/${conversationId}/messages?limit=${messageLimit}&offset=${currentOffset}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Conserver la position de scroll avant ajout des nouveaux messages
+                const scrollHeight = messagesContainer.scrollHeight;
+                const scrollTop = messagesContainer.scrollTop;
+                
+                if (!append) {
+                    messagesContainer.innerHTML = '';
+                }
+                
+                if (data.messages && data.messages.length > 0) {
+                    // Messages trouvés
+                    const fragment = document.createDocumentFragment();
+                    
+                    // Ajouter les messages dans l'ordre (du plus ancien au plus récent)
+                    data.messages.forEach(message => {
+                        const messageEl = renderMessage(message);
+                        fragment.appendChild(messageEl);
+                    });
+                    
+                    if (append) {
+                        // Pour les messages plus anciens, ajouter au début
+                        messagesContainer.insertBefore(fragment, messagesContainer.firstChild);
+                        
+                        // Maintenir la position de scroll relative pour éviter le saut
+                        const newScrollHeight = messagesContainer.scrollHeight;
+                        messagesContainer.scrollTop = newScrollHeight - scrollHeight + scrollTop;
+                    } else {
+                        // Pour les nouveaux messages, ajouter à la fin
+                        messagesContainer.appendChild(fragment);
+                        
+                        // Défiler vers le bas
+                        scrollToBottom();
+                    }
+                    
+                    // Mettre à jour les compteurs
+                    canLoadMore = data.hasMore;
+                    loadMoreMessages.classList.add('d-none');
+                    document.getElementById('participantsCount').textContent = data.participantsCount || '';
+                    
+                    // Mettre à jour l'offset et le dernier ID de message
+                    currentOffset += data.messages.length;
+                    
+                    // Trouver le dernier ID de message pour le polling
+                    if (data.messages.length > 0) {
+                        const lastMessage = data.messages[data.messages.length - 1];
+                        if (lastMessage.id > lastMessageId) {
+                            lastMessageId = lastMessage.id;
+                        }
+                    }
+                } else if (!append) {
+                    // Aucun message
+                    messagesContainer.innerHTML = `
+                        <p class="text-center text-muted p-3">
+                            Aucun message dans cette conversation. Soyez le premier à écrire !
+                        </p>
+                    `;
+                    loadMoreMessages.classList.add('d-none');
+                }
+                
+                isLoadingMoreMessages = false;
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des messages:', error);
+                messagesContainer.innerHTML = `
+                    <p class="text-center text-danger p-3">
+                        Erreur lors du chargement des messages. Veuillez réessayer.
+                    </p>
+                `;
+                isLoadingMoreMessages = false;
+                loadMoreMessages.classList.add('d-none');
+            });
+    }
+    
+    // Initialiser la détection de scroll pour la pagination infinie
+    function initInfiniteScroll() {
+        messagesContainer.addEventListener('scroll', function() {
+            // Si l'utilisateur est proche du haut et qu'il y a plus de messages à charger
+            if (messagesContainer.scrollTop < 50 && canLoadMore && !isLoadingMoreMessages && currentConversationId) {
+                loadMessages(currentConversationId, true);
+            }
+        });
+    }
+    
+    // Appeler l'initialisation du scroll infini
+    initInfiniteScroll();
+    
+    // Rendu d'un message
+    function renderMessage(message) {
+        const clone = messageTemplate.content.cloneNode(true);
+        const messageEl = clone.querySelector('.message');
+        
+        // ID et classes
+        messageEl.id = `message-${message.id}`;
+        if (message.isSentByCurrentUser) {
+            messageEl.classList.add('message-sent');
+        } else {
+            messageEl.classList.add('message-received');
+        }
+        
+        // Avatar et auteur
+        const avatarImg = messageEl.querySelector('.message-avatar');
+        const authorName = messageEl.querySelector('.message-author-name');
+        
+        if (message.isRoleplay && message.character) {
+            avatarImg.src = message.character.avatar || '{{ asset('images/default-character.png') }}';
+            avatarImg.alt = message.character.name;
+            authorName.textContent = message.character.name;
+        } else {
+            avatarImg.src = message.author.avatar || '{{ asset('images/default-avatar.png') }}';
+            avatarImg.alt = message.author.username;
+            authorName.textContent = message.author.username;
+        }
+        
+        // Date
+        const date = new Date(message.createdAt);
+        messageEl.querySelector('.message-date').textContent = date.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Contenu
+        messageEl.querySelector('.message-content').innerHTML = message.content;
+        
+        // Message édité
+        if (message.isEdited) {
+            const editedEl = messageEl.querySelector('.message-edited');
+            editedEl.classList.remove('d-none');
+            editedEl.querySelector('em').textContent = `Modifié le ${new Date(message.updatedAt).toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`;
+        }
+        
+        // Actions (éditer/supprimer)
+        if (message.isSentByCurrentUser && !message.isDeleted) {
+            const actionsEl = messageEl.querySelector('.message-actions');
+            actionsEl.classList.remove('d-none');
+            
+            // Bouton d'édition
+            const editBtn = actionsEl.querySelector('.edit-message-btn');
+            editBtn.href = `/messaging/messages/${message.id}/edit`;
+            
+            // Bouton de suppression
+            const deleteBtn = actionsEl.querySelector('.delete-message-btn');
+            deleteBtn.dataset.id = message.id;
+            deleteBtn.addEventListener('click', function() {
+                if (confirm('Supprimer ce message ?')) {
+                    deleteMessage(message.id);
+                }
+            });
+        }
+        
+        return messageEl;
+    }
+    
+    // Envoyer un message
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentConversationId) return;
+        
+        const content = messageContent.value.trim();
+        if (!content) return;
+        
+        const messageData = {
+            content: content
+        };
+        
+        // Ajouter les infos de personnage si nécessaire
+        const characterSelect = document.getElementById('messageCharacter');
+        if (characterSelect && characterSelect.value) {
+            messageData.isRoleplay = true;
+            messageData.characterId = characterSelect.value;
+        }
+        
+        fetch(`/messaging/conversations/${currentConversationId}/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(messageData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Afficher le nouveau message
+                const messageEl = renderMessage(data.message);
+                messagesContainer.appendChild(messageEl);
+                
+                // Mettre à jour le dernier ID de message
+                if (data.message.id > lastMessageId) {
+                    lastMessageId = data.message.id;
+                }
+                
+                // Vider le champ de texte
+                messageContent.value = '';
+                
+                // Défiler vers le bas
+                scrollToBottom();
+                
+                // Remettre le focus sur le champ de texte
+                messageContent.focus();
+            } else {
+                alert(data.error || 'Erreur lors de l\'envoi du message');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'envoi du message:', error);
+            alert('Erreur lors de l\'envoi du message');
+        });
+    });
+    
+    // Gestionnaire d'événements pour Entrée/Shift+Entrée
+    messageContent.addEventListener('keydown', function(e) {
+        // Si la touche pressée est Entrée (code 13)
+        if (e.keyCode === 13) {
+            // Si Shift n'est pas enfoncé, envoyer le message
+            if (!e.shiftKey) {
+                e.preventDefault(); // Empêcher le saut de ligne par défaut
+                
+                // Déclencher l'envoi du formulaire si le message n'est pas vide
+                if (this.value.trim()) {
+                    messageForm.dispatchEvent(new Event('submit'));
+                }
+            }
+            // Si Shift est enfoncé, laisser le comportement par défaut (saut de ligne)
+        }
+    });
+    
+    // Ajustement automatique de la hauteur du textarea
+    messageContent.addEventListener('input', function() {
+        // Réinitialiser la hauteur
+        this.style.height = 'auto';
+        
+        // Calculer la nouvelle hauteur (contenu + 2px de bordure)
+        const newHeight = Math.min(this.scrollHeight + 2, 150); // Limite à 150px max
+        this.style.height = newHeight + 'px';
+    });
+    
+    // Supprimer un message
+    function deleteMessage(messageId) {
+        fetch(`/messaging/messages/${messageId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token('delete') }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Supprimer le message de l'interface ou le marquer comme supprimé
+                const messageEl = document.getElementById(`message-${messageId}`);
+                if (messageEl) {
+                    messageEl.querySelector('.message-content').innerHTML = '<em class="text-muted">Message supprimé</em>';
+                    messageEl.querySelector('.message-actions').classList.add('d-none');
+                }
+            } else {
+                alert(data.error || 'Erreur lors de la suppression du message');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la suppression du message:', error);
+            alert('Erreur lors de la suppression du message');
+        });
+    }
+    
+    // Quitter une conversation
+    document.getElementById('leaveConversationLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const conversationId = this.dataset.id;
+        if (!conversationId) return;
+        
+        if (confirm(this.dataset.confirm)) {
+            fetch(`/messaging/conversations/${conversationId}/leave`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token('leave') }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recharger la page pour mettre à jour la liste des conversations
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Erreur lors de la sortie de la conversation');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la sortie de la conversation:', error);
+                alert('Erreur lors de la sortie de la conversation');
+            });
+        }
+    });
+    
+    // Charger plus de messages
+    loadMoreMessages.addEventListener('click', function() {
+        if (canLoadMore && currentConversationId) {
+            loadMessages(currentConversationId, true);
+        }
+    });
+    
+    // Bouton retour sur mobile
+    document.getElementById('backToConversations').addEventListener('click', function() {
+        document.querySelector('.conversation-list-container').classList.remove('d-none');
+        document.querySelector('.conversation-content-container').classList.remove('w-100');
+        conversationContent.classList.add('d-none');
+        conversationPlaceholder.classList.remove('d-none');
+        currentConversationId = null;
+    });
+    
+    // Ajouter les écouteurs d'événements aux items de conversation
+    conversationItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const conversationId = this.dataset.id;
+            loadConversation(conversationId);
+        });
+    });
+    
+    // Helper pour défiler vers le bas du conteneur de messages
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Gérer le redimensionnement de la fenêtre
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+            document.querySelector('.conversation-list-container').classList.remove('d-none');
+            document.querySelector('.conversation-content-container').classList.remove('w-100');
+        }
+    });
+});
 </script>
 {% endblock %} 

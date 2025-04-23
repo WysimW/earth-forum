@@ -31,7 +31,7 @@ class MessageRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('m')
             ->where('m.conversation = :conversation')
             ->setParameter('conversation', $conversation)
-            ->orderBy('m.createdAt', 'DESC')
+            ->orderBy('m.createdAt', 'ASC')
             ->setMaxResults($limit)
             ->setFirstResult($offset)
             ->getQuery()
@@ -117,6 +117,34 @@ class MessageRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->setParameter('old_date', new \DateTime('2000-01-01'))
             ->setParameter('deleted', false);
+        
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Trouve les messages plus récents qu'un ID spécifique dans une conversation
+     */
+    public function findMessagesNewerThan(Conversation $conversation, int $messageId): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.conversation = :conversation')
+            ->andWhere('m.id > :messageId')
+            ->setParameter('conversation', $conversation)
+            ->setParameter('messageId', $messageId)
+            ->orderBy('m.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte le nombre total de messages dans une conversation
+     */
+    public function countByConversation(Conversation $conversation): int
+    {
+        $qb = $this->createQueryBuilder('m');
+        $qb->select('COUNT(m.id)')
+            ->where('m.conversation = :conversation')
+            ->setParameter('conversation', $conversation);
         
         return (int) $qb->getQuery()->getSingleScalarResult();
     }

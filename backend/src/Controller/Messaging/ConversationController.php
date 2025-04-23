@@ -19,6 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/messaging/conversations')]
 #[IsGranted('ROLE_USER')]
@@ -29,7 +31,8 @@ class ConversationController extends AbstractController
         private ConversationRepository $conversationRepository,
         private ConversationParticipantRepository $participantRepository,
         private MessageRepository $messageRepository,
-        private UserRepository $userRepository
+        private UserRepository $userRepository,
+        private SerializerInterface $serializer
     ) {
     }
 
@@ -78,9 +81,9 @@ class ConversationController extends AbstractController
             
             // Ajout des autres membres sélectionnés
             if ($form->has('participants')) {
-                $userIds = $form->get('participants')->getData();
-                foreach ($userIds as $userId) {
-                    $member = $this->userRepository->find($userId);
+                $userPseudos = $form->get('participants')->getData();
+                foreach ($userPseudos as $pseudo) {
+                    $member = $this->userRepository->findOneBy(['pseudo' => $pseudo]);
                     if ($member && $member !== $user) {
                         $memberParticipant = new ConversationParticipant();
                         $memberParticipant->setConversation($conversation)
@@ -254,8 +257,10 @@ class ConversationController extends AbstractController
         
         $data = json_decode($request->getContent(), true);
         $userIds = $data['userIds'] ?? [];
+        $userPseudos = $data['userPseudos'] ?? [];
         $addedUsers = [];
         
+        // Traitement des IDs (pour compatibilité avec le code existant)
         foreach ($userIds as $userId) {
             $member = $this->userRepository->find($userId);
             
@@ -263,31 +268,18 @@ class ConversationController extends AbstractController
                 continue;
             }
             
-            // Vérifier si déjà membre
-            $existingParticipant = $this->participantRepository->findOneByConversationAndUser($conversation, $member);
+            $this->addMemberToConversation($conversation, $member, $addedUsers);
+        }
+        
+        // Traitement des pseudos (nouvelle méthode)
+        foreach ($userPseudos as $pseudo) {
+            $member = $this->userRepository->findOneBy(['pseudo' => $pseudo]);
             
-            if ($existingParticipant) {
-                if (!$existingParticipant->isActive()) {
-                    // Réactiver sa participation
-                    $existingParticipant->setIsActive(true);
-                    $addedUsers[] = [
-                        'id' => $member->getId(),
-                        'name' => $member->getPseudo()
-                    ];
-                }
-            } else {
-                // Ajouter comme nouveau membre
-                $newParticipant = new ConversationParticipant();
-                $newParticipant->setConversation($conversation)
-                    ->setUser($member)
-                    ->setRole(ConversationParticipant::ROLE_MEMBER);
-                
-                $this->entityManager->persist($newParticipant);
-                $addedUsers[] = [
-                    'id' => $member->getId(),
-                    'name' => $member->getPseudo()
-                ];
+            if (!$member) {
+                continue;
             }
+            
+            $this->addMemberToConversation($conversation, $member, $addedUsers);
         }
         
         if (!empty($addedUsers)) {
@@ -304,6 +296,38 @@ class ConversationController extends AbstractController
             'success' => false,
             'message' => 'Aucun utilisateur ajouté'
         ]);
+    }
+    
+    /**
+     * Ajoute un membre à une conversation si possible
+     */
+    private function addMemberToConversation(Conversation $conversation, User $member, array &$addedUsers): void
+    {
+        // Vérifier si déjà membre
+        $existingParticipant = $this->participantRepository->findOneByConversationAndUser($conversation, $member);
+        
+        if ($existingParticipant) {
+            if (!$existingParticipant->isActive()) {
+                // Réactiver sa participation
+                $existingParticipant->setIsActive(true);
+                $addedUsers[] = [
+                    'id' => $member->getId(),
+                    'name' => $member->getPseudo()
+                ];
+            }
+        } else {
+            // Ajouter comme nouveau membre
+            $newParticipant = new ConversationParticipant();
+            $newParticipant->setConversation($conversation)
+                ->setUser($member)
+                ->setRole(ConversationParticipant::ROLE_MEMBER);
+            
+            $this->entityManager->persist($newParticipant);
+            $addedUsers[] = [
+                'id' => $member->getId(),
+                'name' => $member->getPseudo()
+            ];
+        }
     }
 
     #[Route('/{id}/participants/{userId}/remove', name: 'app_messaging_conversation_remove_participant', methods: ['POST'])]
@@ -349,5 +373,206 @@ class ConversationController extends AbstractController
             'success' => true,
             'message' => 'Participant retiré avec succès'
         ]);
+    }
+
+    #[Route('/{id}/messages', name: 'app_messaging_conversation_messages', methods: ['GET'])]
+    public function getMessages(Request $request, Conversation $conversation): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur est participant à cette conversation
+        $participant = $this->participantRepository->findOneByConversationAndUser($conversation, $user);
+        
+        if (!$participant || !$participant->isActive()) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+        
+        // Mettre à jour la date de dernière lecture
+        $participant->setLastReadAt(new \DateTime());
+        $this->entityManager->flush();
+        
+        // Paramètres de pagination
+        $limit = $request->query->getInt('limit', 20);
+        $offset = $request->query->getInt('offset', 0);
+        
+        // Récupérer les messages avec pagination
+        $messages = $this->messageRepository->findByConversation($conversation, $limit, $offset);
+        
+        // Préparer les données pour la réponse JSON
+        $messagesData = [];
+        foreach ($messages as $message) {
+            $messageData = [
+                'id' => $message->getId(),
+                'content' => $message->getContent(),
+                'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updatedAt' => $message->getUpdatedAt() ? $message->getUpdatedAt()->format('Y-m-d H:i:s') : null,
+                'isEdited' => $message->isEdited(),
+                'isDeleted' => $message->isDeleted(),
+                'isRoleplay' => $message->isRoleplay(),
+                'isSentByCurrentUser' => $message->getAuthor() === $user,
+                'author' => [
+                    'id' => $message->getAuthor()->getId(),
+                    'username' => $message->getAuthor()->getUsername(),
+                    'avatar' => $message->getAuthor()->getAvatar() ?: $this->getParameter('app.default_avatar')
+                ]
+            ];
+            
+            if ($message->isRoleplay() && $message->getCharacter()) {
+                $messageData['character'] = [
+                    'id' => $message->getCharacter()->getId(),
+                    'name' => $message->getCharacter()->getName(),
+                    'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+                ];
+            }
+            
+            $messagesData[] = $messageData;
+        }
+        
+        return new JsonResponse([
+            'messages' => $messagesData,
+            'hasMore' => count($messages) >= $limit,
+            'totalCount' => $this->messageRepository->countByConversation($conversation),
+            'participantsCount' => count($this->participantRepository->findActiveByConversation($conversation))
+        ]);
+    }
+
+    #[Route('/{id}/messages/new', name: 'app_messaging_conversation_new_messages', methods: ['GET'])]
+    public function getNewMessages(Request $request, Conversation $conversation): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur est participant à cette conversation
+        $participant = $this->participantRepository->findOneByConversationAndUser($conversation, $user);
+        
+        if (!$participant || !$participant->isActive()) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+        
+        // Mettre à jour la date de dernière lecture
+        $participant->setLastReadAt(new \DateTime());
+        $this->entityManager->flush();
+        
+        // Récupérer l'ID du dernier message connu par le client
+        $sinceId = $request->query->getInt('since', 0);
+        
+        // Récupérer uniquement les nouveaux messages
+        $messages = $this->messageRepository->findMessagesNewerThan($conversation, $sinceId);
+        
+        // Préparer les données pour la réponse JSON
+        $messagesData = [];
+        foreach ($messages as $message) {
+            // Ne pas renvoyer les messages de l'utilisateur courant
+            // car ils sont déjà affichés dans son interface
+            if ($message->getAuthor() === $user) {
+                continue;
+            }
+            
+            $messageData = [
+                'id' => $message->getId(),
+                'content' => $message->getContent(),
+                'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updatedAt' => $message->getUpdatedAt() ? $message->getUpdatedAt()->format('Y-m-d H:i:s') : null,
+                'isEdited' => $message->isEdited(),
+                'isDeleted' => $message->isDeleted(),
+                'isRoleplay' => $message->isRoleplay(),
+                'isSentByCurrentUser' => false,
+                'author' => [
+                    'id' => $message->getAuthor()->getId(),
+                    'username' => $message->getAuthor()->getUsername(),
+                    'avatar' => $message->getAuthor()->getAvatar() ?: $this->getParameter('app.default_avatar')
+                ]
+            ];
+            
+            if ($message->isRoleplay() && $message->getCharacter()) {
+                $messageData['character'] = [
+                    'id' => $message->getCharacter()->getId(),
+                    'name' => $message->getCharacter()->getName(),
+                    'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+                ];
+            }
+            
+            $messagesData[] = $messageData;
+        }
+        
+        return new JsonResponse([
+            'messages' => $messagesData,
+            'count' => count($messagesData)
+        ]);
+    }
+
+    #[Route('/{id}/send', name: 'app_messaging_conversation_send_message', methods: ['POST'])]
+    public function sendMessage(Request $request, Conversation $conversation, ValidatorInterface $validator): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur est participant à cette conversation
+        $participant = $this->participantRepository->findOneByConversationAndUser($conversation, $user);
+        
+        if (!$participant || !$participant->isActive()) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+        
+        // Décoder les données de la requête
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['content']) || empty(trim($data['content']))) {
+            return new JsonResponse(['error' => 'Le contenu du message ne peut pas être vide'], Response::HTTP_BAD_REQUEST);
+        }
+        
+        // Créer le nouveau message
+        $message = new Message();
+        $message->setAuthor($user)
+                ->setConversation($conversation)
+                ->setContent($data['content']);
+        
+        // Gestion du roleplay si disponible
+        if (isset($data['isRoleplay']) && $data['isRoleplay'] && isset($data['characterId'])) {
+            $character = $this->entityManager->getRepository('App\Entity\Character')->find($data['characterId']);
+            if ($character && $character->getUser() === $user) {
+                $message->setIsRoleplay(true)
+                        ->setCharacter($character);
+            }
+        }
+        
+        // Valider le message
+        $errors = $validator->validate($message);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return new JsonResponse(['error' => 'Validation échouée', 'messages' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
+        
+        // Enregistrer le message
+        $this->entityManager->persist($message);
+        $this->entityManager->flush();
+        
+        // Préparer la réponse
+        $messageData = [
+            'id' => $message->getId(),
+            'content' => $message->getContent(),
+            'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+            'isRoleplay' => $message->isRoleplay(),
+            'isSentByCurrentUser' => true,
+            'author' => [
+                'id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'avatar' => $user->getAvatar() ?: $this->getParameter('app.default_avatar')
+            ]
+        ];
+        
+        if ($message->isRoleplay() && $message->getCharacter()) {
+            $messageData['character'] = [
+                'id' => $message->getCharacter()->getId(),
+                'name' => $message->getCharacter()->getName(),
+                'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+            ];
+        }
+        
+        return new JsonResponse(['success' => true, 'message' => $messageData]);
     }
 } 

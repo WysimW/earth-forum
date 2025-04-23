@@ -113,7 +113,7 @@ class ConversationFormType extends AbstractType
         
         foreach ($users as $user) {
             if ($user->getId() !== $currentUser->getId()) {
-                $choices[$user->getPseudo()] = $user->getId();
+                $choices[$user->getPseudo()] = $user->getPseudo();
             }
         }
         
