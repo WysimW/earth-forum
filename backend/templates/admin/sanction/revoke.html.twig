@@ -1,0 +1,122 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Révoquer une sanction{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            Révoquer une sanction
+        </h1>
+        <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Retour aux détails
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="h5 mb-0">Confirmer la révocation</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <p class="mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Vous êtes sur le point de révoquer une sanction active. Cette action est irréversible.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Informations sur la sanction</h5>
+                        <table class="table table-bordered table-sm">
+                            <tr>
+                                <th style="width: 150px">Utilisateur</th>
+                                <td>{{ sanction.user.pseudo }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>
+                                    <span class="badge {{ sanction.type == 'full_ban' ? 'bg-danger' : 'bg-warning' }}">
+                                        {{ sanction.typeLabel }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de création</th>
+                                <td>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Expiration</th>
+                                <td>
+                                    {% if sanction.expiresAt %}
+                                        {{ sanction.expiresAt|date('d/m/Y H:i') }}
+                                    {% else %}
+                                        <span class="badge bg-danger">Permanent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Motif original</th>
+                                <td>{{ sanction.reason }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.reason) }}
+                            {{ form_widget(form.reason, {'attr': {'class': 'form-control'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.reason) }}
+                            </div>
+                            <div class="form-text">
+                                Veuillez expliquer pourquoi vous révoquez cette sanction. Cette information sera visible par les modérateurs uniquement.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-secondary me-2">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-shield-slash me-2"></i>
+                                Confirmer la révocation
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informations
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>La révocation d'une sanction:</p>
+                    <ul class="mb-0">
+                        <li>Met fin immédiatement à la sanction</li>
+                        <li>Restaure les privilèges de l'utilisateur</li>
+                        <li>Reste enregistrée dans l'historique de l'utilisateur</li>
+                        <li>Ne peut pas être annulée (vous devrez créer une nouvelle sanction si nécessaire)</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>Utilisez cette fonctionnalité uniquement si la sanction a été appliquée par erreur ou si les circonstances ont changé.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

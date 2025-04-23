@@ -1,0 +1,135 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Prolonger une sanction{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-clock-history me-2"></i>
+            Prolonger une sanction
+        </h1>
+        <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Retour aux détails
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="h5 mb-0">Prolonger la durée</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Vous allez prolonger la durée d'une sanction existante.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Informations sur la sanction</h5>
+                        <table class="table table-bordered table-sm">
+                            <tr>
+                                <th style="width: 150px">Utilisateur</th>
+                                <td>{{ sanction.user.pseudo }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>
+                                    <span class="badge {{ sanction.type == 'full_ban' ? 'bg-danger' : 'bg-warning' }}">
+                                        {{ sanction.typeLabel }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de création</th>
+                                <td>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Expiration actuelle</th>
+                                <td>
+                                    {% if sanction.expiresAt %}
+                                        <strong>{{ sanction.expiresAt|date('d/m/Y H:i') }}</strong>
+                                        ({% if sanction.expiresAt > date() %}
+                                            expire dans {{ sanction.expiresAt|date('U') - date()|date('U')|date('G \\h i \\m', false) }}
+                                        {% else %}
+                                            expirée
+                                        {% endif %})
+                                    {% else %}
+                                        <span class="badge bg-danger">Permanent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Motif original</th>
+                                <td>{{ sanction.reason }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.duration) }}
+                            {{ form_widget(form.duration, {'attr': {'class': 'form-select'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.duration) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.reason) }}
+                            {{ form_widget(form.reason, {'attr': {'class': 'form-control'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.reason) }}
+                            </div>
+                            <div class="form-text">
+                                Veuillez expliquer pourquoi vous prolongez cette sanction. Cette information sera visible par les modérateurs uniquement.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-secondary me-2">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-clock-fill me-2"></i>
+                                Confirmer la prolongation
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informations
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>La prolongation d'une sanction:</p>
+                    <ul class="mb-0">
+                        <li>Ajoute du temps à la durée existante</li>
+                        <li>Conserve le même type de sanction</li>
+                        <li>Ne change pas le motif d'origine</li>
+                        <li>Ajoute une note explicative dans l'historique</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <p class="text-info mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Si vous avez besoin de modifier le type de sanction, révoquée celle-ci et créez-en une nouvelle.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

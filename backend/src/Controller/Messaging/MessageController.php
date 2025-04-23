@@ -10,6 +10,7 @@ use App\Form\Messaging\MessageFormType;
 use App\Repository\CharacterRepository;
 use App\Repository\Messaging\ConversationParticipantRepository;
 use App\Repository\Messaging\MessageRepository;
+use App\Service\UserSanctionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,7 +28,8 @@ class MessageController extends AbstractController
         private EntityManagerInterface $entityManager,
         private MessageRepository $messageRepository,
         private ConversationParticipantRepository $participantRepository,
-        private CharacterRepository $characterRepository
+        private CharacterRepository $characterRepository,
+        private UserSanctionService $sanctionService
     ) {
     }
 
@@ -42,6 +44,18 @@ class MessageController extends AbstractController
         
         if (!$participant || !$participant->isActive() || !$participant->canWrite()) {
             throw $this->createAccessDeniedException('Vous n\'avez pas le droit d\'écrire dans cette conversation.');
+        }
+        
+        // Vérifier si l'utilisateur est sous sanctions
+        if (!$this->sanctionService->canSendMessage($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            $expiryInfo = $restrictions['restrictionExpiry'] ? ' jusqu\'au ' . $restrictions['restrictionExpiry']->format('d/m/Y H:i') : ' (sanction permanente)';
+            
+            $this->addFlash('error', $restrictions['restrictionMessage'] . $expiryInfo);
+            
+            return $this->redirectToRoute('app_messaging_conversation_show', [
+                'id' => $conversation->getId()
+            ]);
         }
         
         $message = new Message();
@@ -121,6 +135,17 @@ class MessageController extends AbstractController
         // Vérifier si le message est supprimé
         if ($message->isDeleted()) {
             throw $this->createNotFoundException('Ce message a été supprimé.');
+        }
+        
+        // Vérifier si l'utilisateur est sous sanctions
+        if (!$this->sanctionService->canSendMessage($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            
+            $this->addFlash('error', $restrictions['restrictionMessage']);
+            
+            return $this->redirectToRoute('app_messaging_conversation_show', [
+                'id' => $message->getConversation()->getId()
+            ]);
         }
         
         $form = $this->createForm(MessageFormType::class, $message, [

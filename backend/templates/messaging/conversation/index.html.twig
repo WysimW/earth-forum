@@ -229,6 +229,10 @@
             <button type="button" class="btn btn-sm btn-outline-danger delete-message-btn">
                 <i class="fas fa-trash"></i>
             </button>
+            <!-- Bouton de signalement -->
+            <a href="#" class="btn btn-sm btn-outline-warning report-message-btn d-none">
+                <i class="fas fa-flag"></i>
+            </a>
         </div>
     </div>
 </template>
@@ -675,6 +679,11 @@ document.addEventListener('DOMContentLoaded', function() {
             messageEl.classList.add('message-received');
         }
         
+        // Si le message est signalé, ajouter la classe correspondante
+        if (message.isFlagged) {
+            messageEl.classList.add('message-flagged');
+        }
+        
         // Avatar et auteur
         const avatarImg = messageEl.querySelector('.message-avatar');
         const authorName = messageEl.querySelector('.message-author-name');
@@ -715,23 +724,35 @@ document.addEventListener('DOMContentLoaded', function() {
             })}`;
         }
         
-        // Actions (éditer/supprimer)
-        if (message.isSentByCurrentUser && !message.isDeleted) {
-            const actionsEl = messageEl.querySelector('.message-actions');
+        // Actions (éditer/supprimer/signaler)
+        const actionsEl = messageEl.querySelector('.message-actions');
+        if (!message.isDeleted) {
             actionsEl.classList.remove('d-none');
             
-            // Bouton d'édition
-            const editBtn = actionsEl.querySelector('.edit-message-btn');
-            editBtn.href = `/messaging/messages/${message.id}/edit`;
-            
-            // Bouton de suppression
-            const deleteBtn = actionsEl.querySelector('.delete-message-btn');
-            deleteBtn.dataset.id = message.id;
-            deleteBtn.addEventListener('click', function() {
-                if (confirm('Supprimer ce message ?')) {
-                    deleteMessage(message.id);
-                }
-            });
+            if (message.isSentByCurrentUser) {
+                // Actions pour les messages envoyés par l'utilisateur
+                const editBtn = actionsEl.querySelector('.edit-message-btn');
+                editBtn.href = `/messaging/messages/${message.id}/edit`;
+                
+                const deleteBtn = actionsEl.querySelector('.delete-message-btn');
+                deleteBtn.dataset.id = message.id;
+                deleteBtn.addEventListener('click', function() {
+                    if (confirm('Supprimer ce message ?')) {
+                        deleteMessage(message.id);
+                    }
+                });
+            } else {
+                // Actions pour les messages reçus (signalement)
+                const editBtn = actionsEl.querySelector('.edit-message-btn');
+                const deleteBtn = actionsEl.querySelector('.delete-message-btn');
+                editBtn.classList.add('d-none');
+                deleteBtn.classList.add('d-none');
+                
+                const reportBtn = actionsEl.querySelector('.report-message-btn');
+                reportBtn.classList.remove('d-none');
+                reportBtn.href = `/messaging/moderation/messages/${message.id}/report`;
+                reportBtn.title = 'Signaler ce message';
+            }
         }
         
         return messageEl;

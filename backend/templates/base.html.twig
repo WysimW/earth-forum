@@ -169,6 +169,7 @@
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_dashboard') }}"><i class="fas fa-columns"></i> Tableau de bord</a></li>
                                             <li><a class="dropdown-item" href="{{ path('app_roleplay_characters', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}"><i class="fas fa-user-astronaut"></i> Mes Personnages</a></li>
                                             <li><a class="dropdown-item" href="{{ path('app_my_factions_index') }}"><i class="fas fa-shield-alt"></i> Mes Factions</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_user_my_sanctions') }}"><i class="fas fa-exclamation-triangle"></i> Historique des sanctions</a></li>
                                             {% if is_granted('ROLE_ADMIN') %}
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-toolbox"></i> Administration</a></li>
@@ -280,6 +281,20 @@
                 </ul>
                 {% endif %}
                 
+                {# Section Modération - Visible uniquement pour les modérateurs #}
+                {% if is_granted('ROLE_MODERATOR') %}
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-title">Modération</li>
+                    <li class="sidebar-menu-item">
+                        <a href="{{ path('app_messaging_moderation_reports') }}" class="sidebar-menu-link position-relative" data-title="Messages signalés">
+                            <i class="fas fa-flag"></i> <span class="sidebar-menu-text">Messages signalés</span>
+                            {# Badge qui pourrait afficher le nombre de signalements #}
+                            <span class="badge bg-danger rounded-pill ms-2 notification-badge" id="reports-badge" style="display: none;">0</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+                
                 
                 {% if is_granted('ROLE_ADMIN') %}
                 <ul class="sidebar-menu">
@@ -376,6 +391,10 @@
             <script src="/js/unread-messages.js"></script>
             <!-- Gestion des messages non lus de la messagerie -->
             <script src="/js/messaging-unread.js"></script>
+            <!-- Gestion des signalements de modération -->
+            {% if is_granted('ROLE_MODERATOR') %}
+            <script src="/js/moderation-reports.js"></script>
+            {% endif %}
             <!-- Custom JavaScript -->
             <script>
                 // Fonction pour rediriger vers la page des threads RP avec l'univers par défaut

@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
         <link rel="stylesheet" href="{{ asset('css/components/variables.css') }}">
         <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         {% block stylesheets %}{% endblock %}
     </head>
@@ -30,6 +31,11 @@
                             <li>
                                 <a href="{{ path('admin_user_index') }}" class="nav-link px-0 align-middle text-white">
                                     <i class="bi bi-people"></i> <span class="ms-1 d-none d-sm-inline">Utilisateurs</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ path('app_admin_sanctions_index') }}" class="nav-link px-0 align-middle text-white">
+                                    <i class="bi bi-shield-exclamation"></i> <span class="ms-1 d-none d-sm-inline">Sanctions</span>
                                 </a>
                             </li>
                             <li>

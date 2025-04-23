@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accès restreint{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0 bg-dark text-white">
+                <div class="card-header bg-danger text-white py-3">
+                    <h2 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Accès restreint
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        {% if restrictionType == 'full_ban' %}
+                            <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                        {% elseif restrictionType == 'ban_messaging' %}
+                            <i class="fas fa-comment-slash fa-4x text-danger mb-3"></i>
+                        {% elseif restrictionType == 'mute' %}
+                            <i class="fas fa-microphone-slash fa-4x text-warning mb-3"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <p class="mb-0 fs-5">{{ message }}</p>
+                    </div>
+
+                    {% if expiresAt %}
+                        <div class="alert alert-info mt-3">
+                            <p class="mb-0">
+                                <i class="fas fa-clock me-2"></i>
+                                Cette restriction prendra fin le {{ expiresAt|date('d/m/Y à H:i') }}.
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <h4>Que puis-je faire ?</h4>
+                        <ul>
+                            <li>Vous pouvez contacter un administrateur si vous pensez que cette sanction est injustifiée.</li>
+                            <li>Vous pouvez toujours accéder aux autres fonctionnalités du site qui ne sont pas restreintes.</li>
+                            <li>Vous devez respecter les règles de la communauté pour éviter de futures sanctions.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer p-3 d-flex justify-content-between">
+                    <a href="{{ path('app_home') }}" class="btn btn-secondary">
+                        <i class="fas fa-home me-2"></i>
+                        Retour à l'accueil
+                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin_sanctions_index') }}" class="btn btn-primary">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Gestion des sanctions
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

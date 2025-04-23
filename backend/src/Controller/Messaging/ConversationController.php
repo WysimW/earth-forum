@@ -12,6 +12,7 @@ use App\Repository\Messaging\ConversationParticipantRepository;
 use App\Repository\Messaging\ConversationRepository;
 use App\Repository\Messaging\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\UserSanctionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,7 +33,8 @@ class ConversationController extends AbstractController
         private ConversationParticipantRepository $participantRepository,
         private MessageRepository $messageRepository,
         private UserRepository $userRepository,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private UserSanctionService $sanctionService
     ) {
     }
 
@@ -41,6 +43,18 @@ class ConversationController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur peut accéder à la messagerie
+        if (!$this->sanctionService->canAccessMessaging($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            $expiryInfo = $restrictions['restrictionExpiry'] ? ' jusqu\'au ' . $restrictions['restrictionExpiry']->format('d/m/Y H:i') : ' (sanction permanente)';
+            
+            return $this->render('messaging/sanction.html.twig', [
+                'message' => $restrictions['restrictionMessage'] . $expiryInfo,
+                'restrictionType' => $restrictions['restrictionType'],
+                'expiresAt' => $restrictions['restrictionExpiry']
+            ]);
+        }
         
         $conversations = $this->conversationRepository->findByUser($user);
         $unreadMessages = [];
@@ -60,6 +74,13 @@ class ConversationController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur peut accéder à la messagerie
+        if (!$this->sanctionService->canAccessMessaging($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            $this->addFlash('error', $restrictions['restrictionMessage']);
+            return $this->redirectToRoute('app_messaging_conversations_index');
+        }
         
         $conversation = new Conversation();
         $conversation->setCreator($user);
@@ -115,6 +136,13 @@ class ConversationController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         
+        // Vérifier si l'utilisateur peut accéder à la messagerie
+        if (!$this->sanctionService->canAccessMessaging($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            $this->addFlash('error', $restrictions['restrictionMessage']);
+            return $this->redirectToRoute('app_messaging_conversations_index');
+        }
+        
         // Vérifier si l'utilisateur est participant à cette conversation
         $participant = $this->participantRepository->findOneByConversationAndUser($conversation, $user);
         
@@ -141,12 +169,22 @@ class ConversationController extends AbstractController
             'action' => $this->generateUrl('app_messaging_messages_create', ['id' => $conversation->getId()])
         ]);
         
+        // Vérifier si l'utilisateur peut envoyer des messages
+        $canSendMessage = $this->sanctionService->canSendMessage($user);
+        $restrictions = null;
+        
+        if (!$canSendMessage) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+        }
+        
         return $this->render('messaging/conversation/show.html.twig', [
             'conversation' => $conversation,
             'messages' => $messages,
             'participants' => $participants,
             'currentParticipant' => $participant,
-            'form' => $form
+            'form' => $form,
+            'canSendMessage' => $canSendMessage,
+            'restrictions' => $restrictions
         ]);
     }
 
@@ -155,6 +193,13 @@ class ConversationController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+        
+        // Vérifier si l'utilisateur peut accéder à la messagerie
+        if (!$this->sanctionService->canAccessMessaging($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            $this->addFlash('error', $restrictions['restrictionMessage']);
+            return $this->redirectToRoute('app_messaging_conversations_index');
+        }
         
         // Vérifier si l'utilisateur est admin de cette conversation
         $participant = $this->participantRepository->findOneByConversationAndUser($conversation, $user);
@@ -513,6 +558,12 @@ class ConversationController extends AbstractController
         
         if (!$participant || !$participant->isActive()) {
             return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+        
+        // Vérifier si l'utilisateur peut envoyer des messages
+        if (!$this->sanctionService->canSendMessage($user)) {
+            $restrictions = $this->sanctionService->checkMessagingRestrictions($user);
+            return new JsonResponse(['error' => $restrictions['restrictionMessage']], Response::HTTP_FORBIDDEN);
         }
         
         // Décoder les données de la requête

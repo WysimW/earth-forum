@@ -1,0 +1,182 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvelle sanction{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css">
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            Nouvelle sanction
+        </h1>
+        <a href="{{ path('app_admin_sanctions_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Retour à la liste
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="h5 mb-0">Formulaire de sanction</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        <div class="mb-3">
+                            {{ form_label(form.user) }}
+                            {{ form_widget(form.user, {'attr': {'class': 'form-control', 'autocomplete': 'off'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.user) }}
+                            </div>
+                            <div class="form-text">
+                                Commencez à taper le pseudo de l'utilisateur pour le rechercher.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.type) }}
+                            </div>
+                            <div class="form-text">
+                                <span class="text-warning">Attention :</span> Veillez à sélectionner un type de sanction proportionné à l'infraction.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.duration) }}
+                            {{ form_widget(form.duration, {'attr': {'class': 'form-select'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.duration) }}
+                            </div>
+                            <div class="form-text">
+                                Pour les infractions les plus graves, utilisez "Permanent" avec précaution.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.reason) }}
+                            {{ form_widget(form.reason, {'attr': {'class': 'form-control'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.reason) }}
+                            </div>
+                            <div class="form-text">
+                                Ce motif sera visible par l'utilisateur sanctionné.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.moderatorNotes) }}
+                            {{ form_widget(form.moderatorNotes, {'attr': {'class': 'form-control'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.moderatorNotes) }}
+                            </div>
+                            <div class="form-text">
+                                Notes internes visibles uniquement par les modérateurs et administrateurs.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ path('app_admin_sanctions_index') }}" class="btn btn-secondary me-2">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Appliquer la sanction
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Guide des sanctions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h6>Types de sanctions</h6>
+                    <ul class="small mb-3">
+                        <li><strong>Avertissement :</strong> Simple rappel des règles, sans restrictions.</li>
+                        <li><strong>Interdiction d'envoyer des messages :</strong> L'utilisateur ne peut pas envoyer de messages, mais peut lire les conversations.</li>
+                        <li><strong>Interdiction d'utiliser la messagerie :</strong> L'utilisateur ne peut pas accéder à la messagerie du tout.</li>
+                        <li><strong>Interdiction de poster :</strong> L'utilisateur ne peut pas créer de sujets ou répondre sur le forum.</li>
+                        <li><strong>Bannissement complet :</strong> L'utilisateur ne peut plus accéder au site.</li>
+                    </ul>
+                    
+                    <h6>Bonnes pratiques</h6>
+                    <ul class="small mb-0">
+                        <li>Commencer par des sanctions légères et augmenter progressivement si nécessaire.</li>
+                        <li>Fournir des explications claires pour que l'utilisateur comprenne son infraction.</li>
+                        <li>Documenter précisément les actions qui ont mené à la sanction dans les notes internes.</li>
+                        <li>Pour les infractions graves, consulter un administrateur avant d'appliquer un bannissement permanent.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInput = document.querySelector('.user-autocomplete');
+            
+            // Configuration de l'autocomplete
+            const autoCompleteJS = new autoComplete({
+                selector: ".user-autocomplete",
+                placeHolder: "Rechercher un utilisateur...",
+                data: {
+                    src: async (query) => {
+                        try {
+                            // Fetch Data from API
+                            const source = await fetch(`/admin/api/users/search?q=${query}`);
+                            const data = await source.json();
+                            
+                            // Return Fetched data
+                            return data;
+                        } catch (error) {
+                            return [];
+                        }
+                    },
+                    keys: ["pseudo", "id"],
+                    cache: false
+                },
+                resultsList: {
+                    element: (list, data) => {
+                        if (!data.results.length) {
+                            const message = document.createElement("div");
+                            message.setAttribute("class", "no_result");
+                            message.innerHTML = `<span>Aucun utilisateur trouvé pour "${data.query}"</span>`;
+                            list.prepend(message);
+                        }
+                    },
+                    noResults: true,
+                },
+                resultItem: {
+                    highlight: true
+                },
+                events: {
+                    input: {
+                        selection: (event) => {
+                            const selection = event.detail.selection.value;
+                            autoCompleteJS.input.value = selection.pseudo;
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %} 

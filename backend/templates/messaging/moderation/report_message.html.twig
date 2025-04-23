@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Signaler un message{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    {# Fil d'Ariane #}
+    {% include 'components/_breadcrumb.html.twig' with {
+        'breadcrumbs': [
+            {'name': 'Messagerie', 'url': path('app_messaging_conversations_index')},
+            {'name': 'Conversation', 'url': path('app_messaging_conversation_show', {'id': message.conversation.id})},
+            {'name': 'Signaler un message', 'url': null}
+        ]
+    } %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h2 class="card-title h5 mb-0">Signaler un message</h2>
+                </div>
+                <div class="card-body">
+                    <div class="message-preview mb-4 p-3 border rounded bg-light">
+                        <div class="d-flex mb-2">
+                            <div class="me-2">
+                                <img src="{{ message.author.avatar ?: asset('images/default-avatar.png') }}" 
+                                     alt="{{ message.author.pseudo }}" 
+                                     class="rounded-circle" 
+                                     width="40" height="40">
+                            </div>
+                            <div>
+                                <strong>{{ message.author.pseudo }}</strong>
+                                <div class="text-muted small">
+                                    {{ message.createdAt|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            {{ message.content|raw }}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Signalez ce message uniquement s'il enfreint les règles du forum ou les conditions d'utilisation.
+                    </div>
+                    
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        {{ form_errors(form) }}
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.reason) }}
+                            {{ form_widget(form.reason, {'attr': {'class': 'form-select'}}) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.reason) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.details) }}
+                            {{ form_widget(form.details, {'attr': {'class': 'form-control'}}) }}
+                            <div class="form-text">
+                                Donnez plus de détails sur la raison de votre signalement.
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.details) }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_messaging_conversation_show', {'id': message.conversation.id}) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-flag me-1"></i> Signaler
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

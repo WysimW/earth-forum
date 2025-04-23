@@ -186,4 +186,37 @@ class ConversationParticipant
 
         return $this;
     }
+
+    /**
+     * Vérifie si le participant a le rôle de modérateur ou d'administrateur
+     */
+    public function canModerate(): bool
+    {
+        return $this->isActive && ($this->role === self::ROLE_ADMIN || $this->role === self::ROLE_MODERATOR);
+    }
+    
+    /**
+     * Retourne le label du rôle pour l'affichage
+     */
+    public function getRoleLabel(): string
+    {
+        return match($this->role) {
+            self::ROLE_ADMIN => 'Administrateur',
+            self::ROLE_MODERATOR => 'Modérateur',
+            self::ROLE_MEMBER => 'Membre',
+            default => 'Inconnu'
+        };
+    }
+    
+    /**
+     * Liste des rôles disponibles pour les formulaires
+     */
+    public static function getRoleChoices(): array
+    {
+        return [
+            'Administrateur' => self::ROLE_ADMIN,
+            'Modérateur' => self::ROLE_MODERATOR,
+            'Membre' => self::ROLE_MEMBER,
+        ];
+    }
 } 

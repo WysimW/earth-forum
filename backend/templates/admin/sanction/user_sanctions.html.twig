@@ -1,0 +1,205 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Sanctions de {{ user.pseudo }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            Sanctions de l'utilisateur
+        </h1>
+        <div>
+            <a href="{{ path('app_admin_sanctions_index') }}" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+            <a href="{{ path('app_admin_sanctions_new') }}" class="btn btn-primary">
+                <i class="bi bi-plus me-2"></i>
+                Nouvelle sanction
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="h5 mb-0">Informations utilisateur</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 text-center">
+                            {% if user.avatar %}
+                                <img src="{{ asset(user.avatar) }}" alt="{{ user.pseudo }}" class="img-fluid rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 100px; height: 100px; margin: 0 auto;">
+                                    <i class="bi bi-person-fill" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-10">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Pseudo</label>
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="mb-0">{{ user.pseudo }}</h4>
+                                        <a href="/admin/users/{{ user.id }}" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Email</label>
+                                    <div>{{ user.email }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Date d'inscription</label>
+                                    <div>{{ user.createdAt|date('d/m/Y H:i') }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Rôle</label>
+                                    <div>
+                                        {% for role in user.roles %}
+                                            <span class="badge {% if role == 'ROLE_ADMIN' %}bg-danger{% elseif role == 'ROLE_MODERATOR' %}bg-warning{% else %}bg-secondary{% endif %} me-1">
+                                                {{ role|replace({'ROLE_': ''}) }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if activeSanctions|length > 0 %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">Sanctions actives ({{ activeSanctions|length }})</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Expiration</th>
+                            <th>Modérateur</th>
+                            <th>Motif</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sanction in activeSanctions %}
+                            <tr>
+                                <td>{{ sanction.id }}</td>
+                                <td>
+                                    <span class="badge {{ sanction.type == 'full_ban' ? 'bg-danger' : 'bg-warning' }}">
+                                        {{ sanction.typeLabel }}
+                                    </span>
+                                </td>
+                                <td>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    {% if sanction.expiresAt %}
+                                        {{ sanction.expiresAt|date('d/m/Y H:i') }}
+                                    {% else %}
+                                        <span class="badge bg-danger">Permanent</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ sanction.moderator.pseudo }}</td>
+                                <td>{{ sanction.reason|length > 50 ? sanction.reason|slice(0, 50) ~ '...' : sanction.reason }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_admin_sanctions_revoke', {'id': sanction.id}) }}" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-ban"></i>
+                                        </a>
+                                        {% if sanction.expiresAt %}
+                                            <a href="{{ path('app_admin_sanctions_extend', {'id': sanction.id}) }}" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-clock"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            Cet utilisateur n'a aucune sanction active.
+        </div>
+    {% endif %}
+
+    {% if historySanctions|length > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">Historique des sanctions ({{ historySanctions|length }})</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Expiration</th>
+                            <th>Statut</th>
+                            <th>Modérateur</th>
+                            <th>Motif</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sanction in historySanctions %}
+                            <tr>
+                                <td>{{ sanction.id }}</td>
+                                <td>
+                                    <span class="badge {{ sanction.type == 'full_ban' ? 'bg-danger' : 'bg-warning' }}">
+                                        {{ sanction.typeLabel }}
+                                    </span>
+                                </td>
+                                <td>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    {% if sanction.expiresAt %}
+                                        {{ sanction.expiresAt|date('d/m/Y H:i') }}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Permanent</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sanction.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% elseif sanction.status == 'expired' %}
+                                        <span class="badge bg-secondary">Expirée</span>
+                                    {% elseif sanction.status == 'revoked' %}
+                                        <span class="badge bg-info">Révoquée</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ sanction.moderator.pseudo }}</td>
+                                <td>{{ sanction.reason|length > 40 ? sanction.reason|slice(0, 40) ~ '...' : sanction.reason }}</td>
+                                <td>
+                                    <a href="{{ path('app_admin_sanctions_show', {'id': sanction.id}) }}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
