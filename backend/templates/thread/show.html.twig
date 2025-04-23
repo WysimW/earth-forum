@@ -155,13 +155,13 @@
                         
                         {% if thread.sticky %}
                             <li>
-                                <a href="{{ path('app_thread_unstick', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_unsticky', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-thumbtack fa-rotate-90 me-1"></i> Désépingler
                                 </a>
                             </li>
                         {% else %}
                             <li>
-                                <a href="{{ path('app_thread_stick', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
+                                <a href="{{ path('app_thread_sticky', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="dropdown-item">
                                     <i class="fas fa-thumbtack me-1"></i> Épingler
                                 </a>
                             </li>
@@ -178,6 +178,16 @@
             {% endif %}
         </div>
     </div>
+
+    {# Afficher le message de restriction si l'utilisateur est sanctionné #}
+    {% if app.user and postingRestriction is defined and postingRestriction is not null %}
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i> {{ postingRestriction.message }}
+            {% if postingRestriction.type == 'ban_posting' %}
+                Vous pouvez consulter l'<a href="{{ path('app_user_my_sanctions') }}">historique de vos sanctions</a> pour plus d'informations.
+            {% endif %}
+        </div>
+    {% endif %}
 
     {# Liste des posts #}
     <div class="posts-container" id="posts">

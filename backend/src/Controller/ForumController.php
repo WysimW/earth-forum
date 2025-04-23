@@ -11,6 +11,7 @@ use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Repository\UniversRepository;
 use App\Service\ForumStatisticsService;
+use App\Service\UserSanctionService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\ForumCategoryRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,17 +28,20 @@ class ForumController extends AbstractController
     private LastPostService $lastPostService;
     private ForumStatisticsService $forumStatsService;
     private $slugger;
+    private UserSanctionService $userSanctionService;
 
     public function __construct(
         BreadcrumbService $breadcrumbService, 
         LastPostService $lastPostService,
         ForumStatisticsService $forumStatsService,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        UserSanctionService $userSanctionService
     ) {
         $this->breadcrumbService = $breadcrumbService;
         $this->lastPostService = $lastPostService;
         $this->forumStatsService = $forumStatsService;
         $this->slugger = $slugger;
+        $this->userSanctionService = $userSanctionService;
     }
 
     #[Route('/univers/{universeSlug}/forum/{id}', name: 'app_forum_show')]
@@ -118,6 +122,22 @@ class ForumController extends AbstractController
         // Ajouter les statistiques cumulées du forum courant
         $forum->stats = $this->forumStatsService->getForumStats($forum->getId());
         
+        // Vérifier si l'utilisateur peut poster pour afficher le message d'avertissement approprié
+        $postingRestriction = null;
+        if ($this->getUser() && !$this->userSanctionService->canPostOnForum($this->getUser())) {
+            if ($this->userSanctionService->hasActiveSanction($this->getUser(), 'full_ban')) {
+                $postingRestriction = [
+                    'type' => 'full_ban',
+                    'message' => 'Vous êtes actuellement banni et ne pouvez pas poster de messages.',
+                ];
+            } else {
+                $postingRestriction = [
+                    'type' => 'ban_posting',
+                    'message' => 'Vous êtes temporairement interdit de poster des messages sur le forum.',
+                ];
+            }
+        }
+        
         return $this->render('forum/show.html.twig', [
             'univers' => $univers,
             'forum' => $forum,
@@ -129,6 +149,8 @@ class ForumController extends AbstractController
                 'totalPages' => $totalPages,
                 'totalItems' => $totalThreads
             ],
+            'postingRestriction' => $postingRestriction,
+            'userCanPost' => $this->getUser() && $this->userSanctionService->canPostOnForum($this->getUser()),
         ]);
     }
 

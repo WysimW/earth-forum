@@ -17,6 +17,7 @@ use App\Repository\UniversRepository;
 use App\Repository\ReadPostRepository;
 use App\Repository\FactionRepository;
 use App\Service\BreadcrumbService;
+use App\Service\UserSanctionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,13 +29,16 @@ class ThreadController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private BreadcrumbService $breadcrumbService;
+    private UserSanctionService $userSanctionService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        BreadcrumbService $breadcrumbService
+        BreadcrumbService $breadcrumbService,
+        UserSanctionService $userSanctionService
     ) {
         $this->entityManager = $entityManager;
         $this->breadcrumbService = $breadcrumbService;
+        $this->userSanctionService = $userSanctionService;
     }
 
     #[Route('/univers/{universeSlug}/choisir-forum', name: 'app_choose_forum_new_thread')]
@@ -45,6 +49,12 @@ class ThreadController extends AbstractController
 
         if (!$univers) {
             throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
+        }
+
+        // Vérifier si l'utilisateur peut créer des discussions
+        if (!$this->userSanctionService->canCreateDiscussion($this->getUser())) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à créer des discussions en raison d\'une sanction active.');
+            return $this->redirectToRoute('app_univers_forums', ['slug' => $universeSlug]);
         }
 
         // Récupérer les forums de cet univers, regroupés par catégorie
@@ -102,6 +112,13 @@ class ThreadController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
+
+        // Vérifier si l'utilisateur peut créer des discussions
+        if (!$this->userSanctionService->canCreateDiscussion($user)) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à créer des discussions en raison d\'une sanction active.');
+            return $this->redirectToRoute('app_forum_show', ['universeSlug' => $universeSlug, 'id' => $forum->getId()]);
+        }
+
         if ($forum->getStatus() === 'closed') {
             $this->addFlash('error', 'Ce forum est fermé aux nouvelles discussions.');
             return $this->redirectToRoute('app_univers_forums', ['slug' => $universeSlug]);
@@ -242,6 +259,12 @@ class ThreadController extends AbstractController
         $post->setThread($thread);
         $post->setAuthor($this->getUser());
 
+        // Vérifier si l'utilisateur est sanctionné et ne peut pas poster
+        $userCanPost = $this->getUser() && 
+            $this->userSanctionService->canPostOnForum($this->getUser()) && 
+            ($thread->isOpen() || $thread->getAuthor() === $this->getUser());
+
+        // Vérifier s'il s'agit d'un thread RP et si l'utilisateur a des personnages validés
         if ($isRpThread && $this->getUser()) {
             if ($thread->isOpen()) {
                 $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
@@ -249,8 +272,13 @@ class ThreadController extends AbstractController
                 $userCharacters = $characterRepository->findValidatedParticipantsForUser($this->getUser(), $thread);
             }
 
+            // Compléter la condition pour les threads RP (avoir au moins un personnage validé)
+            if ($isRpThread) {
+                $userCanPost = $userCanPost && (isset($userCharacters) && count($userCharacters) > 0);
+            }
+
             $form = $this->createForm(PostRoleplayType::class, $post, [
-                'characters' => $userCharacters,
+                'characters' => $userCharacters ?? [],
             ]);
         } else {
             $form = $this->createForm(PostType::class, $post);
@@ -259,6 +287,12 @@ class ThreadController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifier à nouveau si l'utilisateur peut poster (au cas où le statut de sanction a changé pendant qu'il écrivait)
+            if (!$this->userSanctionService->canPostOnForum($this->getUser())) {
+                $this->addFlash('error', 'Vous n\'êtes pas autorisé à poster des messages en raison d\'une sanction active.');
+                return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
+            }
+
             if ($isRpThread && $post->getCharacter() && !$thread->getParticipants()->contains($post->getCharacter())) {
                 if ($thread->isFull()) {
                     $this->addFlash('error', 'Cette scène RP a atteint son nombre maximum de participants.');
@@ -274,18 +308,33 @@ class ThreadController extends AbstractController
             return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
         }
 
+        // Récupérer les informations sur les restrictions de publication pour l'utilisateur
+        $postingRestriction = null;
+        if ($this->getUser() && !$this->userSanctionService->canPostOnForum($this->getUser())) {
+            if ($this->userSanctionService->hasActiveSanction($this->getUser(), 'full_ban')) {
+                $postingRestriction = [
+                    'type' => 'full_ban',
+                    'message' => 'Vous êtes actuellement banni et ne pouvez pas poster de messages.',
+                ];
+            } else {
+                $postingRestriction = [
+                    'type' => 'ban_posting',
+                    'message' => 'Vous êtes temporairement interdit de poster des messages sur le forum.',
+                ];
+            }
+        }
+
         return $this->render('thread/show.html.twig', [
             'univers' => $univers,
             'thread' => $thread,
             'form' => $form->createView(),
             'isRoleplay' => $isRpThread,
-            'userCanPost' => $this->getUser() && ($thread->isOpen() ||
-                $thread->getAuthor() === $this->getUser() ||
-                ($isRpThread && isset($userCharacters) && count($userCharacters) > 0)),
+            'userCanPost' => $userCanPost,
             'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
-            'canReply' => $thread->isOpen() || $thread->getAuthor() === $this->getUser(),
+            'canReply' => $userCanPost,
             'posts' => $thread->getPosts(),
             'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
+            'postingRestriction' => $postingRestriction,
         ]);
     }
 
