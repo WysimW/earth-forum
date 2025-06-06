@@ -3,6 +3,7 @@
 namespace App\Twig;
 
 use Twig\TwigFunction;
+use Twig\TwigFilter;
 use App\Repository\UniversRepository;
 use Twig\Extension\AbstractExtension;
 use App\Repository\CharacterRepository;
@@ -29,6 +30,13 @@ class AppExtension extends AbstractExtension
         return [
             new TwigFunction('user_favorite_universes', [$this, 'getUserFavoriteUniverses']),
             // Garder les autres fonctions existantes ici
+        ];
+    }
+
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('decode_html', [$this, 'decodeHtml'], ['is_safe' => ['html']]),
         ];
     }
 
@@ -65,5 +73,25 @@ class AppExtension extends AbstractExtension
         $universes = $this->universRepository->findBy(['id' => $universeIds]);
         
         return $universes;
+    }
+
+    /**
+     * Décode les entités HTML échappées tout en gardant la sécurité
+     */
+    public function decodeHtml(string $content): string
+    {
+        // Décoder seulement les entités HTML de base pour permettre l'affichage du HTML
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        
+        // Liste des balises autorisées pour le roleplay
+        $allowedTags = '<p><br><strong><em><span><div><h1><h2><h3><h4><h5><h6><ul><ol><li><blockquote><a><img>';
+        
+        // Nettoyer le contenu en ne gardant que les balises autorisées
+        $content = strip_tags($content, $allowedTags);
+        
+        // Nettoyer les attributs dangereux (garder seulement style, class, href, src, alt)
+        $content = preg_replace('/(<[^>]+)(?:on\w+|javascript:|vbscript:|expression\(|data:(?!image))[^>]*/', '$1', $content);
+        
+        return $content;
     }
 } 

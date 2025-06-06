@@ -323,7 +323,7 @@
                     </div>
                     
                     <div class="post-content">
-                        {{ post.content|raw }}
+                        {{ post.content|decode_html|raw }}
                     </div>
                     
                     {% if post.editedAt and post.editedAt != post.createdAt %}
