@@ -11,12 +11,13 @@
         </ol>
     </nav>
 
-    <div class="universe-header mb-5 p-4 rounded bg-primary-dark shadow-lg border-start border-3 border-accent-light">
-        <h1 class="display-4 mb-2">{{ univers.name }}</h1>
-        <p class="lead text-light-gray mb-4">
+    <div class="universe-header">
+        <h1>{{ univers.name }}</h1>
+        <p class="lead">
+            <i class="fas fa-calendar-alt me-2"></i>
             Créé le {{ univers.createdAt ? univers.createdAt|date('d/m/Y') : 'inconnu' }}
         </p>
-        <div class="d-flex flex-wrap gap-2 mt-3">
+        <div class="button-container">
             <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-accent-light">
                 <i class="fas fa-comments me-2"></i> Voir tous les forums
             </a>
@@ -28,43 +29,59 @@
 
     <div class="row mb-4">
         <div class="col-md-8">
-            <div class="card shadow-sm mb-4">
+            <div class="modern-card shadow-sm mb-4">
                 <div class="card-header">
-                    <h2 class="h5 mb-0">Description</h2>
+                    <h2 class="h5 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Description
+                    </h2>
                 </div>
                 <div class="card-body">
                     {% if univers.description %}
                         {{ univers.description|nl2br }}
                     {% else %}
-                        <em>Aucune description disponible pour cet univers.</em>
+                        <em class="text-muted">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Aucune description disponible pour cet univers.
+                        </em>
                     {% endif %}
                 </div>
             </div>
             
             {% if univers.forums|length > 0 %}
-                <div class="card shadow-sm">
+                <div class="modern-card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h2 class="h5 mb-0">Forums</h2>
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-comments me-2"></i>
+                            Forums
+                        </h2>
                         <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-comments"></i> Tous les forums
+                            <i class="fas fa-list me-1"></i> Tous les forums
                         </a>
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
+                        <ul class="forum-list-enhanced">
                             {% for forum in univers.forums|slice(0, 5) %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="h6 mb-1">{{ forum.name }}</h3>
-                                        <p class="text-muted small mb-0">{{ forum.description|slice(0, 100) }}{% if forum.description|length > 100 %}...{% endif %}</p>
+                                <li class="forum-item-enhanced">
+                                    <div class="forum-info-enhanced">
+                                        <h3 class="h6 mb-1">
+                                            <i class="fas {{ forum.isRoleplay ? 'fa-theater-masks' : 'fa-comments' }} me-2"></i>
+                                            {{ forum.name }}
+                                        </h3>
+                                        <p class="small mb-0">{{ forum.description|slice(0, 100) }}{% if forum.description|length > 100 %}...{% endif %}</p>
                                     </div>
-                                    <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': forum.id}) }}" class="btn btn-sm btn-outline-primary">Visiter</a>
+                                    <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': forum.id}) }}" class="forum-visit-btn">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        Visiter
+                                    </a>
                                 </li>
                             {% endfor %}
                             
                             {% if univers.forums|length > 5 %}
-                                <li class="list-group-item text-center">
-                                    <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-list"></i> Voir tous les forums ({{ univers.forums|length }})
+                                <li class="forum-item-enhanced text-center">
+                                    <a href="{{ path('app_univers_forums', {'slug': univers.slug}) }}" class="forum-visit-btn w-100">
+                                        <i class="fas fa-ellipsis-h me-2"></i>
+                                        Voir tous les forums ({{ univers.forums|length }})
                                     </a>
                                 </li>
                             {% endif %}
@@ -75,58 +92,84 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
+            <div class="modern-card stats-card shadow-sm mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">Elseworlds</h2>
-                    <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-sm btn-outline-primary">Tous les Elseworlds</a>
+                    <h2 class="h5 mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Statistiques
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <ul class="stats-list">
+                        <li class="stat-item-enhanced">
+                            <div class="stat-label-enhanced">
+                                <i class="fas fa-comments"></i>
+                                Forums
+                            </div>
+                            <span class="stat-badge-enhanced forums">{{ univers.forums|length }}</span>
+                        </li>
+                        <li class="stat-item-enhanced">
+                            <div class="stat-label-enhanced">
+                                <i class="fas fa-users"></i>
+                                Personnages
+                            </div>
+                            <span class="stat-badge-enhanced characters">{{ univers.characters|length }}</span>
+                        </li>
+                        <li class="stat-item-enhanced">
+                            <div class="stat-label-enhanced">
+                                <i class="fas fa-globe-americas"></i>
+                                Elseworlds
+                            </div>
+                            <span class="stat-badge-enhanced elseworlds">{{ univers.elseworlds|length }}</span>
+                        </li>
+                        <li class="stat-item-enhanced">
+                            <div class="stat-label-enhanced">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Lieux
+                            </div>
+                            <span class="stat-badge-enhanced locations">{{ univers.locations|length }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="modern-card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">
+                        <i class="fas fa-globe-americas me-2"></i>
+                        Elseworlds
+                    </h2>
+                    <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        Tous les Elseworlds
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if univers.elseworlds|length > 0 %}
-                        <div class="list-group">
+                        <div class="elseworld-list-enhanced">
                             {% for elseworld in univers.elseworlds|slice(0, 5) %}
-                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworld.slug}) }}" class="list-group-item list-group-item-action">
+                                <a href="{{ path('app_elseworld_show', {'universeSlug': univers.slug, 'elseworldSlug': elseworld.slug}) }}" class="elseworld-item-enhanced">
+                                    <i class="fas fa-globe me-2"></i>
                                     {{ elseworld.name }}
                                     {% if elseworld.logo %}
-                                        <img src="{{ elseworld.logo }}" alt="Logo" class="ms-2" style="height: 16px; width: auto;">
+                                        <img src="{{ elseworld.logo }}" alt="Logo {{ elseworld.name }}" class="ms-2">
                                     {% endif %}
                                 </a>
                             {% endfor %}
                             
                             {% if univers.elseworlds|length > 5 %}
-                                <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="list-group-item list-group-item-action text-center">
+                                <a href="{{ path('app_univers_elseworlds', {'slug': univers.slug}) }}" class="elseworld-item-enhanced text-center">
+                                    <i class="fas fa-ellipsis-h me-2"></i>
                                     <em>Voir tous les {{ univers.elseworlds|length }} Elseworlds</em>
                                 </a>
                             {% endif %}
                         </div>
                     {% else %}
-                        <p>Aucun Elseworld disponible pour cet univers.</p>
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                            <p class="text-muted mb-0">Aucun Elseworld disponible pour cet univers.</p>
+                        </div>
                     {% endif %}
-                </div>
-            </div>
-            
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h2 class="h5 mb-0">Statistiques</h2>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Forums
-                            <span class="badge bg-primary rounded-pill">{{ univers.forums|length }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Personnages
-                            <span class="badge bg-success rounded-pill">{{ univers.characters|length }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Elseworlds
-                            <span class="badge bg-warning rounded-pill">{{ univers.elseworlds|length }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Lieux
-                            <span class="badge bg-info rounded-pill">{{ univers.locations|length }}</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>

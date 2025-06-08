@@ -54,21 +54,6 @@
     background-color: rgba(4, 118, 242, 0.1);
 }
 
-.breadcrumb-item a::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0.5rem;
-    right: 0.5rem;
-    height: 1px;
-    background-color: var(--accent-blue);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.breadcrumb-item a:hover::after {
-    transform: scaleX(1);
-}
 
 .breadcrumb-item a:focus {
     outline: none;

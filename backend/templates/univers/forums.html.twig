@@ -27,9 +27,49 @@
             </ol>
         </nav>
 
+        <!-- Filtres et recherche -->
+        <div class="forum-filters">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">
+                        <i class="fas fa-globe me-1"></i> Tous
+                    </button>
+                    <button class="filter-tab" data-filter="important">
+                        <i class="fas fa-thumbtack me-1"></i> Importants
+                    </button>
+                    <button class="filter-tab" data-filter="roleplay">
+                        <i class="fas fa-dice-d20 me-1"></i> Roleplay
+                    </button>
+                    <button class="filter-tab" data-filter="hrp">
+                        <i class="fas fa-comments me-1"></i> Hors-RP
+                    </button>
+                </div>
+                <div class="forum-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher un forum..." id="forum-search-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation rapide -->
+        <div class="quick-nav" id="quick-nav">
+            <a href="#important-forums" class="quick-nav-item" data-tooltip="Forums Importants">
+                <i class="fas fa-thumbtack"></i>
+            </a>
+            <a href="#rp-forums" class="quick-nav-item" data-tooltip="Forums Roleplay">
+                <i class="fas fa-dice-d20"></i>
+            </a>
+            <a href="#hrp-forums" class="quick-nav-item" data-tooltip="Forums Hors-RP">
+                <i class="fas fa-comments"></i>
+            </a>
+            <a href="#quick-actions" class="quick-nav-item" data-tooltip="Actions rapides">
+                <i class="fas fa-bolt"></i>
+            </a>
+        </div>
+
         <div class="forums-container">
             <!-- Forums importants de l'univers principal -->
-            <div id="important-forums" class="forum-section mb-5">
+            <div id="important-forums" class="forum-section mb-5" data-forum-type="important">
                 <h2 class="section-title important-gradient">
                     <i class="fas fa-thumbtack text-important"></i> Forums Importants
                     <small class="text-muted">Annonces et informations essentielles de {{ univers.name }}</small>
@@ -56,7 +96,7 @@
             </div>
 
             <!-- Forums RP de l'univers principal -->
-            <div id="rp-forums" class="forum-section mb-5">
+            <div id="rp-forums" class="forum-section mb-5" data-forum-type="roleplay">
                 <h2 class="section-title rp-gradient">
                     <i class="fa-solid fa-dice-d20 text-roleplay"></i> Forums Roleplay
                     <small class="text-muted">Incarnez vos personnages dans l'univers {{ univers.name }}</small>
@@ -83,7 +123,7 @@
             </div>
             
             <!-- Forums HRP de l'univers principal -->
-            <div id="hrp-forums" class="forum-section mb-5">
+            <div id="hrp-forums" class="forum-section mb-5" data-forum-type="hrp">
                 <h2 class="section-title hrp-gradient">
                     <i class="fas fa-comments text-hrp"></i> Forums Hors-Roleplay
                     <small class="text-muted">Discussions et informations sur l'univers {{ univers.name }}</small>
@@ -139,7 +179,7 @@
                             {% endfor %}
                             
                             {% if hasRpForums %}
-                                <div id="elseworld-rp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-rp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4" data-forum-type="roleplay">
                                     <h4 class="section-title rp-gradient h5">
                                         <i class="fa-solid fa-dice-d20 text-roleplay"></i> Forums Roleplay
                                     </h4>
@@ -164,7 +204,7 @@
                             {% endfor %}
                             
                             {% if hasHrpForums %}
-                                <div id="elseworld-hrp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-hrp-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4" data-forum-type="hrp">
                                     <h4 class="section-title hrp-gradient h5">
                                         <i class="fas fa-comments text-hrp"></i> Forums Hors-Roleplay
                                     </h4>
@@ -189,7 +229,7 @@
                             {% endfor %}
                             
                             {% if hasImportantForums %}
-                                <div id="elseworld-important-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4">
+                                <div id="elseworld-important-forums-{{ elseworldData.elseworld.id }}" class="forum-section mb-4 ms-4" data-forum-type="important">
                                     <h4 class="section-title important-gradient h5">
                                         <i class="fas fa-thumbtack text-important"></i> Forums Importants
                                     </h4>
@@ -215,7 +255,7 @@
             {% endif %}
         </div>
         
-        <div class="quick-actions mt-5">
+        <div class="quick-actions mt-5" id="quick-actions">
             <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
             <div class="action-buttons">
                 <a href="{{ path('app_univers_show', {'slug': univers.slug}) }}" class="btn btn-outline-primary">
@@ -233,4 +273,108 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript pour les fonctionnalités interactives -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtrage des forums
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const forumSections = document.querySelectorAll('.forum-section');
+            const searchInput = document.getElementById('forum-search-input');
+            
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const filter = this.dataset.filter;
+                    
+                    // Mise à jour des onglets actifs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filtrage des sections
+                    forumSections.forEach(section => {
+                        if (filter === 'all' || section.dataset.forumType === filter) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Recherche de forums
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const forumCards = document.querySelectorAll('.forum-card');
+                    
+                    forumCards.forEach(card => {
+                        const forumTitle = card.querySelector('.forum-title a');
+                        const forumDescription = card.querySelector('.forum-description');
+                        
+                        if (forumTitle && forumDescription) {
+                            const titleText = forumTitle.textContent.toLowerCase();
+                            const descText = forumDescription.textContent.toLowerCase();
+                            
+                            if (titleText.includes(searchTerm) || descText.includes(searchTerm)) {
+                                card.closest('.col-md-12').style.display = 'block';
+                            } else {
+                                card.closest('.col-md-12').style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Navigation rapide
+            const quickNav = document.getElementById('quick-nav');
+            const quickNavItems = document.querySelectorAll('.quick-nav-item');
+            
+            // Afficher la navigation rapide au scroll
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    quickNav.classList.add('visible');
+                } else {
+                    quickNav.classList.remove('visible');
+                }
+            });
+            
+            // Scroll fluide vers les sections
+            quickNavItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Mise à jour de l'item actif dans la navigation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        quickNavItems.forEach(item => {
+                            item.classList.remove('active');
+                            if (item.getAttribute('href') === '#' + id) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            // Observer les sections
+            forumSections.forEach(section => {
+                if (section.id) {
+                    observer.observe(section);
+                }
+            });
+        });
+    </script>
 {% endblock %} 

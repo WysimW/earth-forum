@@ -460,10 +460,7 @@ footer a:hover {
     transition: padding-left 0.3s ease, max-width 0.3s ease;
 }
 
-.main-wrapper:not(.sidebar-compact):not(.sidebar-closed) .breadcrumb {
-    margin-left: var(--spacing-xl);
-    width: calc(100% - var(--spacing-xl) * 2);
-}
+
 
 .container-fluid {
     width: 100%;
