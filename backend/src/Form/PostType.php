@@ -43,34 +43,6 @@ class PostType extends AbstractType
                 ],
                 'label' => false
             ])
-            ->add('thread', EntityType::class, [
-                'class' => Thread::class,
-                'choice_label' => 'title',
-                'label' => 'Thread',
-                'attr' => ['class' => 'form-select'],
-                'required' => true,
-                'group_by' => function($thread) {
-                    return $thread->getForum() ? $thread->getForum()->getName() : 'Sans forum';
-                }
-            ])
-            ->add('author', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'pseudo',
-                'label' => 'Auteur',
-                'attr' => ['class' => 'form-select'],
-                'required' => true
-            ])
-            ->add('type', ChoiceType::class, [
-                'label' => 'Type de message',
-                'choices' => [
-                    'Normal' => 'normal',
-                    'Roleplay' => 'roleplay'
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'attr' => ['class' => 'roleplay-toggle'],
-                'data' => 'normal'
-            ])
         ;
 
         // Ajouter le champ character si c'est un thread de roleplay

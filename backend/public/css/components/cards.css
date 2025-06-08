@@ -252,7 +252,7 @@
 
 .character-power-item:hover {
     background-color: rgba(92, 45, 145, 0.4);
-    transform: translateY(-2px);
+    
 }
 
 .character-stats {

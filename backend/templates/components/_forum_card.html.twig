@@ -1,5 +1,16 @@
 {% if forum is defined %}
 <div class="forum-card hover-effect hover-lift {% if forum.isImportant() %}important-theme hover-glow-important{% elseif forum.isRoleplay() %}rp-theme hover-glow-rp{% else %}hrp-theme hover-glow-hrp{% endif %} border-subtle" data-forum-id="{{ forum.id }}" {% if forum.parent is defined and forum.parent %}data-parent-id="{{ forum.parent.id }}"{% endif %}>
+    <!-- Badge de type de forum -->
+    <div class="forum-badge {% if forum.isImportant() %}important{% elseif forum.isRoleplay() %}roleplay{% else %}hrp{% endif %}">
+        {% if forum.isImportant() %}
+            <i class="fas fa-thumbtack me-1"></i>Important
+        {% elseif forum.isRoleplay() %}
+            <i class="fa-solid fa-dice-d20 me-1"></i>RP
+        {% else %}
+            <i class="fas fa-comments me-1"></i>HRP
+        {% endif %}
+    </div>
+
     <div class="forum-icon {% if forum.isImportant() %}important-color{% elseif forum.isRoleplay() %}rp-color{% else %}hrp-color{% endif %}">
         {% if forum.heroLogo %}
             <img src="{{ forum.heroLogo }}" alt="{{ forum.name }}">
@@ -7,6 +18,7 @@
             <i class="fas fa-{% if forum.isImportant() %}thumbtack{% elseif forum.isRoleplay() %}dice-d20{% else %}comments{% endif %}"></i>
         {% endif %}
     </div>
+    
     <div class="forum-info">
         <h3 class="forum-title">
             {% if universeSlug is defined %}
@@ -18,10 +30,8 @@
             {% else %}
                 {{ forum.name }}
             {% endif %}
-            <span class="badge {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %} ms-2">
-                {% if forum.isImportant() %}Important{% elseif forum.isRoleplay() %}RP{% else %}HRP{% endif %}
-            </span>
         </h3>
+        
         <p class="forum-description">{{ forum.description|striptags|slice(0, 120) }}{% if forum.description|length > 120 %}...{% endif %}</p>
         
         {% set subforumCount = (forum.stats is defined and forum.stats is not null and attribute(forum.stats, 'subforum_count') is defined) ? forum.stats.subforum_count : (forum.tempSubforums is defined ? forum.tempSubforums|length : (forum.subforums is defined ? forum.subforums|length : 0)) %}
@@ -71,23 +81,15 @@
             </div>
         {% endif %}
         
-        {% if forum.lastPostInfo %}
+        {% if forum.lastPostInfo is defined and forum.lastPostInfo is not null %}
             <div class="forum-last-post">
-                <div class="d-flex align-items-start gap-2">
-                    {# Indicateur de messages non lus - invisible par défaut, sera affiché par JavaScript #}
-                    <div class="unread-indicator last-post-icon" style="display: none;" title="Contient des messages non lus">
-                        <i class="fas fa-circle-exclamation pulse-animation"></i>
-                        <span class="unread-count"></span>
+                <div class="d-flex align-items-center">
+                    <div class="last-post-icon me-2 {% if forum.isImportant() %}bg-important{% elseif forum.isRoleplay() %}bg-roleplay{% else %}bg-hrp{% endif %}">
+                        <i class="fas fa-{% if forum.isImportant() %}exclamation{% elseif forum.isRoleplay() %}dice-d20{% else %}comment{% endif %}"></i>
                     </div>
-                    
-                    {# Icône de dernier message - sera masquée par JavaScript quand l'indicateur est visible #}
-                    <div class="last-post-icon last-clock-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    
-                    <div class="last-post-details">
+                    <div class="last-post-details flex-grow-1">
                         <small class="d-block">
-                            <strong>Dernière activité :</strong> 
+                            <strong><i class="fas fa-clock me-1"></i>Dernière activité :</strong> 
                             {% if universeSlug is defined %}
                                 <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': forum.lastPostInfo.threadId}) }}#post-{{ forum.lastPostInfo.postId }}" class="link-light">
                                     {{ forum.lastPostInfo.date|date('d/m/Y H:i') }}
@@ -105,7 +107,7 @@
                             {% endif %}
                         </small>
                         <small class="d-block text-truncate" style="max-width: 100%;">
-                            <strong>Dans :</strong>
+                            <strong><i class="fas fa-comment-dots me-1"></i>Dans :</strong>
                             {% if universeSlug is defined %}
                                 <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': forum.lastPostInfo.threadId}) }}" class="link-light">
                                     {{ forum.lastPostInfo.threadTitle }}
@@ -123,7 +125,7 @@
                             {% endif %}
                         </small>
                         <small class="d-block">
-                            <strong>Par :</strong>
+                            <strong><i class="fas fa-user me-1"></i>Par :</strong>
                             {% if forum.lastPostInfo.character %}
                                 <span class="character-name">{{ forum.lastPostInfo.character }}</span>
                             {% else %}
@@ -135,21 +137,22 @@
             </div>
         {% endif %}
     </div>
+    
     <div class="forum-action">
         {% if universeSlug is defined %}
-            <a href="{{ path('app_forum_show', {'universeSlug': universeSlug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+            <a href="{{ path('app_forum_show', {'universeSlug': universeSlug, 'id': forum.id}) }}" class="btn" style="background: linear-gradient(135deg, {% if forum.isImportant() %}var(--important-primary), var(--important-accent){% elseif forum.isRoleplay() %}var(--roleplay-primary), var(--roleplay-secondary){% else %}var(--hrp-primary), var(--hrp-secondary){% endif %}); color: white; border: none;">
                 <i class="fas fa-arrow-right"></i>
             </a>
         {% elseif forum.universe is defined and forum.universe %}
-            <a href="{{ path('app_forum_show', {'universeSlug': forum.universe.slug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+            <a href="{{ path('app_forum_show', {'universeSlug': forum.universe.slug, 'id': forum.id}) }}" class="btn" style="background: linear-gradient(135deg, {% if forum.isImportant() %}var(--important-primary), var(--important-accent){% elseif forum.isRoleplay() %}var(--roleplay-primary), var(--roleplay-secondary){% else %}var(--hrp-primary), var(--hrp-secondary){% endif %}); color: white; border: none;">
                 <i class="fas fa-arrow-right"></i>
             </a>
         {% elseif forum.elseworld is defined and forum.elseworld and forum.elseworld.parentUniverse %}
-            <a href="{{ path('app_forum_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.id}) }}" class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;">
+            <a href="{{ path('app_forum_show', {'universeSlug': forum.elseworld.parentUniverse.slug, 'id': forum.id}) }}" class="btn" style="background: linear-gradient(135deg, {% if forum.isImportant() %}var(--important-primary), var(--important-accent){% elseif forum.isRoleplay() %}var(--roleplay-primary), var(--roleplay-secondary){% else %}var(--hrp-primary), var(--hrp-secondary){% endif %}); color: white; border: none;">
                 <i class="fas fa-arrow-right"></i>
             </a>
         {% else %}
-            <button class="btn" style="background-color: {% if forum.isImportant() %}var(--important-primary){% elseif forum.isRoleplay() %}var(--roleplay-primary){% else %}var(--hrp-primary){% endif %}; color: white;" disabled>
+            <button class="btn" style="background: linear-gradient(135deg, {% if forum.isImportant() %}var(--important-primary), var(--important-accent){% elseif forum.isRoleplay() %}var(--roleplay-primary), var(--roleplay-secondary){% else %}var(--hrp-primary), var(--hrp-secondary){% endif %}); color: white; border: none;" disabled>
                 <i class="fas fa-arrow-right"></i>
             </button>
         {% endif %}
