@@ -1,0 +1,107 @@
+{# Template partiel pour le formulaire de réponse HRP avec style modernisé #}
+<div class="reply-form">
+    {# Accordéon principal avec style HRP #}
+    <div class="reply-form__accordion">
+        <button class="reply-form__header reply-form__header--hrp" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#replyFormAccordion" 
+                aria-expanded="false">
+            <span class="reply-form__title">
+                <i class="fas fa-comments me-2"></i>
+                Répondre à cette discussion HRP
+            </span>
+            <i class="fas fa-chevron-down reply-form__icon reply-form__icon--hrp"></i>
+        </button>
+        
+        <div id="replyFormAccordion" class="collapse">
+            <div class="reply-form__content">
+                {{ form_start(form, {'attr': {'class': 'reply-form__form', 'id': 'hrp-reply-form'}}) }}
+                    
+                    {# Message HRP direct #}
+                    <div class="hrp-editor">
+                        <div class="hrp-editor__header">
+                            <h5 class="hrp-editor__title">
+                                <i class="fas fa-keyboard me-2"></i>
+                                Votre message HRP
+                            </h5>
+                            <div class="hrp-editor__info">
+                                <span class="hrp-editor__badge">
+                                    <i class="fas fa-users me-1"></i>
+                                    Hors Roleplay
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="hrp-editor__content">
+                            {{ form_widget(form.content, {'attr': {
+                                'class': 'hrp-editor__textarea',
+                                'rows': '8',
+                                'placeholder': 'Votre message hors-jeu pour discuter avec les autres joueurs...',
+                                'id': 'hrp-content'
+                            }}) }}
+                            {{ form_errors(form.content) }}
+                        </div>
+                        
+                        <div class="hrp-editor__help">
+                            <div class="hrp-help__item">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span>Ce message sera visible par tous les participants de la discussion</span>
+                            </div>
+                            <div class="hrp-help__item">
+                                <i class="fas fa-comment-dots me-2"></i>
+                                <span>Utilisez cette section pour organiser le RP, poser des questions ou discuter</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Actions #}
+                    <div class="hrp-actions">
+                        <div class="hrp-actions__buttons">
+                            <button type="submit" name="publish" class="hrp-actions__btn hrp-actions__btn--publish">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Publier le message
+                            </button>
+                            <button type="submit" name="save_draft" class="hrp-actions__btn hrp-actions__btn--draft">
+                                <i class="fas fa-save me-2"></i>
+                                Sauvegarder en brouillon
+                            </button>
+                        </div>
+                        
+                        <button type="button" class="hrp-actions__btn hrp-actions__btn--reset" onclick="resetHrpForm()">
+                            <i class="fas fa-undo me-2"></i>
+                            Effacer
+                        </button>
+                    </div>
+                    
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation de l'accordéon
+    const accordion = document.getElementById('replyFormAccordion');
+    if (accordion) {
+        accordion.addEventListener('shown.bs.collapse', function() {
+            const textarea = document.getElementById('hrp-content');
+            if (textarea) {
+                textarea.focus();
+            }
+        });
+    }
+});
+
+// Fonction pour réinitialiser le formulaire HRP
+function resetHrpForm() {
+    if (confirm('Êtes-vous sûr de vouloir effacer votre message ? Le contenu sera perdu.')) {
+        document.getElementById('hrp-reply-form').reset();
+        const textarea = document.getElementById('hrp-content');
+        if (textarea) {
+            textarea.focus();
+        }
+    }
+}
+</script> 

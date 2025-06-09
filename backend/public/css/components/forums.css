@@ -376,9 +376,6 @@
     transition: transform 0.3s ease;
 }
 
-.hover-lift:hover {
-    transform: translateY(-3px);
-}
 
 /* Effet de lueur */
 .hover-glow {
@@ -960,7 +957,6 @@
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.7;
-    animation: float 3s ease-in-out infinite;
     position: relative;
     z-index: 2;
     color: var(--primary-medium);
@@ -1363,7 +1359,6 @@
 }
 
 .action-buttons .btn:hover {
-    transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
@@ -1382,18 +1377,6 @@
     overflow: hidden;
 }
 
-.elseworld-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.02) 0%, 
-        transparent 50%);
-    z-index: 1;
-}
 
 .elseworld-header {
     position: relative;
@@ -1711,7 +1694,7 @@
 }
 
 .forum-stats span:hover {
-    transform: translateY(-1px);
+
     color: var(--text-white);
 }
 

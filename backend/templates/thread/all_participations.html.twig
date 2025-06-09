@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ title }} - DC Earth{% endblock %}
+{% block title %}Toutes mes participations - DC Earth{% endblock %}
 
 {% block body %}
 <div class="container my-4">
@@ -15,54 +15,25 @@
                 </div>
                 <div class="card-body">
                     <div class="filter-nav flex-column">
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'all'}) }}" 
-                           class="filter-item {% if type == 'all' %}active{% endif %}">
-                            <i class="fas fa-list me-2"></i>Toutes les discussions
-                        </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'participating'}) }}" 
-                           class="filter-item {% if type == 'participating' %}active{% endif %}">
-                            <i class="fas fa-user-friends me-2"></i>Mes participations
-                        </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'created'}) }}" 
-                           class="filter-item {% if type == 'created' %}active{% endif %}">
-                            <i class="fas fa-pencil-alt me-2"></i>Mes créations
-                        </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': 'recent'}) }}" 
-                           class="filter-item {% if type == 'recent' %}active{% endif %}">
-                            <i class="fas fa-clock me-2"></i>Discussions récentes
-                        </a>
-                    </div>
-
-                    <hr>
-
-                    <h4 class="h6 mb-2">État</h4>
-                    <div class="filter-nav flex-column">
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type}) }}" 
+                        <a href="{{ path('app_all_my_participations') }}" 
                            class="filter-item {% if status is empty %}active{% endif %}">
-                            <i class="fas fa-globe me-2"></i>Tous
+                            <i class="fas fa-globe me-2"></i>Toutes
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'open'}) }}" 
+                        <a href="{{ path('app_all_my_participations', {'status': 'open'}) }}" 
                            class="filter-item {% if status == 'open' %}active{% endif %}">
                             <i class="fas fa-door-open me-2"></i>Ouvertes
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'closed'}) }}" 
+                        <a href="{{ path('app_all_my_participations', {'status': 'closed'}) }}" 
                            class="filter-item {% if status == 'closed' %}active{% endif %}">
                             <i class="fas fa-lock me-2"></i>Fermées
                         </a>
-                        <a href="{{ path('app_roleplay_threads_filter', {'type': type, 'status': 'archived'}) }}" 
+                        <a href="{{ path('app_all_my_participations', {'status': 'archived'}) }}" 
                            class="filter-item {% if status == 'archived' %}active{% endif %}">
                             <i class="fas fa-archive me-2"></i>Archivées
                         </a>
                     </div>
                 </div>
             </div>
-
-            {% if is_granted('ROLE_USER') %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <small>Pour créer une discussion, rendez-vous dans l'univers de votre choix.</small>
-                </div>
-            {% endif %}
         </div>
 
         {# Liste des discussions #}
@@ -72,15 +43,7 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <h1 class="h3 mb-0">{{ title }}</h1>
-                        </div>
-                        <div class="col-auto">
-                            <form class="d-flex gap-2" action="{{ path('app_roleplay_search') }}" method="get">
-                                <input type="text" name="q" class="form-control form-control-sm" 
-                                       placeholder="Rechercher..." value="{{ app.request.query.get('q') }}">
-                                <button type="submit" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </form>
+                            <small class="text-muted">{{ threads|length }} participation{% if threads|length > 1 %}s{% endif %} trouvée{% if threads|length > 1 %}s{% endif %}</small>
                         </div>
                     </div>
                 </div>
@@ -88,7 +51,7 @@
                 <div class="list-group list-group-flush">
                     {% for thread in threads %}
                         <a href="{{ path('app_thread_show', {'universeSlug': thread.forum.universe ? thread.forum.universe.slug : thread.forum.elseworld.parentUniverse.slug, 'id': thread.id}) }}" 
-                           class="list-group-item list-group-item-action p-3 {% if thread.sticky %}{% endif %}">
+                           class="list-group-item list-group-item-action p-3">
                             <div class="d-flex w-100 justify-content-between align-items-start">
                                 <div class="thread-main flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -98,15 +61,11 @@
                                         
                                         <h5 class="mb-0">{{ thread.title }}</h5>
 
-                                        {% if thread.type == 'roleplay' %}
-                                            <span class="badge bg-roleplay">RP</span>
-                                        {% else %}
-                                            <span class="badge bg-hrp">HRP</span>
-                                        {% endif %}
+                                        <span class="badge bg-roleplay">RP</span>
 
                                         {% if thread.status != 'open' %}
                                             <span class="badge bg-secondary">
-                                                <i class="fas fa-lock me-1"></i>Fermé
+                                                <i class="fas fa-lock me-1"></i>{{ thread.status|title }}
                                             </span>
                                         {% endif %}
                                     </div>
@@ -118,8 +77,8 @@
                                     <div class="thread-meta small text-muted">
                                         <span class="me-3">
                                             <i class="fas fa-user me-1"></i>
-                                            {% if thread.type == 'roleplay' and thread.characterCreator %}
-                                                <span class="thrad-filter--character-name">{{ thread.characterCreator.name }}</span>
+                                            {% if thread.characterCreator %}
+                                                <span class="character-name">{{ thread.characterCreator.name }}</span>
                                             {% else %}
                                                 {{ thread.author.pseudo }}
                                             {% endif %}
@@ -157,18 +116,16 @@
                                         </span>
                                     </div>
 
-                                    {% if thread.type == 'roleplay' %}
-                                        <div>
-                                            <span class="badge bg-light text-dark" title="Participants">
-                                                <i class="fas fa-users me-1"></i>
-                                                {% if thread.maxParticipants %}
-                                                    {{ thread.participants|length }}/{{ thread.maxParticipants }}
-                                                {% else %}
-                                                    {{ thread.participants|length }}
-                                                {% endif %}
-                                            </span>
-                                        </div>
-                                    {% endif %}
+                                    <div>
+                                        <span class="badge bg-light text-dark" title="Participants">
+                                            <i class="fas fa-users me-1"></i>
+                                            {% if thread.maxParticipants %}
+                                                {{ thread.participants|length }}/{{ thread.maxParticipants }}
+                                            {% else %}
+                                                {{ thread.participants|length }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </a>
@@ -176,24 +133,14 @@
                         <div class="text-center py-5">
                             <div class="empty-state">
                                 <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                                <h3>Aucune discussion trouvée</h3>
+                                <h3>Aucune participation trouvée</h3>
                                 <p class="text-muted mb-3">
-                                    {% if type == 'participating' %}
-                                        Vous ne participez à aucune discussion
-                                        {% if status %}avec le statut "{{ status }}"{% endif %}.
-                                    {% elseif type == 'created' %}
-                                        Vous n'avez créé aucune discussion
-                                        {% if status %}avec le statut "{{ status }}"{% endif %}.
-                                    {% else %}
-                                        Aucune discussion ne correspond aux critères sélectionnés.
-                                    {% endif %}
+                                    Vous ne participez à aucune discussion
+                                    {% if status %}avec le statut "{{ status }}"{% endif %}.
                                 </p>
-
-                                {% if is_granted('ROLE_USER') %}
-                                    <p class="text-muted">
-                                        Pour créer une nouvelle discussion, rendez-vous dans l'univers de votre choix.
-                                    </p>
-                                {% endif %}
+                                <p class="text-muted">
+                                    <strong>Debug info:</strong> Cette page montre toutes vos participations dans tous les univers.
+                                </p>
                             </div>
                         </div>
                     {% endfor %}
@@ -205,27 +152,31 @@
 
 <style>
 .h3, .h5 {
-    color:rgb(0, 0, 0);
+    color: rgb(0, 0, 0);
 }
 
 .character-name {
     color: var(--roleplay-primary);
     font-weight: 600;
 }
+
 .thread-stats {
     min-width: 100px;
 }
+
 .empty-state {
-    color:rgb(188, 194, 199);
+    color: rgb(188, 194, 199);
 }
+
 .filter-nav {
     display: flex;
     gap: 0.5rem;
 }
+
 .filter-item {
     display: block;
     padding: 0.75rem 1rem;
-    color:rgb(179, 179, 179);
+    color: rgb(179, 179, 179);
     text-decoration: none;
     border-radius: 0.375rem;
     font-weight: 500;
@@ -233,24 +184,24 @@
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 0.25rem;
 }
+
 .filter-item.active {
     background-color: var(--roleplay-primary);
     color: white;
     border-left-color: var(--roleplay-accent);
     box-shadow: 0 2px 8px rgba(4, 118, 242, 0.3);
 }
+
 .filter-item:not(.active):hover {
     background-color: rgba(79, 156, 247, 0.1);
     color: var(--roleplay-primary);
     border-left-color: var(--roleplay-light);
 }
+
 .filter-item i {
     width: 1.25rem;
     text-align: center;
     transition: transform 0.2s ease;
 }
-.filter-item:hover i {
-    
-}
 </style>
-{% endblock %}
+{% endblock %} 

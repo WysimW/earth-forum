@@ -1,40 +1,159 @@
-/* Structure de base des posts */
+/* === POSTS MODERNES - AMÉLIORATIONS GRAPHIQUES === */
+
+/* Structure de base des posts avec glassmorphism */
 .post-container {
     display: flex;
     margin-bottom: var(--spacing-xl);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
-    background-color: rgba(12, 45, 72, 0.6);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: perspective(1000px) rotateX(0deg);
+    animation: slideInUp 0.6s ease-out forwards;
 }
 
-/* Variantes de posts selon le type (RP/HRP) */
+@keyframes slideInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) perspective(1000px) rotateX(5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) perspective(1000px) rotateX(0deg);
+    }
+}
+
+.post-container:hover {
+    transform: translateY(-3px) perspective(1000px) rotateX(1deg);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+/* Variantes de posts selon le type (RP/HRP) avec gradients modernes */
 .post-container.roleplay-theme {
-    background-color: var(--roleplay-transparent);
-    border: var(--border-width-sm) var(--roleplay-transparent);
-    box-shadow: 0 0 15px var(--roleplay-glow);
+    background: linear-gradient(135deg, 
+        rgba(var(--roleplay-dark-rgb), 0.3) 0%,
+        rgba(var(--roleplay-dark-rgb), 0.1) 50%,
+        rgba(var(--roleplay-dark-rgb), 0.05) 100%);
+    border: 1px solid rgba(var(--roleplay-primary-rgb), 0.2);
+    box-shadow: 
+        0 8px 32px rgba(var(--roleplay-primary-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.post-container.roleplay-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(var(--roleplay-primary-rgb), 0.05) 0%, 
+        transparent 50%,
+        rgba(var(--roleplay-primary-rgb), 0.02) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.post-container.roleplay-theme:hover {
+    box-shadow: 
+        0 20px 40px rgba(var(--roleplay-primary-rgb), 0.2),
+        0 0 30px rgba(var(--roleplay-primary-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(var(--roleplay-primary-rgb), 0.4);
 }
 
 .post-container.hrp-theme {
-    background-color: rgba(44, 110, 73, 0.15);
-    border: var(--border-width-sm) var(--hrp-transparent);
-    box-shadow: 0 0 15px var(--hrp-hover);
+    background: linear-gradient(135deg, 
+        rgba(var(--hrp-dark-rgb), 0.3) 0%,
+        rgba(var(--hrp-dark-rgb), 0.1) 50%,
+        rgba(var(--hrp-dark-rgb), 0.05) 100%);
+    border: 1px solid rgba(var(--hrp-primary-rgb), 0.2);
+    box-shadow: 
+        0 8px 32px rgba(var(--hrp-primary-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.post-container.hrp-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(var(--hrp-primary-rgb), 0.05) 0%, 
+        transparent 50%,
+        rgba(var(--hrp-primary-rgb), 0.02) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.post-container.hrp-theme:hover {
+    box-shadow: 
+        0 20px 40px rgba(var(--hrp-primary-rgb), 0.2),
+        0 0 30px rgba(var(--hrp-primary-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(var(--hrp-primary-rgb), 0.4);
 }
 
 .post-container.important-theme {
-    background-color: var(--important-transparent);
-    border: var(--border-width-sm) solid rgba(156, 85, 211, 0.2);
-    box-shadow: 0 0 15px var(--important-glow);
+    background: linear-gradient(135deg, 
+        rgba(var(--important-dark-rgb), 0.3) 0%,
+        rgba(var(--important-dark-rgb), 0.1) 50%,
+        rgba(var(--important-dark-rgb), 0.05) 100%);
+    border: 1px solid rgba(var(--important-primary-rgb), 0.2);
+    box-shadow: 
+        0 8px 32px rgba(var(--important-primary-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+.post-container.important-theme:hover {
+    box-shadow: 
+        0 20px 40px rgba(var(--important-primary-rgb), 0.2),
+        0 0 30px rgba(var(--important-primary-rgb), 0.1);
+    border-color: rgba(var(--important-primary-rgb), 0.4);
+}
 
+/* Badge de brouillon avec animation */
+.draft-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    animation: pulse 2s infinite;
+}
 
-/* Noms et avatars - classes génériques */
+.draft-badge .badge {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+/* Noms et avatars - améliorations modernes */
 .name-label {
     font-family: var(--font-title);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     margin-bottom: var(--spacing-xs);
+    background: linear-gradient(135deg, var(--text-white), rgba(255, 255, 255, 0.8));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .avatar-container {
@@ -43,44 +162,104 @@
     border-radius: var(--border-radius-circle);
     margin: 0 auto var(--spacing-md);
     overflow: hidden;
-    background-color: var(--deep-black);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.avatar-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: var(--border-radius-circle);
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    z-index: -1;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.avatar-container:hover::before {
+    opacity: 1;
+}
+
+.avatar-container:hover {
+    transform: scale(1.05) rotateZ(2deg);
 }
 
 .avatar-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-/* Styles spécifiques selon le type */
+.avatar-container:hover img {
+    transform: scale(1.1);
+}
+
+/* Styles spécifiques selon le type avec gradients */
 .roleplay-theme .name-label {
-    color: var(--roleplay-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .hrp-theme .name-label {
-    color: var(--hrp-accent);
+    background: linear-gradient(135deg, var(--hrp-accent), rgba(var(--hrp-accent-rgb), 0.8));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .roleplay-theme .avatar-container {
-    border: var(--border-width-lg) solid var(--roleplay-accent);
-    box-shadow: 0 0 15px var(--roleplay-glow);
+    border: 3px solid transparent;
+    background: linear-gradient(var(--deep-black), var(--deep-black)) padding-box,
+                linear-gradient(45deg, var(--roleplay-accent), rgba(var(--roleplay-accent-rgb), 0.5)) border-box;
+    box-shadow: 
+        0 0 20px rgba(var(--roleplay-primary-rgb), 0.3),
+        inset 0 0 20px rgba(var(--roleplay-primary-rgb), 0.1);
 }
 
 .hrp-theme .avatar-container {
-    border: var(--border-width-lg) solid var(--hrp-accent);
-    box-shadow: 0 0 15px var(--hrp-glow);
+    border: 3px solid transparent;
+    background: linear-gradient(var(--deep-black), var(--deep-black)) padding-box,
+                linear-gradient(45deg, var(--hrp-accent), rgba(var(--hrp-accent-rgb), 0.5)) border-box;
+    box-shadow: 
+        0 0 20px rgba(var(--hrp-primary-rgb), 0.3),
+        inset 0 0 20px rgba(var(--hrp-primary-rgb), 0.1);
 }
 
-/* Sidebar du post */
+/* Sidebar du post avec glassmorphism */
 .post-sidebar {
     width: var(--sidebar-width);
     padding: var(--spacing-xl);
-    background-color: rgba(10, 10, 10, 0.3);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.08) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
     text-align: center;
-    border-right: 1px solid rgba(220, 225, 227, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 2;
 }
 
-/* Avatar par défaut */
+.post-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.02) 0%, 
+        transparent 50%,
+        rgba(0, 0, 0, 0.1) 100%);
+    pointer-events: none;
+}
+
+/* Avatar par défaut avec animations */
 .default-avatar {
     width: 100%;
     height: 100%;
@@ -88,56 +267,144 @@
     justify-content: center;
     align-items: center;
     font-size: 2.5rem;
-    background-color: rgba(10, 10, 10, 0.5);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.default-avatar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: transform 0.6s ease;
+    opacity: 0;
+}
+
+.default-avatar:hover::before {
+    transform: rotate(45deg) translateX(100%);
+    opacity: 1;
 }
 
 .roleplay-theme .default-avatar {
     color: var(--roleplay-accent);
+    text-shadow: 0 0 10px rgba(var(--roleplay-primary-rgb), 0.5);
 }
 
 .hrp-theme .default-avatar {
     color: var(--hrp-accent);
+    text-shadow: 0 0 10px rgba(var(--hrp-primary-rgb), 0.5);
 }
 
-/* Informations du personnage/utilisateur */
-.character-info,
-.user-info {
+/* Informations du personnage/utilisateur avec animations */
+.post-character-info,
+.post-user-info {
     margin-bottom: var(--spacing-md);
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
 }
 
 .character-alias {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-bottom: var(--spacing-sm);
-    color: var(--light-gray);
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+    transition: color 0.3s ease;
 }
 
-.player-name {
-    font-size: 0.8rem;
-    color: var(--light-gray);
-    opacity: var(--opacity-light);
+.character-alias:hover {
+    color: rgba(255, 255, 255, 0.95);
 }
 
+.player-name,
 .player-since {
-    font-size: 0.8rem;
-    color: var(--light-gray);
-    opacity: var(--opacity-light);
-}
-
-/* Informations des PNJ */
-.npcs-info {
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.npcs-label {
     font-size: 0.85rem;
-    color: var(--light-gray);
-    margin-bottom: var(--spacing-xs);
-    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease;
+    position: relative;
 }
 
-.npcs-list {
+.player-name:hover,
+.player-since:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Informations des PNJ avec améliorations */
+.post-npcs-info {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.post-npcs-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.post-npcs-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+    font-weight: 500;
+}
+
+.post-npcs-list {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
@@ -147,23 +414,56 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-xs);
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: var(--border-radius-sm);
-    transition: background-color 0.2s ease;
+    padding: var(--spacing-sm);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    border-radius: var(--border-radius-md);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.npc-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.npc-item:hover::before {
+    left: 100%;
 }
 
 .npc-item:hover {
-    background-color: rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    transform: translateX(5px);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .npc-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--border-radius-circle);
     overflow: hidden;
-    background-color: var(--deep-black);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.npc-item:hover .npc-avatar {
+    transform: scale(1.1) rotateZ(5deg);
 }
 
 .npc-avatar img {
@@ -178,49 +478,128 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1rem;
-    color: var(--light-gray);
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .npc-name {
     font-size: 0.9rem;
-    color: var(--light-gray);
+    color: rgba(255, 255, 255, 0.8);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
-/* Styles spécifiques selon le thème */
+.npc-item:hover .npc-name {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* Styles spécifiques selon le thème pour les NPCs */
 .roleplay-theme .npc-item {
-    border-left: 3px solid var(--roleplay-accent);
+    border-left: 3px solid rgba(var(--roleplay-primary-rgb), 0.6);
+    background: linear-gradient(135deg, 
+        rgba(var(--roleplay-primary-rgb), 0.08) 0%, 
+        rgba(var(--roleplay-primary-rgb), 0.02) 100%);
+}
+
+.roleplay-theme .npc-item:hover {
+    border-left-color: var(--roleplay-accent);
+    box-shadow: 0 4px 15px rgba(var(--roleplay-primary-rgb), 0.2);
 }
 
 .hrp-theme .npc-item {
-    border-left: 3px solid var(--hrp-accent);
+    border-left: 3px solid rgba(var(--hrp-primary-rgb), 0.6);
+    background: linear-gradient(135deg, 
+        rgba(var(--hrp-primary-rgb), 0.08) 0%, 
+        rgba(var(--hrp-primary-rgb), 0.02) 100%);
 }
 
-/* Contenu principal du post */
+.hrp-theme .npc-item:hover {
+    border-left-color: var(--hrp-accent);
+    box-shadow: 0 4px 15px rgba(var(--hrp-primary-rgb), 0.2);
+}
+
+/* Contenu principal du post avec améliorations */
 .post-main {
     flex: 1;
     padding: var(--spacing-xl);
     position: relative;
-    min-width: 0; /* Pour éviter le débordement du texte */
+    min-width: 0;
+    z-index: 2;
 }
 
 .post-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: var(--border-width-sm) solid rgba(255, 255, 255, 0.1);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.post-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 30%;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        rgba(var(--primary-light-rgb), 0.5), 
+        transparent);
+    transition: width 0.3s ease;
+}
+
+.post-container:hover .post-header::after {
+    width: 60%;
 }
 
 .post-meta {
     display: flex;
     gap: var(--spacing-md);
-    font-size: 0.85rem;
-    color: var(--light-gray);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.post-meta span {
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.post-meta span:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.post-meta i {
+    margin-right: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.post-meta span:hover i {
+    transform: scale(1.1);
+}
+
+.post-edited-indicator {
+    margin-left: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease;
+}
+
+.post-edited-indicator:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.post-edited-indicator i {
+    font-size: 0.75rem;
+    opacity: 0.7;
 }
 
 .post-actions {
@@ -228,118 +607,1392 @@
     gap: var(--spacing-xs);
 }
 
+.post-actions .dropdown-toggle {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: var(--border-radius-md);
+    padding: 0.5rem 0.75rem;
+}
+
+.post-actions .dropdown-toggle:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.15) 0%, 
+        rgba(255, 255, 255, 0.1) 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenu du post avec améliorations typographiques */
 .post-content {
     line-height: 1.8;
     color: var(--text-white);
     word-wrap: break-word;
     overflow-wrap: break-word;
+    position: relative;
+    padding: var(--spacing-md) 0;
 }
 
 .roleplay-theme .post-content {
     font-family: var(--font-main);
+    position: relative;
 }
 
-.post-edited {
-    margin-top: var(--spacing-md);
-    text-align: right;
-    font-size: 0.85rem;
-    color: var(--light-gray);
-    font-style: italic;
+.roleplay-theme .post-content::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, 
+        var(--roleplay-accent), 
+        rgba(var(--roleplay-accent-rgb), 0.3),
+        transparent);
+    border-radius: 2px;
 }
 
-/* Post en surbrillance */
+.post-content p {
+    margin-bottom: 1rem;
+    transition: opacity 0.3s ease;
+}
+
+.post-content:hover p {
+    opacity: 0.95;
+}
+
+
+
+/* Post en surbrillance avec animation moderne */
 .highlighted-post {
     position: relative;
-    animation: highlight-fade 3s forwards;
+    animation: highlightPulse 2s ease-in-out;
 }
 
-@keyframes highlight-fade {
-    0% { 
-        box-shadow: inset 0 0 0 3px var(--primary-medium);
-        background-color: rgba(20, 93, 160, 0.2);
+@keyframes highlightPulse {
+    0%, 100% { 
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.2),
+            inset 0 0 0 2px transparent;
     }
-    100% { 
-        box-shadow: inset 0 0 0 0 transparent;
-        background-color: transparent;
+    50% { 
+        box-shadow: 
+            0 12px 40px rgba(var(--primary-medium-rgb), 0.4),
+            inset 0 0 0 2px rgba(var(--primary-medium-rgb), 0.6);
+        transform: scale(1.02);
     }
 }
 
-/* Threads */
-.thread-card {
+/* Animation d'apparition séquentielle des posts */
+.post-container:nth-child(1) { animation-delay: 0s; }
+.post-container:nth-child(2) { animation-delay: 0.1s; }
+.post-container:nth-child(3) { animation-delay: 0.2s; }
+.post-container:nth-child(4) { animation-delay: 0.3s; }
+.post-container:nth-child(5) { animation-delay: 0.4s; }
+.post-container:nth-child(n+6) { animation-delay: 0.5s; }
+
+/* Thread header amélioré */
+.thread-header {
     position: relative;
-    margin-bottom: var(--spacing-lg);
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.08) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out forwards;
 }
 
-.thread-status {
+.thread-header::before {
+    content: '';
     position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-sm);
-    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.02) 0%, 
+        transparent 50%);
+    pointer-events: none;
+}
+
+.thread-header.roleplay-bg {
+    background: linear-gradient(135deg, 
+        rgba(var(--roleplay-dark-rgb), 0.4) 0%,
+        rgba(var(--roleplay-dark-rgb), 0.1) 50%,
+        rgba(var(--roleplay-dark-rgb), 0.05) 100%);
+    border-color: rgba(var(--roleplay-primary-rgb), 0.3);
+}
+
+.thread-header.hrp-bg {
+    background: linear-gradient(135deg, 
+        rgba(var(--hrp-dark-rgb), 0.4) 0%,
+        rgba(var(--hrp-dark-rgb), 0.1) 50%,
+        rgba(var(--hrp-dark-rgb), 0.05) 100%);
+    border-color: rgba(var(--hrp-primary-rgb), 0.3);
 }
 
 .thread-title {
     font-family: var(--font-title);
-    font-size: 1.5rem;
+    font-size: 2rem;
     margin-bottom: var(--spacing-sm);
     letter-spacing: 1px;
+    background: linear-gradient(135deg, var(--text-white), rgba(255, 255, 255, 0.8));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
 }
 
-.thread-universe,
-.thread-location {
-    font-family: var(--font-special);
-    font-size: 0.85rem;
-    color: var(--primary-light);
-    margin-bottom: var(--spacing-xs);
-}
-
-.thread-desc {
-    color: var(--light-gray);
-    margin-bottom: var(--spacing-md);
-    max-height: 100px;
-    overflow: hidden;
-}
-
-.thread-meta {
+.thread-badges {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    padding-top: var(--spacing-md);
-    border-top: var(--border-width-sm) solid rgba(220, 225, 227, 0.1);
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.thread-author {
+.thread-badges .badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
     display: flex;
     align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.15), 
+        rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.thread-badges .badge:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.thread-badges .bg-roleplay {
+    background: linear-gradient(135deg, var(--roleplay-accent), rgba(var(--roleplay-accent-rgb), 0.8)) !important;
+    color: white !important;
+}
+
+.thread-badges .bg-hrp {
+    background: linear-gradient(135deg, var(--hrp-accent), rgba(var(--hrp-accent-rgb), 0.8)) !important;
+    color: white !important;
+}
+
+/* Améliorations pour les métadonnées du thread */
+.thread-metadata {
+    position: relative;
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.thread-author-info {
+    animation: fadeInLeft 0.8s ease-out 0.2s backwards;
 }
 
 .thread-author-avatar {
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    height: 50px;
     border-radius: var(--border-radius-circle);
-    margin-right: var(--spacing-sm);
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.thread-author-avatar:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+.thread-author-avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--border-radius-circle);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.thread-author-avatar-placeholder:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.thread-author-details {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.thread-show--character-name {
+    font-weight: 600;
+    font-family: var(--font-title);
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.thread-author-name {
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.thread-date {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.thread-header-stats {
+    animation: fadeInRight 0.8s ease-out 0.2s backwards;
+}
+
+.thread-stat-item {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    gap: 0.25rem;
+}
+
+.thread-stat-item:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+
+}
+
+.thread-stat-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-white);
+}
+
+.thread-stat-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 0.25rem;
+}
+
+.thread-location {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeInUp 0.8s ease-out 0.3s backwards;
+}
+
+.location-name {
+    font-weight: 500;
+    position: relative;
+}
+
+.location-name::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-light), transparent);
+    transition: width 0.3s ease;
+}
+
+.thread-location:hover .location-name::after {
+    width: 100%;
+}
+
+/* Détails du thread améliorés */
+.thread-details {
+    margin-top: 1rem;
+    animation: fadeInUp 0.8s ease-out 0.4s backwards;
+}
+
+.detail-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.faction-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.faction-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    background: linear-gradient(135deg, 
+        rgba(var(--primary-light-rgb), 0.2) 0%, 
+        rgba(var(--primary-light-rgb), 0.1) 100%);
+    border: 1px solid rgba(var(--primary-light-rgb), 0.3);
+    border-radius: 20px;
+    color: var(--primary-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
     overflow: hidden;
 }
 
-.thread-author-avatar img {
+.faction-tag::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.faction-tag:hover::before {
+    left: 100%;
+}
+
+.faction-tag:hover {
+    background: linear-gradient(135deg, 
+        rgba(var(--primary-light-rgb), 0.3) 0%, 
+        rgba(var(--primary-light-rgb), 0.15) 100%);
+    border-color: rgba(var(--primary-light-rgb), 0.5);
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--primary-light-rgb), 0.2);
+}
+
+.visibility-notice {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 193, 7, 0.1) 0%, 
+        rgba(255, 193, 7, 0.05) 100%);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.visibility-notice i {
+    animation: pulse 2s infinite;
+}
+
+/* === ACCORDÉONS DU THREAD HEADER === */
+
+.thread-accordion {
+    margin-top: 1rem;
+}
+
+.thread-accordion-item {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.02) 0%, 
+        rgba(255, 255, 255, 0.01) 100%);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.thread-accordion-item:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.04) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+}
+
+.thread-accordion-header {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 1rem 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.thread-accordion-header:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.thread-accordion-header:focus {
+    outline: 2px solid rgba(var(--primary-light-rgb), 0.5);
+    outline-offset: -2px;
+}
+
+.accordion-title {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.thread-accordion-header[aria-expanded="true"] .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.thread-accordion-content {
+    padding: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.1) 0%, 
+        rgba(0, 0, 0, 0.05) 100%);
+}
+
+/* Animations d'ouverture/fermeture */
+.thread-accordion-item .collapse {
+    transition: all 0.3s ease;
+}
+
+.thread-accordion-item .collapsing {
+    transition: height 0.3s ease;
+}
+
+/* Styles spécifiques selon le thème du thread */
+.thread-header.roleplay-bg .thread-accordion-item {
+    border-color: rgba(var(--roleplay-primary-rgb), 0.2);
+}
+
+.thread-header.roleplay-bg .thread-accordion-item:hover {
+    border-color: rgba(var(--roleplay-primary-rgb), 0.3);
+}
+
+.thread-header.roleplay-bg .thread-accordion-header:hover {
+    background: linear-gradient(135deg, 
+        rgba(var(--roleplay-primary-rgb), 0.1) 0%, 
+        rgba(var(--roleplay-primary-rgb), 0.05) 100%);
+}
+
+.thread-header.hrp-bg .thread-accordion-item {
+    border-color: rgba(var(--hrp-primary-rgb), 0.2);
+}
+
+.thread-header.hrp-bg .thread-accordion-item:hover {
+    border-color: rgba(var(--hrp-primary-rgb), 0.3);
+}
+
+.thread-header.hrp-bg .thread-accordion-header:hover {
+    background: linear-gradient(135deg, 
+        rgba(var(--hrp-primary-rgb), 0.1) 0%, 
+        rgba(var(--hrp-primary-rgb), 0.05) 100%);
+}
+
+/* Responsive pour les accordéons */
+@media (max-width: 768px) {
+    .thread-accordion-header {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .thread-accordion-content {
+        padding: 1rem;
+    }
+    
+    .accordion-title i {
+        font-size: 0.85rem;
+    }
+}
+
+/* Actions du thread avec améliorations */
+.thread-actions {
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s ease-out 0.3s backwards;
+}
+
+.thread-actions .btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.thread-actions .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.thread-actions .btn:hover::before {
+    left: 100%;
+}
+
+.thread-actions .btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Section de réponse améliorée */
+.reply-section {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out forwards;
+}
+
+.reply-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.02) 0%, 
+        transparent 50%);
+    pointer-events: none;
+}
+
+.reply-section h3 {
+    color: var(--text-white);
+    margin-bottom: 1.5rem;
+    font-family: var(--font-title);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* États responsifs et améliorations */
+@media (max-width: 768px) {
+    .post-container {
+        flex-direction: column;
+    }
+    
+    .post-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .avatar-container {
+        width: 60px;
+        height: 60px;
+        margin: 0;
+    }
+    
+    .post-character-info,
+    .post-user-info {
+        margin: 0;
+    }
+    
+    .post-npcs-info {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        flex: 1;
+    }
+    
+    .post-npcs-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .thread-header {
+        padding: 1.5rem;
+    }
+    
+    .thread-title {
+        font-size: 1.5rem;
+    }
+    
+    .thread-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .thread-actions > div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .post-edited-indicator {
+        margin-left: 0;
+        margin-top: 0.25rem;
+        display: inline-flex;
+    }
+}
+
+/* États de focus et accessibilité */
+.post-container:focus-within {
+    outline: 2px solid rgba(var(--primary-light-rgb), 0.5);
+    outline-offset: 2px;
+}
+
+.npc-item:focus,
+.post-actions .btn:focus,
+.avatar-container:focus {
+    outline: 2px solid rgba(var(--primary-light-rgb), 0.5);
+    outline-offset: 2px;
+}
+
+/* Animations réduites pour l'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+    .post-container,
+    .avatar-container,
+    .npc-item,
+    .thread-actions .btn {
+        animation: none;
+        transition: none;
+    }
+    
+    .post-container:hover,
+    .avatar-container:hover,
+    .npc-item:hover,
+    .thread-actions .btn:hover {
+        transform: none;
+    }
+}
+
+/* === FORMULAIRE DE RÉPONSE AVEC CARTES D'IDENTITÉ === */
+
+/* Utilisation du système de design existant */
+
+/* ======================
+   FORMULAIRE DE RÉPONSE PRINCIPAL
+   ====================== */
+.reply-form {
+    margin: var(--spacing-xl) 0;
+    position: relative;
+}
+
+.reply-form__accordion {
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(20px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-normal);
+}
+
+.reply-form__accordion:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.reply-form__header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--roleplay-primary), var(--roleplay-secondary));
+    border: none;
+    width: 100%;
+    text-align: left;
+    color: var(--text-white);
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: var(--font-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.reply-form__header--hrp {
+    background: linear-gradient(135deg, var(--hrp-primary), var(--hrp-secondary));
+}
+
+.reply-form__header:hover {
+    filter: brightness(1.1);
+}
+
+.reply-form__header:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.reply-form__title {
+    display: flex;
+    align-items: center;
+}
+
+.reply-form__icon {
+    transition: transform var(--transition-normal);
+}
+
+.reply-form__header[aria-expanded="true"] .reply-form__icon {
+    transform: rotate(180deg);
+}
+
+.reply-form__content {
+    padding: var(--spacing-xl);
+}
+
+.reply-form__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* ======================
+   SÉLECTEUR DE PERSONNAGE
+   ====================== */
+.character-selector {
+    background: var(--bg-primary-trans);
+    backdrop-filter: blur(10px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.character-selector__header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.character-selector__title {
+    color: var(--roleplay-primary);
+    font-weight: 600;
+    font-family: var(--font-title);
+    margin-bottom: var(--spacing-sm);
+}
+
+.character-selector__subtitle {
+    color: var(--light-gray);
+    font-style: italic;
+    font-family: var(--font-main);
+}
+
+.character-selector__empty .alert {
+    margin: 0;
+    background: var(--bg-primary-trans);
+    border: var(--border-width-sm) solid var(--warning);
+    color: var(--warning);
+}
+
+/* ======================
+   GALERIE DE PERSONNAGES CLIQUABLE
+   ====================== */
+.character-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.character-gallery__card {
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(15px);
+    border: var(--border-width-md) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.character-gallery__card:hover {
+    border-color: var(--roleplay-primary);
+    box-shadow: 0 10px 25px var(--roleplay-glow);
+}
+
+.character-gallery__card--selected {
+    border-color: var(--roleplay-primary);
+    background: var(--roleplay-transparent);
+    box-shadow: 0 8px 20px var(--roleplay-glow);
+}
+
+.character-gallery__card--selected::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, var(--roleplay-primary), var(--roleplay-secondary));
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 5px var(--roleplay-glow); }
+    to { box-shadow: 0 0 15px var(--roleplay-glow); }
+}
+
+.character-gallery__card-inner {
+    position: relative;
+    z-index: 2;
+}
+
+.character-gallery__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.character-gallery__avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-circle);
+    overflow: hidden;
+    border: var(--border-width-lg) solid rgba(255, 255, 255, 0.2);
+    background: var(--bg-primary-trans);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.character-gallery__avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-/* États non lus */
-.unread-badge {
+.character-gallery__avatar-placeholder {
+    color: var(--roleplay-primary);
+    font-size: 1.5rem;
+}
+
+.character-gallery__status-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    background: var(--roleplay-secondary);
+    border-radius: var(--border-radius-circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    font-size: 0.75rem;
+    border: var(--border-width-md) solid var(--text-white);
+}
+
+.character-gallery__basic-info {
+    flex: 1;
+}
+
+.character-gallery__name {
+    font-weight: 600;
+    color: var(--roleplay-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+    font-size: 1.1rem;
+    font-family: var(--font-title);
+}
+
+.character-gallery__alias {
+    color: var(--light-gray);
+    font-style: italic;
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+}
+
+.character-gallery__body {
+    margin-top: var(--spacing-md);
+}
+
+.character-gallery__quick-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.character-gallery__info-chip {
+    background: var(--roleplay-transparent);
+    color: var(--roleplay-primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-xl);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    border: var(--border-width-sm) solid var(--roleplay-primary);
+    font-family: var(--font-main);
+}
+
+.character-gallery__info-chip i {
+    font-size: 0.8rem;
+}
+
+.character-gallery__abilities {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+}
+
+.character-gallery__abilities-preview {
+    color: var(--light-gray);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-family: var(--font-main);
+}
+
+.character-gallery__selection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--roleplay-primary-rgb), 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    backdrop-filter: blur(5px);
+}
+
+.character-gallery__card--selected .character-gallery__selection-overlay {
+    opacity: 1;
+}
+
+.character-gallery__selection-check {
+    width: 60px;
+    height: 60px;
+    background: var(--text-white);
+    border-radius: var(--border-radius-circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--roleplay-primary);
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+    animation: checkPulse 0.6s ease-out;
+}
+
+@keyframes checkPulse {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.character-gallery__selection-text {
+    color: var(--text-white);
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: var(--font-main);
+}
+
+
+
+/* ======================
+   ÉDITEUR DE POST
+   ====================== */
+.post-editor {
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(15px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition-slow);
+}
+
+.post-editor.section--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.post-editor__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+}
+
+.post-editor__title {
+    color: var(--roleplay-primary);
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: var(--font-title);
+}
+
+.post-editor__character-info {
+    text-align: right;
+    display: none;
+}
+
+.post-editor__character-name {
+    color: var(--roleplay-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: var(--font-title);
+}
+
+.post-editor__character-note {
+    color: var(--light-gray);
+    display: block;
+    font-style: italic;
+    margin-top: var(--spacing-xs);
+    font-family: var(--font-main);
+}
+
+.post-editor__content {
     position: relative;
 }
 
-.unread-badge::after {
-    content: '';
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 8px;
-    height: 8px;
-    background-color: var(--danger);
-    border-radius: var(--border-radius-circle);
-    animation: pulse 2s infinite;
+.post-editor__textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: var(--spacing-md);
+    border: var(--border-width-md) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: var(--transition-normal);
+}
+
+.post-editor__textarea:focus {
+    outline: none;
+    border-color: var(--roleplay-primary);
+    box-shadow: 0 0 0 3px var(--roleplay-glow);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* ======================
+   SÉLECTEUR DE PNJ
+   ====================== */
+.npcs-selector {
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(15px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition-slow);
+}
+
+.npcs-selector.section--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.npcs-selector__header {
+    margin-bottom: var(--spacing-md);
+}
+
+.npcs-selector__title {
+    color: var(--roleplay-primary);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: 1rem;
+    font-family: var(--font-title);
+}
+
+.npcs-selector__subtitle {
+    color: var(--light-gray);
+    font-style: italic;
+    font-family: var(--font-main);
+}
+
+.npcs-selector__select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: var(--border-width-md) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-normal);
+    font-family: var(--font-main);
+}
+
+.npcs-selector__select:focus {
+    outline: none;
+    border-color: var(--roleplay-primary);
+    box-shadow: 0 0 0 3px var(--roleplay-glow);
+}
+
+/* ======================
+   ACTIONS DE RÉPONSE
+   ====================== */
+.reply-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(15px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition-slow);
+}
+
+.reply-actions.section--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reply-actions__buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.reply-actions__btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--border-radius-xl);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    font-family: var(--font-main);
+}
+
+.reply-actions__btn--publish {
+    background: linear-gradient(135deg, var(--roleplay-primary), var(--roleplay-secondary));
+    color: var(--text-white);
+    box-shadow: var(--shadow-md);
+}
+
+.reply-actions__btn--publish:hover {
+    box-shadow: var(--shadow-lg);
+    filter: brightness(1.1);
+}
+
+.reply-actions__btn--draft {
+    background: var(--roleplay-transparent);
+    color: var(--roleplay-secondary);
+    border: var(--border-width-md) solid var(--roleplay-secondary);
+}
+
+.reply-actions__btn--draft:hover {
+    background: var(--roleplay-secondary);
+    color: var(--text-white);
+}
+
+.reply-actions__btn--reset {
+    background: rgba(var(--important-primary-rgb), 0.1);
+    color: var(--important-primary);
+    border: var(--border-width-md) solid var(--important-primary);
+}
+
+.reply-actions__btn--reset:hover {
+    background: var(--important-primary);
+    color: var(--text-white);
+}
+
+/* ======================
+   ÉDITEUR HRP
+   ====================== */
+.hrp-editor {
+    background: var(--bg-dark-trans);
+    backdrop-filter: blur(15px);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-xl);
+    border-left: var(--border-width-lg) solid var(--hrp-primary);
+}
+
+.hrp-editor__header {
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.hrp-editor__title {
+    color: var(--hrp-primary);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: 1.2rem;
+    font-family: var(--font-title);
+}
+
+.hrp-editor__subtitle {
+    color: var(--light-gray);
+    font-style: italic;
+    font-family: var(--font-main);
+}
+
+.hrp-editor__textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: var(--spacing-md);
+    border: var(--border-width-md) solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: var(--transition-normal);
+}
+
+.hrp-editor__textarea:focus {
+    outline: none;
+    border-color: var(--hrp-primary);
+    box-shadow: 0 0 0 3px var(--hrp-glow);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.hrp-editor__actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.hrp-editor__btn {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border: none;
+    border-radius: var(--border-radius-xl);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: flex;
+    align-items: center;
+    font-family: var(--font-main);
+}
+
+.hrp-editor__btn--publish {
+    background: linear-gradient(135deg, var(--hrp-primary), var(--hrp-secondary));
+    color: var(--text-white);
+    box-shadow: var(--shadow-md);
+}
+
+.hrp-editor__btn--publish:hover {
+    box-shadow: var(--shadow-lg);
+    filter: brightness(1.1);
+}
+
+.hrp-editor__btn--draft {
+    background: rgba(var(--hrp-secondary-rgb), 0.1);
+    color: var(--hrp-secondary);
+    border: var(--border-width-md) solid var(--hrp-secondary);
+}
+
+.hrp-editor__btn--draft:hover {
+    background: var(--hrp-secondary);
+    color: var(--text-white);
+}
+
+/* ======================
+   RESPONSIVE
+   ====================== */
+@media (max-width: 768px) {
+    .reply-form__content {
+        padding: var(--spacing-md);
+    }
+    
+    .character-gallery {
+        grid-template-columns: 1fr;
+    }
+    
+
+    
+    .reply-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .reply-actions__buttons {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .reply-actions__btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .reply-form__header {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 1rem;
+    }
+    
+    .character-gallery__card {
+        padding: var(--spacing-md);
+    }
+    
+    .character-gallery__header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .character-gallery__avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .reply-actions__buttons {
+        flex-direction: column;
+        width: 100%;
+    }
 }

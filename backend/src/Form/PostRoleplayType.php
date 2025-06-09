@@ -42,7 +42,7 @@ class PostRoleplayType extends AbstractType
                 'choices' => $options['characters'],
                 'choice_label' => 'name',
                 'placeholder' => 'Choisissez un personnage',
-                'required' => true,
+                'required' => false, // Géré côté client pour éviter les conflits avec le select caché
                 'help' => 'Quel personnage utiliser pour ce message ?',
                 'attr' => [
                     'class' => 'character-select'

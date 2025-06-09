@@ -614,15 +614,32 @@ class ThreadController extends AbstractController
         ]);
     }
 
-    #[Route('/univers/{universeSlug}/threads/filter', name: 'app_roleplay_threads_filter')]
-    public function filter(string $universeSlug, Request $request, UniversRepository $universRepository, ThreadRepository $threadRepository): Response
+    #[Route('/mes-participations', name: 'app_all_my_participations')]
+    #[IsGranted('ROLE_USER')]
+    public function allMyParticipations(Request $request, ThreadRepository $threadRepository): Response
     {
-        $univers = $universRepository->findOneBy(['slug' => $universeSlug]);
+        $status = $request->query->get('status', '');
 
-        if (!$univers) {
-            throw $this->createNotFoundException('L\'univers demandé n\'existe pas');
-        }
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        
+        // Récupérer TOUTES les participations sans filtrage par univers
+        $threads = $threadRepository->findAllThreadsWithUserParticipation($user->getId(), $status);
 
+        return $this->render('thread/all_participations.html.twig', [
+            'threads' => $threads,
+            'status' => $status,
+            'title' => 'Toutes mes participations',
+            'breadcrumbs' => $this->breadcrumbService->generate([
+                'Accueil' => $this->generateUrl('app_univers_index'),
+                'Mes participations' => $this->generateUrl('app_all_my_participations'),
+            ]),
+        ]);
+    }
+
+    #[Route('/threads/filter', name: 'app_roleplay_threads_filter')]
+    public function filter(Request $request, ThreadRepository $threadRepository): Response
+    {
         $type = $request->query->get('type', 'all');
         $status = $request->query->get('status', '');
 
@@ -635,49 +652,45 @@ class ThreadController extends AbstractController
             case 'participating':
                 $title = 'Mes participations';
                 if ($user) {
-                    $threads = $threadRepository->findThreadsWithUserParticipationByUniverse($user->getId(), $univers->getId(), $status);
+                    $threads = $threadRepository->findAllThreadsWithUserParticipation($user->getId(), $status);
                 }
                 break;
 
             case 'created':
                 $title = 'Mes scènes créées';
                 if ($user) {
-                    $criteria = ['author' => $user, 'type' => 'roleplay'];
-                    $criteria['forum.universe'] = $univers;
-                    if ($status) {
-                        $criteria['status'] = $status;
-                    }
-                    $threads = $threadRepository->findThreadsByAuthorAndUniverse($user->getId(), $univers->getId(), $status);
+                    // Nouvelle méthode pour récupérer tous les threads créés par l'utilisateur
+                    $threads = $threadRepository->findThreadsByAuthor($user->getId(), $status);
                 }
                 break;
 
             case 'recent':
                 $title = 'Scènes récentes';
                 if ($status === 'open') {
-                    $threads = $threadRepository->findActiveThreadsByUniverse($univers->getId(), 20);
+                    $threads = $threadRepository->findActiveThreads(20);
                 } else {
-                    $threads = $threadRepository->findRecentThreadsByUniverse($univers->getId(), $status, 20);
+                    $threads = $threadRepository->findRecentThreads($status, 20);
                 }
                 break;
 
             default:
                 if ($status === 'open') {
-                    $threads = $threadRepository->findActiveThreadsByUniverse($univers->getId());
+                    $threads = $threadRepository->findActiveThreads();
                 } else {
-                    $threads = $threadRepository->findThreadsByUniverse($univers->getId(), $status);
+                    $threads = $threadRepository->findAllThreadsByStatus($status);
                 }
         }
 
         $breadcrumbs = [
-            'Scènes RP' => $this->generateUrl('app_roleplay_threads', ['universeSlug' => $universeSlug])
+            'Accueil' => $this->generateUrl('app_univers_index'),
+            'Scènes RP' => $this->generateUrl('app_roleplay_threads_filter')
         ];
 
         if ($title !== 'Scènes RP') {
-            $breadcrumbs[$title] = $this->generateUrl('app_roleplay_threads_filter', ['universeSlug' => $universeSlug, 'type' => $type]);
+            $breadcrumbs[$title] = $this->generateUrl('app_roleplay_threads_filter', ['type' => $type]);
         }
 
         return $this->render('thread/filter.html.twig', [
-            'univers' => $univers,
             'threads' => $threads,
             'type' => $type,
             'status' => $status,

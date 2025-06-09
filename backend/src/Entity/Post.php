@@ -59,6 +59,22 @@ class Post implements TimestampableInterface
     #[ORM\OneToMany(targetEntity: ReadPost::class, mappedBy: 'post', orphanRemoval: true)]
     private Collection $readBy;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $originalContent = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isHidden = false;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $moderationReason = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $moderator = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $hiddenAt = null;
+
     public function __construct()
     {  
         $this->createdAt = new \DateTimeImmutable(); // Set the default value for createdAt
@@ -260,6 +276,61 @@ class Post implements TimestampableInterface
             }
         }
         return false;
+    }
+
+    public function getOriginalContent(): ?string
+    {
+        return $this->originalContent;
+    }
+
+    public function setOriginalContent(?string $originalContent): self
+    {
+        $this->originalContent = $originalContent;
+        return $this;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(bool $isHidden): self
+    {
+        $this->isHidden = $isHidden;
+        return $this;
+    }
+
+    public function getModerationReason(): ?string
+    {
+        return $this->moderationReason;
+    }
+
+    public function setModerationReason(?string $moderationReason): self
+    {
+        $this->moderationReason = $moderationReason;
+        return $this;
+    }
+
+    public function getModerator(): ?User
+    {
+        return $this->moderator;
+    }
+
+    public function setModerator(?User $moderator): self
+    {
+        $this->moderator = $moderator;
+        return $this;
+    }
+
+    public function getHiddenAt(): ?\DateTimeInterface
+    {
+        return $this->hiddenAt;
+    }
+
+    public function setHiddenAt(?\DateTimeInterface $hiddenAt): self
+    {
+        $this->hiddenAt = $hiddenAt;
+        return $this;
     }
 
     #[ORM\PrePersist]

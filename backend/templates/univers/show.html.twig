@@ -2,6 +2,11 @@
 
 {% block title %}{{ univers.name }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/forums.css') }}">
+{% endblock %}
+
 {% block body %}
 <div class="container py-5">
     <nav aria-label="breadcrumb">

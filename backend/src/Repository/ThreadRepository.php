@@ -58,56 +58,134 @@ class ThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve TOUS les threads où un utilisateur participe avec ses personnages (toutes univers confondus)
+     */
+    public function findAllThreadsWithUserParticipation(int $userId, ?string $status = null): array
+    {
+        // Première requête : threads où l'utilisateur a des personnages participants
+        $qb1 = $this->createQueryBuilder('t')
+            ->join('t.participants', 'p')
+            ->join('p.user', 'u')
+            ->andWhere('u.id = :userId')
+            ->andWhere('t.type = :type')
+            ->setParameter('userId', $userId)
+            ->setParameter('type', 'roleplay');
+
+        if ($status) {
+            $qb1->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        $threadsWithParticipants = $qb1->getQuery()->getResult();
+
+        // Deuxième requête : threads où l'utilisateur a posté avec ses personnages
+        $qb2 = $this->createQueryBuilder('t')
+            ->join('t.posts', 'po')
+            ->join('po.character', 'pc')
+            ->join('pc.user', 'u')
+            ->andWhere('u.id = :userId')
+            ->andWhere('t.type = :type')
+            ->setParameter('userId', $userId)
+            ->setParameter('type', 'roleplay');
+
+        if ($status) {
+            $qb2->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        $threadsWithPosts = $qb2->getQuery()->getResult();
+
+        // Fusionner les résultats sans doublons
+        $allThreadsById = [];
+        
+        foreach ($threadsWithParticipants as $thread) {
+            $allThreadsById[$thread->getId()] = $thread;
+        }
+        
+        foreach ($threadsWithPosts as $thread) {
+            $allThreadsById[$thread->getId()] = $thread;
+        }
+        
+        $allThreads = array_values($allThreadsById);
+        
+        // Trier par date de mise à jour décroissante
+        usort($allThreads, function($a, $b) {
+            return $b->getUpdatedAt() <=> $a->getUpdatedAt();
+        });
+
+        return $allThreads;
+    }
+
+    /**
      * Trouve les threads où un utilisateur participe avec ses personnages
      */
     public function findThreadsWithUserParticipation(int $userId, ?string $status = null): array
     {
-        $qb = $this->createQueryBuilder('t')
-            ->join('t.participants', 'p')
-            ->join('p.user', 'u')
-            ->andWhere('u.id = :userId')
-            ->andWhere('t.type = :type')
-            ->setParameter('userId', $userId)
-            ->setParameter('type', 'roleplay');
-
-        if ($status) {
-            $qb->andWhere('t.status = :status')
-               ->setParameter('status', $status);
-        }
-
-        return $qb->orderBy('t.updatedAt', 'DESC')
-                 ->getQuery()
-                 ->getResult();
+        // Utilise la même méthode que pour tous les threads
+        return $this->findAllThreadsWithUserParticipation($userId, $status);
     }
 
     /**
-     * Trouve les threads où un utilisateur participe avec ses personnages, filtrés par univers
+     * Trouve tous les threads créés par un utilisateur
      */
-    public function findThreadsWithUserParticipationByUniverse(int $userId, int $universeId, ?string $status = null): array
+    public function findThreadsByAuthor(int $userId, ?string $status = null): array
     {
         $qb = $this->createQueryBuilder('t')
-            ->join('t.participants', 'p')
-            ->join('p.user', 'u')
-            ->join('t.forum', 'f')
-            ->leftJoin('f.universe', 'fu')
-            ->leftJoin('f.elseworld', 'fe')
-            ->leftJoin('fe.parentUniverse', 'feu')
-            ->andWhere('u.id = :userId')
             ->andWhere('t.type = :type')
-            ->andWhere('(fu.id = :universeId OR feu.id = :universeId)')
+            ->andWhere('t.author = :userId')
+            ->setParameter('type', 'roleplay')
             ->setParameter('userId', $userId)
-            ->setParameter('universeId', $universeId)
-            ->setParameter('type', 'roleplay');
+            ->orderBy('t.updatedAt', 'DESC');
 
         if ($status) {
             $qb->andWhere('t.status = :status')
                ->setParameter('status', $status);
         }
 
-        return $qb->orderBy('t.updatedAt', 'DESC')
-                 ->getQuery()
-                 ->getResult();
+        return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Trouve les threads récents
+     */
+    public function findRecentThreads(?string $status = null, ?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->setParameter('type', 'roleplay')
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve tous les threads par statut
+     */
+    public function findAllThreadsByStatus(?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.type = :type')
+            ->setParameter('type', 'roleplay')
+            ->orderBy('t.updatedAt', 'DESC');
+
+        if ($status) {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+
 
     /**
      * Trouve les threads récemment actifs

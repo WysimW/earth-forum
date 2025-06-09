@@ -126,4 +126,23 @@ class CharacterRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve les personnages validés d'un utilisateur pour un univers spécifique
+     */
+    public function findValidatedCharactersForUserAndUniverse(User $user, Univers $universe): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :user')
+            ->andWhere('c.status = :status')
+            ->andWhere('c.universe = :universe OR c.elseworld IN (
+                SELECT e FROM App\Entity\Elseworld e WHERE e.parentUniverse = :universe
+            )')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'validated')
+            ->setParameter('universe', $universe)
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

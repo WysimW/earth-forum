@@ -405,6 +405,59 @@ class PostController extends AbstractController
         return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
     }
 
+    #[Route('/univers/{universeSlug}/post/{id}/moderate', name: 'app_post_moderate', methods: ['POST'])]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function moderate(Request $request, string $universeSlug, Post $post): Response
+    {
+        // Vérifier le token CSRF
+        if (!$this->isCsrfTokenValid('moderate_post_' . $post->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide');
+        }
+
+        $moderationAction = $request->request->get('moderation_action');
+        $moderationReason = $request->request->get('moderation_reason');
+        $internalNote = $request->request->get('internal_note');
+        $quotedText = $request->request->get('quoted_text');
+
+        // Pour les actions autres que 'unhide', le motif est obligatoire
+        if (!$moderationAction || ($moderationAction !== 'unhide' && !$moderationReason)) {
+            $this->addFlash('error', 'Tous les champs obligatoires doivent être remplis.');
+            return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $post->getThread()->getId()]);
+        }
+
+        $thread = $post->getThread();
+        $moderator = $this->getUser();
+
+        // Appliquer l'action de modération
+        switch ($moderationAction) {
+            case 'warn':
+                $this->handleWarning($post, $moderationReason, $internalNote, $moderator, $quotedText);
+                $this->addFlash('success', 'Un avertissement a été envoyé à l\'auteur du message.');
+                break;
+
+            case 'edit_request':
+                $this->handleEditRequest($post, $moderationReason, $internalNote, $moderator, $quotedText);
+                $this->addFlash('success', 'Une demande de modification a été envoyée à l\'auteur.');
+                break;
+
+            case 'hide':
+                $this->handleHidePost($post, $moderationReason, $internalNote, $moderator, $quotedText);
+                $this->addFlash('success', 'Le message a été masqué.');
+                break;
+
+            case 'unhide':
+                $this->handleUnhidePost($post, $moderator, $moderationReason);
+                $this->addFlash('success', 'Le message a été démasqué.');
+                break;
+
+            default:
+                $this->addFlash('error', 'Action de modération invalide.');
+                break;
+        }
+
+        return $this->redirectToRoute('app_thread_show', ['universeSlug' => $universeSlug, 'id' => $thread->getId()]);
+    }
+
     #[Route('/univers/{universeSlug}/my-drafts', name: 'app_my_drafts')]
     #[IsGranted('ROLE_USER')]
     public function myDrafts(string $universeSlug): Response
@@ -472,19 +525,39 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Thread not found');
         }
         
+        // Obtenir l'univers du thread
+        $universe = $thread->getForum()->getUniverse();
+        if (!$universe && $thread->getForum()->getElseworld()) {
+            $universe = $thread->getForum()->getElseworld()->getParentUniverse();
+        }
+        
         $post = new Post();
         $post->setThread($thread);
         $post->setAuthor($this->getUser());
         $post->setType('roleplay'); // Par défaut, un post dans un thread RP est "in-character"
         
-        // Récupérer les personnages validés de l'utilisateur
-        $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+        // Récupérer les personnages validés de l'utilisateur pour cet univers uniquement
+        if ($universe) {
+            $userCharacters = $characterRepository->findValidatedCharactersForUserAndUniverse($this->getUser(), $universe);
+        } else {
+            $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
+        }
         
-        // Récupérer les PNJ validés de l'utilisateur
-        $availableNpcs = $this->entityManager->getRepository(Npc::class)->findBy([
-            'user' => $this->getUser(),
-            'status' => 'validated'
-        ]);
+        // Récupérer les PNJ validés de l'utilisateur pour cet univers
+        $availableNpcs = $this->entityManager->getRepository(Npc::class)->createQueryBuilder('n')
+            ->where('n.user = :user')
+            ->andWhere('n.status = :status')
+            ->setParameter('user', $this->getUser())
+            ->setParameter('status', 'validated');
+            
+        if ($universe) {
+            $availableNpcs->andWhere('n.universe = :universe OR n.elseworld IN (
+                SELECT e FROM App\Entity\Elseworld e WHERE e.parentUniverse = :universe
+            )')
+            ->setParameter('universe', $universe);
+        }
+            
+        $availableNpcs = $availableNpcs->getQuery()->getResult();
         
         $form = $this->createForm(PostRoleplayType::class, $post, [
             'characters' => $userCharacters,
@@ -494,7 +567,9 @@ class PostController extends AbstractController
         
         return $this->render('post/_reply_form.html.twig', [
             'form' => $form->createView(),
-            'thread' => $thread
+            'thread' => $thread,
+            'characters' => $userCharacters,
+            'universe' => $universe
         ]);
     }
     
@@ -507,6 +582,12 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Thread not found');
         }
         
+        // Obtenir l'univers du thread
+        $universe = $thread->getForum()->getUniverse();
+        if (!$universe && $thread->getForum()->getElseworld()) {
+            $universe = $thread->getForum()->getElseworld()->getParentUniverse();
+        }
+        
         $post = new Post();
         $post->setThread($thread);
         $post->setAuthor($this->getUser());
@@ -516,9 +597,10 @@ class PostController extends AbstractController
             'action' => $this->generateUrl('app_post_new', ['universeSlug' => $universeSlug, 'threadId' => $threadId])
         ]);
         
-        return $this->render('post/_reply_form.html.twig', [
+        return $this->render('post/_reply_form_hrp.html.twig', [
             'form' => $form->createView(),
-            'thread' => $thread
+            'thread' => $thread,
+            'universe' => $universe
         ]);
     }
 
@@ -560,5 +642,233 @@ class PostController extends AbstractController
         }
         
         return $this->breadcrumbService->generate($breadcrumbs);
+    }
+
+    private function handleWarning(Post $post, string $reason, ?string $internalNote, $moderator, ?string $quotedText = null): void
+    {
+        // Créer un message d'avertissement dans le thread
+        $warningPost = new Post();
+        $warningPost->setThread($post->getThread());
+        $warningPost->setAuthor($moderator);
+        $warningPost->setType('moderation');
+        
+        $quotedSection = '';
+        if ($quotedText && !empty(trim($quotedText))) {
+            $quotedSection = sprintf(
+                '<div class="mt-2">
+                    <strong>Extrait concerné :</strong>
+                    <blockquote class="blockquote-sm border-start border-warning border-3 ps-3 mt-1">
+                        <em>%s</em>
+                    </blockquote>
+                </div>',
+                htmlspecialchars($quotedText)
+            );
+        }
+        
+        $warningContent = sprintf(
+            '<div class="alert alert-warning moderation-notice">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Avertissement de modération</strong>
+                </div>
+                <p class="mb-1"><strong>Concernant le message :</strong> 
+                    <span class="text-primary">
+                        <i class="fas fa-link me-1"></i>Message #%d
+                    </span> de %s
+                </p>
+                %s
+                <p class="mb-1"><strong>Motif :</strong> %s</p>
+                <small class="text-muted">Modéré par %s le %s</small>
+            </div>',
+            $post->getId(),
+            $post->getAuthor()->getPseudo(),
+            $quotedSection,
+            htmlspecialchars($reason),
+            $moderator->getPseudo(),
+            (new \DateTime())->format('d/m/Y à H:i')
+        );
+        
+        $warningPost->setContent($warningContent);
+        
+        $this->entityManager->persist($warningPost);
+        
+        // Ajouter une note interne si fournie
+        if ($internalNote) {
+            // TODO: Implémenter le système de notes internes de modération
+        }
+        
+        $this->entityManager->flush();
+    }
+
+    private function handleEditRequest(Post $post, string $reason, ?string $internalNote, $moderator, ?string $quotedText = null): void
+    {
+        // Créer un message de demande de modification dans le thread
+        $editRequestPost = new Post();
+        $editRequestPost->setThread($post->getThread());
+        $editRequestPost->setAuthor($moderator);
+        $editRequestPost->setType('moderation');
+        
+        $quotedSection = '';
+        if ($quotedText && !empty(trim($quotedText))) {
+            $quotedSection = sprintf(
+                '<div class="mt-2">
+                    <strong>Extrait à modifier :</strong>
+                    <blockquote class="blockquote-sm border-start border-info border-3 ps-3 mt-1">
+                        <em>%s</em>
+                    </blockquote>
+                </div>',
+                htmlspecialchars($quotedText)
+            );
+        }
+        
+        $editRequestContent = sprintf(
+            '<div class="alert alert-info moderation-notice">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-edit me-2"></i>
+                    <strong>Demande de modification</strong>
+                </div>
+                <p class="mb-1"><strong>Concernant le message :</strong> 
+                    <span class="text-primary">
+                        <i class="fas fa-link me-1"></i>Message #%d
+                    </span> de %s
+                </p>
+                %s
+                <p class="mb-1"><strong>Modifications demandées :</strong> %s</p>
+                <p class="mb-1"><em>Merci de modifier votre message en conséquence.</em></p>
+                <small class="text-muted">Modéré par %s le %s</small>
+            </div>',
+            $post->getId(),
+            $post->getAuthor()->getPseudo(),
+            $quotedSection,
+            htmlspecialchars($reason),
+            $moderator->getPseudo(),
+            (new \DateTime())->format('d/m/Y à H:i')
+        );
+        
+        $editRequestPost->setContent($editRequestContent);
+        
+        $this->entityManager->persist($editRequestPost);
+        
+        // Ajouter une note interne si fournie
+        if ($internalNote) {
+            // TODO: Implémenter le système de notes internes de modération
+        }
+        
+        $this->entityManager->flush();
+    }
+
+    private function handleHidePost(Post $post, string $reason, ?string $internalNote, $moderator, ?string $quotedText = null): void
+    {
+        // Sauvegarder le contenu original avant de le masquer
+        if (!$post->isHidden()) {
+            $post->setOriginalContent($post->getContent());
+        }
+        
+        $quotedSection = '';
+        if ($quotedText && !empty(trim($quotedText))) {
+            $quotedSection = sprintf(
+                '<div class="mt-2">
+                    <strong>Extrait problématique :</strong>
+                    <blockquote class="blockquote-sm border-start border-danger border-3 ps-3 mt-1">
+                        <em>%s</em>
+                    </blockquote>
+                </div>',
+                htmlspecialchars($quotedText)
+            );
+        }
+        
+        $hiddenContent = sprintf(
+            '<div class="alert alert-danger moderation-notice">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-eye-slash me-2"></i>
+                    <strong>Message masqué par la modération</strong>
+                </div>
+                <p class="mb-1"><strong>Message :</strong> 
+                    <span class="text-muted">Message #%d de %s</span>
+                </p>
+                %s
+                <p class="mb-1"><strong>Motif :</strong> %s</p>
+                <small class="text-muted">Masqué par %s le %s</small>
+            </div>',
+            $post->getId(),
+            $post->getAuthor()->getPseudo(),
+            $quotedSection,
+            htmlspecialchars($reason),
+            $moderator->getPseudo(),
+            (new \DateTime())->format('d/m/Y à H:i')
+        );
+        
+        // Marquer le post comme masqué et sauvegarder les infos de modération
+        $post->setContent($hiddenContent);
+        $post->setIsHidden(true);
+        $post->setModerationReason($reason);
+        $post->setModerator($moderator);
+        $post->setHiddenAt(new \DateTime());
+        
+        // Ajouter une note interne si fournie
+        if ($internalNote) {
+            // TODO: Implémenter le système de notes internes de modération
+        }
+        
+        $this->entityManager->flush();
+    }
+
+    private function handleUnhidePost(Post $post, $moderator, ?string $reason = null): void
+    {
+        // Vérifier que le post est effectivement masqué
+        if (!$post->isHidden()) {
+            throw new \InvalidArgumentException('Ce message n\'est pas masqué.');
+        }
+
+        // Restaurer le contenu original
+        if ($post->getOriginalContent()) {
+            $post->setContent($post->getOriginalContent());
+        }
+
+        // Créer un message de démasquage dans le thread
+        $unmaskPost = new Post();
+        $unmaskPost->setThread($post->getThread());
+        $unmaskPost->setAuthor($moderator);
+        $unmaskPost->setType('moderation');
+        
+        $reasonSection = '';
+        if ($reason && !empty(trim($reason))) {
+            $reasonSection = sprintf('<p class="mb-1"><strong>Motif du démasquage :</strong> %s</p>', htmlspecialchars($reason));
+        }
+
+        $unmaskContent = sprintf(
+            '<div class="alert alert-success moderation-notice">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-eye me-2"></i>
+                    <strong>Message démasqué par la modération</strong>
+                </div>
+                <p class="mb-1"><strong>Message :</strong> 
+                    <span class="text-primary">
+                        <i class="fas fa-link me-1"></i>Message #%d
+                    </span> de %s a été démasqué
+                </p>
+                <p class="mb-1"><strong>Motif original du masquage :</strong> %s</p>
+                %s
+                <small class="text-muted">Démasqué par %s le %s</small>
+            </div>',
+            $post->getId(),
+            $post->getAuthor()->getPseudo(),
+            htmlspecialchars($post->getModerationReason() ?: 'Non spécifié'),
+            $reasonSection,
+            $moderator->getPseudo(),
+            (new \DateTime())->format('d/m/Y à H:i')
+        );
+        
+        $unmaskPost->setContent($unmaskContent);
+        
+        // Réinitialiser les champs de modération
+        $post->setIsHidden(false);
+        $post->setModerationReason(null);
+        $post->setModerator(null);
+        $post->setHiddenAt(null);
+        $post->setOriginalContent(null);
+        
+        $this->entityManager->persist($unmaskPost);
+        $this->entityManager->flush();
     }
 }

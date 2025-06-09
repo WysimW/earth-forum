@@ -1,57 +1,524 @@
-{# Template partiel pour le formulaire de réponse #}
-<div class="card mb-4">
-    <div class="card-body">
-        {{ form_start(form, {'attr': {'class': 'post-form'}}) }}
-            <div class="mb-3">
-                {{ form_label(form.content) }}
-                {{ form_widget(form.content, {'attr': {
-                    'class': 'form-control wysiwyg-editor',
-                    'rows': '10',
-                    'placeholder': 'Écrivez votre message ici...'
-                }}) }}
-                {{ form_errors(form.content) }}
+{# Template partiel pour le formulaire de réponse RP avec cartes d'identité #}
+<div class="reply-form">
+    {# Accordéon principal avec style cohérent #}
+    <div class="reply-form__accordion">
+        <button class="reply-form__header reply-form__header--roleplay" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#replyFormAccordion" 
+                aria-expanded="false">
+            <span class="reply-form__title">
+                <i class="fas fa-dice-d20 me-2"></i>
+                Répondre en tant que personnage
+            </span>
+            <i class="fas fa-chevron-down reply-form__icon"></i>
+        </button>
+        
+        <div id="replyFormAccordion" class="collapse">
+            <div class="reply-form__content">
+                {{ form_start(form, {'attr': {'class': 'reply-form__form', 'id': 'character-reply-form'}}) }}
+                    
+                    {# Sélection du personnage avec cartes #}
+                    <div class="character-selector">
+                        <div class="character-selector__header">
+                            <h5 class="character-selector__title">
+                                <i class="fas fa-user-astronaut me-2"></i>
+                                Choisir votre personnage
+                            </h5>
+                            <small class="character-selector__subtitle">
+                                Personnages validés dans {{ universe ? universe.name : 'cet univers' }}
+                            </small>
+                        </div>
+                        
+
+                        
+                        {% if characters|length == 0 %}
+                            <div class="character-selector__empty">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Aucun personnage validé dans cet univers.
+                                    <br>
+                                    <a href="{{ path('app_roleplay_character_new') }}" class="alert-link">
+                                        Créer un nouveau personnage
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            {# Galerie de cartes de personnages cliquables #}
+                            <div class="character-gallery" id="character-gallery">
+                                {% for character in characters %}
+                                    <div class="character-gallery__card" 
+                                         data-character-id="{{ character.id }}" 
+                                         onclick="selectCharacter({{ character.id }})">
+                                        <div class="character-gallery__card-inner">
+                                            {# En-tête avec avatar #}
+                                            <div class="character-gallery__header">
+                                                <div class="character-gallery__avatar">
+                                                    {% if character.avatar %}
+                                                        <img src="{{ character.avatar }}" 
+                                                             alt="{{ character.name }}" 
+                                                             class="character-gallery__avatar-img">
+                                                    {% else %}
+                                                        <div class="character-gallery__avatar-placeholder">
+                                                            <i class="fas fa-user-astronaut"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="character-gallery__status-badge">
+                                                        <i class="fas fa-check-circle"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="character-gallery__basic-info">
+                                                    <h6 class="character-gallery__name">{{ character.name }}</h6>
+                                                    {% if character.actualPseudo %}
+                                                        <div class="character-gallery__alias">"{{ character.actualPseudo }}"</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            {# Corps de la carte compact #}
+                                            <div class="character-gallery__body">
+                                                <div class="character-gallery__quick-info">
+                                                    {% if character.occupation %}
+                                                        <div class="character-gallery__info-chip">
+                                                            <i class="fas fa-briefcase"></i>
+                                                            <span>{{ character.occupation }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if character.age %}
+                                                        <div class="character-gallery__info-chip">
+                                                            <i class="fas fa-calendar"></i>
+                                                            <span>{{ character.age }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if character.location %}
+                                                        <div class="character-gallery__info-chip">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                            <span>{{ character.location.name }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                {% if character.abilities %}
+                                                    <div class="character-gallery__abilities">
+                                                        <div class="character-gallery__abilities-preview">
+                                                            {{ character.abilities|striptags|slice(0, 80) }}{% if character.abilities|length > 80 %}...{% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {# Overlay de sélection #}
+                                            <div class="character-gallery__selection-overlay">
+                                                <div class="character-gallery__selection-check">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <span class="character-gallery__selection-text">Sélectionné</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+
+                        {% endif %}
+                        
+                        {# Select caché pour la synchronisation avec Symfony #}
+                        <div style="display: none;">
+                            {{ form_widget(form.character) }}
             </div>
 
-            {% if form.character is defined %}
-                <div class="mb-3">
-                    {{ form_label(form.character) }}
-                    {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
+                        {# Affichage des erreurs du champ character #}
+                        {% if form.character.vars.errors|length > 0 %}
+                            <div class="alert alert-danger">
                     {{ form_errors(form.character) }}
                 </div>
             {% endif %}
+                        
+                        {# Données JSON pour le JavaScript #}
+                        <script type="application/json" id="characters-data">
+                            {{ characters|map(c => {
+                                id: c.id,
+                                name: c.name,
+                                actualPseudo: c.actualPseudo,
+                                occupation: c.occupation,
+                                avatar: c.avatar,
+                                location: c.location ? c.location.name : null,
+                                abilities: c.abilities ? (c.abilities|striptags|slice(0, 200)) : null,
+                                age: c.age,
+                                moralAffiliation: c.moralAffiliation,
+                                personality: c.personality ? (c.personality|striptags|slice(0, 150)) : null,
+                                appearance: c.appearance ? (c.appearance|striptags|slice(0, 150)) : null
+                            })|json_encode|raw }}
+                        </script>
+                    </div>
+
+                    {# Section du message #}
+                    <div class="post-editor" id="post-editor" style="display: none;">
+                        <div class="post-editor__header">
+                            <h5 class="post-editor__title">
+                                <i class="fas fa-feather-alt me-2"></i>
+                                Votre message RP
+                            </h5>
+                            <div class="post-editor__character-info" id="selected-character-info">
+                                <span class="post-editor__character-name" id="editor-character-name"></span>
+                                <small class="post-editor__character-note">
+                                    Vous écrivez en tant que ce personnage
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="post-editor__content">
+                            {{ form_widget(form.content, {'attr': {
+                                'class': 'post-editor__textarea wysiwyg-editor',
+                                'rows': '12',
+                                'placeholder': 'Racontez les actions et paroles de votre personnage...',
+                                'id': 'reply-content'
+                            }}) }}
+                            {{ form_errors(form.content) }}
+                        </div>
+                    </div>
 
             {% if form.npcs is defined %}
-                <div class="mb-3">
-                    {{ form_label(form.npcs) }}
-                    {{ form_widget(form.npcs, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.npcs) }}
-                    <small class="form-text text-muted">
-                        Sélectionnez les PNJ qui participent à ce message
+                        {# Section des PNJ #}
+                        <div class="npcs-selector" id="npcs-selector" style="display: none;">
+                            <div class="npcs-selector__header">
+                                <h5 class="npcs-selector__title">
+                                    <i class="fas fa-users me-2"></i>
+                                    PNJ présents (optionnel)
+                                </h5>
+                                <small class="npcs-selector__subtitle">
+                                    Sélectionnez les PNJ qui apparaissent dans votre message
                     </small>
                 </div>
-            {% endif %}
-
-            {% if form.type is defined %}
-                <div class="mb-3">
-                    {{ form_label(form.type) }}
-                    {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.type) }}
+                            
+                            <div class="npcs-selector__content">
+                                {{ form_widget(form.npcs, {'attr': {'class': 'npcs-selector__select', 'multiple': 'multiple'}}) }}
+                                {{ form_errors(form.npcs) }}
+                            </div>
                 </div>
             {% endif %}
 
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="btn-group">
-                    <button type="submit" name="publish" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i> Publier
+                    {# Actions #}
+                    <div class="reply-actions" id="reply-actions" style="display: none;">
+                        <div class="reply-actions__buttons">
+                            <button type="submit" name="publish" class="reply-actions__btn reply-actions__btn--publish" onclick="return validateCharacterSelection()">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Publier le message
                     </button>
-                    <button type="submit" name="save_draft" class="btn btn-secondary">
-                        <i class="fas fa-save me-2"></i> Enregistrer comme brouillon
+                            <button type="submit" name="save_draft" class="reply-actions__btn reply-actions__btn--draft" onclick="return validateCharacterSelection()">
+                                <i class="fas fa-save me-2"></i>
+                                Sauvegarder en brouillon
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
-                        <i class="fas fa-times me-2"></i> Annuler
+
+                            <button type="button" class="reply-actions__btn reply-actions__btn--reset" onclick="resetCharacterForm()">
+                                <i class="fas fa-undo me-2"></i>
+                                Recommencer
                     </button>
                 </div>
             </div>
+                    
         {{ form_end(form) }}
+            </div>
+        </div>
     </div>
 </div> 
+
+<script>
+// Variables globales
+let charactersData = [];
+let selectedCharacterId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier la présence du select
+    const hiddenSelect = document.getElementById('post_roleplay_character');
+    console.log('Select au chargement:', hiddenSelect);
+    if (hiddenSelect) {
+        console.log('Select trouvé, ID:', hiddenSelect.id, 'Name:', hiddenSelect.name);
+    } else {
+        console.error('Select post_roleplay_character non trouvé!');
+        // Chercher tous les selects pour debug
+        const allSelects = document.querySelectorAll('select');
+        console.log('Tous les selects:', allSelects);
+    }
+    
+    // Charger les données des personnages
+    const charactersDataElement = document.getElementById('characters-data');
+    if (charactersDataElement) {
+        try {
+            charactersData = JSON.parse(charactersDataElement.textContent);
+            console.log('Personnages chargés:', charactersData);
+        } catch (e) {
+            console.error('Erreur lors du parsing des données des personnages:', e);
+            return;
+        }
+    }
+    
+    // Initialiser l'éditeur WYSIWYG
+    initializeWysiwyg();
+    
+    // Animation de l'accordéon
+    const accordion = document.getElementById('replyFormAccordion');
+    if (accordion) {
+        accordion.addEventListener('shown.bs.collapse', function() {
+            // Focus sur la galerie de personnages
+            const gallery = document.getElementById('character-gallery');
+            if (gallery) {
+                gallery.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+});
+
+// Fonction pour sélectionner un personnage
+function selectCharacter(characterId) {
+    console.log('Sélection du personnage:', characterId);
+    selectedCharacterId = characterId;
+    
+    // Synchroniser avec le select caché (ID généré par Symfony)
+    const hiddenSelect = document.getElementById('post_roleplay_character');
+    if (hiddenSelect) {
+        console.log('Select trouvé, valeur avant:', hiddenSelect.value);
+        hiddenSelect.value = characterId;
+        console.log('Select après assignation:', hiddenSelect.value);
+        
+        // Déclencher l'événement change
+        hiddenSelect.dispatchEvent(new Event('change'));
+        
+        // Marquer comme validé
+        hiddenSelect.setCustomValidity('');
+    } else {
+        console.error('Select caché non trouvé!');
+    }
+    
+    // Mettre à jour l'interface
+    updateCharacterSelection(characterId);
+    showEditorSections();
+}
+
+// Fonction pour mettre à jour la sélection visuelle
+function updateCharacterSelection(characterId) {
+    // Retirer la sélection de toutes les cartes
+    document.querySelectorAll('.character-gallery__card').forEach(card => {
+        card.classList.remove('character-gallery__card--selected');
+    });
+    
+    // Ajouter la sélection à la carte choisie
+    const selectedCard = document.querySelector(`[data-character-id="${characterId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('character-gallery__card--selected');
+        
+        // Animation de sélection
+        selectedCard.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            selectedCard.style.transform = 'scale(1)';
+        }, 150);
+    }
+}
+
+
+
+// Fonction pour afficher les sections de l'éditeur
+function showEditorSections() {
+    const sections = ['post-editor', 'npcs-selector', 'reply-actions'];
+    
+    sections.forEach((sectionId, index) => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            setTimeout(() => {
+                section.style.display = 'block';
+                setTimeout(() => {
+                    section.classList.add('section--visible');
+                }, 50);
+            }, index * 200);
+        }
+    });
+    
+    // Mettre à jour l'info dans l'éditeur
+    const character = charactersData.find(c => c.id == selectedCharacterId);
+    if (character) {
+        const editorCharacterName = document.getElementById('editor-character-name');
+        const selectedCharacterInfo = document.getElementById('selected-character-info');
+        
+        if (editorCharacterName) {
+            editorCharacterName.textContent = character.name;
+        }
+        if (selectedCharacterInfo) {
+            selectedCharacterInfo.style.display = 'block';
+        }
+        
+        // Initialiser l'éditeur WYSIWYG et focus après un délai
+        setTimeout(() => {
+            // Initialiser l'éditeur WYSIWYG
+            initializeWysiwyg();
+            
+            // Focus sur l'éditeur après l'initialisation
+            setTimeout(() => {
+                const textarea = document.getElementById('reply-content');
+                if (textarea && textarea._quill) {
+                    // Si Quill est initialisé, focus sur l'éditeur Quill
+                    textarea._quill.focus();
+                } else if (textarea) {
+                    // Sinon, focus sur le textarea
+                    textarea.focus();
+                }
+            }, 300);
+        }, 600);
+    }
+}
+
+// Fonction pour initialiser l'éditeur WYSIWYG
+function initializeWysiwyg() {
+    // Cette fonction sera appelée quand l'éditeur devient visible
+    setTimeout(() => {
+        const textarea = document.getElementById('reply-content');
+        if (textarea && textarea.classList.contains('wysiwyg-editor')) {
+            // Vérifier si l'éditeur n'est pas déjà initialisé
+            if (textarea.dataset.quillInitialized !== 'true') {
+                // Utiliser la fonction globale d'initialisation de dc-editor.js
+                if (typeof window.initWysiwygEditors === 'function') {
+                    window.initWysiwygEditors();
+                }
+            }
+        }
+    }, 100);
+}
+
+// Fonction pour réinitialiser le formulaire
+function resetCharacterForm() {
+    if (confirm('Êtes-vous sûr de vouloir recommencer ? Toutes les données saisies seront perdues.')) {
+        // Réinitialiser la sélection
+        selectedCharacterId = null;
+        
+        // Réinitialiser l'interface
+        document.querySelectorAll('.character-gallery__card').forEach(card => {
+            card.classList.remove('character-gallery__card--selected');
+        });
+        
+        // Masquer les sections
+        const sections = ['post-editor', 'npcs-selector', 'reply-actions'];
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'none';
+                section.classList.remove('section--visible');
+            }
+        });
+        
+        // Réinitialiser le formulaire
+        document.getElementById('character-reply-form').reset();
+        
+        // Réinitialiser l'éditeur WYSIWYG si présent
+        const textarea = document.getElementById('reply-content');
+        if (textarea) {
+            if (typeof tinymce !== 'undefined' && tinymce.get('reply-content')) {
+                tinymce.get('reply-content').setContent('');
+            } else if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['reply-content']) {
+                CKEDITOR.instances['reply-content'].setData('');
+            }
+        }
+    }
+}
+
+// Définir la fonction createRipple pour l'effet ripple sur les boutons
+if (typeof createRipple === 'undefined') {
+    window.createRipple = function(event) {
+        const button = event.currentTarget;
+        
+        // Créer l'élément ripple
+        const ripple = document.createElement('span');
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = event.clientX - rect.left - size / 2;
+        const y = event.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple-effect 0.6s linear;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            pointer-events: none;
+        `;
+        
+        // S'assurer que le bouton a position relative
+        if (getComputedStyle(button).position === 'static') {
+            button.style.position = 'relative';
+        }
+        
+        // Assurer overflow hidden pour contenir l'effet
+        button.style.overflow = 'hidden';
+        
+        // Ajouter l'animation CSS si elle n'existe pas
+        if (!document.querySelector('#ripple-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'ripple-animation-style';
+            style.textContent = `
+                @keyframes ripple-effect {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Ajouter l'effet ripple
+        button.appendChild(ripple);
+        
+        // Supprimer l'effet après l'animation
+        setTimeout(() => {
+            if (ripple.parentNode) {
+                ripple.parentNode.removeChild(ripple);
+            }
+        }, 600);
+    };
+}
+
+// Fonction de validation avant soumission
+function validateCharacterSelection() {
+    console.log('Validation - selectedCharacterId:', selectedCharacterId);
+    
+    if (!selectedCharacterId) {
+        alert('Veuillez sélectionner un personnage avant de publier votre message.');
+        
+        // Faire défiler vers la galerie de personnages
+        const gallery = document.getElementById('character-gallery');
+        if (gallery) {
+            gallery.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return false;
+    }
+    
+    // S'assurer que le select caché a la bonne valeur
+    const hiddenSelect = document.getElementById('post_roleplay_character');
+    if (hiddenSelect) {
+        console.log('Validation - select value avant:', hiddenSelect.value);
+        hiddenSelect.value = selectedCharacterId;
+        console.log('Validation - select value après:', hiddenSelect.value);
+        
+        // Marquer le champ comme valide
+        hiddenSelect.setCustomValidity('');
+        
+        // Vérifier que la valeur est bien définie
+        if (!hiddenSelect.value || hiddenSelect.value === '') {
+            console.error('Erreur: la valeur du select est vide après assignation');
+            alert('Erreur technique: impossible de sauvegarder le personnage sélectionné.');
+            return false;
+        }
+    } else {
+        console.error('Select caché non trouvé lors de la validation!');
+        alert('Erreur technique: champ de personnage non trouvé.');
+        return false;
+    }
+    
+    console.log('Validation réussie');
+    return true;
+}
+</script> 
