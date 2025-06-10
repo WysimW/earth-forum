@@ -1,0 +1,472 @@
+/* Éditeur d'avatar */
+.character-avatar-editor {
+    background: var(--primary-dark);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid rgba(var(--roleplay-primary-rgb), 0.2);
+}
+
+/* Onglets */
+.avatar-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-tab {
+    background: none;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: 600;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.avatar-tab:hover {
+    background: rgba(var(--roleplay-primary-rgb), 0.1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.avatar-tab.active {
+    background: var(--roleplay-primary);
+    color: var(--text-white);
+    border-bottom: 2px solid var(--roleplay-primary);
+}
+
+.avatar-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--roleplay-primary);
+}
+
+/* Contenu des onglets */
+.avatar-tab-content {
+    margin-bottom: var(--spacing-lg);
+}
+
+.avatar-tab-pane {
+    display: none;
+}
+
+.avatar-tab-pane.active {
+    display: block;
+}
+
+/* Section URL */
+.avatar-url-section {
+    padding: var(--spacing-md);
+    background: rgba(var(--primary-medium-rgb), 0.3);
+    border-radius: var(--border-radius-md);
+    border-left: 3px solid var(--roleplay-secondary);
+}
+
+/* Section Upload */
+.avatar-upload-section {
+    padding: var(--spacing-md);
+}
+
+.upload-dropzone {
+    border: 2px dashed rgba(var(--roleplay-primary-rgb), 0.5);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    background: rgba(var(--primary-medium-rgb), 0.2);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-dropzone:hover {
+    border-color: var(--roleplay-primary);
+    background: rgba(var(--roleplay-primary-rgb), 0.1);
+}
+
+.upload-dropzone.dragover {
+    border-color: var(--roleplay-accent);
+    background: rgba(var(--roleplay-primary-rgb), 0.2);
+    transform: scale(1.02);
+}
+
+.upload-dropzone i {
+    font-size: 3rem;
+    color: var(--roleplay-primary);
+    margin-bottom: var(--spacing-md);
+    display: block;
+}
+
+.upload-dropzone p {
+    color: var(--text-white);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.upload-dropzone small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+/* Barre de progression */
+.upload-progress {
+    margin-top: var(--spacing-md);
+}
+
+.progress {
+    height: 8px;
+    background: rgba(var(--primary-dark-rgb), 0.5);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--roleplay-primary), var(--roleplay-accent));
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Section de prévisualisation */
+.avatar-preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.preview-container {
+    width: 150px;
+    height: 180px;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--roleplay-primary);
+    box-shadow: 0 4px 12px var(--roleplay-glow);
+    margin: 0 auto;
+    transition: all var(--transition-normal);
+}
+
+.preview-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px var(--roleplay-glow);
+}
+
+.preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-container i {
+    font-size: 4rem;
+    color: var(--roleplay-primary);
+    opacity: 0.7;
+}
+
+/* Éditeur de recadrage */
+.avatar-crop-editor {
+    background: var(--primary-medium);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid rgba(var(--roleplay-primary-rgb), 0.3);
+}
+
+.avatar-crop-editor h4 {
+    color: var(--text-white);
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    font-family: var(--font-main);
+}
+
+.crop-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.crop-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.crop-preview {
+    text-align: center;
+}
+
+.crop-preview h5 {
+    color: var(--roleplay-accent);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crop-preview-portrait,
+.crop-preview-circle {
+    border: 2px solid var(--roleplay-primary);
+    background: rgba(var(--primary-dark-rgb), 0.5);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.crop-preview-portrait {
+    width: 80px;
+    height: 96px;
+    border-radius: var(--border-radius-lg);
+}
+
+.crop-preview-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius-circle);
+}
+
+.crop-preview-portrait img,
+.crop-preview-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.crop-image-container {
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background: var(--primary-dark);
+}
+
+.crop-controls {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.crop-controls .btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.crop-controls .btn-primary {
+    background: var(--roleplay-primary);
+    border-color: var(--roleplay-primary);
+}
+
+.crop-controls .btn-primary:hover {
+    background: var(--roleplay-accent);
+    border-color: var(--roleplay-accent);
+    box-shadow: 0 4px 12px rgba(var(--roleplay-primary-rgb), 0.4);
+}
+
+.crop-controls .btn-secondary {
+    background: var(--primary-medium);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-white);
+}
+
+.crop-controls .btn-secondary:hover {
+    background: var(--primary-dark);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* États d'erreur et de succès */
+.avatar-error {
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    margin-top: var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+.avatar-success {
+    background: rgba(var(--success-rgb), 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    margin-top: var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .avatar-tabs {
+        flex-direction: column;
+    }
+    
+    .avatar-tab {
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .crop-preview-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .crop-controls {
+        flex-direction: column;
+    }
+    
+    .crop-controls .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animations */
+@keyframes uploadSuccess {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.upload-success {
+    animation: uploadSuccess 0.6s ease-in-out;
+}
+
+/* Cropper.js customization */
+.cropper-container {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.cropper-view-box {
+    border: 2px solid var(--roleplay-primary);
+    border-radius: var(--border-radius-sm);
+}
+
+.cropper-dashed {
+    border-color: rgba(var(--roleplay-primary-rgb), 0.5);
+}
+
+.cropper-center {
+    background: var(--roleplay-primary);
+}
+
+.cropper-point {
+    background: var(--roleplay-accent);
+    border-color: var(--roleplay-primary);
+}
+
+.cropper-line {
+    background: rgba(var(--roleplay-primary-rgb), 0.6);
+} 
+
+.avatar-manager {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.current-avatar-display {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.current-avatar-display img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .avatar-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+.avatar-option-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.avatar-option-card:hover {
+    border-color: var(--roleplay-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option-card.active {
+    border-color: var(--roleplay-color);
+    background: rgba(var(--roleplay-color-rgb), 0.05);
+}
+
+.avatar-option-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--roleplay-color);
+}
+
+.danger-zone {
+    border: 1px solid #dc3545;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #d1edff;
+    color: #0c5460;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #0dcaf0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.success-message.show {
+    transform: translateX(0);
+}

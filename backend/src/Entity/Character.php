@@ -94,6 +94,12 @@ class Character implements TimestampableInterface
     
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatar = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatarFilename = null;
+    
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $avatarCrop = null;
     
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $biography = null;
@@ -399,6 +405,11 @@ class Character implements TimestampableInterface
     
     public function getAvatar(): ?string
     {
+        // Prioriser l'avatar uploadé, sinon utiliser l'URL externe
+        if ($this->avatarFilename) {
+            return '/uploads/avatars/' . $this->avatarFilename;
+        }
+        
         return $this->avatar;
     }
     
@@ -407,6 +418,39 @@ class Character implements TimestampableInterface
         $this->avatar = $avatar;
         
         return $this;
+    }
+
+    public function getAvatarFilename(): ?string
+    {
+        return $this->avatarFilename;
+    }
+    
+    public function setAvatarFilename(?string $avatarFilename): static
+    {
+        $this->avatarFilename = $avatarFilename;
+        
+        return $this;
+    }
+
+    public function getAvatarCrop(): ?array
+    {
+        return $this->avatarCrop;
+    }
+    
+    public function setAvatarCrop(?array $avatarCrop): static
+    {
+        $this->avatarCrop = $avatarCrop;
+        
+        return $this;
+    }
+
+    public function getAvatarUrl(): ?string
+    {
+        if ($this->avatarFilename) {
+            return '/uploads/avatars/' . $this->avatarFilename;
+        }
+        
+        return $this->avatar;
     }
     
     public function getBiography(): ?string

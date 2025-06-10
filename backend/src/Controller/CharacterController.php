@@ -11,6 +11,7 @@ use App\Entity\Univers;
 use App\Form\CharacterType;
 use App\Form\NpcType;
 use App\Service\BreadcrumbService;
+use App\Service\AvatarService;
 use App\Repository\ForumRepository;
 use App\Repository\ThreadRepository;
 use App\Repository\UniversRepository;
@@ -20,6 +21,8 @@ use App\Repository\NpcRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -33,19 +36,22 @@ class CharacterController extends AbstractController
     private ForumRepository $forumRepository;
     private CharacterForumManager $characterForumManager;
     private SluggerInterface $slugger;
+    private AvatarService $avatarService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         BreadcrumbService $breadcrumbService,
         ForumRepository $forumRepository,
         CharacterForumManager $characterForumManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        AvatarService $avatarService
     ) {
         $this->entityManager = $entityManager;
         $this->breadcrumbService = $breadcrumbService;
         $this->forumRepository = $forumRepository;
         $this->characterForumManager = $characterForumManager;
         $this->slugger = $slugger;
+        $this->avatarService = $avatarService;
     }
 
     #[Route('/', name: 'app_roleplay_characters', methods: ['GET'])]
@@ -190,6 +196,20 @@ class CharacterController extends AbstractController
             $character->setStatus(Character::STATUS_DRAFT);
             $character->setStatusMessage('En cours de rédaction');
             
+            // Traitement de l'avatar uploadé
+            $avatarFilename = $request->request->get('avatarFilename');
+            $avatarCropData = $request->request->get('avatarCropData');
+            
+            if ($avatarFilename) {
+                $character->setAvatarFilename($avatarFilename);
+                // Effacer l'URL externe si un fichier est uploadé
+                $character->setAvatar(null);
+            }
+            
+            if ($avatarCropData) {
+                $character->setAvatarCrop(json_decode($avatarCropData, true));
+            }
+            
             $this->entityManager->persist($character);
             
             // Ensure character forums exist and get the pending forum for this universe
@@ -319,6 +339,24 @@ class CharacterController extends AbstractController
             if ($oldStatus === Character::STATUS_VALIDATED) {
                 $character->setStatus(Character::STATUS_EDITING);
                 $character->setStatusMessage('Modifications en cours');
+            }
+            
+            // Traitement de l'avatar uploadé
+            $avatarFilename = $request->request->get('avatarFilename');
+            $avatarCropData = $request->request->get('avatarCropData');
+            
+            if ($avatarFilename) {
+                $character->setAvatarFilename($avatarFilename);
+                // Effacer l'URL externe si un fichier est uploadé
+                $character->setAvatar(null);
+            } elseif ($request->request->get('avatarFilename') === '') {
+                // Si le champ est vide, effacer le fichier uploadé
+                $character->setAvatarFilename(null);
+                $character->setAvatarCrop(null);
+            }
+            
+            if ($avatarCropData) {
+                $character->setAvatarCrop(json_decode($avatarCropData, true));
             }
             
             // Update character sheet thread if it exists
@@ -635,5 +673,73 @@ class CharacterController extends AbstractController
         }
 
         return $this->redirectToRoute('app_roleplay_characters');
+    }
+
+    #[Route('/avatar/upload', name: 'app_character_avatar_upload', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $file = $request->files->get('avatar');
+        $characterName = $request->request->get('character_name', 'character');
+
+        if (!$file) {
+            return new JsonResponse(['error' => 'Aucun fichier fourni'], 400);
+        }
+
+        // Vérifications immédiates avant de passer au service
+        if (!$file instanceof UploadedFile) {
+            return new JsonResponse(['error' => 'Type de fichier invalide'], 400);
+        }
+
+        if (!$file->isValid()) {
+            return new JsonResponse(['error' => 'Erreur lors de l\'upload : ' . $file->getErrorMessage()], 400);
+        }
+
+        // Validation de la taille (5MB max)
+        $maxFileSize = 5 * 1024 * 1024;
+        $fileSize = $file->getSize();
+        if ($fileSize === false || $fileSize > $maxFileSize) {
+            return new JsonResponse(['error' => 'Le fichier est trop volumineux. Taille maximum : 5MB'], 400);
+        }
+
+        // Validation du type MIME
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+            return new JsonResponse(['error' => 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, GIF, WebP'], 400);
+        }
+
+        try {
+            $result = $this->avatarService->upload($file, $characterName);
+            return new JsonResponse([
+                'success' => true,
+                'filename' => $result['filename'],
+                'path' => $result['path'],
+                'message' => 'Avatar uploadé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/avatar/crop', name: 'app_character_avatar_crop', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function cropAvatar(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['filename']) || !isset($data['cropData'])) {
+            return new JsonResponse(['error' => 'Données manquantes'], 400);
+        }
+
+        try {
+            $versions = $this->avatarService->cropImage($data['filename'], $data['cropData']);
+            return new JsonResponse([
+                'success' => true,
+                'versions' => $versions,
+                'message' => 'Avatar recadré avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
     }
 }

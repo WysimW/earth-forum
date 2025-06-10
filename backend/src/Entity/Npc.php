@@ -110,21 +110,6 @@ class Npc implements TimestampableInterface
 
     #[ORM\Column(length: 255)]
     private ?string $slug = "default";
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $roleInStory = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $relationships = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $quests = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $dialogueStyle = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $secrets = null;
     
     public function __construct()
     {
@@ -426,61 +411,6 @@ class Npc implements TimestampableInterface
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
-        return $this;
-    }
-
-    public function getRoleInStory(): ?string
-    {
-        return $this->roleInStory;
-    }
-
-    public function setRoleInStory(?string $roleInStory): static
-    {
-        $this->roleInStory = $roleInStory;
-        return $this;
-    }
-
-    public function getRelationships(): ?string
-    {
-        return $this->relationships;
-    }
-
-    public function setRelationships(?string $relationships): static
-    {
-        $this->relationships = $relationships;
-        return $this;
-    }
-
-    public function getQuests(): ?string
-    {
-        return $this->quests;
-    }
-
-    public function setQuests(?string $quests): static
-    {
-        $this->quests = $quests;
-        return $this;
-    }
-
-    public function getDialogueStyle(): ?string
-    {
-        return $this->dialogueStyle;
-    }
-
-    public function setDialogueStyle(?string $dialogueStyle): self
-    {
-        $this->dialogueStyle = $dialogueStyle;
-        return $this;
-    }
-
-    public function getSecrets(): ?string
-    {
-        return $this->secrets;
-    }
-
-    public function setSecrets(?string $secrets): static
-    {
-        $this->secrets = $secrets;
         return $this;
     }
 

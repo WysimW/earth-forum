@@ -13,6 +13,7 @@
 docker exec -it CONTAINER_NAME bash
 
 docker exec -it symfony bash
+cd backend
 
 docker-compose down
 docker-compose up --build

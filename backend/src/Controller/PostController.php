@@ -543,21 +543,15 @@ class PostController extends AbstractController
             $userCharacters = $characterRepository->findValidatedCharactersForUser($this->getUser());
         }
         
-        // Récupérer les PNJ validés de l'utilisateur pour cet univers
-        $availableNpcs = $this->entityManager->getRepository(Npc::class)->createQueryBuilder('n')
-            ->where('n.user = :user')
-            ->andWhere('n.status = :status')
-            ->setParameter('user', $this->getUser())
-            ->setParameter('status', 'validated');
-            
+        // Récupérer les PNJ disponibles pour l'utilisateur (créés par lui + factions de ses personnages)
         if ($universe) {
-            $availableNpcs->andWhere('n.universe = :universe OR n.elseworld IN (
-                SELECT e FROM App\Entity\Elseworld e WHERE e.parentUniverse = :universe
-            )')
-            ->setParameter('universe', $universe);
+            $availableNpcs = $this->entityManager->getRepository(Npc::class)->findAvailableForUser($this->getUser(), $universe);
+        } else {
+            $availableNpcs = $this->entityManager->getRepository(Npc::class)->findBy([
+                'user' => $this->getUser(),
+                'status' => 'validated'
+            ]);
         }
-            
-        $availableNpcs = $availableNpcs->getQuery()->getResult();
         
         $form = $this->createForm(PostRoleplayType::class, $post, [
             'characters' => $userCharacters,
@@ -569,6 +563,7 @@ class PostController extends AbstractController
             'form' => $form->createView(),
             'thread' => $thread,
             'characters' => $userCharacters,
+            'npcs' => $availableNpcs,
             'universe' => $universe
         ]);
     }

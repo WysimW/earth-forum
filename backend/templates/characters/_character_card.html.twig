@@ -1,79 +1,154 @@
 <div class="col">
-    <div class="card h-100 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">{{ character.name }}</h5>
-            <div class="d-flex align-items-center">
-                <span class="status-badge status-{{ character.status }}">
-                    {% if character.status == 'pending' %}
-                        En attente
-                    {% elseif character.status == 'validated' %}
-                        Validé
+    <div class="character-card">
+        {# Header avec avatar et infos principales #}
+        <div class="character-card__header">
+            <div class="character-card__avatar">
+                {% if character.avatar %}
+                    <img src="{{ character.avatar }}" alt="{{ character.name }}" class="character-card__avatar-img">
+                {% else %}
+                    <div class="character-card__avatar-placeholder">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                {% endif %}
+                
+                {# Badge de statut sur l'avatar #}
+                <div class="character-card__status-badge status-{{ character.status }}">
+                    {% if character.status == 'validated' %}
+                        <i class="fas fa-check-circle" title="Validé"></i>
+                    {% elseif character.status == 'pending' %}
+                        <i class="fas fa-clock" title="En attente"></i>
                     {% elseif character.status == 'draft' %}
-                        Brouillon
+                        <i class="fas fa-file-alt" title="Brouillon"></i>
                     {% else %}
-                        Refusé
+                        <i class="fas fa-times-circle" title="Refusé"></i>
                     {% endif %}
-                </span>
+                </div>
+            </div>
+            
+            <div class="character-card__info">
+                <h5 class="character-card__name">{{ character.name }}</h5>
+                {% if character.actualPseudo %}
+                    <div class="character-card__alias">{{ character.actualPseudo }}</div>
+                {% endif %}
+                {% if character.universe %}
+                    <div class="character-card__universe">
+                        <i class="fas fa-globe me-1"></i>{{ character.universe.name }}
+                    </div>
+                {% endif %}
+                {% if character.elseworld %}
+                    <div class="character-card__elseworld">
+                        <i class="fas fa-map-marked-alt me-1"></i>{{ character.elseworld.name }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {# Menu actions compact #}
+            <div class="character-card__actions">
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ character.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ character.id }}">
-                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_show', {'id': character.id}) }}">Voir</a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}">Modifier</a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_roleplay_character_relationships', {'id': character.id}) }}">Relations</a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_dialogue_style_character', {'id': character.id}) }}">Style de dialogue</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_roleplay_character_show', {'id': character.id}) }}">
+                                <i class="fas fa-eye me-2"></i>Voir le profil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}">
+                                <i class="fas fa-edit me-2"></i>Modifier
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_character_avatar_manage', {'id': character.id}) }}">
+                                <i class="fas fa-image me-2"></i>Gérer l'avatar
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="post" action="{{ path('app_roleplay_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');">
+                            <a class="dropdown-item" href="{{ path('app_roleplay_character_relationships', {'id': character.id}) }}">
+                                <i class="fas fa-heart me-2"></i>Relations
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_dialogue_style_character', {'id': character.id}) }}">
+                                <i class="fas fa-comment me-2"></i>Style de dialogue
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ path('app_roleplay_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');" class="m-0">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
-                                <button class="dropdown-item text-danger">Supprimer</button>
+                                <button class="dropdown-item text-danger">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </button>
                             </form>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-auto">
-                    {% if character.avatar %}
-                        <img src="{{ character.avatar }}" alt="{{ character.name }}" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
-                    {% else %}
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                            <i class="fas fa-user fa-2x"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col">
-                    {% if character.elseworld %}
-                        <div class="mb-2">
-                            <span class="badge bg-info">{{ character.elseworld.name }}</span>
-                        </div>
-                    {% endif %}
-                    {% if character.actualPseudo %}
-                        <div class="mb-1">
-                            <small class="text-muted">{{ character.actualPseudo }}</small>
-                        </div>
-                    {% endif %}
-                    <div class="card-text small">
-                        {% if character.biography %}
-                            {{ character.biography|striptags|u.truncate(100, '...') }}
-                        {% else %}
-                            <span class="text-muted">Aucune biographie disponible</span>
-                        {% endif %}
-                    </div>
-                </div>
+        
+        {# Corps de la carte avec description #}
+        <div class="character-card__body">
+            {% if character.biography %}
+                <p class="character-card__description">
+                    {{ character.biography|striptags|u.truncate(120, '...') }}
+                </p>
+            {% else %}
+                <p class="character-card__description character-card__description--empty">
+                    <i class="fas fa-file-alt me-1"></i>
+                    Aucune biographie disponible
+                </p>
+            {% endif %}
+            
+            {# Métadonnées secondaires #}
+            <div class="character-card__meta">
+                {% if character.age %}
+                    <span class="character-card__meta-item">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ character.age }}
+                    </span>
+                {% endif %}
+                {% if character.occupation %}
+                    <span class="character-card__meta-item">
+                        <i class="fas fa-briefcase me-1"></i>{{ character.occupation }}
+                    </span>
+                {% endif %}
+                {% if character.moralAffiliation %}
+                    <span class="character-card__meta-item character-card__meta-item--moral">
+                        <span class="moral-badge moral-badge--{{ character.moralAffiliation|lower|replace({' ': '-', '-': '-'}) }}">
+                            {{ character.moralAffiliation }}
+                        </span>
+                    </span>
+                {% endif %}
             </div>
         </div>
-        <div class="card-footer bg-white">
-            <div class="btn-group btn-group-sm w-100">
-                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}" class="btn btn-outline-primary">
-                    <i class="fas fa-eye"></i> Voir
+        
+        {# Footer avec actions principales #}
+        <div class="character-card__footer">
+            <div class="character-card__quick-actions">
+                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>Voir
                 </a>
-                <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-pen"></i> Éditer
+                <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit me-1"></i>Éditer
                 </a>
+            </div>
+            
+            <div class="character-card__status-text">
+                <span class="status-label status-label--{{ character.status }}">
+                    {% if character.status == 'pending' %}
+                        En attente
+                    {% elseif character.status == 'validated' %}
+                        Validé
+                    {% elseif character.status == 'draft' %}
+                        Brouillon
+                    {% elseif character.status == 'rejected' %}
+                        Refusé
+                    {% else %}
+                        {{ character.status|title }}
+                    {% endif %}
+                </span>
             </div>
         </div>
     </div>

@@ -44,77 +44,144 @@
                                 </div>
                             </div>
                         {% else %}
-                            {# Galerie de cartes de personnages cliquables #}
-                            <div class="character-gallery" id="character-gallery">
+                            {# Galerie de cartes de personnages cliquables - Design Dark Mode #}
+                            <div class="character-gallery row g-4" id="character-gallery">
                                 {% for character in characters %}
-                                    <div class="character-gallery__card" 
-                                         data-character-id="{{ character.id }}" 
-                                         onclick="selectCharacter({{ character.id }})">
-                                        <div class="character-gallery__card-inner">
-                                            {# En-tête avec avatar #}
-                                            <div class="character-gallery__header">
-                                                <div class="character-gallery__avatar">
-                                                    {% if character.avatar %}
-                                                        <img src="{{ character.avatar }}" 
-                                                             alt="{{ character.name }}" 
-                                                             class="character-gallery__avatar-img">
-                                                    {% else %}
-                                                        <div class="character-gallery__avatar-placeholder">
-                                                            <i class="fas fa-user-astronaut"></i>
-                                                        </div>
-                                                    {% endif %}
-                                                    <div class="character-gallery__status-badge">
-                                                        <i class="fas fa-check-circle"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="character-gallery__basic-info">
-                                                    <h6 class="character-gallery__name">{{ character.name }}</h6>
-                                                    {% if character.actualPseudo %}
-                                                        <div class="character-gallery__alias">"{{ character.actualPseudo }}"</div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                            
-                                            {# Corps de la carte compact #}
-                                            <div class="character-gallery__body">
-                                                <div class="character-gallery__quick-info">
-                                                    {% if character.occupation %}
-                                                        <div class="character-gallery__info-chip">
-                                                            <i class="fas fa-briefcase"></i>
-                                                            <span>{{ character.occupation }}</span>
-                                                        </div>
-                                                    {% endif %}
-                                                    
-                                                    {% if character.age %}
-                                                        <div class="character-gallery__info-chip">
-                                                            <i class="fas fa-calendar"></i>
-                                                            <span>{{ character.age }}</span>
-                                                        </div>
-                                                    {% endif %}
-                                                    
-                                                    {% if character.location %}
-                                                        <div class="character-gallery__info-chip">
-                                                            <i class="fas fa-map-marker-alt"></i>
-                                                            <span>{{ character.location.name }}</span>
-                                                        </div>
-                                                    {% endif %}
+                                    <div class="col-lg-6 col-xl-4">
+                                        <div class="character-card" 
+                                             data-character-id="{{ character.id }}" 
+                                             onclick="selectCharacter({{ character.id }})"
+                                             title="Sélectionner {{ character.name }}">
+                                            <div class="character-card__inner">
+                                                {# Badge de héros principal #}
+                                                <div class="character-card__hero-badge">
+                                                    <i class="fas fa-star"></i>
                                                 </div>
                                                 
-                                                {% if character.abilities %}
-                                                    <div class="character-gallery__abilities">
-                                                        <div class="character-gallery__abilities-preview">
-                                                            {{ character.abilities|striptags|slice(0, 80) }}{% if character.abilities|length > 80 %}...{% endif %}
+                                                {# Header avec avatar et informations principales #}
+                                                <div class="character-card__header">
+                                                    <div class="character-card__avatar-container">
+                                                        <div class="character-card__avatar">
+                                                            {% if character.avatar %}
+                                                                <img src="{{ character.avatar }}" 
+                                                                     alt="{{ character.name }}" 
+                                                                     class="character-card__avatar-img">
+                                                            {% else %}
+                                                                <div class="character-card__avatar-placeholder">
+                                                                    <i class="fas fa-user-astronaut"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                            
+                                                            {# Badge de validation #}
+                                                            <div class="character-card__status-badge">
+                                                                <i class="fas fa-shield-check" title="Personnage validé"></i>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            {# Overlay de sélection #}
-                                            <div class="character-gallery__selection-overlay">
-                                                <div class="character-gallery__selection-check">
-                                                    <i class="fas fa-check"></i>
+                                                    
+                                                    <div class="character-card__basic-info">
+                                                        <h5 class="character-card__name">{{ character.name }}</h5>
+                                                        {% if character.actualPseudo %}
+                                                            <div class="character-card__alias">
+                                                                <i class="fas fa-mask me-1"></i>
+                                                                "{{ character.actualPseudo }}"
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
-                                                <span class="character-gallery__selection-text">Sélectionné</span>
+                                                
+                                                {# Corps avec informations détaillées #}
+                                                <div class="character-card__body">
+                                                    <div class="character-card__info-grid">
+                                                        {% if character.occupation %}
+                                                            <div class="character-card__info-item">
+                                                                <i class="fas fa-briefcase"></i>
+                                                                <span>{{ character.occupation }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if character.age %}
+                                                            <div class="character-card__info-item">
+                                                                <i class="fas fa-calendar-alt"></i>
+                                                                <span>{{ character.age }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if character.location %}
+                                                            <div class="character-card__info-item">
+                                                                <i class="fas fa-map-marker-alt"></i>
+                                                                <span>{{ character.location.name }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if character.moralAffiliation %}
+                                                            <div class="character-card__info-item">
+                                                                <i class="fas fa-balance-scale"></i>
+                                                                <span>{{ character.moralAffiliation }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    {# Accordéons pour réduire la hauteur #}
+                                                    <div class="character-card__accordions">
+                                                        {% if character.abilities %}
+                                                            <div class="character-card__accordion-item">
+                                                                <button class="character-card__accordion-header" 
+                                                                        type="button" 
+                                                                        onclick="toggleCharacterAccordion(event, 'abilities-{{ character.id }}')">
+                                                                    <span class="character-card__accordion-title">
+                                                                        <i class="fas fa-bolt me-1"></i>
+                                                                        Capacités
+                                                                    </span>
+                                                                    <i class="fas fa-chevron-down character-card__accordion-icon"></i>
+                                                                </button>
+                                                                <div class="character-card__accordion-content" id="abilities-{{ character.id }}">
+                                                                    <div class="character-card__accordion-body">
+                                                                        {{ character.abilities|striptags }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if character.equipment %}
+                                                            <div class="character-card__accordion-item">
+                                                                <button class="character-card__accordion-header" 
+                                                                        type="button" 
+                                                                        onclick="toggleCharacterAccordion(event, 'equipment-{{ character.id }}')">
+                                                                    <span class="character-card__accordion-title">
+                                                                        <i class="fas fa-shield-alt me-1"></i>
+                                                                        Équipement
+                                                                    </span>
+                                                                    <i class="fas fa-chevron-down character-card__accordion-icon"></i>
+                                                                </button>
+                                                                <div class="character-card__accordion-content" id="equipment-{{ character.id }}">
+                                                                    <div class="character-card__accordion-body">
+                                                                        {{ character.equipment|striptags }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                {# Footer avec hint d'action #}
+                                                <div class="character-card__footer">
+                                                    <div class="character-card__action-hint">
+                                                        <i class="fas fa-hand-pointer me-1"></i>
+                                                        Cliquer pour incarner ce personnage
+                                                    </div>
+                                                </div>
+                                                
+                                                {# Overlay de sélection amélioré #}
+                                                <div class="character-card__selection-overlay">
+                                                    <div class="character-card__selection-content">
+                                                        <div class="character-card__selection-icon">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <div class="character-card__selection-text">Personnage Sélectionné</div>
+                                                        <div class="character-card__selection-subtext">Prêt à jouer</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -125,16 +192,18 @@
                         {% endif %}
                         
                         {# Select caché pour la synchronisation avec Symfony #}
-                        <div style="display: none;">
-                            {{ form_widget(form.character) }}
-            </div>
+                        {% if form.character is defined %}
+                            <div style="display: none;">
+                                {{ form_widget(form.character) }}
+                            </div>
 
-                        {# Affichage des erreurs du champ character #}
-                        {% if form.character.vars.errors|length > 0 %}
-                            <div class="alert alert-danger">
-                    {{ form_errors(form.character) }}
-                </div>
-            {% endif %}
+                            {# Affichage des erreurs du champ character #}
+                            {% if form.character.vars.errors|length > 0 %}
+                                <div class="alert alert-danger">
+                                    {{ form_errors(form.character) }}
+                                </div>
+                            {% endif %}
+                        {% endif %}
                         
                         {# Données JSON pour le JavaScript #}
                         <script type="application/json" id="characters-data">
@@ -148,7 +217,7 @@
                                 abilities: c.abilities ? (c.abilities|striptags|slice(0, 200)) : null,
                                 age: c.age,
                                 moralAffiliation: c.moralAffiliation,
-                                personality: c.personality ? (c.personality|striptags|slice(0, 150)) : null,
+                                equipment: c.equipment ? (c.equipment|striptags|slice(0, 150)) : null,
                                 appearance: c.appearance ? (c.appearance|striptags|slice(0, 150)) : null
                             })|json_encode|raw }}
                         </script>
@@ -180,8 +249,8 @@
                         </div>
                     </div>
 
-            {% if form.npcs is defined %}
-                        {# Section des PNJ #}
+                    {# Section des PNJ avec cartes sélectionnables #}
+                    {% if npcs|length > 0 %}
                         <div class="npcs-selector" id="npcs-selector" style="display: none;">
                             <div class="npcs-selector__header">
                                 <h5 class="npcs-selector__title">
@@ -189,16 +258,155 @@
                                     PNJ présents (optionnel)
                                 </h5>
                                 <small class="npcs-selector__subtitle">
-                                    Sélectionnez les PNJ qui apparaissent dans votre message
-                    </small>
-                </div>
-                            
-                            <div class="npcs-selector__content">
-                                {{ form_widget(form.npcs, {'attr': {'class': 'npcs-selector__select', 'multiple': 'multiple'}}) }}
-                                {{ form_errors(form.npcs) }}
+                                    Sélectionnez les PNJ qui apparaissent dans votre message. Vous pouvez sélectionner plusieurs PNJ.
+                                </small>
                             </div>
-                </div>
-            {% endif %}
+                            
+                            <div class="npcs-selector__content" id="npcs-cards-container">
+                                <div class="npcs-gallery row g-3">
+                                    {% for npc in npcs %}
+                                        <div class="col-md-6 col-xl-4">
+                                            <div class="npc-card" 
+                                                 data-npc-id="{{ npc.id }}" 
+                                                 onclick="toggleNpcSelection({{ npc.id }})"
+                                                 title="Cliquez pour sélectionner {{ npc.name }}">
+                                                <div class="npc-card__inner">
+                                                    {# Badge de statut propriétaire #}
+                                                    {% if npc.user.id == app.user.id %}
+                                                        <div class="npc-card__owner-badge">
+                                                            <i class="fas fa-crown"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {# En-tête avec avatar et infos principales #}
+                                                    <div class="npc-card__header">
+                                                        <div class="npc-card__avatar-container">
+                                                            <div class="npc-card__avatar">
+                                                                {% if npc.avatar %}
+                                                                    <img src="{{ npc.avatar }}" 
+                                                                         alt="{{ npc.name }}" 
+                                                                         class="npc-card__avatar-img">
+                                                                {% else %}
+                                                                    <div class="npc-card__avatar-placeholder">
+                                                                        <i class="fas fa-user-tie"></i>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {# Badge de validation #}
+                                                                <div class="npc-card__status-badge">
+                                                                    <i class="fas fa-check-circle" title="PNJ validé"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="npc-card__basic-info">
+                                                            <h6 class="npc-card__name">{{ npc.name }}</h6>
+                                                            {% if npc.occupation %}
+                                                                <div class="npc-card__occupation">
+                                                                    <i class="fas fa-briefcase me-1"></i>
+                                                                    {{ npc.occupation }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {# Corps de la carte avec informations détaillées #}
+                                                    <div class="npc-card__body">
+                                                        {% if npc.age %}
+                                                            <div class="npc-card__info-item">
+                                                                <i class="fas fa-calendar-alt"></i>
+                                                                <span>{{ npc.age }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if npc.factionsRelation|length > 0 %}
+                                                            <div class="npc-card__info-item npc-card__factions">
+                                                                <i class="fas fa-users"></i>
+                                                                <span>
+                                                                    {% for faction in npc.factionsRelation|slice(0, 2) %}
+                                                                        {{ faction.name }}{% if not loop.last %}, {% endif %}
+                                                                    {% endfor %}
+                                                                    {% if npc.factionsRelation|length > 2 %}
+                                                                        <small class="text-muted">+{{ npc.factionsRelation|length - 2 }}</small>
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if npc.user.id != app.user.id %}
+                                                            <div class="npc-card__info-item npc-card__shared">
+                                                                <i class="fas fa-share-alt"></i>
+                                                                <span>Partagé par {{ npc.user.pseudo }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if npc.personality %}
+                                                            <div class="npc-card__description">
+                                                                <em>"{{ npc.personality|striptags|slice(0, 80) }}{% if npc.personality|length > 80 %}...{% endif %}"</em>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    {# Footer avec action hint #}
+                                                    <div class="npc-card__footer">
+                                                        <small class="npc-card__hint">
+                                                            <i class="fas fa-mouse-pointer me-1"></i>
+                                                            Cliquer pour sélectionner
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    {# Overlay de sélection amélioré #}
+                                                    <div class="npc-card__selection-overlay">
+                                                        <div class="npc-card__selection-content">
+                                                            <div class="npc-card__selection-check">
+                                                                <i class="fas fa-check"></i>
+                                                            </div>
+                                                            <div class="npc-card__selection-text">Sélectionné</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="npcs-selector__summary mt-3" id="npcs-summary" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <strong>PNJ sélectionnés :</strong> <span id="selected-npcs-list"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {# Select caché pour la synchronisation avec Symfony #}
+                            {% if form.npcs is defined %}
+                                <div style="display: none;">
+                                    {{ form_widget(form.npcs) }}
+                                </div>
+                                
+                                {# Affichage des erreurs du champ npcs #}
+                                {% if form.npcs.vars.errors|length > 0 %}
+                                    <div class="alert alert-danger">
+                                        {{ form_errors(form.npcs) }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {# Données JSON pour le JavaScript #}
+                            <script type="application/json" id="npcs-data">
+                                {{ npcs|map(n => {
+                                    id: n.id,
+                                    name: n.name,
+                                    occupation: n.occupation,
+                                    avatar: n.avatar,
+                                    age: n.age,
+                                    user: n.user.pseudo,
+                                    isOwner: n.user.id == app.user.id,
+                                    factions: n.factionsRelation|map(f => f.name)|join(', '),
+                                    personality: n.personality ? (n.personality|striptags|slice(0, 80)) : null
+                                })|json_encode|raw }}
+                            </script>
+                        </div>
+                    {% endif %}
 
                     {# Actions #}
                     <div class="reply-actions" id="reply-actions" style="display: none;">
@@ -229,6 +437,8 @@
 // Variables globales
 let charactersData = [];
 let selectedCharacterId = null;
+let npcsData = [];
+let selectedNpcIds = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     // Vérifier la présence du select
@@ -252,6 +462,17 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             console.error('Erreur lors du parsing des données des personnages:', e);
             return;
+        }
+    }
+    
+    // Charger les données des PNJ
+    const npcsDataElement = document.getElementById('npcs-data');
+    if (npcsDataElement) {
+        try {
+            npcsData = JSON.parse(npcsDataElement.textContent);
+            console.log('PNJ chargés:', npcsData);
+        } catch (e) {
+            console.error('Erreur lors du parsing des données des PNJ:', e);
         }
     }
     
@@ -300,20 +521,20 @@ function selectCharacter(characterId) {
 // Fonction pour mettre à jour la sélection visuelle
 function updateCharacterSelection(characterId) {
     // Retirer la sélection de toutes les cartes
-    document.querySelectorAll('.character-gallery__card').forEach(card => {
-        card.classList.remove('character-gallery__card--selected');
+    document.querySelectorAll('.character-card').forEach(card => {
+        card.classList.remove('character-card--selected');
     });
     
     // Ajouter la sélection à la carte choisie
     const selectedCard = document.querySelector(`[data-character-id="${characterId}"]`);
     if (selectedCard) {
-        selectedCard.classList.add('character-gallery__card--selected');
+        selectedCard.classList.add('character-card--selected');
         
-        // Animation de sélection
-        selectedCard.style.transform = 'scale(0.95)';
+        // Animation de sélection plus subtile
+        selectedCard.style.transform = 'translateY(-6px) scale(1.03)';
         setTimeout(() => {
-            selectedCard.style.transform = 'scale(1)';
-        }, 150);
+            selectedCard.style.transform = '';
+        }, 300);
     }
 }
 
@@ -392,8 +613,8 @@ function resetCharacterForm() {
         selectedCharacterId = null;
         
         // Réinitialiser l'interface
-        document.querySelectorAll('.character-gallery__card').forEach(card => {
-            card.classList.remove('character-gallery__card--selected');
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.classList.remove('character-card--selected');
         });
         
         // Masquer les sections
@@ -418,6 +639,9 @@ function resetCharacterForm() {
                 CKEDITOR.instances['reply-content'].setData('');
             }
         }
+        
+        // Réinitialiser la sélection des PNJ
+        resetNpcsSelection();
     }
 }
 
@@ -520,5 +744,117 @@ function validateCharacterSelection() {
     
     console.log('Validation réussie');
     return true;
+}
+
+// Fonctions de gestion des PNJ
+function toggleNpcSelection(npcId) {
+    const card = document.querySelector(`[data-npc-id="${npcId}"]`);
+    const index = selectedNpcIds.indexOf(npcId);
+    
+    if (index > -1) {
+        // Désélectionner
+        selectedNpcIds.splice(index, 1);
+        card.classList.remove('npc-card--selected');
+    } else {
+        // Sélectionner
+        selectedNpcIds.push(npcId);
+        card.classList.add('npc-card--selected');
+        
+        // Animation de sélection
+        card.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            card.style.transform = 'scale(1)';
+        }, 150);
+    }
+    
+    // Mettre à jour l'interface et le select caché
+    updateNpcsSelection();
+}
+
+function updateNpcsSelection() {
+    // Mettre à jour le select caché
+    const hiddenSelect = document.querySelector('select[name$="[npcs][]"]');
+    if (hiddenSelect) {
+        // Désélectionner toutes les options
+        Array.from(hiddenSelect.options).forEach(option => {
+            option.selected = false;
+        });
+        
+        // Sélectionner les options correspondantes
+        selectedNpcIds.forEach(npcId => {
+            const option = hiddenSelect.querySelector(`option[value="${npcId}"]`);
+            if (option) {
+                option.selected = true;
+            }
+        });
+        
+        // Déclencher l'événement change
+        hiddenSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Mettre à jour le résumé
+    updateNpcsSummary();
+}
+
+function updateNpcsSummary() {
+    const summary = document.getElementById('npcs-summary');
+    const list = document.getElementById('selected-npcs-list');
+    
+    if (selectedNpcIds.length > 0) {
+        const selectedNames = selectedNpcIds.map(id => {
+            const npc = npcsData.find(n => n.id == id);
+            return npc ? npc.name : '';
+        }).filter(name => name);
+        
+        list.textContent = selectedNames.join(', ');
+        summary.style.display = 'block';
+    } else {
+        summary.style.display = 'none';
+    }
+}
+
+function resetNpcsSelection() {
+    selectedNpcIds = [];
+    document.querySelectorAll('.npc-card').forEach(card => {
+        card.classList.remove('npc-card--selected');
+    });
+    updateNpcsSelection();
+}
+
+// Fonction pour gérer les accordéons des cartes de personnages
+function toggleCharacterAccordion(event, contentId) {
+    // Empêcher complètement la propagation de l'événement
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
+    const button = event.currentTarget;
+    const content = document.getElementById(contentId);
+    const icon = button.querySelector('.character-card__accordion-icon');
+    
+    if (!content) return false;
+    
+    const isExpanded = content.classList.contains('show');
+    
+    // Fermer tous les autres accordéons de cette carte
+    const card = button.closest('.character-card');
+    if (card) {
+        const allContents = card.querySelectorAll('.character-card__accordion-content');
+        const allButtons = card.querySelectorAll('.character-card__accordion-header');
+        const allIcons = card.querySelectorAll('.character-card__accordion-icon');
+        
+        allContents.forEach(c => c.classList.remove('show'));
+        allButtons.forEach(b => b.setAttribute('aria-expanded', 'false'));
+        allIcons.forEach(i => i.style.transform = 'rotate(0deg)');
+    }
+    
+    if (!isExpanded) {
+        // Ouvrir cet accordéon
+        content.classList.add('show');
+        button.setAttribute('aria-expanded', 'true');
+        icon.style.transform = 'rotate(180deg)';
+    }
+    
+    return false; // Empêcher toute action supplémentaire
 }
 </script> 

@@ -73,17 +73,88 @@
             <h2 class="character-section-title">
                 <i class="fas fa-portrait"></i> Avatar
             </h2>
-            <div class="character-avatar-preview">
-                <div class="preview-container" id="avatarPreview">
-                    {% if character.avatar %}
-                        <img src="{{ character.avatar }}" alt="{{ character.name }}">
-                    {% else %}
-                        <i class="fas fa-user-circle"></i>
-                    {% endif %}
+            <div class="character-avatar-editor">
+                {# Onglets pour choisir la méthode #}
+                <div class="avatar-tabs">
+                    <button type="button" class="avatar-tab {% if character.avatar and not character.avatarFilename %}active{% endif %}" data-tab="url">
+                        <i class="fas fa-link"></i> Lien externe
+                    </button>
+                    <button type="button" class="avatar-tab {% if character.avatarFilename %}active{% endif %}" data-tab="upload">
+                        <i class="fas fa-upload"></i> Upload (max 5MB)
+                    </button>
                 </div>
-                {{ form_widget(form.avatar, {'attr': {'class': 'form-control character-input', 'placeholder': 'URL de votre avatar'}}) }}
-                {{ form_errors(form.avatar) }}
-                <small class="form-text text-muted">Collez l'URL d'une image pour votre personnage</small>
+
+                {# Contenu des onglets #}
+                <div class="avatar-tab-content">
+                    {# Onglet URL #}
+                    <div class="avatar-tab-pane {% if character.avatar and not character.avatarFilename %}active{% endif %}" id="tab-url">
+                        <div class="avatar-url-section">
+                            {{ form_widget(form.avatar, {'attr': {'class': 'form-control character-input', 'placeholder': 'URL de votre avatar'}}) }}
+                            {{ form_errors(form.avatar) }}
+                            <small class="form-text text-muted">Collez l'URL d'une image pour votre personnage</small>
+                        </div>
+                    </div>
+
+                    {# Onglet Upload #}
+                    <div class="avatar-tab-pane {% if character.avatarFilename %}active{% endif %}" id="tab-upload">
+                        <div class="avatar-upload-section">
+                            <div class="upload-dropzone" id="avatarDropzone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Glissez votre image ici ou cliquez pour sélectionner</p>
+                                <small>Formats acceptés : JPEG, PNG, GIF, WebP (max 5MB)</small>
+                                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Prévisualisation et éditeur #}
+                <div class="avatar-preview-section">
+                    <div class="preview-container" id="avatarPreview">
+                        {% if character.avatarUrl %}
+                            <img src="{{ character.avatarUrl }}" alt="{{ character.name }}">
+                        {% else %}
+                            <i class="fas fa-user-circle"></i>
+                        {% endif %}
+                    </div>
+                    
+                    {# Éditeur de recadrage (masqué par défaut) #}
+                    <div class="avatar-crop-editor" id="avatarCropEditor" style="display: none;">
+                        <h4>Recadrer votre avatar</h4>
+                        <div class="crop-container">
+                            <div class="crop-preview-grid">
+                                <div class="crop-preview">
+                                    <h5>Format portrait</h5>
+                                    <div class="crop-preview-portrait" id="cropPreviewPortrait"></div>
+                                </div>
+                                <div class="crop-preview">
+                                    <h5>Format circulaire</h5>
+                                    <div class="crop-preview-circle" id="cropPreviewCircle"></div>
+                                </div>
+                            </div>
+                            <div class="crop-image-container">
+                                <img id="cropImage" style="max-width: 100%;">
+                            </div>
+                            <div class="crop-controls">
+                                <button type="button" class="btn btn-primary" id="confirmCrop">
+                                    <i class="fas fa-check"></i> Confirmer le recadrage
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelCrop">
+                                    <i class="fas fa-times"></i> Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Champs cachés pour stocker les données #}
+                <input type="hidden" id="avatarFilename" name="avatarFilename" value="{{ character.avatarFilename ?? '' }}">
+                <input type="hidden" id="avatarCropData" name="avatarCropData" value="{{ character.avatarCrop ? character.avatarCrop|json_encode : '' }}">
             </div>
         </div>
         
@@ -241,33 +312,16 @@
 </div>
 {% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/avatar-editor.css') }}">
+{% endblock %}
+
 {% block javascripts %}
 {{ parent() }}
+<script src="{{ asset('js/avatar-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Prévisualisation de l'avatar
-    const avatarInput = document.querySelector('#{{ form.avatar.vars.id }}');
-    const previewContainer = document.getElementById('avatarPreview');
-
-    if (avatarInput && previewContainer) {
-        avatarInput.addEventListener('input', function() {
-            const url = this.value.trim();
-            if (url) {
-                const img = new Image();
-                img.onload = function() {
-                    previewContainer.innerHTML = '';
-                    previewContainer.appendChild(img);
-                }
-                img.onerror = function() {
-                    previewContainer.innerHTML = '<i class="fas fa-user-circle"></i>';
-                }
-                img.src = url;
-            } else {
-                previewContainer.innerHTML = '<i class="fas fa-user-circle"></i>';
-            }
-        });
-    }
-    
     // Initialisation des éditeurs Quill.js
     if (typeof window.initWysiwygEditors === 'function') {
         window.initWysiwygEditors();

@@ -50,4 +50,27 @@ class NpcRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve les PNJ disponibles pour un utilisateur dans un univers donné
+     * Inclut les PNJ créés par l'utilisateur ET les PNJ des factions dont ses personnages sont membres
+     */
+    public function findAvailableForUser($user, $universe): array
+    {
+        return $this->createQueryBuilder('n')
+            ->leftJoin('n.factionsRelation', 'f')
+            ->leftJoin('f.characters', 'c')
+            ->where('n.status = :status')
+            ->andWhere('(n.universe = :universe OR n.elseworld IN (
+                SELECT e FROM App\Entity\Elseworld e WHERE e.parentUniverse = :universe
+            ))')
+            ->andWhere('(n.user = :user OR (c.user = :user AND c.status = :characterStatus))')
+            ->setParameter('status', 'validated')
+            ->setParameter('characterStatus', 'validated')
+            ->setParameter('universe', $universe)
+            ->setParameter('user', $user)
+            ->orderBy('n.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 } 

@@ -1,0 +1,183 @@
+        /* Styles pour les notices de modération */
+        .moderation-notice {
+            border-left: var(--spacing-xs) solid;
+            font-size: 0.95rem;
+            margin: var(--spacing-sm) 0;
+        }
+        
+        .moderation-notice.alert-warning {
+            border-left-color: var(--warning);
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+        
+        .moderation-notice.alert-info {
+            border-left-color: var(--info);
+            background-color: rgba(13, 202, 240, 0.1);
+        }
+        
+        .moderation-notice.alert-danger {
+            border-left-color: var(--danger);
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        .moderation-notice.alert-success {
+            border-left-color: var(--success);
+            background-color: rgba(25, 135, 84, 0.1);
+        }
+        
+        /* Style pour les posts masqués */
+        .post-container[data-is-hidden="true"] {
+            opacity: 0.7;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .post-container[data-is-hidden="true"]:hover {
+            opacity: 1;
+        }
+        
+        .moderation-notice .d-flex i {
+            font-size: 1.1rem;
+        }
+        
+        /* Styles pour le modal de modération */
+        .post-preview-content {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            cursor: text;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .post-preview-content:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        .post-preview-content::selection {
+            background-color: #007bff;
+            color: white;
+            text-shadow: none;
+        }
+        
+        .post-preview-content::-moz-selection {
+            background-color: #007bff;
+            color: white;
+            text-shadow: none;
+        }
+        
+        /* Sélection pour tous les éléments dans l'aperçu */
+        .post-preview-content *::selection {
+            background-color: #007bff;
+            color: white;
+            text-shadow: none;
+        }
+        
+        .post-preview-content *::-moz-selection {
+            background-color: #007bff;
+            color: white;
+            text-shadow: none;
+        }
+        
+        /* Style spécial pour la sélection active */
+        .post-preview-content.selecting {
+            background-color: rgba(0, 123, 255, 0.08);
+            border: 2px dashed #007bff;
+        }
+        
+        .blockquote-sm {
+            font-size: 0.875rem;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin: 0.5rem 0;
+        }
+        
+        .modal-xl .card-body {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(var(--primary-rgb), 0.3) transparent;
+        }
+        
+        .modal-xl .card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .modal-xl .card-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .modal-xl .card-body::-webkit-scrollbar-thumb {
+            background-color: rgba(var(--primary-rgb), 0.3);
+            border-radius: 3px;
+        }
+        
+        .modal-xl .card-body::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(var(--primary-rgb), 0.5);
+        }
+        
+        /* Animation pour les boutons du modal */
+        #selectAllBtn, #quoteSelectedBtn, #clearQuoteBtn {
+            transition: all 0.2s ease;
+        }
+        
+        #selectAllBtn:hover {
+            transform: translateY(-1px);
+        }
+        
+        #quoteSelectedBtn {
+            min-width: 160px;
+            width: 160px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        #quoteSelectedBtn:enabled {
+            animation: pulse-success 2s infinite;
+        }
+        
+        @keyframes pulse-success {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+            70% { box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        
+        /* Animation pour l'état de sélection */
+        .post-preview-content.selecting {
+            animation: selecting-glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes selecting-glow {
+            from {
+                border-color: #007bff;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            }
+            to {
+                border-color: #0056b3;
+                box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            }
+        }
+        
+        /* Amélioration des liens dans les messages de modération */
+        .moderation-notice a {
+            color: inherit;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .moderation-notice a:hover {
+            text-decoration: underline;
+            color: var(--primary-dark);
+        }
+        
+        .moderation-notice a i {
+            transition: transform 0.2s ease;
+        }
+        
+        .moderation-notice a:hover i {
+            transform: translateX(2px);
+        }

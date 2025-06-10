@@ -109,26 +109,6 @@ class NpcType extends AbstractType
             ->add('abilities', TextareaType::class, [
                 'label' => 'Capacités',
                 'required' => false,
-            ])
-            ->add('roleInStory', TextareaType::class, [
-                'label' => 'Rôle dans l\'histoire',
-                'required' => false,
-            ])
-            ->add('relationships', TextareaType::class, [
-                'label' => 'Relations',
-                'required' => false,
-            ])
-            ->add('quests', TextareaType::class, [
-                'label' => 'Quêtes',
-                'required' => false,
-            ])
-            ->add('dialogueStyle', TextareaType::class, [
-                'label' => 'Style de dialogue',
-                'required' => false,
-            ])
-            ->add('secrets', TextareaType::class, [
-                'label' => 'Secrets',
-                'required' => false,
             ]);
     }
 

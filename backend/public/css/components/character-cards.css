@@ -1,0 +1,825 @@
+/* ===================================
+   CARTES DE PERSONNAGES MODERNES
+   =================================== */
+
+.character-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e9ecef;
+}
+
+.character-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: #dee2e6;
+}
+
+/* ===================================
+   HEADER DE LA CARTE
+   =================================== */
+
+.character-card__header {
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.character-card__avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.character-card__avatar-img {
+    width: 60px;
+    height: 72px; /* Ratio 1.2:1 pour format portrait */
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.character-card__avatar-placeholder {
+    width: 60px;
+    height: 72px;
+    background: linear-gradient(135deg, #6c757d, #495057);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.character-card__status-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: white;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.character-card__status-badge.status-validated {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.character-card__status-badge.status-pending {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.character-card__status-badge.status-draft {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+.character-card__status-badge.status-rejected {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+}
+
+.character-card__info {
+    flex: 1;
+    min-width: 0; /* Pour permettre text-overflow */
+}
+
+.character-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.character-card__alias {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-bottom: 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.character-card__universe,
+.character-card__elseworld {
+    font-size: 0.75rem;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.character-card__universe i,
+.character-card__elseworld i {
+    flex-shrink: 0;
+}
+
+.character-card__universe {
+    color: var(--roleplay-color, #0d6efd);
+}
+
+.character-card__elseworld {
+    color: #17a2b8;
+}
+
+.character-card__actions {
+    flex-shrink: 0;
+}
+
+.character-card__actions .btn {
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.character-card__actions .btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* ===================================
+   CORPS DE LA CARTE
+   =================================== */
+
+.character-card__body {
+    padding: 1rem 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.character-card__description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #495057;
+    margin: 0 0 1rem 0;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.character-card__description--empty {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+.character-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.character-card__meta-item {
+    font-size: 0.75rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.character-card__meta-item i {
+    flex-shrink: 0;
+}
+
+.character-card__meta-item--moral {
+    background: transparent;
+    padding: 0;
+}
+
+/* ===================================
+   BADGES MORAUX
+   =================================== */
+
+.moral-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.moral-badge--super-héros {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.moral-badge--super-vilain {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.moral-badge--anti-héros {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+.moral-badge--neutre {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+}
+
+.moral-badge--civil {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+}
+
+/* ===================================
+   FOOTER DE LA CARTE
+   =================================== */
+
+.character-card__footer {
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    border-top: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.character-card__quick-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.character-card__quick-actions .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.character-card__status-text {
+    flex-shrink: 0;
+}
+
+.status-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-label--validated {
+    background: #d1edff;
+    color: #0c5460;
+    border: 1px solid #b6e3ff;
+}
+
+.status-label--pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffe69c;
+}
+
+.status-label--draft {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.status-label--rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ===================================
+   DROPDOWN MODERNE
+   =================================== */
+
+.character-card .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 200px;
+}
+
+.character-card .dropdown-item {
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.character-card .dropdown-item:hover {
+    background: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.character-card .dropdown-item i {
+    width: 16px;
+    flex-shrink: 0;
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
+@media (max-width: 768px) {
+    .character-card__header {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .character-card__avatar-img,
+    .character-card__avatar-placeholder {
+        width: 50px;
+        height: 60px;
+    }
+    
+    .character-card__status-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .character-card__name {
+        font-size: 1rem;
+    }
+    
+    .character-card__body {
+        padding: 0.875rem 1rem;
+    }
+    
+    .character-card__footer {
+        padding: 0.875rem 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .character-card__quick-actions {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    
+    .character-card__status-text {
+        order: 1;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.character-card {
+    animation: cardAppear 0.5s ease-out;
+}
+
+.character-card:nth-child(1) { animation-delay: 0.1s; }
+.character-card:nth-child(2) { animation-delay: 0.2s; }
+.character-card:nth-child(3) { animation-delay: 0.3s; }
+.character-card:nth-child(4) { animation-delay: 0.4s; }
+.character-card:nth-child(5) { animation-delay: 0.5s; }
+.character-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* ===================================
+   CARTES PNJ MODERNES
+   =================================== */
+
+.npc-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e9ecef;
+    position: relative;
+}
+
+/* Indicateur PNJ subtil */
+.npc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #fd7e14, #ffc107);
+    z-index: 1;
+}
+
+.npc-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: #dee2e6;
+}
+
+/* ===================================
+   HEADER PNJ
+   =================================== */
+
+.npc-card__header {
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #fff9f0 0%, #ffffff 100%);
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.npc-card__avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.npc-card__avatar-img {
+    width: 60px;
+    height: 60px; /* Format circulaire pour les PNJ */
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.npc-card__avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #fd7e14, #ffc107);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.npc-card__status-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: white;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.npc-card__status-badge.status-validated {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.npc-card__status-badge.status-pending {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.npc-card__status-badge.status-draft {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+.npc-card__status-badge.status-editing {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.npc-card__status-badge.status-abandoned {
+    background: linear-gradient(135deg, #6f42c1, #563d7c);
+}
+
+.npc-card__status-badge.status-rejected {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+}
+
+.npc-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.npc-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.npc-card__universe,
+.npc-card__elseworld,
+.npc-card__type {
+    font-size: 0.75rem;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.npc-card__universe i,
+.npc-card__elseworld i,
+.npc-card__type i {
+    flex-shrink: 0;
+}
+
+.npc-card__universe {
+    color: var(--roleplay-color, #0d6efd);
+}
+
+.npc-card__elseworld {
+    color: #17a2b8;
+}
+
+.npc-card__type {
+    color: #fd7e14;
+    font-weight: 500;
+}
+
+.npc-card__actions {
+    flex-shrink: 0;
+}
+
+.npc-card__actions .btn {
+    border: none;
+    background: #fff5e6;
+    color: #fd7e14;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.npc-card__actions .btn:hover {
+    background: #ffe0b3;
+    color: #e66500;
+}
+
+/* ===================================
+   CORPS PNJ
+   =================================== */
+
+.npc-card__body {
+    padding: 1rem 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.npc-card__description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #495057;
+    margin: 0 0 1rem 0;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.npc-card__description--empty {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+.npc-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.npc-card__meta-item {
+    font-size: 0.75rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    background: #fff5e6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.npc-card__meta-item i {
+    flex-shrink: 0;
+}
+
+.npc-card__meta-item--importance {
+    background: transparent;
+    padding: 0;
+}
+
+/* ===================================
+   BADGES IMPORTANCE PNJ
+   =================================== */
+
+.importance-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.importance-badge--majeur {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.importance-badge--important {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+.importance-badge--secondaire {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
+
+.importance-badge--mineur {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+}
+
+/* ===================================
+   FOOTER PNJ
+   =================================== */
+
+.npc-card__footer {
+    padding: 1rem 1.25rem;
+    background: #fff9f0;
+    border-top: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.npc-card__quick-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.npc-card__quick-actions .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.npc-card__status-text {
+    flex-shrink: 0;
+}
+
+.status-label--editing {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.status-label--abandoned {
+    background: #e2d9f3;
+    color: #493057;
+    border: 1px solid #d4c4fb;
+}
+
+/* ===================================
+   DROPDOWN PNJ
+   =================================== */
+
+.npc-card .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 200px;
+}
+
+.npc-card .dropdown-item {
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.npc-card .dropdown-item:hover {
+    background: #fff5e6;
+    transform: translateX(2px);
+}
+
+.npc-card .dropdown-item i {
+    width: 16px;
+    flex-shrink: 0;
+}
+
+/* ===================================
+   RESPONSIVE PNJ
+   =================================== */
+
+@media (max-width: 768px) {
+    .npc-card__header {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .npc-card__avatar-img,
+    .npc-card__avatar-placeholder {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .npc-card__status-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .npc-card__name {
+        font-size: 1rem;
+    }
+    
+    .npc-card__body {
+        padding: 0.875rem 1rem;
+    }
+    
+    .npc-card__footer {
+        padding: 0.875rem 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .npc-card__quick-actions {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    
+    .npc-card__status-text {
+        order: 1;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ===================================
+   ANIMATIONS PNJ
+   =================================== */
+
+.npc-card {
+    animation: cardAppear 0.5s ease-out;
+} 

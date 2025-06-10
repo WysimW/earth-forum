@@ -159,6 +159,26 @@ class ForumRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Récupère les sous-forums triés par type (important > roleplay > hrp) puis par position
+     *
+     * @param Forum $parentForum Le forum parent
+     * @return Forum[] Liste des sous-forums triés
+     */
+    public function findSubForumsByParentSortedByType(Forum $parentForum): array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.parent = :parent')
+            ->setParameter('parent', $parentForum)
+            ->orderBy('CASE f.type 
+                WHEN \'important\' THEN 1 
+                WHEN \'roleplay\' THEN 2 
+                WHEN \'hrp\' THEN 3 
+                ELSE 4 END', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
     //    /**
     //     * @return Forum[] Returns an array of Forum objects

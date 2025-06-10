@@ -6,196 +6,13 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/components/editor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/components/posts.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/moderation-modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents.css/quick-nav.css') }}">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <style>
-        /* Styles pour les notices de modération */
-        .moderation-notice {
-            border-left: var(--spacing-xs) solid;
-            font-size: 0.95rem;
-            margin: var(--spacing-sm) 0;
-        }
-        
-        .moderation-notice.alert-warning {
-            border-left-color: var(--warning);
-            background-color: rgba(255, 193, 7, 0.1);
-        }
-        
-        .moderation-notice.alert-info {
-            border-left-color: var(--info);
-            background-color: rgba(13, 202, 240, 0.1);
-        }
-        
-        .moderation-notice.alert-danger {
-            border-left-color: var(--danger);
-            background-color: rgba(220, 53, 69, 0.1);
-        }
-        
-        .moderation-notice.alert-success {
-            border-left-color: var(--success);
-            background-color: rgba(25, 135, 84, 0.1);
-        }
-        
-        /* Style pour les posts masqués */
-        .post-container[data-is-hidden="true"] {
-            opacity: 0.7;
-            border-left: 4px solid var(--danger);
-        }
-        
-        .post-container[data-is-hidden="true"]:hover {
-            opacity: 1;
-        }
-        
-        .moderation-notice .d-flex i {
-            font-size: 1.1rem;
-        }
-        
-        /* Styles pour le modal de modération */
-        .post-preview-content {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            user-select: text;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            cursor: text;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s ease;
-        }
-        
-        .post-preview-content:hover {
-            background-color: rgba(0, 123, 255, 0.05);
-        }
-        
-        .post-preview-content::selection {
-            background-color: #007bff;
-            color: white;
-            text-shadow: none;
-        }
-        
-        .post-preview-content::-moz-selection {
-            background-color: #007bff;
-            color: white;
-            text-shadow: none;
-        }
-        
-        /* Sélection pour tous les éléments dans l'aperçu */
-        .post-preview-content *::selection {
-            background-color: #007bff;
-            color: white;
-            text-shadow: none;
-        }
-        
-        .post-preview-content *::-moz-selection {
-            background-color: #007bff;
-            color: white;
-            text-shadow: none;
-        }
-        
-        /* Style spécial pour la sélection active */
-        .post-preview-content.selecting {
-            background-color: rgba(0, 123, 255, 0.08);
-            border: 2px dashed #007bff;
-        }
-        
-        .blockquote-sm {
-            font-size: 0.875rem;
-            background-color: rgba(0, 0, 0, 0.03);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            margin: 0.5rem 0;
-        }
-        
-        .modal-xl .card-body {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(var(--primary-rgb), 0.3) transparent;
-        }
-        
-        .modal-xl .card-body::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .modal-xl .card-body::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .modal-xl .card-body::-webkit-scrollbar-thumb {
-            background-color: rgba(var(--primary-rgb), 0.3);
-            border-radius: 3px;
-        }
-        
-        .modal-xl .card-body::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(var(--primary-rgb), 0.5);
-        }
-        
-        /* Animation pour les boutons du modal */
-        #selectAllBtn, #quoteSelectedBtn, #clearQuoteBtn {
-            transition: all 0.2s ease;
-        }
-        
-        #selectAllBtn:hover {
-            transform: translateY(-1px);
-        }
-        
-        #quoteSelectedBtn {
-            min-width: 160px;
-            width: 160px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-        
-        #quoteSelectedBtn:enabled {
-            animation: pulse-success 2s infinite;
-        }
-        
-        @keyframes pulse-success {
-            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
-            70% { box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
-        }
-        
-        /* Animation pour l'état de sélection */
-        .post-preview-content.selecting {
-            animation: selecting-glow 1.5s ease-in-out infinite alternate;
-        }
-        
-        @keyframes selecting-glow {
-            from {
-                border-color: #007bff;
-                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-            }
-            to {
-                border-color: #0056b3;
-                box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
-            }
-        }
-        
-        /* Amélioration des liens dans les messages de modération */
-        .moderation-notice a {
-            color: inherit;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        
-        .moderation-notice a:hover {
-            text-decoration: underline;
-            color: var(--primary-dark);
-        }
-        
-        .moderation-notice a i {
-            transition: transform 0.2s ease;
-        }
-        
-        .moderation-notice a:hover i {
-            transform: translateX(2px);
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
-<div class="thread-show container my-4">
+<div class="thread-show container my-4" data-univers-slug="{{ univers.slug }}" data-thread-id="{{ thread.id }}">
     {# Fil d'Ariane #}
     {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
 
@@ -443,6 +260,37 @@
         </div>
     </div>
 
+    {# Navigation rapide pour les posts #}
+    {% if posts|length > 0 %}
+        <div class="quick-nav visible" id="posts-quick-nav">
+            <a href="#posts" class="quick-nav-item" data-tooltip="Premier message" title="Premier message">
+                <i class="fas fa-angle-double-up"></i>
+            </a>
+            {% if thread.type == 'roleplay' %}
+                <a href="#posts" class="quick-nav-item character-nav-prev" data-tooltip="Personnage précédent" title="Personnage précédent" style="display: none;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <a href="#posts" class="quick-nav-item character-filter" data-tooltip="Filtrer par personnage" title="Filtrer par personnage">
+                    <i class="fas fa-user-friends"></i>
+                </a>
+                <a href="#posts" class="quick-nav-item character-nav-next" data-tooltip="Personnage suivant" title="Personnage suivant" style="display: none;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+            <a href="#posts" class="quick-nav-item last-post" data-tooltip="Dernier message" title="Dernier message">
+                <i class="fas fa-angle-double-down"></i>
+            </a>
+            {% if canReply %}
+                <a href="#replyForm" class="quick-nav-item" data-tooltip="Répondre" title="Répondre">
+                    <i class="fas fa-reply"></i>
+                </a>
+            {% endif %}
+            <a href="{{ path('app_forum_show', {'universeSlug': univers.slug, 'id': thread.forum.id}) }}" class="quick-nav-item" data-tooltip="Retour au forum" title="Retour au forum">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    {% endif %}
+
     {# Afficher le message de restriction si l'utilisateur est sanctionné #}
     {% if app.user and postingRestriction is defined and postingRestriction is not null %}
         <div class="alert alert-warning mb-4">
@@ -478,11 +326,86 @@
                         </div>
                         
                         <div class="post-character-info">
-                            <div class="name-label">{{ post.character.name }}</div>
+                            {# Affiliation morale et factions au-dessus du nom #}
+                            {% if post.character.moralAffiliation %}
+                                <div class="character-affiliation">
+                                    <span class="moral-badge moral-badge--{{ post.character.moralAffiliation|lower|replace({' ': '-'}) }}">
+                                        {{ post.character.moralAffiliation }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            
+                            {% if post.character.factions|length > 0 %}
+                                <div class="character-factions">
+                                    {% for faction in post.character.factions|slice(0, 2) %}
+                                        <span class="faction-badge">{{ faction.name }}</span>
+                                    {% endfor %}
+                                    {% if post.character.factions|length > 2 %}
+                                        <span class="faction-badge-more">+{{ post.character.factions|length - 2 }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="name-label">
+                                <a href="{{ path('app_roleplay_character_show', {'id': post.character.id}) }}" class="character-link">
+                                    {{ post.character.name }}
+                                </a>
+                            </div>
                             {% if post.character.actualPseudo %}
                                 <div class="character-alias">{{ post.character.actualPseudo }}</div>
                             {% endif %}
                             <div class="player-name">Joueur: {{ post.author.pseudo }}</div>
+                        </div>
+                        
+                        {# Accordéons pour les détails du personnage #}
+                        <div class="post-character-accordions mt-3">
+                            {% if post.character.abilities %}
+                                <div class="post-character-accordion-item">
+                                    <button class="post-character-accordion-header" 
+                                            type="button" 
+                                            onclick="togglePostCharacterAccordion(event, 'post-abilities-{{ post.id }}')">
+                                        <span class="post-character-accordion-title">
+                                            <i class="fas fa-bolt me-1"></i>
+                                            Capacités
+                                        </span>
+                                        <i class="fas fa-chevron-down post-character-accordion-icon"></i>
+                                    </button>
+                                    <div class="post-character-accordion-content" id="post-abilities-{{ post.id }}">
+                                        <div class="post-character-accordion-body">
+                                            {{ post.character.abilities|striptags }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if post.character.equipment %}
+                                <div class="post-character-accordion-item">
+                                    <button class="post-character-accordion-header" 
+                                            type="button" 
+                                            onclick="togglePostCharacterAccordion(event, 'post-equipment-{{ post.id }}')">
+                                        <span class="post-character-accordion-title">
+                                            <i class="fas fa-shield-alt me-1"></i>
+                                            Équipement
+                                        </span>
+                                        <i class="fas fa-chevron-down post-character-accordion-icon"></i>
+                                    </button>
+                                    <div class="post-character-accordion-content" id="post-equipment-{{ post.id }}">
+                                        <div class="post-character-accordion-body">
+                                            {{ post.character.equipment|striptags }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {# Lien vers la fiche complète du personnage #}
+                            <div class="post-character-link mt-2">
+                                <a href="{{ path('app_roleplay_character_show', {'id': post.character.id}) }}" 
+                                   class="character-sheet-link" 
+                                   title="Voir la fiche complète de {{ post.character.name }}">
+                                    <i class="fas fa-id-card me-1"></i>
+                                    Fiche personnage
+                                </a>
+                            </div>
                         </div>
                     {% else %}
                         <div class="avatar-container">
@@ -515,11 +438,15 @@
                                                 <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="img-fluid rounded">
                                             {% else %}
                                                 <div class="default-avatar">
-                                                    <i class="fas fa-user"></i>
+                                                    <i class="fas fa-user-tie"></i>
                                                 </div>
                                             {% endif %}
                                         </div>
-                                        <div class="npc-name">{{ npc.name }}</div>
+                                        <div class="npc-name">
+                                            <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="npc-link">
+                                                {{ npc.name }}
+                                            </a>
+                                        </div>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -605,11 +532,13 @@
 
     {# Formulaire de réponse (si l'utilisateur peut répondre) #}
     {% if canReply %}
+        <div id="replyForm">
             {% if thread.type == 'roleplay' %}
                 {{ render(controller('App\\Controller\\PostController::replyForm', { 'universeSlug': univers.slug, 'threadId': thread.id })) }}
             {% else %}
                 {{ render(controller('App\\Controller\\PostController::replyHrpForm', { 'universeSlug': univers.slug, 'threadId': thread.id })) }}
             {% endif %}
+        </div>
     {% elseif not app.user %}
         <div class="alert alert-info mt-4">
             <i class="fas fa-info-circle me-2"></i>
@@ -800,522 +729,73 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <!-- <script src="{{ asset('js/dc-editor.js') }}"></script> TEMPORAIREMENT DÉSACTIVÉ -->
+    
+    {# Scripts organisés par fonctionnalité #}
+    <script src="{{ asset('js/thread/effects.js') }}"></script>
+    <script src="{{ asset('js/thread/character-filter.js') }}"></script>
+    <script src="{{ asset('js/thread/quick-nav.js') }}"></script>
+    <script src="{{ asset('js/thread/modals.js') }}"></script>
+    
+    {# Données pour les scripts JavaScript #}
+    <script type="application/json" id="csrf-tokens">
+        {
+                    {% for post in posts %}
+            "{{ post.id }}": "{{ csrf_token('delete_post_' ~ post.id) }}"{% if not loop.last %},{% endif %}
+                    {% endfor %}
+        }
+    </script>
+    
+    <script type="application/json" id="moderation-tokens">
+        {
+                    {% for post in posts %}
+            "{{ post.id }}": "{{ csrf_token('moderate_post_' ~ post.id) }}"{% if not loop.last %},{% endif %}
+                    {% endfor %}
+        }
+    </script>
+    
     <script>
+        // Configuration globale pour les scripts
         document.addEventListener('DOMContentLoaded', function() {
-                        // === NAVIGATION ===
-            // Système d'ancres temporairement désactivé
+            // Ajouter les attributs de données nécessaires pour les scripts
+            document.body.dataset.universSlug = '{{ univers.slug }}';
+            document.body.dataset.threadId = '{{ thread.id }}';
             
-            // === GESTION DES MODALS ===
-            
-            // Modal de suppression de post
-            const deletePostModal = document.getElementById('deletePostModal');
-            if (deletePostModal) {
-                // Pré-générer les tokens CSRF pour tous les posts
-                const csrfTokens = {
-                    {% for post in posts %}
-                    '{{ post.id }}': '{{ csrf_token('delete_post_' ~ post.id) }}'{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                };
-                
-                deletePostModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget;
-                    const postId = button.getAttribute('data-post-id');
-                    const deleteForm = document.getElementById('deletePostForm');
-                    const tokenInput = document.getElementById('deletePostToken');
-                    
-                    if (deleteForm && postId) {
-                        deleteForm.action = '{{ path('app_post_delete', {'universeSlug': univers.slug, 'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
-                    }
-                    
-                    // Utiliser le token CSRF pré-généré
-                    if (tokenInput && postId && csrfTokens[postId]) {
-                        tokenInput.value = csrfTokens[postId];
-                    }
-                });
-            }
-            
-            // Modal de modération de post
-            const moderatePostModal = document.getElementById('moderatePostModal');
-            if (moderatePostModal) {
-                // Pré-générer les tokens CSRF pour la modération
-                const moderationTokens = {
-                    {% for post in posts %}
-                    '{{ post.id }}': '{{ csrf_token('moderate_post_' ~ post.id) }}'{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                };
-                
-                let currentPostId = null;
-                let selectedText = '';
-                
-                moderatePostModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget;
-                    const postId = button.getAttribute('data-post-id');
-                    currentPostId = postId;
-                    
-                    // Mise à jour du titre avec l'ID du message
-                    document.getElementById('modalPostId').textContent = '#' + postId;
-                    
-                    // Configuration du formulaire
-                    const moderateForm = document.getElementById('moderatePostForm');
-                    const tokenInput = document.getElementById('moderatePostToken');
-                    
-                    if (moderateForm && postId) {
-                        moderateForm.action = '{{ path('app_post_moderate', {'universeSlug': univers.slug, 'id': 'POST_ID'}) }}'.replace('POST_ID', postId);
-                    }
-                    
-                    // Token CSRF
-                    if (tokenInput && postId && moderationTokens[postId]) {
-                        tokenInput.value = moderationTokens[postId];
-                    }
-                    
-                    // Gestion de l'affichage des options selon l'état du message
-                    const postContainer = document.querySelector('.post-container[data-post-id="' + postId + '"]');
-                    const isHidden = postContainer && postContainer.getAttribute('data-is-hidden') === 'true';
-                    
-                    const hideOption = document.getElementById('hide').parentElement;
-                    const unhideOption = document.getElementById('unhideOption');
-                    const warnOption = document.getElementById('warn').parentElement;
-                    const editRequestOption = document.getElementById('edit_request').parentElement;
-                    
-                    if (isHidden) {
-                        // Si le message est masqué, on affiche uniquement l'option de démasquage
-                        hideOption.style.display = 'none';
-                        warnOption.style.display = 'none';
-                        editRequestOption.style.display = 'none';
-                        unhideOption.style.display = 'block';
-                        
-                        // Sélectionner automatiquement l'option de démasquage
-                        document.getElementById('unhide').checked = true;
-                        
-                        // Modifier le texte d'aide pour le motif
-                        const reasonLabel = document.querySelector('label[for="moderation_reason"]');
-                        const reasonHelp = reasonLabel.nextElementSibling.nextElementSibling;
-                        reasonLabel.textContent = 'Motif du démasquage (optionnel)';
-                        reasonHelp.textContent = 'Expliquez pourquoi vous démasquez ce message (optionnel).';
-                        
-                        // Rendre le champ motif optionnel
-                        document.getElementById('moderation_reason').required = false;
-                        document.getElementById('moderation_reason').placeholder = 'Raison du démasquage (optionnel)...';
-                    } else {
-                        // Si le message n'est pas masqué, on affiche les options normales
-                        hideOption.style.display = 'block';
-                        warnOption.style.display = 'block';
-                        editRequestOption.style.display = 'block';
-                        unhideOption.style.display = 'none';
-                        
-                        // Sélectionner l'avertissement par défaut
-                        document.getElementById('warn').checked = true;
-                        
-                        // Restaurer le texte d'aide normal
-                        const reasonLabel = document.querySelector('label[for="moderation_reason"]');
-                        const reasonHelp = reasonLabel.nextElementSibling.nextElementSibling;
-                        reasonLabel.textContent = 'Motif de la modération';
-                        reasonHelp.textContent = 'Ce message sera visible par l\'auteur du post et les autres modérateurs.';
-                        
-                        // Rendre le champ motif obligatoire
-                        document.getElementById('moderation_reason').required = true;
-                        document.getElementById('moderation_reason').placeholder = 'Expliquez le motif de cette action de modération...';
-                    }
-                    
-                    // Affichage du contenu du message
-                    const previewContent = document.getElementById('postPreviewContent');
-                    
-                    // Indicateur de chargement
-                    previewContent.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Chargement du contenu...</div>';
-                    
-                    // Petit délai pour montrer le chargement
-                    setTimeout(() => {
-                        // Rechercher le post à partir de l'ancre et récupérer le container suivant
-                        const postAnchor = document.querySelector('#post-' + postId);
-                        const originalPost = postAnchor ? postAnchor.nextElementSibling : null;
-                        
-                        if (previewContent && originalPost && originalPost.classList.contains('post-container')) {
-                            // Récupérer le contenu du message original
-                            const postContent = originalPost.querySelector('.post-content');
-                            if (postContent) {
-                                // Cloner le contenu pour l'aperçu
-                                previewContent.innerHTML = postContent.innerHTML;
-                                
-                                // Récupérer l'auteur du message
-                                const authorElement = originalPost.querySelector('.name-label');
-                                const authorName = authorElement ? authorElement.textContent.trim() : 'Utilisateur inconnu';
-                                previewContent.setAttribute('data-author', authorName);
-                                
-                                console.log('Contenu du message chargé pour le post #' + postId);
-                            } else {
-                                previewContent.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Impossible de charger le contenu du message.</div>';
-                            }
-                        } else {
-                            previewContent.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times me-2"></i>Message introuvable (ID: ' + postId + ').</div>';
-                        }
-                    }, 100);
-                    
-                    
-                    // Réinitialiser la sélection
-                    clearQuotedText();
-                    
-                    // Activer l'event listener de sélection uniquement dans ce modal
-                    selectionListener = function() {
-                        updateSelectedText();
-                    };
-                    document.addEventListener('selectionchange', selectionListener);
-                });
-                
-                // Gestion de la sélection de texte
-                function updateSelectedText() {
-                    // Ne s'exécuter que si le modal de modération est ouvert
-                    if (!moderatePostModal.classList.contains('show')) {
-                        return;
-                    }
-                    
-                    const selection = window.getSelection();
-                    const previewContent = document.getElementById('postPreviewContent');
-                    
-                    if (selection.rangeCount > 0 && previewContent && previewContent.contains(selection.anchorNode)) {
-                        selectedText = selection.toString().trim();
-                        const quoteBtn = document.getElementById('quoteSelectedBtn');
-                        
-                        if (selectedText.length > 0) {
-                            quoteBtn.disabled = false;
-                            quoteBtn.classList.remove('btn-outline-secondary');
-                            quoteBtn.classList.add('btn-outline-success');
-                            previewContent.classList.add('selecting');
-                            
-                            // Mettre à jour le texte du bouton avec la longueur
-                            const originalText = quoteBtn.innerHTML;
-                            quoteBtn.innerHTML = `<i class="fas fa-quote-right me-1"></i>Quoter (${selectedText.length} car.)`;
-                        } else {
-                            quoteBtn.disabled = true;
-                            quoteBtn.classList.remove('btn-outline-success');
-                            quoteBtn.classList.add('btn-outline-secondary');
-                            previewContent.classList.remove('selecting');
-                            quoteBtn.innerHTML = '<i class="fas fa-quote-right me-1"></i>Quoter la sélection';
-                        }
-                    } else {
-                        const quoteBtn = document.getElementById('quoteSelectedBtn');
-                        if (quoteBtn) {
-                            quoteBtn.disabled = true;
-                            quoteBtn.classList.remove('btn-outline-success');
-                            quoteBtn.classList.add('btn-outline-secondary');
-                            if (previewContent) {
-                                previewContent.classList.remove('selecting');
-                            }
-                            quoteBtn.innerHTML = '<i class="fas fa-quote-right me-1"></i>Quoter la sélection';
-                        }
-                    }
-                }
-                
-                function showQuotedText(text) {
-                    const quotedTextContainer = document.getElementById('quotedTextContainer');
-                    const quotedText = document.getElementById('quotedText');
-                    const quotedTextInput = document.getElementById('quotedTextInput');
-                    
-                    if (text && text.trim().length > 0) {
-                        quotedText.textContent = text;
-                        quotedTextInput.value = text;
-                        quotedTextContainer.style.display = 'block';
-                    }
-                }
-                
-                function clearQuotedText() {
-                    const quotedTextContainer = document.getElementById('quotedTextContainer');
-                    const quotedTextInput = document.getElementById('quotedTextInput');
-                    const quoteBtn = document.getElementById('quoteSelectedBtn');
-                    const previewContent = document.getElementById('postPreviewContent');
-                    
-                    quotedTextContainer.style.display = 'none';
-                    quotedTextInput.value = '';
-                    selectedText = '';
-                    
-                    quoteBtn.disabled = true;
-                    quoteBtn.classList.remove('btn-outline-success');
-                    quoteBtn.classList.add('btn-outline-secondary');
-                    quoteBtn.innerHTML = '<i class="fas fa-quote-right me-1"></i>Quoter la sélection';
-                    
-                    // Enlever l'état visuel de sélection
-                    previewContent.classList.remove('selecting');
-                    
-                    // Effacer la sélection
-                    window.getSelection().removeAllRanges();
-                }
-                
-                // Event listeners pour la sélection (uniquement dans le modal)
-                let selectionListener = null;
-                
-                // Bouton "Tout sélectionner"
-                document.getElementById('selectAllBtn').addEventListener('click', function() {
-                    const previewContent = document.getElementById('postPreviewContent');
-                    const range = document.createRange();
-                    range.selectNodeContents(previewContent);
-                    
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    
-                    updateSelectedText();
-                });
-                
-                // Bouton "Quoter la sélection"
-                document.getElementById('quoteSelectedBtn').addEventListener('click', function() {
-                    if (selectedText) {
-                        showQuotedText(selectedText);
-                    }
-                });
-                
-                // Bouton "Effacer la sélection"
-                document.getElementById('clearQuoteBtn').addEventListener('click', clearQuotedText);
-                
-                // Nettoyer à la fermeture du modal
-                moderatePostModal.addEventListener('hidden.bs.modal', function() {
-                    clearQuotedText();
-                    currentPostId = null;
-                    
-                    // Réinitialiser les options de modération
-                    document.getElementById('unhideOption').style.display = 'none';
-                    document.getElementById('hide').parentElement.style.display = 'block';
-                    document.getElementById('warn').parentElement.style.display = 'block';
-                    document.getElementById('edit_request').parentElement.style.display = 'block';
-                    
-                    // Restaurer les textes par défaut
-                    const reasonLabel = document.querySelector('label[for="moderation_reason"]');
-                    const reasonHelp = reasonLabel.nextElementSibling.nextElementSibling;
-                    reasonLabel.textContent = 'Motif de la modération';
-                    reasonHelp.textContent = 'Ce message sera visible par l\'auteur du post et les autres modérateurs.';
-                    
-                    // Restaurer l'obligation du champ
-                    document.getElementById('moderation_reason').required = true;
-                    document.getElementById('moderation_reason').placeholder = 'Expliquez le motif de cette action de modération...';
-                    document.getElementById('moderation_reason').value = '';
-                    
-                    // Désactiver l'event listener de sélection
-                    if (selectionListener) {
-                        document.removeEventListener('selectionchange', selectionListener);
-                        selectionListener = null;
-                    }
-                });
-                
-                // Formulaire de modération configuré
-            }
-            
-            // === PROTECTION POUR LES CHAMPS DE TEXTE ===
-            
-            // Empêcher toute interférence avec les champs de texte et formulaires
-            document.addEventListener('click', function(e) {
-                // Si c'est un champ de texte, textarea, input ou tout élément de formulaire
-                if (e.target.matches('input, textarea, select, button[type="submit"], .form-control, .btn')) {
-                    e.stopPropagation();
-                    console.log('Clic protégé sur:', e.target.tagName, e.target.type || 'N/A');
-                }
-            }, true); // Use capture phase
-            
-            // Protection spécifique pour les focus sur les champs
-            document.addEventListener('focus', function(e) {
-                if (e.target.matches('input, textarea, select, .form-control')) {
-                    e.stopPropagation();
-                    console.log('Focus protégé sur:', e.target.tagName);
-                }
-            }, true);
-            
-            // Les formulaires de modals devraient maintenant fonctionner normalement
-            
-            // === AMÉLIORATIONS INTERACTIONS ===
-            
-            // Animation des avatars au hover
-            const avatars = document.querySelectorAll('.avatar-container, .thread-author-avatar, .npc-avatar');
-            avatars.forEach(avatar => {
-                avatar.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.05) rotateZ(2deg)';
-                });
-                
-                avatar.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1) rotateZ(0deg)';
-                });
-            });
-            
-            // Smooth scroll temporairement désactivé
-            
-            // === ANIMATIONS SEQUENTIELLES ===
-            
-          
-            
-            // Définir la fonction createRipple si elle n'existe pas
-            if (typeof createRipple === 'undefined') {
-                window.createRipple = function(event) {
-                    const button = event.currentTarget;
-                    
-                    // Créer l'élément ripple
-                    const ripple = document.createElement('span');
-                    const rect = button.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = event.clientX - rect.left - size / 2;
-                    const y = event.clientY - rect.top - size / 2;
-                    
-                    ripple.className = 'ripple';
-                    ripple.style.cssText = `
-                        width: ${size}px;
-                        height: ${size}px;
-                        left: ${x}px;
-                        top: ${y}px;
-                    `;
-                    
-                    // S'assurer que le bouton a position relative
-                    if (getComputedStyle(button).position === 'static') {
-                        button.style.position = 'relative';
-                    }
-                    
-                    // Assurer overflow hidden pour contenir l'effet
-                    button.style.overflow = 'hidden';
-                    
-                    // Ajouter l'effet ripple
-                    button.appendChild(ripple);
-                    
-                    // Supprimer l'effet après l'animation
-                    setTimeout(() => {
-                        if (ripple.parentNode) {
-                            ripple.parentNode.removeChild(ripple);
-                        }
-                    }, 600);
-                };
-            }
-            
-            // Ajouter l'effet ripple aux boutons
-            document.querySelectorAll('.btn, .faction-tag, .thread-stat-item').forEach(btn => {
-                btn.addEventListener('click', createRipple);
-            });
-            
-            // === NAVIGATION RAPIDE ===
-            
-            // Bouton "Retour en haut" dynamique
-            let backToTopBtn = document.createElement('button');
-            backToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
-            backToTopBtn.className = 'back-to-top';
-            backToTopBtn.style.cssText = `
-                position: fixed;
-                bottom: 2rem;
-                right: 2rem;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
-                border: none;
-                color: white;
-                cursor: pointer;
-                opacity: 0;
-                visibility: hidden;
-                transition: all 0.3s ease;
-                z-index: 1000;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            `;
-            
-            document.body.appendChild(backToTopBtn);
-            
-            // Gestion de l'affichage du bouton
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 300) {
-                    backToTopBtn.style.opacity = '1';
-                    backToTopBtn.style.visibility = 'visible';
-                } else {
-                    backToTopBtn.style.opacity = '0';
-                    backToTopBtn.style.visibility = 'hidden';
-                }
-            });
-            
-            // Action du bouton
-            backToTopBtn.addEventListener('click', () => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-            
-            // Effet hover sur le bouton
-            backToTopBtn.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px) scale(1.1)';
-                this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            });
-            
-            backToTopBtn.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            });
-            
-            // === STYLE POUR L'EFFET RIPPLE ===
-            const rippleStyle = document.createElement('style');
-            rippleStyle.textContent = `
-                .ripple {
-                    position: absolute;
-                    border-radius: 50%;
-                    background-color: rgba(255, 255, 255, 0.4);
-                    transform: scale(0);
-                    animation: ripple-animation 0.6s linear;
-                }
-                
-                @keyframes ripple-animation {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-                
-                .back-to-top:hover {
-                    background: linear-gradient(135deg, var(--primary-light), var(--primary-medium)) !important;
-                }
-            `;
-            document.head.appendChild(rippleStyle);
-
-            // === PROTECTION CONTRE LES ANCRES DANS LES MODALES ===
-            
-            let modalIsOpen = false;
-            let originalHash = window.location.hash;
-            
-            // Surveiller l'ouverture/fermeture des modales
-            document.addEventListener('show.bs.modal', function(e) {
-                modalIsOpen = true;
-                originalHash = window.location.hash; // Sauvegarder l'état actuel
-            });
-            
-            document.addEventListener('hidden.bs.modal', function(e) {
-                modalIsOpen = false;
-                // Restaurer l'URL sans ancre si elle a été modifiée
-                if (window.location.hash && !originalHash) {
-                    history.replaceState(null, '', window.location.pathname + window.location.search);
-                } else if (originalHash && window.location.hash !== originalHash) {
-                    history.replaceState(null, '', window.location.pathname + window.location.search + originalHash);
-                }
-            });
-            
-            // Bloquer les clics sur les ancres dans les modales
-            document.addEventListener('click', function (e) {
-                const openedModal = e.target.closest('.modal.show');
-                const link = e.target.closest('a[href^="#"]');
-                if (openedModal && link) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Clic sur ancre bloqué dans la modale:', link.getAttribute('href'));
-                }
-            }, true);
-            
-            // Empêcher les changements de hash pendant qu'une modale est ouverte
-            window.addEventListener('hashchange', function(e) {
-                if (modalIsOpen) {
-                    e.preventDefault();
-                    // Restaurer l'état précédent
-                    history.replaceState(null, '', window.location.pathname + window.location.search + (originalHash || ''));
-                    console.log('Changement de hash bloqué pendant l\'ouverture de modale');
-                }
-            });
-            
-            // Protection spécifique pour les messages de modération
-            document.addEventListener('DOMContentLoaded', function() {
-                // Désactiver tous les liens d'ancres dans les messages de modération
-                document.querySelectorAll('.moderation-notice a[href^="#post-"]').forEach(function(link) {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        console.log('Clic sur lien de modération neutralisé');
-                    });
-                });
-            });
+            console.log('✅ Scripts thread chargés et initialisés');
         });
+        
+        // Fonction pour gérer les accordéons des personnages dans les posts
+        function togglePostCharacterAccordion(event, contentId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const button = event.currentTarget;
+            const content = document.getElementById(contentId);
+            const icon = button.querySelector('.post-character-accordion-icon');
+            
+            if (!content) return false;
+            
+            const isExpanded = content.classList.contains('show');
+            
+            // Fermer tous les autres accordéons de ce post
+            const postContainer = button.closest('.post-container');
+            if (postContainer) {
+                const allContents = postContainer.querySelectorAll('.post-character-accordion-content');
+                const allButtons = postContainer.querySelectorAll('.post-character-accordion-header');
+                const allIcons = postContainer.querySelectorAll('.post-character-accordion-icon');
+                
+                allContents.forEach(c => c.classList.remove('show'));
+                allButtons.forEach(b => b.setAttribute('aria-expanded', 'false'));
+                allIcons.forEach(i => i.style.transform = 'rotate(0deg)');
+            }
+            
+            if (!isExpanded) {
+                // Ouvrir cet accordéon
+                content.classList.add('show');
+                button.setAttribute('aria-expanded', 'true');
+                icon.style.transform = 'rotate(180deg)';
+            }
+            
+            return false;
+        }
     </script>
 {% endblock %}

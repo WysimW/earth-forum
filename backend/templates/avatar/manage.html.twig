@@ -1,0 +1,357 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer l'avatar - {{ character.name }} - DC Earth{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/avatar-editor.css') }}">
+
+{% endblock %}
+
+{% block body %}
+<div class="avatar-manager container my-4">
+    {# Fil d'Ariane #}
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_roleplay_characters') }}">Mes Personnages</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_roleplay_character_show', {'id': character.id}) }}">{{ character.name }}</a>
+            </li>
+            <li class="breadcrumb-item active">Gérer l'avatar</li>
+        </ol>
+    </nav>
+
+    {# En-tête #}
+    <div class="text-center mb-4">
+        <h1 class="h2 mb-2">
+            <i class="fas fa-user-circle me-2 text-roleplay"></i>
+            Gérer l'avatar de {{ character.name }}
+        </h1>
+        <p class="text-muted">Changez l'avatar de votre personnage en quelques clics</p>
+    </div>
+
+    {# Affichage avatar actuel #}
+    <div class="current-avatar-display">
+        <h3 class="h5 mb-3">Avatar actuel</h3>
+        <div id="current-avatar">
+            {% if character.avatarUrl %}
+                <img src="{{ character.avatarUrl }}" alt="{{ character.name }}" class="img-fluid">
+            {% else %}
+                <div class="avatar-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto;">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-user-astronaut fa-3x mb-2"></i>
+                        <div>Aucun avatar</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Options de gestion #}
+    <div class="avatar-options">
+        {# Option Upload #}
+        <div class="avatar-option-card" id="upload-option">
+            <div class="avatar-option-icon">
+                <i class="fas fa-upload"></i>
+            </div>
+            <h4 class="h5 mb-3">Uploader une image</h4>
+            <p class="text-muted mb-3">Uploadez une image depuis votre ordinateur (max 5MB)</p>
+            <button type="button" class="btn btn-primary" onclick="activateUploadMode()">
+                Choisir un fichier
+            </button>
+        </div>
+
+        {# Option URL #}
+        <div class="avatar-option-card" id="url-option">
+            <div class="avatar-option-icon">
+                <i class="fas fa-link"></i>
+            </div>
+            <h4 class="h5 mb-3">Lien externe</h4>
+            <p class="text-muted mb-3">Utilisez l'URL d'une image hébergée en ligne</p>
+            <button type="button" class="btn btn-primary" onclick="activateUrlMode()">
+                Saisir une URL
+            </button>
+        </div>
+    </div>
+
+    {# Éditeur d'upload #}
+    <div class="character-avatar-editor" id="avatar-editor" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-image me-2"></i>
+                    Éditeur d'avatar
+                </h5>
+            </div>
+            <div class="card-body">
+                {# Onglets #}
+                <div class="avatar-tabs">
+                    <button type="button" class="avatar-tab active" data-tab="upload" id="tab-upload-btn">
+                        <i class="fas fa-upload me-1"></i> Upload
+                    </button>
+                    <button type="button" class="avatar-tab" data-tab="url" id="tab-url-btn">
+                        <i class="fas fa-link me-1"></i> URL
+                    </button>
+                </div>
+
+                {# Contenu onglets #}
+                <div class="avatar-tabs-content">
+                    {# Onglet Upload #}
+                    <div class="avatar-tab-pane active" id="tab-upload">
+                        <div class="avatar-dropzone" id="avatarDropzone">
+                            <div class="dropzone-content">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                <p class="mb-2">Glissez-déposez votre image ici ou</p>
+                                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('avatarFileInput').click()">
+                                    Parcourir les fichiers
+                                </button>
+                                <small class="form-text text-muted d-block mt-2">
+                                    Formats acceptés : JPEG, PNG, GIF, WebP (max 5MB)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Onglet URL #}
+                    <div class="avatar-tab-pane" id="tab-url">
+                        <div class="form-group">
+                            <label for="avatarUrl" class="form-label">URL de l'image</label>
+                            <input type="url" class="form-control" id="avatarUrl" 
+                                   placeholder="https://exemple.com/image.jpg"
+                                   value="{{ character.avatar ?? '' }}">
+                            <small class="form-text text-muted">
+                                L'image doit être accessible publiquement sur Internet
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-primary mt-2" onclick="saveAvatarUrl()">
+                            <i class="fas fa-save me-1"></i> Sauvegarder l'URL
+                        </button>
+                    </div>
+                </div>
+
+                {# Prévisualisation #}
+                <div class="avatar-preview-section mt-4">
+                    <h6 class="mb-3">Prévisualisation</h6>
+                    <div class="avatar-preview" id="avatarPreview">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+
+                {# Barre de progression #}
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Upload en cours...</small>
+                </div>
+
+                {# Éditeur de recadrage #}
+                <div class="avatar-crop-editor" id="avatarCropEditor" style="display: none;">
+                    <h6 class="mb-3">Recadrer votre avatar</h6>
+                    <div class="crop-container">
+                        <img id="cropImage" style="max-width: 100%;">
+                    </div>
+                    <div class="crop-previews mt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Format portrait (cartes)</h6>
+                                <div class="crop-preview" id="cropPreviewPortrait"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Format circulaire (PNJ)</h6>
+                                <div class="crop-preview" id="cropPreviewCircle"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="crop-actions mt-3">
+                        <button type="button" class="btn btn-success" onclick="confirmCrop()">
+                            <i class="fas fa-check me-1"></i> Confirmer le recadrage
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="cancelCrop()">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </button>
+                    </div>
+                </div>
+
+                {# Actions #}
+                <div class="avatar-actions mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="closeEditor()">
+                        <i class="fas fa-times me-1"></i> Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Zone de danger #}
+    {% if character.avatarUrl %}
+    <div class="danger-zone">
+        <h5 class="text-danger mb-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Zone de danger
+        </h5>
+        <p class="mb-3">Supprimer définitivement l'avatar de ce personnage. Cette action est irréversible.</p>
+        <form id="remove-avatar-form" onsubmit="removeAvatar(event)">
+            <input type="hidden" name="_token" value="{{ csrf_token('remove_avatar_' ~ character.id) }}">
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i> Supprimer l'avatar
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{# Message de succès #}
+<div class="success-message" id="success-message">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        <span id="success-text">Avatar mis à jour avec succès !</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Configuration globale
+        const characterId = {{ character.id }};
+        const uploadUrl = '{{ path('app_character_avatar_upload_new', {'id': character.id}) }}';
+        const cropUrl = '{{ path('app_character_avatar_crop_new', {'id': character.id}) }}';
+        const setUrlEndpoint = '{{ path('app_character_avatar_set_url', {'id': character.id}) }}';
+        const removeUrl = '{{ path('app_character_avatar_remove', {'id': character.id}) }}';
+
+        let currentFile = null;
+        let currentFilename = null;
+        let cropper = null;
+
+        // Activation des modes
+        function activateUploadMode() {
+            document.getElementById('avatar-editor').style.display = 'block';
+            document.getElementById('tab-upload-btn').click();
+            document.getElementById('upload-option').classList.add('active');
+            document.getElementById('url-option').classList.remove('active');
+        }
+
+        function activateUrlMode() {
+            document.getElementById('avatar-editor').style.display = 'block';
+            document.getElementById('tab-url-btn').click();
+            document.getElementById('url-option').classList.add('active');
+            document.getElementById('upload-option').classList.remove('active');
+        }
+
+        function closeEditor() {
+            document.getElementById('avatar-editor').style.display = 'none';
+            document.getElementById('upload-option').classList.remove('active');
+            document.getElementById('url-option').classList.remove('active');
+        }
+
+        // Sauvegarder URL d'avatar
+        async function saveAvatarUrl() {
+            const url = document.getElementById('avatarUrl').value.trim();
+            
+            try {
+                const response = await fetch(setUrlEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(data.message);
+                    updateCurrentAvatar(data.avatarUrl);
+                    closeEditor();
+                } else {
+                    showError(data.error || 'Erreur lors de la mise à jour');
+                }
+            } catch (error) {
+                showError('Erreur réseau : ' + error.message);
+            }
+        }
+
+        // Supprimer avatar
+        async function removeAvatar(event) {
+            event.preventDefault();
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet avatar ? Cette action est irréversible.')) {
+                return;
+            }
+
+            const formData = new FormData(event.target);
+            
+            try {
+                const response = await fetch(removeUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(data.message);
+                    updateCurrentAvatar(null);
+                    location.reload(); // Recharger pour cacher la zone de danger
+                } else {
+                    showError(data.error || 'Erreur lors de la suppression');
+                }
+            } catch (error) {
+                showError('Erreur réseau : ' + error.message);
+            }
+        }
+
+        // Mettre à jour l'affichage de l'avatar actuel
+        function updateCurrentAvatar(avatarUrl) {
+            const container = document.getElementById('current-avatar');
+            
+            if (avatarUrl) {
+                container.innerHTML = `<img src="${avatarUrl}" alt="{{ character.name }}" class="img-fluid">`;
+            } else {
+                container.innerHTML = `
+                    <div class="avatar-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-user-astronaut fa-3x mb-2"></i>
+                            <div>Aucun avatar</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Messages
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            document.getElementById('success-text').textContent = message;
+            successDiv.classList.add('show');
+            
+            setTimeout(() => {
+                successDiv.classList.remove('show');
+            }, 4000);
+        }
+
+        function showError(message) {
+            alert('Erreur : ' + message);
+        }
+
+        // Charger l'éditeur d'avatar au besoin
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof AvatarEditor === 'undefined') {
+                const script = document.createElement('script');
+                script.src = '{{ asset('js/avatar-editor.js') }}';
+                script.onload = () => {
+                    // Adapter les URLs pour le nouveau contrôleur
+                    if (window.avatarEditor) {
+                        window.avatarEditor.uploadUrl = uploadUrl;
+                        window.avatarEditor.cropUrl = cropUrl;
+                    }
+                };
+                document.head.appendChild(script);
+            }
+        });
+    </script>
+{% endblock %} 

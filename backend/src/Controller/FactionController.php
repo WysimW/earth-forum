@@ -434,6 +434,18 @@ class FactionController extends AbstractController
             $factionsForum->setUniverse($univers);
             $factionsForum->setPosition(1); // Position élevée pour le mettre en haut
             
+            // Générer un slug unique basé sur le nom du forum et l'univers
+            $baseSlug = $this->slugger->slug('factions-' . $univers->getSlug())->lower();
+            $slug = $baseSlug;
+            $counter = 1;
+            
+            // Vérifier l'unicité du slug
+            while ($forumRepository->findOneBy(['slug' => $slug])) {
+                $slug = sprintf('%s-%d', $baseSlug, $counter++);
+            }
+            
+            $factionsForum->setSlug($slug);
+            
             $this->entityManager->persist($factionsForum);
             $this->entityManager->flush();
         }
@@ -453,6 +465,19 @@ class FactionController extends AbstractController
         $thread->setType('important');
         $thread->setStatus('open');
         $thread->setDescription('Fiche de la faction ' . $faction->getName());
+        
+        // Générer un slug unique pour le thread
+        $baseSlug = $this->slugger->slug('faction-' . $faction->getName())->lower();
+        $slug = $baseSlug;
+        $counter = 1;
+        
+        // Vérifier l'unicité du slug
+        $threadRepository = $this->entityManager->getRepository(Thread::class);
+        while ($threadRepository->findOneBy(['slug' => $slug])) {
+            $slug = sprintf('%s-%d', $baseSlug, $counter++);
+        }
+        
+        $thread->setSlug($slug);
         
         // Contenu du premier message
         $firstPostContent = $this->renderView('faction/partials/_faction_sheet.html.twig', [

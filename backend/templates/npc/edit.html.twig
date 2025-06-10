@@ -1,80 +1,274 @@
-{% extends 'npc/new.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ npc.name }}{% endblock %}
+{% block title %}{% if faction is defined %}Editer PNJ pour {{ faction.name }}{% else %}Editer PNJ{% endif %}{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1>Modifier {{ npc.name }}</h1>
+<div class="container my-4">
+    {# Fils d'Ariane #}
+    {% if breadcrumbs is defined %}
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                {% for label, url in breadcrumbs %}
+                    {% if loop.last %}
+                        <li class="breadcrumb-item active" aria-current="page">{{ label }}</li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{{ url }}">{{ label }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+    {% endif %}
 
-        {{ form_start(form) }}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Informations de base</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ form_row(form.name) }}
-                            {{ form_row(form.firstName) }}
-                            {{ form_row(form.lastName) }}
-                            {{ form_row(form.pseudonyms) }}
-                            {{ form_row(form.gender) }}
-                            {{ form_row(form.age) }}
-                            {{ form_row(form.universe) }}
-                            {{ form_row(form.avatar) }}
-                        </div>
-                    </div>
-
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Caractéristiques</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ form_row(form.moralAffiliation) }}
-                            {{ form_row(form.factions) }}
-                            {{ form_row(form.occupation) }}
-                            {{ form_row(form.equipment) }}
-                            {{ form_row(form.weaknesses) }}
-                            {{ form_row(form.abilities) }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Description</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ form_row(form.biography) }}
-                            {{ form_row(form.personality) }}
-                            {{ form_row(form.appearance) }}
-                        </div>
-                    </div>
-
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Rôle et Relations</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ form_row(form.roleInStory) }}
-                            {{ form_row(form.relationships) }}
-                            {{ form_row(form.quests) }}
-                            {{ form_row(form.dialogueStyle) }}
-                            {{ form_row(form.secrets) }}
-                        </div>
-                    </div>
-                </div>
+    <div class="character-creation-header mb-4">
+        {% if faction is defined %}
+            <h1 class="text-roleplay">Editer un PNJ pour {{ faction.name }}</h1>
+            <p class="subtitle">Ce PNJ sera automatiquement lié à la faction et validé</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Les PNJ de faction sont visibles par tous les membres et peuvent être utilisés dans les scènes. Ils sont considérés comme faisant partie du lore de la faction.
             </div>
-
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Enregistrer les modifications
-                </button>
-                <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Retour au PNJ
-                </a>
-            </div>
-        {{ form_end(form) }}
+        {% elseif elseworld is defined %}
+            <h1 class="text-roleplay">Editer un PNJ pour {{ elseworld.name }}</h1>
+            <p class="subtitle">Ce PNJ sera lié à l'Elseworld {{ elseworld.name }}</p>
+        {% else %}
+            <h1 class="text-roleplay">Editer un nouveau PNJ</h1>
+            <p class="subtitle">Donnez vie à votre univers</p>
+        {% endif %}
     </div>
+    
+    {{ form_start(form, {'attr': {'class': 'character-form'}}) }}
+    <div class="character-grid">
+        {# Section Identité #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-id-card"></i> Identité
+            </h2>
+            <div class="character-info-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.name) }}</div>
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.name) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.universe) }}</div>
+                    {{ form_widget(form.universe, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.universe) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.firstName) }}</div>
+                    {{ form_widget(form.firstName, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.lastName) }}</div>
+                    {{ form_widget(form.lastName, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.age) }}</div>
+                    {{ form_widget(form.age, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.age) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.pseudonyms) }}</div>
+                    {{ form_widget(form.pseudonyms, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.pseudonyms) }}
+                </div>
+            </div>
+        </div>
+
+        {# Section Avatar #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-portrait"></i> Avatar
+            </h2>
+            <div class="character-avatar-preview">
+                <div class="preview-container" id="avatarPreview">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                {{ form_widget(form.avatar, {'attr': {'class': 'form-control character-input', 'placeholder': 'URL de votre avatar'}}) }}
+                {{ form_errors(form.avatar) }}
+                <small class="form-text text-muted">Collez l'URL d'une image pour votre PNJ</small>
+            </div>
+        </div>
+
+        {# Section Caractéristiques personnelles #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-user-tag"></i> Caractéristiques personnelles
+            </h2>
+            <div class="character-info-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.gender) }}</div>
+                    {{ form_widget(form.gender, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.gender) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.occupation) }}</div>
+                    {{ form_widget(form.occupation, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.occupation) }}
+                </div>
+            </div>
+        </div>
+        
+        {# Section Affiliation #}
+        <div class="character-section">
+            <h2 class="character-section-title">
+                <i class="fas fa-users"></i> Affiliation
+            </h2>
+            <div class="character-info-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.moralAffiliation) }}</div>
+                    {{ form_widget(form.moralAffiliation, {'attr': {'class': 'form-control character-input'}}) }}
+                    {{ form_errors(form.moralAffiliation) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">{{ form_label(form.factions) }}</div>
+                    {{ form_widget(form.factions, {'attr': {'class': 'form-control character-textarea', 'rows': '2'}}) }}
+                    {{ form_errors(form.factions) }}
+                </div>
+            </div>
+        </div>
+
+        {# Section Biographie #}
+        <div class="character-section full-width">
+            <h2 class="character-section-title">
+                <i class="fas fa-book-open"></i> Histoire
+            </h2>
+            <div class="character-bio">
+                {{ form_widget(form.biography, {'attr': {
+                    'class': 'form-control character-textarea wysiwyg-editor-full',
+                    'rows': '8',
+                    'placeholder': 'Racontez l\'histoire de votre PNJ...',
+                    'data-mode': 'roleplay'
+                }}) }}
+                {{ form_errors(form.biography) }}
+            </div>
+        </div>
+
+        {# Section Caractéristiques #}
+        <div class="character-section full-width">
+            <h2 class="character-section-title">
+                <i class="fas fa-user-tag"></i> Caractéristiques
+            </h2>
+            <div class="character-traits-grid">
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fa-solid fa-dice-d20"></i> {{ form_label(form.personality) }}
+                    </div>
+                    {{ form_widget(form.personality, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'rows': '4',
+                        'placeholder': 'Décrivez la personnalité de votre PNJ...',
+                        'data-mode': 'roleplay'
+                    }}) }}
+                    {{ form_errors(form.personality) }}
+                </div>
+
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-eye"></i> {{ form_label(form.appearance) }}
+                    </div>
+                    {{ form_widget(form.appearance, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'rows': '4',
+                        'placeholder': 'Décrivez l\'apparence de votre PNJ...',
+                        'data-mode': 'roleplay'
+                    }}) }}
+                    {{ form_errors(form.appearance) }}
+                </div>
+
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-bolt"></i> {{ form_label(form.abilities) }}
+                    </div>
+                    {{ form_widget(form.abilities, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'rows': '4',
+                        'placeholder': 'Listez les capacités de votre PNJ...',
+                        'data-mode': 'roleplay'
+                    }}) }}
+                    {{ form_errors(form.abilities) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-toolbox"></i> {{ form_label(form.equipment) }}
+                    </div>
+                    {{ form_widget(form.equipment, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'rows': '4',
+                        'placeholder': 'Décrivez les équipements de votre PNJ...',
+                        'data-mode': 'roleplay'
+                    }}) }}
+                    {{ form_errors(form.equipment) }}
+                </div>
+                
+                <div class="character-info-item">
+                    <div class="character-info-label">
+                        <i class="fas fa-skull-crossbones"></i> {{ form_label(form.weaknesses) }}
+                    </div>
+                    {{ form_widget(form.weaknesses, {'attr': {
+                        'class': 'form-control character-textarea wysiwyg-editor',
+                        'rows': '4',
+                        'placeholder': 'Listez les faiblesses de votre PNJ...',
+                        'data-mode': 'roleplay'
+                    }}) }}
+                    {{ form_errors(form.weaknesses) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="character-form-actions mt-4">
+        <a href="{{ path('app_roleplay_characters') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Annuler
+        </a>
+        <button type="submit" class="btn bg-roleplay text-white">
+            <i class="fas fa-save"></i> Enregistrer les modifications
+        </button>
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prévisualisation de l'avatar
+    const avatarInput = document.querySelector('#{{ form.avatar.vars.id }}');
+    const previewContainer = document.getElementById('avatarPreview');
+
+    if (avatarInput && previewContainer) {
+        avatarInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) {
+                const img = new Image();
+                img.onload = function() {
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(img);
+                }
+                img.onerror = function() {
+                    previewContainer.innerHTML = '<i class="fas fa-user-circle"></i>';
+                }
+                img.src = url;
+            } else {
+                previewContainer.innerHTML = '<i class="fas fa-user-circle"></i>';
+            }
+        });
+    }
+    
+    // Initialisation des éditeurs Quill.js si nécessaire
+    if (typeof window.initWysiwygEditors === 'function') {
+        window.initWysiwygEditors();
+    }
+});
+</script>
 {% endblock %} 

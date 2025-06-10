@@ -4,12 +4,48 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/components/characters.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/character-cards.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/character-profile.css') }}">
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('js/characters.js') }}"></script>
+    <script src="{{ asset('js/character-profile.js') }}"></script>
+    <script>
+        // Script de debug simple pour tester les onglets
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Script de debug des onglets chargé');
+            
+            // Vérifications de base
+            const tabs = document.querySelectorAll('.character-tabs__tab');
+            const panels = document.querySelectorAll('.character-tabs__panel');
+            
+            console.log('Onglets trouvés:', tabs.length);
+            console.log('Panneaux trouvés:', panels.length);
+            
+            // Si le script principal ne fonctionne pas, utiliser une version simple
+            setTimeout(() => {
+                // Vérifier si les onglets ont des événements
+                if (tabs.length > 0) {
+                    tabs.forEach((tab, index) => {
+                        console.log(`Onglet ${index}:`, tab.dataset.tab, tab.classList.contains('active'));
+                    });
+                    
+                    panels.forEach((panel, index) => {
+                        console.log(`Panneau ${index}:`, panel.id, panel.classList.contains('active'));
+                    });
+                    
+                    // Test manuel d'un clic
+                    console.log('🎯 Test de clic sur le second onglet...');
+                    if (tabs[1]) {
+                        tabs[1].addEventListener('click', function(e) {
+                            console.log('Clic détecté sur:', this.dataset.tab);
+                        });
+                    }
+                }
+            }, 1000);
+        });
+    </script>
 {% endblock %}
 
 {% block body %}
@@ -17,266 +53,340 @@
     {# Fil d'Ariane #}
     {% include 'components/_breadcrumb.html.twig' with {'breadcrumbs': breadcrumbs} %}
     
-    <div class="card shadow-sm mb-4">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h2 mb-0">{{ character.name }}</h1>
-                {% if isOwner %}
-                    <div class="btn-group">
-                        <a href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i> Modifier
-                        </a>
-                        <a href="{{ path('app_roleplay_character_relationships', {'id': character.id}) }}" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-users"></i> Relations
-                        </a>
+    {# Header du profil #}
+    <div class="character-profile">
+        <div class="character-profile__header">
+            <div class="character-profile__avatar">
+                {% if character.avatar %}
+                    <img src="{{ character.avatar }}" alt="{{ character.name }}" class="character-profile__avatar-img">
+                {% else %}
+                    <div class="character-profile__avatar-placeholder">
+                        <i class="fas fa-user-astronaut"></i>
                     </div>
                 {% endif %}
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="character-profile-header mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <h1 class="h2 mb-0">{{ character.name }}</h1>
-                    {% if character.universe %}
-                        <span class="badge bg-primary">{{ character.universe.name }}</span>
+                
+                <div class="character-profile__status-badge status-{{ character.status }}">
+                    {% if character.status == 'validated' %}
+                        <i class="fas fa-check-circle" title="Validé"></i>
+                    {% elseif character.status == 'pending' %}
+                        <i class="fas fa-clock" title="En attente"></i>
+                    {% elseif character.status == 'draft' %}
+                        <i class="fas fa-file-alt" title="Brouillon"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle" title="Refusé"></i>
                     {% endif %}
                 </div>
-                <div class="character-status mt-2">
-                    <span class="status-badge status-{{ character.status }}">
+            </div>
+            
+            <div class="character-profile__info">
+                <h1 class="character-profile__name">{{ character.name }}</h1>
+                {% if character.firstName or character.lastName %}
+                    <div class="character-profile__real-name">
+                        {{ [character.firstName, character.lastName]|filter(v => v)|join(' ') }}
+                    </div>
+                {% endif %}
+                {% if character.universe %}
+                    <div class="character-profile__universe">
+                        <i class="fas fa-globe me-1"></i>{{ character.universe.name }}
+                    </div>
+                {% endif %}
+                {% if character.elseworld %}
+                    <div class="character-profile__elseworld">
+                        <i class="fas fa-map-marked-alt me-1"></i>{{ character.elseworld.name }}
+                    </div>
+                {% endif %}
+                
+                <div class="character-profile__status-text">
+                    <span class="status-label status-label--{{ character.status }}">
                         {% if character.status == 'pending' %}
-                            <i class="fas fa-clock me-1"></i> En attente de validation
+                            En attente de validation
                         {% elseif character.status == 'validated' %}
-                            <i class="fas fa-check-circle me-1"></i> Personnage validé
+                            Personnage validé
+                        {% elseif character.status == 'draft' %}
+                            Brouillon
+                        {% elseif character.status == 'rejected' %}
+                            Refusé
                         {% else %}
-                            <i class="fas fa-times-circle me-1"></i> Personnage refusé
+                            {{ character.status|title }}
                         {% endif %}
                     </span>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-4 text-center mb-4 mb-md-0">
-                    {% if character.avatar %}
-                        <img src="{{ character.avatar }}" alt="{{ character.name }}" class="img-fluid rounded mb-3" style="max-height: 300px;">
-                    {% else %}
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center mb-3" style="height: 200px;">
-                            <i class="fas fa-user fa-5x"></i>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        {% if character.universe %}
-                            <span class="badge bg-primary fs-6 mb-2">{{ character.universe.name }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="character-info-box">
-                        {% if character.firstName or character.lastName %}
-                            <div class="info-row">
-                                <span class="info-label">Identité:</span>
-                                <span class="info-value">{{ [character.firstName, character.lastName]|filter(v => v)|join(' ') }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.age %}
-                            <div class="info-row">
-                                <span class="info-label">Âge:</span>
-                                <span class="info-value">{{ character.age }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.pseudonyms %}
-                            <div class="info-row">
-                                <span class="info-label">Pseudonymes:</span>
-                                <span class="info-value">{{ character.pseudonyms }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.gender %}
-                            <div class="info-row">
-                                <span class="info-label">Sexe:</span>
-                                <span class="info-value">{{ character.gender }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.sexualOrientation %}
-                            <div class="info-row">
-                                <span class="info-label">Orientation:</span>
-                                <span class="info-value">{{ character.sexualOrientation }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.moralAffiliation %}
-                            <div class="info-row">
-                                <span class="info-label">Affiliation:</span>
-                                <span class="info-value">
-                                    <span class="badge {% if character.moralAffiliation == 'Super-héros' %}bg-primary{% elseif character.moralAffiliation == 'Super-vilain' %}bg-danger{% elseif character.moralAffiliation == 'Anti-héros' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                        {{ character.moralAffiliation }}
-                                    </span>
-                                </span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.factions %}
-                            <div class="info-row">
-                                <span class="info-label">Factions:</span>
-                                <span class="info-value">{{ character.factions }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.civilStatus %}
-                            <div class="info-row">
-                                <span class="info-label">Statut civil:</span>
-                                <span class="info-value">{{ character.civilStatus }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if character.occupation %}
-                            <div class="info-row">
-                                <span class="info-label">Travail:</span>
-                                <span class="info-value">{{ character.occupation }}</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="text-muted small mt-3">
-                        <div>Créé par: {{ character.user.pseudo }}</div>
-                        <div>Créé le: {{ character.createdAt|date('d/m/Y') }}</div>
-                    </div>
+            
+            {% if isOwner %}
+            <div class="character-profile__actions">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-cog me-1"></i>Gérer
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_roleplay_character_edit', {'id': character.id}) }}">
+                                <i class="fas fa-edit me-2"></i>Modifier le personnage
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_character_avatar_manage', {'id': character.id}) }}">
+                                <i class="fas fa-image me-2"></i>Gérer l'avatar
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_roleplay_character_relationships', {'id': character.id}) }}">
+                                <i class="fas fa-heart me-2"></i>Relations
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ path('app_roleplay_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');" class="m-0">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
+                                <button class="dropdown-item text-danger">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col-md-8">
-                    <div class="character-tabs">
-                        <ul class="nav nav-tabs" id="characterTabs" role="tablist">
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link active" id="biography-tab" data-bs-toggle="tab" data-bs-target="#biography" type="button" role="tab" aria-controls="biography" aria-selected="true">
-                                    <i class="fas fa-book-open me-2"></i>Biographie
-                                </button>
-                            </li>
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link" id="personality-tab" data-bs-toggle="tab" data-bs-target="#personality" type="button" role="tab" aria-controls="personality" aria-selected="false">
-                                    <i class="fas fa-brain me-2"></i>Personnalité
-                                </button>
-                            </li>
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
-                                    <i class="fas fa-user me-2"></i>Apparence
-                                </button>
-                            </li>
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link" id="abilities-tab" data-bs-toggle="tab" data-bs-target="#abilities" type="button" role="tab" aria-controls="abilities" aria-selected="false">
-                                    <i class="fas fa-fist-raised me-2"></i>Capacités
-                                </button>
-                            </li>
-                            {% if character.equipment %}
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab" aria-controls="equipment" aria-selected="false">
-                                    <i class="fas fa-shield-alt me-2"></i>Équipements
-                                </button>
-                            </li>
-                            {% endif %}
-                            {% if character.weaknesses %}
-                            <li class="character-tab-item" role="presentation">
-                                <button class="character-tab-link" id="weaknesses-tab" data-bs-toggle="tab" data-bs-target="#weaknesses" type="button" role="tab" aria-controls="weaknesses" aria-selected="false">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Faiblesses
-                                </button>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="characterTabContent">
-                        <div class="tab-pane fade show active" id="biography" role="tabpanel" aria-labelledby="biography-tab">
-                            {% if character.biography %}
-                                <div class="character-biography">
-                                    {{ character.biography|raw }}
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">Aucune biographie n'a été rédigée pour ce personnage.</p>
-                            {% endif %}
-                        </div>
-                        <div class="tab-pane fade" id="personality" role="tabpanel" aria-labelledby="personality-tab">
-                            {% if character.personality %}
-                                <div class="character-info">
-                                    {{ character.personality|raw }}
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">Aucune information sur la personnalité de ce personnage.</p>
-                            {% endif %}
-                        </div>
-                        <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
-                            {% if character.appearance %}
-                                <div class="character-info">
-                                    {{ character.appearance|raw }}
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">Aucune description de l'apparence de ce personnage.</p>
-                            {% endif %}
-                        </div>
-                        <div class="tab-pane fade" id="abilities" role="tabpanel" aria-labelledby="abilities-tab">
-                            {% if character.abilities %}
-                                <div class="character-info">
-                                    {{ character.abilities|raw }}
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">Aucune capacité ou compétence spécifiée pour ce personnage.</p>
-                            {% endif %}
-                        </div>
-                        {% if character.equipment %}
-                        <div class="tab-pane fade" id="equipment" role="tabpanel" aria-labelledby="equipment-tab">
-                            <div class="character-info">
-                                {{ character.equipment|raw }}
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if character.weaknesses %}
-                        <div class="tab-pane fade" id="weaknesses" role="tabpanel" aria-labelledby="weaknesses-tab">
-                            <div class="character-info">
-                                {{ character.weaknesses|raw }}
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {# Métadonnées du personnage #}
+        <div class="character-profile__meta">
+            {% if character.age %}
+                <div class="character-profile__meta-item">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    <span class="meta-label">Âge :</span>
+                    <span class="meta-value">{{ character.age }}</span>
                 </div>
+            {% endif %}
+            
+            {% if character.gender %}
+                <div class="character-profile__meta-item">
+                    <i class="fas fa-user me-1"></i>
+                    <span class="meta-label">Genre :</span>
+                    <span class="meta-value">{{ character.gender }}</span>
+                </div>
+            {% endif %}
+            
+            {% if character.occupation %}
+                <div class="character-profile__meta-item character-profile__meta-item--occupation">
+                    <i class="fas fa-briefcase me-1"></i>
+                    <span class="meta-label">Occupation :</span>
+                    <span class="meta-value">{{ character.occupation }}</span>
+                </div>
+            {% endif %}
+            
+            {% if character.civilStatus %}
+                <div class="character-profile__meta-item">
+                    <i class="fas fa-ring me-1"></i>
+                    <span class="meta-label">Statut civil :</span>
+                    <span class="meta-value">{{ character.civilStatus }}</span>
+                </div>
+            {% endif %}
+            
+            {% if character.sexualOrientation %}
+                <div class="character-profile__meta-item character-profile__meta-item--orientation">
+                    <i class="fas fa-heart me-1"></i>
+                    <span class="meta-label">Orientation :</span>
+                    <span class="meta-value">{{ character.sexualOrientation }}</span>
+                </div>
+            {% endif %}
+            
+            {% if character.moralAffiliation %}
+                <div class="character-profile__meta-item character-profile__meta-item--moral">
+                    <i class="fas fa-balance-scale me-1"></i>
+                    <span class="meta-label">Affiliation :</span>
+                    <span class="moral-badge moral-badge--{{ character.moralAffiliation|lower|replace({' ': '-', '-': '-'}) }}">
+                        {{ character.moralAffiliation }}
+                    </span>
+                </div>
+            {% endif %}
+            
+            {% if character.pseudonyms %}
+                <div class="character-profile__meta-item character-profile__meta-item--pseudonyms">
+                    <i class="fas fa-mask me-1"></i>
+                    <span class="meta-label">Pseudonymes :</span>
+                    <span class="meta-value">{{ character.pseudonyms }}</span>
+                </div>
+            {% endif %}
+            
+            {% if character.factions %}
+                <div class="character-profile__meta-item">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="meta-label">Factions :</span>
+                    <span class="meta-value">{{ character.factions }}</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        {# Créateur et dates #}
+        <div class="character-profile__footer">
+            <div class="character-profile__creator">
+                <i class="fas fa-user-edit me-1"></i>
+                Créé par <strong>{{ character.user.pseudo }}</strong> le {{ character.createdAt|date('d/m/Y') }}
             </div>
         </div>
     </div>
     
+    {# Navigation par onglets moderne #}
+    <div class="character-tabs">
+        <div class="character-tabs__nav">
+            <button class="character-tabs__tab active" data-tab="biography">
+                <i class="fas fa-book-open me-2"></i>Biographie
+            </button>
+            <button class="character-tabs__tab" data-tab="personality">
+                <i class="fas fa-brain me-2"></i>Personnalité
+            </button>
+            <button class="character-tabs__tab" data-tab="appearance">
+                <i class="fas fa-eye me-2"></i>Apparence
+            </button>
+            <button class="character-tabs__tab" data-tab="abilities">
+                <i class="fas fa-bolt me-2"></i>Capacités
+            </button>
+            {% if character.equipment %}
+            <button class="character-tabs__tab" data-tab="equipment">
+                <i class="fas fa-shield-alt me-2"></i>Équipement
+            </button>
+            {% endif %}
+            {% if character.weaknesses %}
+            <button class="character-tabs__tab" data-tab="weaknesses">
+                <i class="fas fa-exclamation-triangle me-2"></i>Faiblesses
+            </button>
+            {% endif %}
+        </div>
+        
+        <div class="character-tabs__content">
+            {# Onglet Biographie #}
+            <div class="character-tabs__panel active" id="biography">
+                <div class="character-content">
+                    {% if character.biography %}
+                        {{ character.biography|raw }}
+                    {% else %}
+                        <div class="character-content--empty">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Aucune biographie n'a été rédigée pour ce personnage.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Onglet Personnalité #}
+            <div class="character-tabs__panel" id="personality">
+                <div class="character-content">
+                    {% if character.personality %}
+                        {{ character.personality|raw }}
+                    {% else %}
+                        <div class="character-content--empty">
+                            <i class="fas fa-brain me-2"></i>
+                            Aucune information sur la personnalité de ce personnage.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Onglet Apparence #}
+            <div class="character-tabs__panel" id="appearance">
+                <div class="character-content">
+                    {% if character.appearance %}
+                        {{ character.appearance|raw }}
+                    {% else %}
+                        <div class="character-content--empty">
+                            <i class="fas fa-eye me-2"></i>
+                            Aucune description de l'apparence de ce personnage.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Onglet Capacités #}
+            <div class="character-tabs__panel" id="abilities">
+                <div class="character-content">
+                    {% if character.abilities %}
+                        {{ character.abilities|raw }}
+                    {% else %}
+                        <div class="character-content--empty">
+                            <i class="fas fa-bolt me-2"></i>
+                            Aucune capacité ou compétence spécifiée pour ce personnage.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if character.equipment %}
+            {# Onglet Équipement #}
+            <div class="character-tabs__panel" id="equipment">
+                <div class="character-content">
+                    {{ character.equipment|raw }}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if character.weaknesses %}
+            {# Onglet Faiblesses #}
+            <div class="character-tabs__panel" id="weaknesses">
+                <div class="character-content">
+                    {{ character.weaknesses|raw }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Scènes de roleplay #}
     {% if threads|length > 0 %}
-        <h3 class="mb-3">Scènes de roleplay avec ce personnage</h3>
-        <div class="list-group mb-4">
-            {% for thread in threads %}
-                <a href="{{ path('app_roleplay_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ thread.title }}</h5>
-                        <span class="badge {% if thread.status == 'open' %}bg-success{% elseif thread.status == 'closed' %}bg-warning{% else %}bg-secondary{% endif %}">
-                            {{ thread.status == 'open' ? 'Ouvert' : (thread.status == 'closed' ? 'Fermé' : 'Archivé') }}
-                        </span>
-                    </div>
-                    <p class="mb-1 text-truncate">{{ thread.description|striptags|u.truncate(150, '...') }}</p>
-                    <small class="text-muted">
-                        {% if thread.universe %}
-                            <span class="me-2"><i class="fas fa-globe-europe"></i> {{ thread.universe.name }}</span>
-                        {% endif %}
-                        {% if thread.location %}
-                            <span class="me-2"><i class="fas fa-map-marker-alt"></i> {{ thread.location.name }}</span>
-                        {% endif %}
-                        <span><i class="fas fa-calendar"></i> {{ thread.updatedAt|date('d/m/Y') }}</span>
-                    </small>
-                </a>
-            {% endfor %}
+        <div class="character-threads">
+            <h3 class="character-threads__title">
+                <i class="fas fa-theater-masks me-2"></i>
+                Scènes de roleplay avec ce personnage
+            </h3>
+            <div class="character-threads__list">
+                {% for thread in threads %}
+                    <a href="{{ path('app_roleplay_thread_show', {'universeSlug': thread.forum.universe.slug, 'id': thread.id}) }}" class="character-thread-card">
+                        <div class="character-thread-card__header">
+                            <h5 class="character-thread-card__title">{{ thread.title }}</h5>
+                            <span class="thread-status-badge thread-status-badge--{{ thread.status }}">
+                                {% if thread.status == 'open' %}
+                                    <i class="fas fa-play me-1"></i>Ouvert
+                                {% elseif thread.status == 'closed' %}
+                                    <i class="fas fa-pause me-1"></i>Fermé
+                                {% else %}
+                                    <i class="fas fa-archive me-1"></i>Archivé
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="character-thread-card__content">
+                            {% if thread.description %}
+                                <p class="character-thread-card__description">
+                                    {{ thread.description|striptags|u.truncate(150, '...') }}
+                                </p>
+                            {% endif %}
+                            <div class="character-thread-card__meta">
+                                {% if thread.universe %}
+                                    <span class="thread-meta-item">
+                                        <i class="fas fa-globe-europe me-1"></i>{{ thread.universe.name }}
+                                    </span>
+                                {% endif %}
+                                {% if thread.location %}
+                                    <span class="thread-meta-item">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ thread.location.name }}
+                                    </span>
+                                {% endif %}
+                                <span class="thread-meta-item">
+                                    <i class="fas fa-calendar me-1"></i>{{ thread.updatedAt|date('d/m/Y') }}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
     
-    <div class="d-flex justify-content-between">
+    {# Actions du bas #}
+    <div class="character-actions">
         <a href="{{ path('app_roleplay_characters') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste des personnages
+            <i class="fas fa-arrow-left me-1"></i>Retour à la liste
         </a>
-        {% if isOwner %}
-            <form method="post" action="{{ path('app_roleplay_character_delete', {'id': character.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
-                <button class="btn btn-outline-danger">
-                    <i class="fas fa-trash"></i> Supprimer
-                </button>
-            </form>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -171,9 +171,6 @@
                     <button class="npc-tab" data-tab="characteristics">
                         <i class="fas fa-user-tag"></i> Caractéristiques
                     </button>
-                    <button class="npc-tab" data-tab="role">
-                        <i class="fas fa-people-arrows"></i> Rôle et Relations
-                    </button>
                 </div>
 
                 {# Onglet Description #}
@@ -216,32 +213,20 @@
                                 <h6>Faiblesses</h6>
                                 <div class="npc-content">{{ npc.weaknesses|raw }}</div>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
 
-                {# Onglet Rôle et Relations #}
-                <div class="npc-tab-content" id="role">
-                    <div class="card">
-                        <div class="card-body">
-                            {% if npc.roleInStory %}
-                                <h6>Rôle dans l'histoire</h6>
-                                <div class="npc-content">{{ npc.roleInStory|raw }}</div>
+                            {% if npc.moralAffiliation %}
+                                <h6>Alignement moral</h6>
+                                <div class="npc-content">{{ npc.moralAffiliation }}</div>
                             {% endif %}
 
-                            {% if npc.relationships %}
-                                <h6>Relations</h6>
-                                <div class="npc-content">{{ npc.relationships|raw }}</div>
+                            {% if npc.factions %}
+                                <h6>Factions</h6>
+                                <div class="npc-content">{{ npc.factions|raw }}</div>
                             {% endif %}
 
-                            {% if npc.quests %}
-                                <h6>Quêtes</h6>
-                                <div class="npc-content">{{ npc.quests|raw }}</div>
-                            {% endif %}
-
-                            {% if npc.dialogueStyle %}
-                                <h6>Style de dialogue</h6>
-                                <div class="npc-content">{{ npc.dialogueStyle|raw }}</div>
+                            {% if npc.occupation %}
+                                <h6>Occupation</h6>
+                                <div class="npc-content">{{ npc.occupation }}</div>
                             {% endif %}
                         </div>
                     </div>

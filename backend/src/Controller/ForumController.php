@@ -66,17 +66,7 @@ class ForumController extends AbstractController
         }
         
         // Récupérer les sous-forums triés par type (important > roleplay > hrp) puis par position
-        $subForums = $forumRepository->createQueryBuilder('f')
-            ->where('f.parent = :parent')
-            ->setParameter('parent', $forum)
-            ->orderBy('CASE f.type 
-                WHEN \'important\' THEN 1 
-                WHEN \'roleplay\' THEN 2 
-                WHEN \'hrp\' THEN 3 
-                ELSE 4 END', 'ASC')
-            ->addOrderBy('f.position', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $subForums = $forumRepository->findSubForumsByParentSortedByType($forum);
         
         // Enrichir les sous-forums avec les informations sur le dernier post et les statistiques
         foreach ($subForums as $subforum) {
@@ -143,7 +133,7 @@ class ForumController extends AbstractController
             'forum' => $forum,
             'subForums' => $subForums,
             'threads' => $threads,
-            'breadcrumbs' => $this->getBreadcrumbsForForum($univers, $forum),
+            'breadcrumbs' => $this->breadcrumbService->generateForForum($univers, $forum),
             'pagination' => [
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
@@ -154,53 +144,7 @@ class ForumController extends AbstractController
         ]);
     }
 
-    private function getBreadcrumbsForForum(Univers $univers, Forum $forum, array $additional = []): array
-    {
-        $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()])
-        ];
-        
-        $currentForum = $forum;
-        $parentForums = [];
-        
-        while ($parent = $currentForum->getParent()) {
-            $parentForums[] = $parent;
-            $currentForum = $parent;
-        }
-        
-        $parentForums = array_reverse($parentForums);
-        
-        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
-        if ($forum->getElseworld()) {
-            $elseworld = $forum->getElseworld();
-            $breadcrumbs['Elseworlds'] = $this->generateUrl('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
-            $breadcrumbs[$elseworld->getName()] = $this->generateUrl('app_elseworld_show', [
-                'universeSlug' => $univers->getSlug(),
-                'elseworldSlug' => $elseworld->getSlug()
-            ]);
-        } else {
-            $breadcrumbs['Forums'] = $this->generateUrl('app_univers_forums', ['slug' => $univers->getSlug()]);
-        }
-        
-        foreach ($parentForums as $parentForum) {
-            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', [
-                'universeSlug' => $univers->getSlug(),
-                'id' => $parentForum->getId()
-            ]);
-        }
-        
-        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', [
-            'universeSlug' => $univers->getSlug(),
-            'id' => $forum->getId()
-        ]);
-        
-        foreach ($additional as $name => $url) {
-            $breadcrumbs[$name] = $url;
-        }
-        
-        return $this->breadcrumbService->generate($breadcrumbs);
-    }
+
 
     #[Route('/by-universe-ajax', name: 'app_forums_by_universe_ajax', methods: ['GET'])]
     public function getForumsByUniverseAjax(Request $request, ForumRepository $forumRepository): JsonResponse

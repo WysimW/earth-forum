@@ -1,9 +1,130 @@
 <div class="col">
-    <div class="card h-100 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">{{ npc.name }}</h5>
-            <div class="d-flex align-items-center">
-                <span class="status-badge status-{{ npc.status }}">
+    <div class="npc-card">
+        {# Header avec avatar et infos principales #}
+        <div class="npc-card__header">
+            <div class="npc-card__avatar">
+                {% if npc.avatar %}
+                    <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="npc-card__avatar-img">
+                {% else %}
+                    <div class="npc-card__avatar-placeholder">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                {% endif %}
+                
+                {# Badge de statut sur l'avatar #}
+                <div class="npc-card__status-badge status-{{ npc.status }}">
+                    {% if npc.status == 'validated' %}
+                        <i class="fas fa-check-circle" title="Validé"></i>
+                    {% elseif npc.status == 'pending' %}
+                        <i class="fas fa-clock" title="En attente"></i>
+                    {% elseif npc.status == 'draft' %}
+                        <i class="fas fa-file-alt" title="Brouillon"></i>
+                    {% elseif npc.status == 'editing' %}
+                        <i class="fas fa-edit" title="En édition"></i>
+                    {% elseif npc.status == 'abandoned' %}
+                        <i class="fas fa-archive" title="Abandonné"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle" title="Refusé"></i>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="npc-card__info">
+                <h5 class="npc-card__name">{{ npc.name }}</h5>
+                {% if npc.universe %}
+                    <div class="npc-card__universe">
+                        <i class="fas fa-globe me-1"></i>{{ npc.universe.name }}
+                    </div>
+                {% endif %}
+                {% if npc.elseworld %}
+                    <div class="npc-card__elseworld">
+                        <i class="fas fa-map-marked-alt me-1"></i>{{ npc.elseworld.name }}
+                    </div>
+                {% endif %}
+                <div class="npc-card__type">
+                    <i class="fas fa-user-tie me-1"></i>Personnage Non-Joueur
+                </div>
+            </div>
+            
+            {# Menu actions compact #}
+            <div class="npc-card__actions">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_npc_show', {'id': npc.id}) }}">
+                                <i class="fas fa-eye me-2"></i>Voir le profil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_npc_edit', {'id': npc.id}) }}">
+                                <i class="fas fa-edit me-2"></i>Modifier
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ path('app_npc_delete', {'id': npc.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce PNJ ?');" class="m-0">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ npc.id) }}">
+                                <button class="dropdown-item text-danger">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        {# Corps de la carte avec description #}
+        <div class="npc-card__body">
+            {% if npc.biography %}
+                <p class="npc-card__description">
+                    {{ npc.biography|striptags|u.truncate(120, '...') }}
+                </p>
+            {% else %}
+                <p class="npc-card__description npc-card__description--empty">
+                    <i class="fas fa-file-alt me-1"></i>
+                    Aucune biographie disponible
+                </p>
+            {% endif %}
+            
+            {# Métadonnées PNJ #}
+            <div class="npc-card__meta">
+                {% if npc.occupation %}
+                    <span class="npc-card__meta-item">
+                        <i class="fas fa-briefcase me-1"></i>{{ npc.occupation }}
+                    </span>
+                {% endif %}
+                {% if npc.moralAffiliation %}
+                    <span class="npc-card__meta-item npc-card__meta-item--moral">
+                        <span class="moral-badge moral-badge--{{ npc.moralAffiliation|lower|replace({' ': '-', '-': '-'}) }}">
+                            {{ npc.moralAffiliation }}
+                        </span>
+                    </span>
+                {% endif %}
+                {% if npc.age %}
+                    <span class="npc-card__meta-item">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ npc.age }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Footer avec actions principales #}
+        <div class="npc-card__footer">
+            <div class="npc-card__quick-actions">
+                <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>Voir
+                </a>
+                <a href="{{ path('app_npc_edit', {'id': npc.id}) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit me-1"></i>Éditer
+                </a>
+            </div>
+            
+            <div class="npc-card__status-text">
+                <span class="status-label status-label--{{ npc.status }}">
                     {% if npc.status == 'draft' %}
                         Brouillon
                     {% elseif npc.status == 'pending' %}
@@ -16,62 +137,10 @@
                         Abandonné
                     {% elseif npc.status == 'editing' %}
                         En édition
+                    {% else %}
+                        {{ npc.status|title }}
                     {% endif %}
                 </span>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButtonNpc{{ npc.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonNpc{{ npc.id }}">
-                        <li><a class="dropdown-item" href="{{ path('app_npc_show', {'id': npc.id}) }}">Voir</a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_npc_edit', {'id': npc.id}) }}">Modifier</a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_dialogue_style_npc', {'id': npc.id}) }}">Style de dialogue</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{{ path('app_npc_delete', {'id': npc.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce PNJ ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ npc.id) }}">
-                                <button class="dropdown-item text-danger">Supprimer</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-auto">
-                    {% if npc.avatar %}
-                        <img src="{{ npc.avatar }}" alt="{{ npc.name }}" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
-                    {% else %}
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                            <i class="fas fa-user fa-2x"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col">
-                    {% if npc.elseworld %}
-                        <div class="mb-2">
-                            <span class="badge bg-info">{{ npc.elseworld.name }}</span>
-                        </div>
-                    {% endif %}
-                    <div class="card-text small">
-                        {% if npc.biography %}
-                            {{ npc.biography|striptags|u.truncate(100, '...') }}
-                        {% else %}
-                            <span class="text-muted">Aucune biographie disponible</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-footer bg-white">
-            <div class="btn-group btn-group-sm w-100">
-                <a href="{{ path('app_npc_show', {'id': npc.id}) }}" class="btn btn-outline-primary">
-                    <i class="fas fa-eye"></i> Voir
-                </a>
-                <a href="{{ path('app_npc_edit', {'id': npc.id}) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-pen"></i> Éditer
-                </a>
             </div>
         </div>
     </div>

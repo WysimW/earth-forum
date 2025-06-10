@@ -1,0 +1,694 @@
+/* ===================================
+   PROFIL DE PERSONNAGE MODERNE - DARK THEME
+   =================================== */
+
+.character-profile {
+    background: linear-gradient(135deg, var(--primary-dark), var(--deep-black));
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+    border: var(--border-width-sm) solid var(--primary-medium);
+}
+
+/* ===================================
+   HEADER DU PROFIL
+   =================================== */
+
+.character-profile__header {
+    padding: var(--spacing-xl);
+    display: flex;
+    gap: var(--spacing-xl);
+    align-items: flex-start;
+    background: linear-gradient(135deg, var(--bg-primary-trans), var(--bg-dark-trans));
+    border-bottom: var(--border-width-sm) solid var(--primary-medium);
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.character-profile__avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.character-profile__avatar-img {
+    width: 120px;
+    height: 144px; /* Ratio 1.2:1 pour format portrait */
+    object-fit: cover;
+    border-radius: var(--border-radius-md);
+    border: var(--border-width-lg) solid var(--accent-blue);
+    box-shadow: var(--shadow-xl);
+    filter: brightness(1.1);
+}
+
+.character-profile__avatar-placeholder {
+    width: 120px;
+    height: 144px;
+    background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
+    border-radius: var(--border-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    font-size: 3rem;
+    border: var(--border-width-lg) solid var(--accent-blue);
+    box-shadow: var(--shadow-xl);
+}
+
+.character-profile__status-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius-circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text-white);
+    border: var(--border-width-lg) solid var(--text-white);
+    box-shadow: var(--shadow-md);
+}
+
+.character-profile__status-badge.status-validated {
+    background: linear-gradient(135deg, var(--hrp-primary), var(--hrp-secondary));
+    box-shadow: 0 4px 12px var(--hrp-glow);
+}
+
+.character-profile__status-badge.status-pending {
+    background: linear-gradient(135deg, var(--warning), #e67e22);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.6);
+}
+
+.character-profile__status-badge.status-draft {
+    background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
+    box-shadow: 0 4px 12px var(--glow-blue);
+}
+
+.character-profile__status-badge.status-rejected {
+    background: linear-gradient(135deg, var(--danger), var(--important-primary));
+    box-shadow: 0 4px 12px var(--important-glow);
+}
+
+.character-profile__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.character-profile__name {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-white);
+    margin: 0 0 var(--spacing-sm) 0;
+    line-height: 1.2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.character-profile__real-name {
+    font-size: 1.25rem;
+    color: var(--light-gray);
+    font-style: italic;
+    margin-bottom: var(--spacing-md);
+    opacity: var(--opacity-light);
+}
+
+.character-profile__universe,
+.character-profile__elseworld {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.character-profile__universe {
+    color: var(--roleplay-light);
+}
+
+.character-profile__elseworld {
+    color: var(--accent-light);
+}
+
+.character-profile__status-text {
+    margin-top: var(--spacing-md);
+}
+
+.status-label {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    transition: var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.status-label--validated {
+    background: linear-gradient(135deg, var(--hrp-glow), var(--hrp-primary));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--hrp-accent);
+    box-shadow: 0 2px 8px var(--hrp-glow);
+}
+
+.status-label--pending {
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.6), var(--warning));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--warning);
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+.status-label--draft {
+    background: linear-gradient(135deg, var(--glow-blue), var(--primary-medium));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--accent-blue);
+    box-shadow: 0 2px 8px var(--glow-blue);
+}
+
+.status-label--rejected {
+    background: linear-gradient(135deg, var(--important-glow), var(--important-primary));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--important-accent);
+    box-shadow: 0 2px 8px var(--important-glow);
+}
+
+.character-profile__actions {
+    flex-shrink: 0;
+}
+
+.character-profile__actions .btn {
+    font-weight: 500;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-medium));
+    border: var(--border-width-sm) solid var(--accent-light);
+    color: var(--text-white);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-normal);
+}
+
+.character-profile__actions .btn:hover {
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, var(--accent-light), var(--accent-blue));
+}
+
+/* ===================================
+   MÉTADONNÉES DU PROFIL
+   =================================== */
+
+.character-profile__meta {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--bg-dark-trans), var(--bg-primary-trans));
+    border-bottom: var(--border-width-sm) solid var(--primary-medium);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    backdrop-filter: blur(5px);
+}
+
+.character-profile__meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border-radius: var(--border-radius-md);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-normal);
+    min-height: 60px;
+}
+
+.character-profile__meta-item:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 15px rgba(4, 118, 242, 0.3);
+}
+
+.character-profile__meta-item i {
+    color: var(--accent-light);
+    width: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.meta-label {
+    font-weight: 500;
+    color: var(--light-gray);
+    margin-right: var(--spacing-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.meta-value {
+    color: var(--text-white);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.character-profile__meta-item--moral {
+    border: none;
+    background: transparent;
+    padding: var(--spacing-md) 0;
+}
+
+/* Items avec beaucoup de texte */
+.character-profile__meta-item--wide {
+    grid-column: 1 / -1;
+    max-width: none;
+}
+
+.character-profile__meta-item--pseudonyms,
+.character-profile__meta-item--occupation,
+.character-profile__meta-item--orientation {
+    min-width: 350px;
+}
+
+/* ===================================
+   BADGES MORAUX DARK
+   =================================== */
+
+.moral-badge {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border: var(--border-width-sm) solid;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+}
+
+.moral-badge--super-héros {
+    background: linear-gradient(135deg, var(--roleplay-glow), var(--roleplay-primary));
+    color: var(--text-white);
+    border-color: var(--roleplay-accent);
+    box-shadow: 0 2px 8px var(--roleplay-glow);
+}
+
+.moral-badge--super-vilain {
+    background: linear-gradient(135deg, var(--important-glow), var(--important-primary));
+    color: var(--text-white);
+    border-color: var(--important-accent);
+    box-shadow: 0 2px 8px var(--important-glow);
+}
+
+.moral-badge--anti-héros {
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.6), var(--warning));
+    color: var(--text-white);
+    border-color: var(--warning);
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+.moral-badge--neutre {
+    background: linear-gradient(135deg, var(--glow-blue), var(--primary-medium));
+    color: var(--text-white);
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px var(--glow-blue);
+}
+
+.moral-badge--civil {
+    background: linear-gradient(135deg, var(--hrp-glow), var(--hrp-primary));
+    color: var(--text-white);
+    border-color: var(--hrp-accent);
+    box-shadow: 0 2px 8px var(--hrp-glow);
+}
+
+.moral-badge--vigilant {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.6), var(--info));
+    color: var(--text-white);
+    border-color: var(--info);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+}
+
+/* ===================================
+   FOOTER DU PROFIL
+   =================================== */
+
+.character-profile__footer {
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--deep-black), var(--primary-dark));
+    text-align: center;
+    border-top: var(--border-width-sm) solid var(--primary-medium);
+}
+
+.character-profile__creator {
+    color: var(--light-gray);
+    font-size: 0.9rem;
+    opacity: var(--opacity-light);
+}
+
+/* ===================================
+   ONGLETS MODERNES DARK
+   =================================== */
+
+.character-tabs {
+    background: linear-gradient(135deg, var(--primary-dark), var(--deep-black));
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+    border: var(--border-width-sm) solid var(--primary-medium);
+}
+
+.character-tabs__nav {
+    display: flex;
+    background: linear-gradient(135deg, var(--bg-primary-trans), var(--bg-dark-trans));
+    border-bottom: var(--border-width-sm) solid var(--primary-medium);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    backdrop-filter: blur(10px);
+}
+
+.character-tabs__nav::-webkit-scrollbar {
+    height: 4px;
+}
+
+.character-tabs__nav::-webkit-scrollbar-track {
+    background: var(--primary-dark);
+}
+
+.character-tabs__nav::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: var(--border-radius-sm);
+}
+
+.character-tabs__tab {
+    flex: 1;
+    min-width: 140px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    background: transparent;
+    color: var(--light-gray);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    position: relative;
+    white-space: nowrap;
+}
+
+.character-tabs__tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    color: var(--text-white);
+}
+
+.character-tabs__tab.active {
+    background: linear-gradient(135deg, var(--roleplay-glow), var(--roleplay-primary));
+    color: var(--text-white);
+    border-bottom: var(--border-width-lg) solid var(--roleplay-accent);
+    box-shadow: 0 4px 15px var(--roleplay-glow);
+}
+
+.character-tabs__tab i {
+    opacity: var(--opacity-medium);
+}
+
+.character-tabs__tab.active i {
+    opacity: 1;
+}
+
+.character-tabs__content {
+    min-height: 300px;
+    background: linear-gradient(135deg, var(--bg-dark-trans), var(--bg-primary-trans));
+    backdrop-filter: blur(5px);
+}
+
+.character-tabs__panel {
+    display: none;
+    padding: var(--spacing-xl);
+    animation: fadeIn var(--transition-normal);
+}
+
+.character-tabs__panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.character-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--light-gray);
+}
+
+.character-content--empty {
+    text-align: center;
+    color: var(--primary-medium);
+    font-style: italic;
+    padding: var(--spacing-xxl) var(--spacing-md);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border-radius: var(--border-radius-md);
+    border: var(--border-width-md) dashed var(--primary-medium);
+    backdrop-filter: blur(10px);
+}
+
+.character-content--empty i {
+    font-size: 1.2rem;
+    opacity: var(--opacity-medium);
+}
+
+/* ===================================
+   SCÈNES DE ROLEPLAY DARK
+   =================================== */
+
+.character-threads {
+    margin-bottom: var(--spacing-xl);
+}
+
+.character-threads__title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.character-threads__title i {
+    color: var(--roleplay-light);
+}
+
+.character-threads__list {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.character-thread-card {
+    background: linear-gradient(135deg, var(--bg-primary-trans), var(--bg-dark-trans));
+    border: var(--border-width-sm) solid var(--primary-medium);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition-normal);
+    display: block;
+    backdrop-filter: blur(10px);
+}
+
+.character-thread-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.character-thread-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-md);
+}
+
+.character-thread-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-white);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.thread-status-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.thread-status-badge--open {
+    background: linear-gradient(135deg, var(--hrp-glow), var(--hrp-primary));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--hrp-accent);
+    box-shadow: 0 2px 8px var(--hrp-glow);
+}
+
+.thread-status-badge--closed {
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.6), var(--warning));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--warning);
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+.thread-status-badge--archived {
+    background: linear-gradient(135deg, var(--glow-blue), var(--primary-medium));
+    color: var(--text-white);
+    border: var(--border-width-sm) solid var(--accent-blue);
+    box-shadow: 0 2px 8px var(--glow-blue);
+}
+
+.character-thread-card__description {
+    color: var(--light-gray);
+    margin: 0 0 var(--spacing-md) 0;
+    line-height: 1.5;
+    opacity: var(--opacity-light);
+}
+
+.character-thread-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-top: auto;
+}
+
+.thread-meta-item {
+    font-size: 0.85rem;
+    color: var(--light-gray);
+    display: flex;
+    align-items: center;
+    opacity: var(--opacity-medium);
+}
+
+.thread-meta-item i {
+    opacity: var(--opacity-medium);
+    color: var(--accent-light);
+}
+
+/* ===================================
+   ACTIONS
+   =================================== */
+
+.character-actions {
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+}
+
+.character-actions .btn {
+    background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
+    border: var(--border-width-sm) solid var(--accent-blue);
+    color: var(--text-white);
+    font-weight: 500;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--border-radius-md);
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-md);
+}
+
+.character-actions .btn:hover {
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-medium));
+    box-shadow: var(--shadow-lg);
+}
+
+/* ===================================
+   RESPONSIVE DARK
+   =================================== */
+
+@media (max-width: 768px) {
+    .character-profile__header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: var(--spacing-lg);
+        gap: var(--spacing-lg);
+    }
+    
+    .character-profile__avatar-img,
+    .character-profile__avatar-placeholder {
+        width: 100px;
+        height: 120px;
+    }
+    
+    .character-profile__status-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+    
+    .character-profile__name {
+        font-size: 2rem;
+    }
+    
+    .character-profile__meta {
+        grid-template-columns: 1fr;
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+    
+    .character-profile__meta-item {
+        min-height: auto;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
+    .character-tabs__nav {
+        flex-wrap: wrap;
+    }
+    
+    .character-tabs__tab {
+        min-width: 120px;
+        padding: var(--spacing-md) var(--spacing-md);
+        font-size: 0.85rem;
+    }
+    
+    .character-tabs__panel {
+        padding: var(--spacing-lg);
+    }
+    
+    .character-thread-card {
+        padding: var(--spacing-md);
+    }
+    
+    .character-thread-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .character-thread-card__meta {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .character-profile__name {
+        font-size: 1.75rem;
+    }
+    
+    .character-tabs__nav {
+        justify-content: flex-start;
+    }
+    
+    .character-tabs__tab {
+        flex: none;
+        min-width: 100px;
+        font-size: 0.8rem;
+    }
+} 

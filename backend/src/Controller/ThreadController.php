@@ -84,9 +84,7 @@ class ThreadController extends AbstractController
             'forumsHRP' => $forumsHRP,
             'elseworldsForumsRP' => $elseworldsForumsRP,
             'elseworldsForumsHRP' => $elseworldsForumsHRP,
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+            'breadcrumbs' => $this->breadcrumbService->generateForUniverse($univers, [
                 'Choisir un forum' => $this->generateUrl('app_choose_forum_new_thread', ['universeSlug' => $universeSlug]),
             ]),
         ]);
@@ -206,11 +204,7 @@ class ThreadController extends AbstractController
             'forum' => $forum,
             'isRpForum' => $isRpForum,
             'hasValidatedCharacters' => $hasValidatedCharacters,
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
-                'Forums' => $this->generateUrl('app_univers_forums', ['slug' => $universeSlug]),
-                $forum->getName() => $this->generateUrl('app_forum_show', ['universeSlug' => $universeSlug, 'id' => $forum->getId()]),
+            'breadcrumbs' => $this->breadcrumbService->generateForForum($univers, $forum, [
                 'Nouvelle discussion' => $this->generateUrl('app_forum_new_thread', ['universeSlug' => $universeSlug, 'id' => $forum->getId()]),
             ]),
         ]);
@@ -332,7 +326,7 @@ class ThreadController extends AbstractController
             'form' => $form->createView(),
             'isRoleplay' => $isRpThread,
             'userCanPost' => $userCanPost,
-            'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
+            'breadcrumbs' => $this->breadcrumbService->generateForThread($univers, $thread),
             'canReply' => $userCanPost,
             'posts' => $thread->getPosts(),
             'userHasCharacters' => $this->getUser() && $characterRepository->findValidatedCharactersForUser($this->getUser()),
@@ -378,47 +372,8 @@ class ThreadController extends AbstractController
         $isOwner = $this->getUser() && $character->getUser() === $this->getUser();
         $isModerator = $this->isGranted('ROLE_MODERATOR');
 
-        // Générer le tableau de breadcrumbs avec le format correct
-        $breadcrumbsArray = [
-            ['name' => 'Accueil', 'url' => $this->generateUrl('app_univers_index')],
-            ['name' => $univers->getName(), 'url' => $this->generateUrl('app_univers_show', ['slug' => $universeSlug])],
-        ];
-
-        // Ajouter le forum parent s'il existe
-        if ($thread->getForum()) {
-            $forum = $thread->getForum();
-            $breadcrumbsArray[] = [
-                'name' => 'Forums',
-                'url' => $this->generateUrl('app_univers_forums', ['slug' => $universeSlug])
-            ];
-
-            // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
-            if ($forum->getElseworld()) {
-                $elseworld = $forum->getElseworld();
-                $breadcrumbsArray[] = [
-                    'name' => 'Elseworlds',
-                    'url' => $this->generateUrl('app_univers_elseworlds', ['slug' => $universeSlug])
-                ];
-                $breadcrumbsArray[] = [
-                    'name' => $elseworld->getName(),
-                    'url' => $this->generateUrl('app_elseworld_show', [
-                        'universeSlug' => $universeSlug,
-                        'elseworldSlug' => $elseworld->getSlug()
-                    ])
-                ];
-            }
-
-            $breadcrumbsArray[] = [
-                'name' => $forum->getName(),
-                'url' => $this->generateUrl('app_forum_show', [
-                    'universeSlug' => $universeSlug,
-                    'id' => $forum->getId()
-                ])
-            ];
-        }
-
-        // Ajouter le titre du thread comme élément actif
-        $breadcrumbsArray[] = $thread->getTitle();
+        // Générer les breadcrumbs avec le service
+        $breadcrumbsArray = $this->breadcrumbService->generateForThread($univers, $thread);
 
         return $this->render('thread/character_sheet.html.twig', [
             'univers' => $univers,
@@ -606,9 +561,7 @@ class ThreadController extends AbstractController
         return $this->render('thread/index.html.twig', [
             'univers' => $univers,
             'threads' => $threads,
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+            'breadcrumbs' => $this->breadcrumbService->generateForUniverse($univers, [
                 'Scènes RP' => $this->generateUrl('app_roleplay_threads', ['universeSlug' => $universeSlug]),
             ]),
         ]);
@@ -722,9 +675,7 @@ class ThreadController extends AbstractController
             'validatedSheets' => $validatedSheets,
             'rejectedSheets' => $rejectedSheets,
             'canModerate' => $this->isGranted('ROLE_MODERATOR'),
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+            'breadcrumbs' => $this->breadcrumbService->generateForUniverse($univers, [
                 'Fiches de Personnages' => $this->generateUrl('app_character_sheets', ['universeSlug' => $universeSlug]),
             ]),
         ]);
@@ -745,9 +696,7 @@ class ThreadController extends AbstractController
         return $this->render('thread/my_character_sheets.html.twig', [
             'univers' => $univers,
             'characterSheets' => $myCharacterSheets,
-            'breadcrumbs' => $this->breadcrumbService->generate([
-                'Accueil' => $this->generateUrl('app_univers_index'),
-                $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $universeSlug]),
+            'breadcrumbs' => $this->breadcrumbService->generateForUniverse($univers, [
                 'Fiches de Personnages' => $this->generateUrl('app_character_sheets', ['universeSlug' => $universeSlug]),
                 'Mes Fiches' => $this->generateUrl('app_character_sheets_mine', ['universeSlug' => $universeSlug]),
             ]),
@@ -845,7 +794,7 @@ class ThreadController extends AbstractController
             'form' => $form->createView(),
             'thread' => $thread,
             'isRpThread' => $isRpThread,
-            'breadcrumbs' => $this->getBreadcrumbsForThread($univers, $thread),
+            'breadcrumbs' => $this->breadcrumbService->generateForThread($univers, $thread),
         ]);
     }
 
@@ -956,65 +905,6 @@ class ThreadController extends AbstractController
         return $this->redirectToRoute('app_thread_show', [
             'universeSlug' => $universeSlug,
             'id' => $thread->getId()
-        ]);
-    }
-
-    private function getBreadcrumbsForForum(Univers $univers, Forum $forum, array $additional = []): array
-    {
-        $breadcrumbs = [
-            'Accueil' => $this->generateUrl('app_univers_index'),
-            $univers->getName() => $this->generateUrl('app_univers_show', ['slug' => $univers->getSlug()]),
-        ];
-
-        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
-        if ($forum->getElseworld()) {
-            $elseworld = $forum->getElseworld();
-            $breadcrumbs['Elseworlds'] = $this->generateUrl('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
-            $breadcrumbs[$elseworld->getName()] = $this->generateUrl('app_elseworld_show', [
-                'universeSlug' => $univers->getSlug(),
-                'elseworldSlug' => $elseworld->getSlug()
-            ]);
-        } else {
-            $breadcrumbs['Forums'] = $this->generateUrl('app_univers_forums', ['slug' => $univers->getSlug()]);
-        }
-
-        $currentForum = $forum;
-        $parentForums = [];
-
-        while ($parent = $currentForum->getParent()) {
-            $parentForums[] = $parent;
-            $currentForum = $parent;
-        }
-
-        $parentForums = array_reverse($parentForums);
-
-        foreach ($parentForums as $parentForum) {
-            $breadcrumbs[$parentForum->getName()] = $this->generateUrl('app_forum_show', [
-                'universeSlug' => $univers->getSlug(),
-                'id' => $parentForum->getId()
-            ]);
-        }
-
-        $breadcrumbs[$forum->getName()] = $this->generateUrl('app_forum_show', [
-            'universeSlug' => $univers->getSlug(),
-            'id' => $forum->getId()
-        ]);
-
-        foreach ($additional as $name => $url) {
-            $breadcrumbs[$name] = $url;
-        }
-
-        return $this->breadcrumbService->generate($breadcrumbs);
-    }
-
-    private function getBreadcrumbsForThread(Univers $univers, Thread $thread): array
-    {
-        $forum = $thread->getForum();
-        return $this->getBreadcrumbsForForum($univers, $forum, [
-            $thread->getTitle() => $this->generateUrl('app_thread_show', [
-                'universeSlug' => $univers->getSlug(),
-                'id' => $thread->getId()
-            ])
         ]);
     }
 

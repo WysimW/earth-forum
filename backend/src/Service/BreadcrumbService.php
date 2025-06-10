@@ -75,6 +75,52 @@ class BreadcrumbService
         return $this->generate($breadcrumbs);
     }
     
+    /**
+     * Génère les fils d'Ariane pour un forum dans un univers
+     */
+    public function generateForForum(Univers $univers, Forum $forum, array $additional = []): array
+    {
+        $currentForum = $forum;
+        $parentForums = [];
+        
+        while ($parent = $currentForum->getParent()) {
+            $parentForums[] = $parent;
+            $currentForum = $parent;
+        }
+        
+        $parentForums = array_reverse($parentForums);
+        
+        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
+        if ($forum->getElseworld()) {
+            $elseworld = $forum->getElseworld();
+            $breadcrumbs['Elseworlds'] = $this->urlGenerator->generate('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
+            $breadcrumbs[$elseworld->getName()] = $this->urlGenerator->generate('app_elseworld_show', [
+                'universeSlug' => $univers->getSlug(),
+                'elseworldSlug' => $elseworld->getSlug()
+            ]);
+        } else {
+            $breadcrumbs[$univers->getName()] = $this->urlGenerator->generate('app_univers_forums', ['slug' => $univers->getSlug()]);
+        }
+        
+        foreach ($parentForums as $parentForum) {
+            $breadcrumbs[$parentForum->getName()] = $this->urlGenerator->generate('app_forum_show', [
+                'universeSlug' => $univers->getSlug(),
+                'id' => $parentForum->getId()
+            ]);
+        }
+        
+        $breadcrumbs[$forum->getName()] = $this->urlGenerator->generate('app_forum_show', [
+            'universeSlug' => $univers->getSlug(),
+            'id' => $forum->getId()
+        ]);
+        
+        foreach ($additional as $name => $url) {
+            $breadcrumbs[$name] = $url;
+        }
+        
+        return $this->generate($breadcrumbs);
+    }
+
     public function generateBreadcrumbs(Forum $forum): array
     {
         $breadcrumbs = [];
@@ -88,22 +134,77 @@ class BreadcrumbService
             $forum = $forum->getParent(); // Move to the parent forum
         }
 
-        // Add the root or home breadcrumb
-        $breadcrumbs[] = [
-            'name' => 'Home',
-            'url' => '/'
-        ];
-
+    
         // The breadcrumbs need to be in the correct order, so we reverse the array
         return array_reverse($breadcrumbs);
     }
 
+    /**
+     * Génère les fils d'Ariane pour un thread dans un univers
+     */
+    public function generateForThread(Univers $univers, Thread $thread, array $additional = []): array
+    {
+        $forum = $thread->getForum();
+        
+        // Construire d'abord les breadcrumbs du forum
+        $currentForum = $forum;
+        $parentForums = [];
+        
+        while ($parent = $currentForum->getParent()) {
+            $parentForums[] = $parent;
+            $currentForum = $parent;
+        }
+        
+        $parentForums = array_reverse($parentForums);
+        
+        $breadcrumbs = [];
+        
+        // Si le forum appartient à un elseworld, l'ajouter dans le breadcrumb
+        if ($forum->getElseworld()) {
+            $elseworld = $forum->getElseworld();
+            $breadcrumbs['Elseworlds'] = $this->urlGenerator->generate('app_univers_elseworlds', ['slug' => $univers->getSlug()]);
+            $breadcrumbs[$elseworld->getName()] = $this->urlGenerator->generate('app_elseworld_show', [
+                'universeSlug' => $univers->getSlug(),
+                'elseworldSlug' => $elseworld->getSlug()
+            ]);
+        } else {
+            $breadcrumbs[$univers->getName()] = $this->urlGenerator->generate('app_univers_forums', ['slug' => $univers->getSlug()]);
+        }
+        
+        // Ajouter les forums parents
+        foreach ($parentForums as $parentForum) {
+            $breadcrumbs[$parentForum->getName()] = $this->urlGenerator->generate('app_forum_show', [
+                'universeSlug' => $univers->getSlug(),
+                'id' => $parentForum->getId()
+            ]);
+        }
+        
+        // Ajouter le forum courant
+        $breadcrumbs[$forum->getName()] = $this->urlGenerator->generate('app_forum_show', [
+            'universeSlug' => $univers->getSlug(),
+            'id' => $forum->getId()
+        ]);
+        
+        // Ajouter le thread courant
+        $breadcrumbs[$thread->getTitle()] = $this->urlGenerator->generate('app_thread_show', [
+            'universeSlug' => $univers->getSlug(),
+            'id' => $thread->getId()
+        ]);
+        
+        // Ajouter les éléments supplémentaires
+        foreach ($additional as $name => $url) {
+            $breadcrumbs[$name] = $url;
+        }
+        
+        return $this->generate($breadcrumbs);
+    }
+
+    /**
+     * @deprecated Utiliser generateForThread() à la place
+     */
     public function generateBreadcrumbsForThread(Thread $thread): array
     {
         $breadcrumbs = [];
-
-        // Add the home link
-        $breadcrumbs[] = ['name' => 'Home', 'url' => '/'];
 
         // Get the forum that this thread belongs to
         $forum = $thread->getForum();

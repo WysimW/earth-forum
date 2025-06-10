@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/components/editor.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/posts.css') }}">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 {% endblock %}
 
@@ -20,47 +21,403 @@
             </ol>
         </nav>
 
-        <div class="card">
+        <div class="reply-form__content">
+            {{ form_start(form, {'attr': {'class': 'reply-form__form', 'id': 'character-reply-form', 'novalidate': 'novalidate'}}) }}
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">{{ thread.title }}</h5>
+                    </div>
             <div class="card-body">
-                <h5 class="mb-3">{{ thread.title }}</h5>
-                {{ form_start(form, {'attr': {'class': 'post-form', 'novalidate': 'novalidate'}}) }}
                     {% if thread.type == 'roleplay' %}
-                        <div class="mb-3">
-                            {{ form_label(form.character) }}
-                            {{ form_widget(form.character, {'attr': {'class': 'form-select'}}) }}
-                            {{ form_help(form.character) }}
+                            {# Sélection du personnage avec cartes #}
+                            <div class="character-selector">
+                                <div class="character-selector__header">
+                                    <h5 class="character-selector__title">
+                                        <i class="fas fa-user-astronaut me-2"></i>
+                                        Choisir votre personnage
+                                    </h5>
+                                    <small class="character-selector__subtitle">
+                                        Personnages validés dans {{ thread.forum.universe ? thread.forum.universe.name : 'cet univers' }}
+                                    </small>
+                                </div>
+                                
+                                {% set characters = app.user.characters|filter(c => c.status == 'validated' and c.universe == thread.forum.universe) %}
+                                
+                                {% if characters|length == 0 %}
+                                    <div class="character-selector__empty">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Aucun personnage validé dans cet univers.
+                                            <br>
+                                            <a href="{{ path('app_roleplay_character_new') }}" class="alert-link">
+                                                Créer un nouveau personnage
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    {# Galerie de cartes de personnages cliquables #}
+                                    <div class="character-gallery row g-4" id="character-gallery">
+                                        {% for character in characters %}
+                                            <div class="col-lg-6 col-xl-4">
+                                                <div class="character-card" 
+                                                     data-character-id="{{ character.id }}" 
+                                                     onclick="selectCharacter({{ character.id }})"
+                                                     title="Sélectionner {{ character.name }}">
+                                                    <div class="character-card__inner">
+                                                        {# Badge de héros principal #}
+                                                        <div class="character-card__hero-badge">
+                                                            <i class="fas fa-star"></i>
+                                                        </div>
+                                                        
+                                                        {# Header avec avatar et informations principales #}
+                                                        <div class="character-card__header">
+                                                            <div class="character-card__avatar-container">
+                                                                <div class="character-card__avatar">
+                                                                    {% if character.avatar %}
+                                                                        <img src="{{ character.avatar }}" 
+                                                                             alt="{{ character.name }}" 
+                                                                             class="character-card__avatar-img">
+                                                                    {% else %}
+                                                                        <div class="character-card__avatar-placeholder">
+                                                                            <i class="fas fa-user-astronaut"></i>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                    
+                                                                    {# Badge de validation #}
+                                                                    <div class="character-card__status-badge">
+                                                                        <i class="fas fa-shield-check" title="Personnage validé"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="character-card__basic-info">
+                                                                <h5 class="character-card__name">{{ character.name }}</h5>
+                                                                {% if character.actualPseudo %}
+                                                                    <div class="character-card__alias">
+                                                                        <i class="fas fa-mask me-1"></i>
+                                                                        "{{ character.actualPseudo }}"
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {# Corps avec informations détaillées #}
+                                                        <div class="character-card__body">
+                                                            <div class="character-card__info-grid">
+                                                                {% if character.occupation %}
+                                                                    <div class="character-card__info-item">
+                                                                        <i class="fas fa-briefcase"></i>
+                                                                        <span>{{ character.occupation }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {% if character.age %}
+                                                                    <div class="character-card__info-item">
+                                                                        <i class="fas fa-calendar-alt"></i>
+                                                                        <span>{{ character.age }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {% if character.location %}
+                                                                    <div class="character-card__info-item">
+                                                                        <i class="fas fa-map-marker-alt"></i>
+                                                                        <span>{{ character.location.name }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {% if character.moralAffiliation %}
+                                                                    <div class="character-card__info-item">
+                                                                        <i class="fas fa-balance-scale"></i>
+                                                                        <span>{{ character.moralAffiliation }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            {# Accordéons pour réduire la hauteur #}
+                                                            <div class="character-card__accordions">
+                                                                {% if character.abilities %}
+                                                                    <div class="character-card__accordion-item">
+                                                                        <button class="character-card__accordion-header" 
+                                                                                type="button" 
+                                                                                onclick="toggleCharacterAccordion(event, 'abilities-{{ character.id }}')">
+                                                                            <span class="character-card__accordion-title">
+                                                                                <i class="fas fa-bolt me-1"></i>
+                                                                                Capacités
+                                                                            </span>
+                                                                            <i class="fas fa-chevron-down character-card__accordion-icon"></i>
+                                                                        </button>
+                                                                        <div class="character-card__accordion-content" id="abilities-{{ character.id }}">
+                                                                            <div class="character-card__accordion-body">
+                                                                                {{ character.abilities|striptags }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {% if character.equipment %}
+                                                                    <div class="character-card__accordion-item">
+                                                                        <button class="character-card__accordion-header" 
+                                                                                type="button" 
+                                                                                onclick="toggleCharacterAccordion(event, 'equipment-{{ character.id }}')">
+                                                                            <span class="character-card__accordion-title">
+                                                                                <i class="fas fa-shield-alt me-1"></i>
+                                                                                Équipement
+                                                                            </span>
+                                                                            <i class="fas fa-chevron-down character-card__accordion-icon"></i>
+                                                                        </button>
+                                                                        <div class="character-card__accordion-content" id="equipment-{{ character.id }}">
+                                                                            <div class="character-card__accordion-body">
+                                                                                {{ character.equipment|striptags }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {# Footer avec hint d'action #}
+                                                        <div class="character-card__footer">
+                                                            <div class="character-card__action-hint">
+                                                                <i class="fas fa-hand-pointer me-1"></i>
+                                                                Cliquer pour incarner ce personnage
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {# Overlay de sélection amélioré #}
+                                                        <div class="character-card__selection-overlay">
+                                                            <div class="character-card__selection-content">
+                                                                <div class="character-card__selection-icon">
+                                                                    <i class="fas fa-check-circle"></i>
+                                                                </div>
+                                                                <div class="character-card__selection-text">Personnage Sélectionné</div>
+                                                                <div class="character-card__selection-subtext">Prêt à jouer</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                {# Select caché pour la synchronisation avec Symfony #}
+                                <div style="display: none;">
+                                    {{ form_widget(form.character) }}
+                                </div>
+
+                                {# Affichage des erreurs du champ character #}
+                                {% if form.character.vars.errors|length > 0 %}
+                                    <div class="alert alert-danger">
                             {{ form_errors(form.character) }}
                         </div>
-
-                        {% if form.npcs is defined %}
-                            <div class="mb-3">
-                                {{ form_label(form.npcs) }}
-                                {{ form_widget(form.npcs, {'attr': {'class': 'form-select'}}) }}
-                                {{ form_errors(form.npcs) }}
-                                <small class="form-text text-muted">
-                                    Sélectionnez les PNJ qui participent à ce message
-                                </small>
+                                {% endif %}
+                                
+                                {# Données JSON pour le JavaScript #}
+                                <script type="application/json" id="characters-data">
+                                    {{ characters|map(c => {
+                                        id: c.id,
+                                        name: c.name,
+                                        actualPseudo: c.actualPseudo,
+                                        occupation: c.occupation,
+                                        avatar: c.avatar,
+                                        location: c.location ? c.location.name : null,
+                                        abilities: c.abilities ? (c.abilities|striptags|slice(0, 200)) : null,
+                                        age: c.age,
+                                        moralAffiliation: c.moralAffiliation,
+                                        equipment: c.equipment ? (c.equipment|striptags|slice(0, 150)) : null,
+                                        appearance: c.appearance ? (c.appearance|striptags|slice(0, 150)) : null
+                                    })|json_encode|raw }}
+                                </script>
                             </div>
+                            
                         {% endif %}
+                        
+                        {# Section du message #}
+                        <div class="post-editor" id="post-editor" {% if thread.type != 'roleplay' %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                            <div class="post-editor__header">
+                                <h5 class="post-editor__title">
+                                    <i class="fas fa-feather-alt me-2"></i>
+                                    {% if thread.type == 'roleplay' %}Votre message RP{% else %}Votre message{% endif %}
+                                </h5>
+                                {% if thread.type == 'roleplay' %}
+                                    <div class="post-editor__character-info" id="selected-character-info" style="display: none;">
+                                        <span class="post-editor__character-name" id="editor-character-name"></span>
+                                        <small class="post-editor__character-note">
+                                            Vous écrivez en tant que ce personnage
+                                        </small>
+                                    </div>
                     {% endif %}
-                    <div class="mb-3">
-                        {{ form_label(form.content) }}
+                            </div>
+                            
+                            <div class="post-editor__content">
                         {{ form_widget(form.content, {'attr': {
-                            'class': 'form-control wysiwyg-editor',
-                            'rows': '10',
-                            'placeholder': 'Écrivez votre message ici...',
-                            'data-mode': thread.type == 'roleplay' ? 'roleplay' : 'hrp',
-                            'data-characters': app.user.characters|filter(c => c.status == 'validated')|map(c => {'id': c.id, 'name': c.name})|json_encode,
-                            'data-npcs': app.user.npcs|filter(n => n.status == 'validated')|map(n => {'id': n.id, 'name': n.name})|json_encode
+                                    'class': 'post-editor__textarea wysiwyg-editor',
+                                    'rows': '12',
+                                    'placeholder': thread.type == 'roleplay' ? 'Racontez les actions et paroles de votre personnage...' : 'Écrivez votre message ici...',
+                                    'id': 'reply-content'
                         }}) }}
                         {{ form_errors(form.content) }}
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary" name="publish">Publier</button>
-                        <button type="submit" class="btn btn-secondary" name="save_draft">Enregistrer comme brouillon</button>
+                        </div>
+
+                        {# Section des PNJ #}
+                        {% if thread.type == 'roleplay' and form.npcs is defined %}
+                            {% set availableNpcs = app.user.npcs|filter(n => n.status == 'validated') %}
+                            {% if availableNpcs|length > 0 %}
+                                <div class="npcs-selector" id="npcs-selector" style="display: none;">
+                                    <div class="npcs-selector__header">
+                                        <h5 class="npcs-selector__title">
+                                            <i class="fas fa-users me-2"></i>
+                                            PNJ présents (optionnel)
+                                        </h5>
+                                        <small class="npcs-selector__subtitle">
+                                            Sélectionnez les PNJ qui apparaissent dans votre message. Vous pouvez sélectionner plusieurs PNJ.
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="npcs-selector__content" id="npcs-cards-container">
+                                        <div class="npcs-gallery row g-3">
+                                            {% for npc in availableNpcs %}
+                                                <div class="col-md-6 col-xl-4">
+                                                    <div class="npc-card" 
+                                                         data-npc-id="{{ npc.id }}" 
+                                                         onclick="toggleNpcSelection({{ npc.id }})"
+                                                         title="Cliquez pour sélectionner {{ npc.name }}">
+                                                        <div class="npc-card__inner">
+                                                            {# Badge de statut propriétaire #}
+                                                            <div class="npc-card__owner-badge">
+                                                                <i class="fas fa-crown"></i>
+                                                            </div>
+                                                            
+                                                            {# En-tête avec avatar et infos principales #}
+                                                            <div class="npc-card__header">
+                                                                <div class="npc-card__avatar-container">
+                                                                    <div class="npc-card__avatar">
+                                                                        {% if npc.avatar %}
+                                                                            <img src="{{ npc.avatar }}" 
+                                                                                 alt="{{ npc.name }}" 
+                                                                                 class="npc-card__avatar-img">
+                                                                        {% else %}
+                                                                            <div class="npc-card__avatar-placeholder">
+                                                                                <i class="fas fa-user-tie"></i>
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        
+                                                                        {# Badge de validation #}
+                                                                        <div class="npc-card__status-badge">
+                                                                            <i class="fas fa-check-circle" title="PNJ validé"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="npc-card__basic-info">
+                                                                    <h6 class="npc-card__name">{{ npc.name }}</h6>
+                                                                    {% if npc.occupation %}
+                                                                        <div class="npc-card__occupation">
+                                                                            <i class="fas fa-briefcase me-1"></i>
+                                                                            {{ npc.occupation }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {# Corps de la carte avec informations détaillées #}
+                                                            <div class="npc-card__body">
+                                                                {% if npc.age %}
+                                                                    <div class="npc-card__info-item">
+                                                                        <i class="fas fa-calendar-alt"></i>
+                                                                        <span>{{ npc.age }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                {% if npc.personality %}
+                                                                    <div class="npc-card__description">
+                                                                        <em>"{{ npc.personality|striptags|slice(0, 80) }}{% if npc.personality|length > 80 %}...{% endif %}"</em>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            {# Footer avec action hint #}
+                                                            <div class="npc-card__footer">
+                                                                <small class="npc-card__hint">
+                                                                    <i class="fas fa-mouse-pointer me-1"></i>
+                                                                    Cliquer pour sélectionner
+                                                                </small>
+                                                            </div>
+                                                            
+                                                            {# Overlay de sélection amélioré #}
+                                                            <div class="npc-card__selection-overlay">
+                                                                <div class="npc-card__selection-content">
+                                                                    <div class="npc-card__selection-check">
+                                                                        <i class="fas fa-check"></i>
+                                                                    </div>
+                                                                    <div class="npc-card__selection-text">Sélectionné</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <div class="npcs-selector__summary mt-3" id="npcs-summary" style="display: none;">
+                                            <div class="alert alert-info">
+                                                <strong>PNJ sélectionnés :</strong> <span id="selected-npcs-list"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {# Select caché pour la synchronisation avec Symfony #}
+                                    <div style="display: none;">
+                                        {{ form_widget(form.npcs) }}
+                                    </div>
+                                    
+                                    {# Affichage des erreurs du champ npcs #}
+                                    {% if form.npcs.vars.errors|length > 0 %}
+                                        <div class="alert alert-danger">
+                                            {{ form_errors(form.npcs) }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {# Données JSON pour le JavaScript #}
+                                    <script type="application/json" id="npcs-data">
+                                        {{ availableNpcs|map(n => {
+                                            id: n.id,
+                                            name: n.name,
+                                            occupation: n.occupation,
+                                            avatar: n.avatar,
+                                            age: n.age,
+                                            user: n.user.pseudo,
+                                            isOwner: true,
+                                            personality: n.personality ? (n.personality|striptags|slice(0, 80)) : null
+                                        })|json_encode|raw }}
+                                    </script>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        {# Actions #}
+                        <div class="reply-actions" id="reply-actions" {% if thread.type != 'roleplay' %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                            <div class="reply-actions__buttons">
+                                <button type="submit" name="publish" class="reply-actions__btn reply-actions__btn--publish" {% if thread.type == 'roleplay' %}onclick="return validateCharacterSelection()"{% endif %}>
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Publier le message
+                                </button>
+                                <button type="submit" name="save_draft" class="reply-actions__btn reply-actions__btn--draft" {% if thread.type == 'roleplay' %}onclick="return validateCharacterSelection()"{% endif %}>
+                                    <i class="fas fa-save me-2"></i>
+                                    Sauvegarder en brouillon
+                                </button>
+                                <button type="button" class="reply-actions__btn reply-actions__btn--reset" onclick="resetCharacterForm()">
+                                    <i class="fas fa-undo me-2"></i>
+                                    Recommencer
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                
                 {{ form_end(form) }}
-            </div>
         </div>
     </div>
 {% endblock %}
@@ -70,8 +427,250 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script src="{{ asset('js/dc-editor.js') }}"></script>
     <script>
+// Variables globales
+let charactersData = [];
+let selectedCharacterId = null;
+let npcsData = [];
+let selectedNpcIds = [];
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Rien à faire ici, l'initialisation est gérée par dc-editor.js
+    // Charger les données des personnages
+    const charactersDataElement = document.getElementById('characters-data');
+    if (charactersDataElement) {
+        try {
+            charactersData = JSON.parse(charactersDataElement.textContent);
+            console.log('Personnages chargés:', charactersData);
+        } catch (e) {
+            console.error('Erreur lors du parsing des données des personnages:', e);
+        }
+    }
+    
+    // Charger les données des PNJ
+    const npcsDataElement = document.getElementById('npcs-data');
+    if (npcsDataElement) {
+        try {
+            npcsData = JSON.parse(npcsDataElement.textContent);
+            console.log('PNJ chargés:', npcsData);
+        } catch (e) {
+            console.error('Erreur lors du parsing des données des PNJ:', e);
+        }
+    }
+    
+    // Initialiser l'éditeur WYSIWYG
+    initializeWysiwyg();
+});
+
+// Fonction pour sélectionner un personnage
+function selectCharacter(characterId) {
+    console.log('Sélection du personnage:', characterId);
+    selectedCharacterId = characterId;
+    
+    // Synchroniser avec le select caché
+    const hiddenSelect = document.querySelector('select[name*="[character]"]');
+    if (hiddenSelect) {
+        hiddenSelect.value = characterId;
+        hiddenSelect.dispatchEvent(new Event('change'));
+        hiddenSelect.setCustomValidity('');
+    }
+    
+    // Mettre à jour l'interface
+    updateCharacterSelection(characterId);
+    showEditorSections();
+}
+
+// Fonction pour mettre à jour la sélection visuelle
+function updateCharacterSelection(characterId) {
+    // Retirer la sélection de toutes les cartes
+    document.querySelectorAll('.character-card').forEach(card => {
+        card.classList.remove('character-card--selected');
+    });
+    
+    // Ajouter la sélection à la carte choisie
+    const selectedCard = document.querySelector(`[data-character-id="${characterId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('character-card--selected');
+    }
+}
+
+// Fonction pour afficher les sections de l'éditeur
+function showEditorSections() {
+    const sections = ['post-editor', 'npcs-selector', 'reply-actions'];
+    
+    sections.forEach((sectionId) => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = 'block';
+            section.classList.add('section--visible');
+        }
+    });
+    
+    // Mettre à jour l'info dans l'éditeur
+    const character = charactersData.find(c => c.id == selectedCharacterId);
+    if (character) {
+        const editorCharacterName = document.getElementById('editor-character-name');
+        const selectedCharacterInfo = document.getElementById('selected-character-info');
+        
+        if (editorCharacterName) {
+            editorCharacterName.textContent = character.name;
+        }
+        if (selectedCharacterInfo) {
+            selectedCharacterInfo.style.display = 'block';
+        }
+    }
+    
+    // Focus sur l'éditeur
+    setTimeout(() => {
+        const textarea = document.getElementById('reply-content');
+        if (textarea) {
+            textarea.focus();
+        }
+    }, 300);
+}
+
+// Fonction pour initialiser l'éditeur WYSIWYG
+function initializeWysiwyg() {
+    setTimeout(() => {
+        const textarea = document.getElementById('reply-content');
+        if (textarea && textarea.classList.contains('wysiwyg-editor')) {
+            if (textarea.dataset.quillInitialized !== 'true') {
+                if (typeof window.initWysiwygEditors === 'function') {
+                    window.initWysiwygEditors();
+                }
+            }
+        }
+    }, 100);
+}
+
+// Fonction pour réinitialiser le formulaire
+function resetCharacterForm() {
+    if (confirm('Êtes-vous sûr de vouloir recommencer ? Toutes les données saisies seront perdues.')) {
+        selectedCharacterId = null;
+        
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.classList.remove('character-card--selected');
         });
+        
+        const sections = ['post-editor', 'npcs-selector', 'reply-actions'];
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section && sectionId !== 'post-editor') {
+                section.style.display = 'none';
+                section.classList.remove('section--visible');
+            }
+        });
+        
+        document.getElementById('character-reply-form').reset();
+        resetNpcsSelection();
+    }
+}
+
+// Fonction de validation avant soumission
+function validateCharacterSelection() {
+    if (!selectedCharacterId) {
+        alert('Veuillez sélectionner un personnage avant de publier votre message.');
+        const gallery = document.getElementById('character-gallery');
+        if (gallery) {
+            gallery.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return false;
+    }
+    return true;
+}
+
+// Fonctions de gestion des PNJ
+function toggleNpcSelection(npcId) {
+    const card = document.querySelector(`[data-npc-id="${npcId}"]`);
+    const index = selectedNpcIds.indexOf(npcId);
+    
+    if (index > -1) {
+        selectedNpcIds.splice(index, 1);
+        card.classList.remove('npc-card--selected');
+    } else {
+        selectedNpcIds.push(npcId);
+        card.classList.add('npc-card--selected');
+    }
+    
+    updateNpcsSelection();
+}
+
+function updateNpcsSelection() {
+    const hiddenSelect = document.querySelector('select[name*="[npcs]"]');
+    if (hiddenSelect) {
+        Array.from(hiddenSelect.options).forEach(option => {
+            option.selected = false;
+        });
+        
+        selectedNpcIds.forEach(npcId => {
+            const option = hiddenSelect.querySelector(`option[value="${npcId}"]`);
+            if (option) {
+                option.selected = true;
+            }
+        });
+        
+        hiddenSelect.dispatchEvent(new Event('change'));
+    }
+    
+    updateNpcsSummary();
+}
+
+function updateNpcsSummary() {
+    const summary = document.getElementById('npcs-summary');
+    const list = document.getElementById('selected-npcs-list');
+    
+    if (selectedNpcIds.length > 0) {
+        const selectedNames = selectedNpcIds.map(id => {
+            const npc = npcsData.find(n => n.id == id);
+            return npc ? npc.name : '';
+        }).filter(name => name);
+        
+        list.textContent = selectedNames.join(', ');
+        summary.style.display = 'block';
+    } else {
+        summary.style.display = 'none';
+    }
+}
+
+function resetNpcsSelection() {
+    selectedNpcIds = [];
+    document.querySelectorAll('.npc-card').forEach(card => {
+        card.classList.remove('npc-card--selected');
+    });
+    updateNpcsSelection();
+}
+
+// Fonction pour gérer les accordéons des cartes de personnages
+function toggleCharacterAccordion(event, contentId) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
+    const button = event.currentTarget;
+    const content = document.getElementById(contentId);
+    const icon = button.querySelector('.character-card__accordion-icon');
+    
+    if (!content) return false;
+    
+    const isExpanded = content.classList.contains('show');
+    
+    // Fermer tous les autres accordéons de cette carte
+    const card = button.closest('.character-card');
+    if (card) {
+        const allContents = card.querySelectorAll('.character-card__accordion-content');
+        const allButtons = card.querySelectorAll('.character-card__accordion-header');
+        const allIcons = card.querySelectorAll('.character-card__accordion-icon');
+        
+        allContents.forEach(c => c.classList.remove('show'));
+        allButtons.forEach(b => b.setAttribute('aria-expanded', 'false'));
+        allIcons.forEach(i => i.style.transform = 'rotate(0deg)');
+    }
+    
+    if (!isExpanded) {
+        content.classList.add('show');
+        button.setAttribute('aria-expanded', 'true');
+        icon.style.transform = 'rotate(180deg)';
+    }
+    
+    return false;
+}
     </script>
 {% endblock %}
