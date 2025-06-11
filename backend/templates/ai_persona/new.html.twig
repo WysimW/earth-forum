@@ -1,0 +1,173 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Persona IA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/ai-persona.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="ai-persona-form">
+            <h1>Créer un nouveau Persona IA</h1>
+
+            {{ form_start(form, {'attr': {'class': 'ai-persona-form__content'}}) }}
+                <div class="form-section">
+                    <h2>Informations générales</h2>
+                    {{ form_row(form.name) }}
+                    {{ form_row(form.description) }}
+                    {{ form_row(form.character) }}
+                </div>
+
+                <div class="form-section">
+                    <h2>Personnalité</h2>
+                    <div class="collection-wrapper" data-prototype="{{ form_widget(form.personalityTraits.vars.prototype)|e('html_attr') }}">
+                        {{ form_label(form.personalityTraits) }}
+                        <div class="collection-items">
+                            {% for trait in form.personalityTraits %}
+                                <div class="collection-item">
+                                    {{ form_widget(trait) }}
+                                    <button type="button" class="btn btn-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-secondary add-item" data-collection="personalityTraits">
+                            <i class="fas fa-plus"></i> Ajouter un trait
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Connaissances</h2>
+                    <div class="collection-wrapper" data-prototype="{{ form_widget(form.knowledge.vars.prototype)|e('html_attr') }}">
+                        {{ form_label(form.knowledge) }}
+                        <div class="collection-items">
+                            {% for knowledge in form.knowledge %}
+                                <div class="collection-item">
+                                    {{ form_widget(knowledge) }}
+                                    <button type="button" class="btn btn-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-secondary add-item" data-collection="knowledge">
+                            <i class="fas fa-plus"></i> Ajouter une connaissance
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Relations</h2>
+                    <div class="collection-wrapper" data-prototype="{{ form_widget(form.relationships.vars.prototype)|e('html_attr') }}">
+                        {{ form_label(form.relationships) }}
+                        <div class="collection-items">
+                            {% for relationship in form.relationships %}
+                                <div class="collection-item">
+                                    {{ form_widget(relationship) }}
+                                    <button type="button" class="btn btn-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-secondary add-item" data-collection="relationships">
+                            <i class="fas fa-plus"></i> Ajouter une relation
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Objectifs</h2>
+                    <div class="collection-wrapper" data-prototype="{{ form_widget(form.goals.vars.prototype)|e('html_attr') }}">
+                        {{ form_label(form.goals) }}
+                        <div class="collection-items">
+                            {% for goal in form.goals %}
+                                <div class="collection-item">
+                                    {{ form_widget(goal) }}
+                                    <button type="button" class="btn btn-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-secondary add-item" data-collection="goals">
+                            <i class="fas fa-plus"></i> Ajouter un objectif
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Style de langage</h2>
+                    <div class="collection-wrapper" data-prototype="{{ form_widget(form.speechPattern.vars.prototype)|e('html_attr') }}">
+                        {{ form_label(form.speechPattern) }}
+                        <div class="collection-items">
+                            {% for pattern in form.speechPattern %}
+                                <div class="collection-item">
+                                    {{ form_widget(pattern) }}
+                                    <button type="button" class="btn btn-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-secondary add-item" data-collection="speechPattern">
+                            <i class="fas fa-plus"></i> Ajouter un style
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Créer le persona
+                    </button>
+                    <a href="{{ path('app_ai_persona_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des collections
+            document.querySelectorAll('.collection-wrapper').forEach(wrapper => {
+                const addButton = wrapper.querySelector('.add-item');
+                const itemsContainer = wrapper.querySelector('.collection-items');
+                const prototype = wrapper.dataset.prototype;
+
+                addButton.addEventListener('click', function() {
+                    const newItem = prototype.replace(/__name__/g, itemsContainer.children.length);
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'collection-item';
+                    itemDiv.innerHTML = newItem;
+                    
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'btn btn-danger remove-item';
+                    removeButton.innerHTML = '<i class="fas fa-times"></i>';
+                    removeButton.addEventListener('click', function() {
+                        itemDiv.remove();
+                    });
+                    
+                    itemDiv.appendChild(removeButton);
+                    itemsContainer.appendChild(itemDiv);
+                });
+
+                // Gestion de la suppression des éléments existants
+                wrapper.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.closest('.collection-item').remove();
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %} 

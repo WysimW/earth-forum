@@ -559,6 +559,38 @@
     {# Formulaire de réponse (si l'utilisateur peut répondre) #}
     {% if canReply %}
         <div id="replyForm">
+            {% if is_granted('ROLE_ANIMATEUR_AI') %}
+                <div class="ai-assistant">
+                    <div class="ai-assistant__header">
+                        <h3>Assistant IA</h3>
+                        <button class="ai-assistant__toggle" aria-label="Toggle AI Assistant">
+                            <i class="fas fa-robot"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="ai-assistant__content">
+                        <div class="ai-assistant__persona-select">
+                            <label for="ai-persona">Sélectionner un personnage :</label>
+                            <select id="ai-persona" class="form-control">
+                                <option value="">Choisir un personnage...</option>
+                            </select>
+                        </div>
+
+                        <div class="ai-assistant__context">
+                            <label for="ai-context">Contexte supplémentaire (optionnel) :</label>
+                            <textarea id="ai-context" class="form-control" rows="3" 
+                                placeholder="Ajoutez des instructions ou du contexte supplémentaire pour la génération..."></textarea>
+                        </div>
+
+                        <div class="ai-assistant__actions">
+                            <button id="generate-ai-response" class="btn btn-primary" disabled>
+                                <i class="fas fa-magic"></i> Générer une réponse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             {% if thread.type == 'roleplay' %}
                 {{ render(controller('App\\Controller\\PostController::replyForm', { 'universeSlug': univers.slug, 'threadId': thread.id })) }}
             {% else %}

@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Personas IA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/ai-persona.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="ai-persona-header">
+            <h1>Gestion des Personas IA</h1>
+            <a href="{{ path('app_ai_persona_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un nouveau persona
+            </a>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="ai-persona-grid">
+            {% for persona in personas %}
+                <div class="ai-persona-card">
+                    <div class="ai-persona-card__header">
+                        <h3>{{ persona.name }}</h3>
+                        <div class="ai-persona-card__actions">
+                            <a href="{{ path('app_ai_persona_edit', {'id': persona.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ path('app_ai_persona_delete', {'id': persona.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce persona ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ persona.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="ai-persona-card__content">
+                        <div class="ai-persona-card__character">
+                            <h4>Personnage associé</h4>
+                            <div class="character-info">
+                                <img src="{{ persona.character.avatar ? asset('uploads/avatars/' ~ persona.character.avatar) : asset('images/default-avatar.png') }}" 
+                                     alt="{{ persona.character.name }}" 
+                                     class="character-avatar">
+                                <div class="character-details">
+                                    <h5>{{ persona.character.name }}</h5>
+                                    <p>{{ persona.character.race }} {{ persona.character.class }}</p>
+                                    <span class="badge bg-{{ persona.character.alignment|lower }}">{{ persona.character.alignment }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ai-persona-card__traits">
+                            <h4>Traits de personnalité</h4>
+                            <ul>
+                                {% for trait in persona.personalityTraits %}
+                                    <li>{{ trait }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="ai-persona-card__knowledge">
+                            <h4>Connaissances</h4>
+                            <ul>
+                                {% for knowledge in persona.knowledge %}
+                                    <li>{{ knowledge }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="ai-persona-card__relationships">
+                            <h4>Relations</h4>
+                            <ul>
+                                {% for relationship in persona.relationships %}
+                                    <li>{{ relationship }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="ai-persona-card__goals">
+                            <h4>Objectifs</h4>
+                            <ul>
+                                {% for goal in persona.goals %}
+                                    <li>{{ goal }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="ai-persona-card__speech">
+                            <h4>Style de langage</h4>
+                            <ul>
+                                {% for pattern in persona.speechPattern %}
+                                    <li>{{ pattern }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-personas">
+                    <p>Aucun persona n'a été créé pour le moment.</p>
+                    <a href="{{ path('app_ai_persona_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer votre premier persona
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %} 

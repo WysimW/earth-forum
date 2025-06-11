@@ -1,0 +1,83 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des Personas IA{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="ai-persona-form">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Gestion des Personas IA</h1>
+                <a href="{{ path('app_ai_persona_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Créer un nouveau Persona
+                </a>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Personnage</th>
+                            <th>Traits de personnalité</th>
+                            <th>Statut</th>
+                            <th>Créé par</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for persona in ai_personas %}
+                        <tr>
+                            <td>{{ persona.name }}</td>
+                            <td>
+                                {% if persona.character %}
+                                    <a href="{{ path('app_roleplay_character_show', {'id': persona.character.id}) }}" class="text-decoration-none">
+                                        {{ persona.character.name }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non assigné</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for trait in persona.personalityTraits %}
+                                    <span class="badge bg-primary">{{ trait }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if persona.isActive %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ persona.creator.username }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ path('app_ai_persona_edit', {'id': persona.id}) }}" class="btn btn-sm btn-primary" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_ai_persona_delete', {'id': persona.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce Persona ?');" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ persona.id) }}">
+                                        <button class="btn btn-sm btn-danger" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun Persona IA trouvé</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

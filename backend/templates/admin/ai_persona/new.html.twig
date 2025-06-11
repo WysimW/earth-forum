@@ -1,0 +1,193 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau Persona IA{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="ai-persona-form">
+            <h1>Créer un nouveau Persona IA</h1>
+            
+            <a href="{{ path('app_ai_persona_index') }}" class="btn btn-secondary mb-4">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+
+            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-section">
+                            <h3>Informations générales</h3>
+                            <div class="form-group">
+                                {{ form_label(form.name, 'Nom du Persona', {'label_attr': {'class': 'required-field'}}) }}
+                                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Assistant IA de Gandalf'}}) }}
+                                {{ form_help(form.name) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.description) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3', 'placeholder': 'Description générale du persona'}}) }}
+                                {{ form_help(form.description) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.character) }}
+                                {{ form_widget(form.character, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_help(form.character) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.isActive) }}
+                                {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                {{ form_help(form.isActive) }}
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Traits de personnalité</h3>
+                            <div class="collection-field" data-prototype="{{ form_widget(form.personalityTraits.vars.prototype)|e('html_attr') }}">
+                                {% for trait in form.personalityTraits %}
+                                    <div class="input-group">
+                                        {{ form_widget(trait, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Sage, Mystérieux, Protecteur'}}) }}
+                                        <button type="button" class="btn btn-remove-item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-add-item" data-collection="personalityTraits">
+                                <i class="bi bi-plus"></i> Ajouter un trait
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Connaissances</h3>
+                            <div class="collection-field" data-prototype="{{ form_widget(form.knowledge.vars.prototype)|e('html_attr') }}">
+                                {% for knowledge in form.knowledge %}
+                                    <div class="input-group">
+                                        {{ form_widget(knowledge, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Magie ancienne, Histoire de la Terre du Milieu'}}) }}
+                                        <button type="button" class="btn btn-remove-item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-add-item" data-collection="knowledge">
+                                <i class="bi bi-plus"></i> Ajouter une connaissance
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Relations</h3>
+                            <div class="collection-field" data-prototype="{{ form_widget(form.relationships.vars.prototype)|e('html_attr') }}">
+                                {% for relationship in form.relationships %}
+                                    <div class="input-group">
+                                        {{ form_widget(relationship, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Mentor de Frodo, Allié de Galadriel'}}) }}
+                                        <button type="button" class="btn btn-remove-item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-add-item" data-collection="relationships">
+                                <i class="bi bi-plus"></i> Ajouter une relation
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Objectifs</h3>
+                            <div class="collection-field" data-prototype="{{ form_widget(form.goals.vars.prototype)|e('html_attr') }}">
+                                {% for goal in form.goals %}
+                                    <div class="input-group">
+                                        {{ form_widget(goal, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Protéger la Terre du Milieu, Guider les héros'}}) }}
+                                        <button type="button" class="btn btn-remove-item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-add-item" data-collection="goals">
+                                <i class="bi bi-plus"></i> Ajouter un objectif
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Style de langage</h3>
+                            <div class="collection-field" data-prototype="{{ form_widget(form.speechPattern.vars.prototype)|e('html_attr') }}">
+                                {% for pattern in form.speechPattern %}
+                                    <div class="input-group">
+                                        {{ form_widget(pattern, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Utilise des métaphores, Parle avec sagesse'}}) }}
+                                        <button type="button" class="btn btn-remove-item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-add-item" data-collection="speechPattern">
+                                <i class="bi bi-plus"></i> Ajouter un style
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Contexte narratif</h3>
+                            <div class="form-group">
+                                {{ form_label(form.narrativeContext) }}
+                                {{ form_widget(form.narrativeContext, {'attr': {'class': 'form-control', 'rows': '5', 'placeholder': 'Contexte narratif spécifique pour ce persona'}}) }}
+                                {{ form_help(form.narrativeContext) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Enregistrer
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des collections dynamiques
+            document.querySelectorAll('.collection-field').forEach(function(collection) {
+                const addButton = collection.parentElement.querySelector('.btn-add-item');
+                const prototype = collection.dataset.prototype;
+                let index = collection.children.length;
+
+                addButton.addEventListener('click', function() {
+                    const newItem = prototype.replace(/__name__/g, index);
+                    const div = document.createElement('div');
+                    div.className = 'input-group';
+                    div.innerHTML = newItem;
+                    
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'btn btn-remove-item';
+                    removeButton.innerHTML = '<i class="bi bi-trash"></i>';
+                    removeButton.addEventListener('click', function() {
+                        div.remove();
+                    });
+                    
+                    div.appendChild(removeButton);
+                    collection.appendChild(div);
+                    index++;
+                });
+
+                // Gestion des boutons de suppression existants
+                collection.querySelectorAll('.btn-remove-item').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        this.closest('.input-group').remove();
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/ai-persona.css') }}">
+{% endblock %} 

@@ -1,0 +1,117 @@
+.ai-assistant {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ai-assistant__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.ai-assistant__header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-assistant__toggle {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.ai-assistant__toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ai-assistant__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ai-assistant__persona-select,
+.ai-assistant__context {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ai-assistant__persona-select label,
+.ai-assistant__context label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.ai-assistant__persona-select select,
+.ai-assistant__context textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    transition: border-color 0.2s;
+}
+
+.ai-assistant__persona-select select:focus,
+.ai-assistant__context textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.ai-assistant__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ai-assistant__actions button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.ai-assistant__actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-assistant__actions button i {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-assistant {
+        padding: 0.75rem;
+    }
+
+    .ai-assistant__header h3 {
+        font-size: 1rem;
+    }
+
+    .ai-assistant__content {
+        gap: 0.75rem;
+    }
+
+    .ai-assistant__actions button {
+        width: 100%;
+        justify-content: center;
+    }
+} 
