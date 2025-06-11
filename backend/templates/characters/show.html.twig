@@ -6,6 +6,8 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/components/character-cards.css') }}">
     <link rel="stylesheet" href="{{ asset('css/components/character-profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/moral-badge.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/faction-list.css') }}">
 {% endblock %}
 
 {% block javascripts %}
@@ -193,7 +195,7 @@
             {% endif %}
             
             {% if character.moralAffiliation %}
-                <div class="character-profile__meta-item character-profile__meta-item--moral">
+                <div class="character-profile__meta-item">
                     <i class="fas fa-balance-scale me-1"></i>
                     <span class="meta-label">Affiliation :</span>
                     <span class="moral-badge moral-badge--{{ character.moralAffiliation|lower|replace({' ': '-', '-': '-'}) }}">
@@ -331,7 +333,37 @@
             {% endif %}
         </div>
     </div>
-    
+
+    {# Factions du personnage #}
+    {% if character.factionsRelation|length > 0 %}
+        <div class="character-factions mb-4">
+            <h3 class="character-section-title">
+                <i class="fas fa-users me-2"></i>
+                Factions
+            </h3>
+            <div class="faction-list">
+                {% for faction in character.factionsRelation %}
+                    <div class="faction-item">
+                        <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" 
+                           class="faction-link">
+                            {% if faction.icon %}
+                                <img src="{{ faction.icon }}" alt="{{ faction.name }}" class="faction-icon">
+                            {% else %}
+                                <i class="fas fa-users faction-icon-placeholder"></i>
+                            {% endif %}
+                            <span class="faction-name">{{ faction.name }}</span>
+                        </a>
+                        {% if faction.alignment %}
+                            <span class="moral-badge moral-badge--{{ faction.alignment|lower|replace({' ': '-'}) }}">
+                                {{ faction.alignment }}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     {# Scènes de roleplay #}
     {% if threads|length > 0 %}
         <div class="character-threads">

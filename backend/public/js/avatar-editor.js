@@ -8,8 +8,20 @@ class AvatarEditor {
         this.cropper = null;
         this.currentFile = null;
         this.currentFilename = null;
+        this.uploadUrl = null; // Sera configuré dynamiquement
+        this.cropUrl = null;   // Sera configuré dynamiquement
         this.initializeEventListeners();
         console.log('🎨 AvatarEditor initialisé');
+    }
+
+    configure(options) {
+        if (options.uploadUrl) {
+            this.uploadUrl = options.uploadUrl;
+        }
+        if (options.cropUrl) {
+            this.cropUrl = options.cropUrl;
+        }
+        console.log('🎨 AvatarEditor configuré:', { uploadUrl: this.uploadUrl, cropUrl: this.cropUrl });
     }
 
     initializeEventListeners() {
@@ -162,18 +174,24 @@ class AvatarEditor {
     async uploadFile(file) {
         const formData = new FormData();
         formData.append('avatar', file);
-        formData.append('character_name', this.getCharacterName());
 
         try {
             // Utiliser l'URL configurée ou fallback vers l'ancienne
             const uploadUrl = this.uploadUrl || '/characters/avatar/upload';
+            
+            console.log('📤 Upload vers:', uploadUrl);
+            
             const response = await fetch(uploadUrl, {
                 method: 'POST',
                 body: formData
             });
 
-            return await response.json();
+            const result = await response.json();
+            console.log('📥 Réponse upload:', result);
+            
+            return result;
         } catch (error) {
+            console.error('❌ Erreur upload:', error);
             throw new Error('Erreur réseau lors de l\'upload');
         }
     }
@@ -303,6 +321,10 @@ class AvatarEditor {
         try {
             // Utiliser l'URL configurée ou fallback vers l'ancienne
             const cropUrl = this.cropUrl || '/characters/avatar/crop';
+            
+            console.log('✂️ Crop vers:', cropUrl);
+            console.log('✂️ Données:', { filename: this.currentFilename, cropData });
+            
             const response = await fetch(cropUrl, {
                 method: 'POST',
                 headers: {
@@ -314,8 +336,12 @@ class AvatarEditor {
                 })
             });
 
-            return await response.json();
+            const result = await response.json();
+            console.log('✂️ Réponse crop:', result);
+            
+            return result;
         } catch (error) {
+            console.error('❌ Erreur crop:', error);
             throw new Error('Erreur réseau lors du recadrage');
         }
     }

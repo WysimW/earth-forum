@@ -28,9 +28,13 @@ class AvatarService
         // Les validations sont faites dans le contrôleur
         // Ici on ne fait que le traitement du fichier
 
+        // Nettoyer le nom de fichier original
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = $this->slugger->slug($characterName . '-' . $originalFilename);
-        $fileName = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+        $extension = $file->guessExtension();
+        
+        // Créer un nom simple et propre
+        $safeCharacterName = $this->slugger->slug($characterName);
+        $fileName = 'original_' . $safeCharacterName . '-' . uniqid() . '.' . $extension;
 
         try {
             $file->move($this->targetDirectory, $fileName);
@@ -51,9 +55,42 @@ class AvatarService
 
     public function delete(?string $filename): void
     {
-        if ($filename && file_exists($this->targetDirectory . '/' . $filename)) {
-            unlink($this->targetDirectory . '/' . $filename);
+        if (!$filename) {
+            return;
         }
+
+        $filePath = $this->targetDirectory . '/' . $filename;
+        
+        // Supprimer le fichier principal
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
+
+    public function deleteAllVersions(?string $filename): void
+    {
+        if (!$filename) {
+            return;
+        }
+
+        // Supprimer le fichier principal
+        $this->delete($filename);
+        
+        // Déterminer le nom de base pour les versions dérivées
+        // Si le fichier commence par 'original_', on utilise le nom complet
+        // Sinon, on génère les noms avec les préfixes
+        if (str_starts_with($filename, 'original_')) {
+            $baseFilename = $filename;
+        } else {
+            $baseFilename = 'original_' . $filename;
+        }
+        
+        // Supprimer les versions dérivées si elles existent
+        $portraitFilename = str_replace('original_', 'portrait_', $baseFilename);
+        $circleFilename = str_replace('original_', 'circle_', $baseFilename);
+        
+        $this->delete($portraitFilename);
+        $this->delete($circleFilename);
     }
 
     public function cropImage(string $filename, array $cropData): array

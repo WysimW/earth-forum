@@ -4,199 +4,7 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<style>
-    .unread-section {
-        margin-bottom: 2rem;
-    }
-    
-    .unread-section-header {
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: var(--border-radius-md);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        backdrop-filter: blur(5px);
-        border-left: 4px solid var(--accent-light);
-    }
-    
-    .unread-standard .unread-section-header {
-        background-color: var(--primary-dark-trans);
-    }
-    
-    .unread-participating .unread-section-header {
-        background-color: rgba(4, 118, 242, 0.8);
-    }
-    
-    .unread-admin .unread-section-header {
-        background-color: rgba(187, 7, 14, 0.8);
-    }
-    
-    .unread-message {
-        padding: 1.2rem;
-        margin-bottom: 0.75rem;
-        border-radius: var(--border-radius-md);
-        background-color: var(--primary-dark-trans);
-        box-shadow: var(--shadow-sm);
-        transition: all var(--transition-fast);
-        border-left: 3px solid transparent;
-        color: var(--text-white);
-    }
-    
-    .unread-standard .unread-message {
-        border-left-color: var(--primary-light);
-    }
-    
-    .unread-participating .unread-message {
-        border-left-color: var(--roleplay-primary);
-    }
-    
-    .unread-admin .unread-message {
-        border-left-color: var(--important-primary);
-    }
-    
-    .unread-message:hover {
-        background-color: var(--primary-dark);
-        box-shadow: var(--shadow-md);
-        
-    }
-    
-    .unread-message-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(220, 225, 227, 0.2);
-        padding-bottom: 0.5rem;
-    }
-    
-    .unread-message-user {
-        font-weight: 600;
-        color: var(--text-white);
-    }
-    
-    .unread-message-date {
-        color: var(--light-gray);
-        font-size: 0.85rem;
-    }
-    
-    .unread-message-thread {
-        font-size: 0.9rem;
-        color: var(--light-gray);
-        margin-bottom: 0.75rem;
-        font-weight: 500;
-    }
-    
-    .unread-message-thread a {
-        color: var(--accent-light);
-        text-decoration: none;
-        transition: color var(--transition-fast);
-    }
-    
-    .unread-message-thread a:hover {
-        color: var(--roleplay-light);
-        text-decoration: underline;
-    }
-    
-    .unread-message-content {
-        color: var(--light-gray);
-        margin-bottom: 1rem;
-        max-height: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.5;
-        font-size: 0.95rem;
-        background-color: rgba(12, 45, 72, 0.5);
-        padding: 0.75rem;
-        border-radius: var(--border-radius-sm);
-    }
-    
-    .unread-message-actions {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: flex-end;
-    }
-    
-    .empty-unread {
-        text-align: center;
-        padding: 2rem;
-        background-color: var(--primary-dark-trans);
-        border-radius: var(--border-radius-md);
-        color: var(--text-white);
-    }
-    
-    .btn-sm {
-        padding: 0.4rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    .btn-outline-primary {
-        border-color: var(--accent-light);
-        color: var(--accent-light);
-    }
-    
-    .btn-outline-primary:hover {
-        background-color: var(--accent-light);
-        color: white;
-    }
-    
-    .btn-primary {
-        background-color: var(--primary-medium);
-        border-color: var(--primary-medium);
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--primary-dark);
-    }
-    
-    .card {
-        background-color: var(--primary-dark-trans);
-        color: var(--text-white);
-    }
-    
-    .text-muted {
-        color: var(--light-gray) !important;
-    }
-    
-    /* Switch pour les préférences */
-    .form-switch .form-check-input {
-        width: 3rem;
-        height: 1.5rem;
-        cursor: pointer;
-    }
-    
-    .form-switch .form-check-input:checked {
-        background-color: var(--accent-green);
-        border-color: var(--accent-green);
-    }
-    
-    .preferences-card {
-        background-color: rgba(12, 45, 72, 0.5);
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        border-radius: var(--border-radius-md);
-    }
-    
-    @media (max-width: 768px) {
-        .unread-section-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .unread-section-header h2 {
-            margin-bottom: 0.5rem;
-        }
-        
-        .unread-message-actions {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .unread-message-actions .btn {
-            width: 100%;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/components/unread.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -259,16 +67,22 @@
                                 <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
                             </div>
                             <div class="unread-message-thread">
-                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                                <i class="fas fa-comments me-2"></i>Dans 
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">
+                                    {{ post.thread.title }}
+                                </a>
+                                <span class="badge bg-primary ms-2">
+                                    <i class="fas fa-globe-americas me-1"></i>{{ post.thread.universe.name }}
+                                </span>
                             </div>
                             <div class="unread-message-content">
                                 {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
                             </div>
                             <div class="unread-message-actions">
-                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <button onclick="markAsRead({{ post.id }}, this)" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-check me-1"></i>Marquer comme lu
-                                </a>
-                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                </button>
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-eye me-1"></i>Voir le message
                                 </a>
                             </div>
@@ -300,16 +114,22 @@
                                 <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
                             </div>
                             <div class="unread-message-thread">
-                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                                <i class="fas fa-comments me-2"></i>Dans 
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">
+                                    {{ post.thread.title }}
+                                </a>
+                                <span class="badge bg-primary ms-2">
+                                    <i class="fas fa-globe-americas me-1"></i>{{ post.thread.universe.name }}
+                                </span>
                             </div>
                             <div class="unread-message-content">
                                 {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
                             </div>
                             <div class="unread-message-actions">
-                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <button onclick="markAsRead({{ post.id }}, this)" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-check me-1"></i>Marquer comme lu
-                                </a>
-                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                </button>
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-eye me-1"></i>Voir le message
                                 </a>
                             </div>
@@ -340,16 +160,22 @@
                                 <div class="unread-message-date"><i class="far fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y H:i') }}</div>
                             </div>
                             <div class="unread-message-thread">
-                                <i class="fas fa-comments me-2"></i>Dans <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">{{ post.thread.title }}</a>
+                                <i class="fas fa-comments me-2"></i>Dans 
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug}) }}">
+                                    {{ post.thread.title }}
+                                </a>
+                                <span class="badge bg-primary ms-2">
+                                    <i class="fas fa-globe-americas me-1"></i>{{ post.thread.universe.name }}
+                                </span>
                             </div>
                             <div class="unread-message-content">
                                 {{ post.content|striptags|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
                             </div>
                             <div class="unread-message-actions">
-                                <a href="{{ path('app_unread_messages_mark_read', {'id': post.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <button onclick="markAsRead({{ post.id }}, this)" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-check me-1"></i>Marquer comme lu
-                                </a>
-                                <a href="{{ path('app_thread_show', {'universeSlug': universeSlug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
+                                </button>
+                                <a href="{{ path('app_thread_show', {'universeSlug': post.thread.universe.slug, 'id': post.thread.id, 'slug': post.thread.slug, '_fragment': 'post-' ~ post.id}) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-eye me-1"></i>Voir le message
                                 </a>
                             </div>
@@ -404,5 +230,54 @@
             });
         }
     });
+
+    // Fonction pour marquer un message comme lu via AJAX
+    function markAsRead(postId, button) {
+        fetch('{{ path('app_unread_messages_mark_read', {'id': 0}) }}'.replace('0', postId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Trouver le message parent et le supprimer avec une animation
+                const messageElement = button.closest('.unread-message');
+                messageElement.style.transition = 'all 0.3s ease';
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    messageElement.remove();
+                    
+                    // Mettre à jour le compteur dans le header
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent);
+                        if (currentCount > 1) {
+                            badge.textContent = currentCount - 1;
+                        } else {
+                            badge.remove();
+                        }
+                    }
+                    
+                    // Vérifier si la section est vide
+                    const section = messageElement.closest('.unread-section');
+                    const remainingMessages = section.querySelectorAll('.unread-message');
+                    if (remainingMessages.length === 0) {
+                        section.remove();
+                    }
+                    
+                    // Vérifier si toutes les sections sont vides
+                    const allSections = document.querySelectorAll('.unread-section');
+                    if (allSections.length === 0) {
+                        location.reload(); // Recharger pour afficher le message "pas de nouveaux messages"
+                    }
+                }, 300);
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    }
 </script>
 {% endblock %} 

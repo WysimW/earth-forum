@@ -1,0 +1,94 @@
+/* ===================================
+   LISTE DES FACTIONS
+   =================================== */
+
+.character-factions {
+    background: linear-gradient(135deg, var(--bg-primary-trans), var(--bg-dark-trans));
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    border: var(--border-width-sm) solid var(--primary-medium);
+    backdrop-filter: blur(10px);
+}
+
+.character-section-title {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.character-section-title i {
+    color: var(--accent-light);
+}
+
+.faction-list {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.faction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border-radius: var(--border-radius-md);
+    border: var(--border-width-sm) solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-normal);
+}
+
+.faction-item:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 15px rgba(4, 118, 242, 0.3);
+}
+
+.faction-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    text-decoration: none;
+    color: var(--text-white);
+    flex: 1;
+}
+
+.faction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius-sm);
+    object-fit: cover;
+}
+
+.faction-icon-placeholder {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-medium), var(--primary-dark));
+    border-radius: var(--border-radius-sm);
+    color: var(--text-white);
+    font-size: 1rem;
+}
+
+.faction-name {
+    font-weight: 500;
+    color: var(--text-white);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .faction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .faction-link {
+        width: 100%;
+    }
+} 

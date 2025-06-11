@@ -243,12 +243,12 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=participating" class="sidebar-menu-link" data-title="Mes participations">
+                        <a href="{{ path('app_roleplay_threads_filter') }}?type=participating" class="sidebar-menu-link" data-title="Mes participations">
                             <i class="fas fa-users"></i> <span class="sidebar-menu-text">Mes participations</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="{{ path('app_roleplay_threads_filter', {'universeSlug': univers.slug|default(all_univers[0].slug|default('dc'))}) }}?type=created" class="sidebar-menu-link" data-title="Mes scènes">
+                        <a href="{{ path('app_roleplay_threads_filter') }}?type=created" class="sidebar-menu-link" data-title="Mes scènes">
                             <i class="fas fa-pen-fancy"></i> <span class="sidebar-menu-text">Mes scènes</span>
                         </a>
                     </li>

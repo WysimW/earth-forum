@@ -1,0 +1,191 @@
+.unread-section {
+    margin-bottom: 2rem;
+}
+
+.unread-section-header {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius-md);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid var(--accent-light);
+}
+
+.unread-standard .unread-section-header {
+    background-color: var(--primary-dark-trans);
+}
+
+.unread-participating .unread-section-header {
+    background-color: rgba(4, 118, 242, 0.8);
+}
+
+.unread-admin .unread-section-header {
+    background-color: rgba(187, 7, 14, 0.8);
+}
+
+.unread-message {
+    padding: 1.2rem;
+    margin-bottom: 0.75rem;
+    border-radius: var(--border-radius-md);
+    background-color: var(--primary-dark-trans);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+    border-left: 3px solid transparent;
+    color: var(--text-white);
+}
+
+.unread-standard .unread-message {
+    border-left-color: var(--primary-light);
+}
+
+.unread-participating .unread-message {
+    border-left-color: var(--roleplay-primary);
+}
+
+.unread-admin .unread-message {
+    border-left-color: var(--important-primary);
+}
+
+.unread-message:hover {
+    background-color: var(--primary-dark);
+    box-shadow: var(--shadow-md);
+    
+}
+
+.unread-message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(220, 225, 227, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.unread-message-user {
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.unread-message-date {
+    color: var(--light-gray);
+    font-size: 0.85rem;
+}
+
+.unread-message-thread {
+    font-size: 0.9rem;
+    color: var(--light-gray);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.unread-message-thread a {
+    color: var(--accent-light);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.unread-message-thread a:hover {
+    color: var(--roleplay-light);
+    text-decoration: underline;
+}
+
+.unread-message-content {
+    color: var(--light-gray);
+    margin-bottom: 1rem;
+    max-height: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    background-color: rgba(12, 45, 72, 0.5);
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+.unread-message-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.empty-unread {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--primary-dark-trans);
+    border-radius: var(--border-radius-md);
+    color: var(--text-white);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.btn-outline-primary {
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent-light);
+    color: white;
+}
+
+.btn-primary {
+    background-color: var(--primary-medium);
+    border-color: var(--primary-medium);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.card {
+    background-color: var(--primary-dark-trans);
+    color: var(--text-white);
+}
+
+.text-muted {
+    color: var(--light-gray) !important;
+}
+
+/* Switch pour les préférences */
+.form-switch .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+.preferences-card {
+    background-color: rgba(12, 45, 72, 0.5);
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+}
+
+@media (max-width: 768px) {
+    .unread-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .unread-section-header h2 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .unread-message-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .unread-message-actions .btn {
+        width: 100%;
+    }
+}

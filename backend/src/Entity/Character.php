@@ -98,6 +98,12 @@ class Character implements TimestampableInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatarFilename = null;
     
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatarFilenamePortrait = null;
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatarFilenameCircle = null;
+    
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $avatarCrop = null;
     
@@ -432,6 +438,30 @@ class Character implements TimestampableInterface
         return $this;
     }
 
+    public function getAvatarFilenamePortrait(): ?string
+    {
+        return $this->avatarFilenamePortrait;
+    }
+    
+    public function setAvatarFilenamePortrait(?string $avatarFilenamePortrait): static
+    {
+        $this->avatarFilenamePortrait = $avatarFilenamePortrait;
+        
+        return $this;
+    }
+
+    public function getAvatarFilenameCircle(): ?string
+    {
+        return $this->avatarFilenameCircle;
+    }
+    
+    public function setAvatarFilenameCircle(?string $avatarFilenameCircle): static
+    {
+        $this->avatarFilenameCircle = $avatarFilenameCircle;
+        
+        return $this;
+    }
+
     public function getAvatarCrop(): ?array
     {
         return $this->avatarCrop;
@@ -446,6 +476,39 @@ class Character implements TimestampableInterface
 
     public function getAvatarUrl(): ?string
     {
+        // Prioriser l'avatar portrait, puis l'avatar original, puis l'URL externe
+        if ($this->avatarFilenamePortrait) {
+            return '/uploads/avatars/' . $this->avatarFilenamePortrait;
+        }
+        
+        if ($this->avatarFilename) {
+            return '/uploads/avatars/' . $this->avatarFilename;
+        }
+        
+        return $this->avatar;
+    }
+
+    public function getAvatarPortraitUrl(): ?string
+    {
+        if ($this->avatarFilenamePortrait) {
+            return '/uploads/avatars/' . $this->avatarFilenamePortrait;
+        }
+        
+        // Fallback vers l'avatar original, puis l'URL externe
+        if ($this->avatarFilename) {
+            return '/uploads/avatars/' . $this->avatarFilename;
+        }
+        
+        return $this->avatar;
+    }
+
+    public function getAvatarCircleUrl(): ?string
+    {
+        if ($this->avatarFilenameCircle) {
+            return '/uploads/avatars/' . $this->avatarFilenameCircle;
+        }
+        
+        // Fallback vers l'avatar original, puis l'URL externe
         if ($this->avatarFilename) {
             return '/uploads/avatars/' . $this->avatarFilename;
         }

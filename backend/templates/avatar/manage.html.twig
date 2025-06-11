@@ -5,7 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/components/avatar-editor.css') }}">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 {% endblock %}
 
 {% block body %}
@@ -105,7 +105,7 @@
                                 <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
                                 <p class="mb-2">Glissez-déposez votre image ici ou</p>
                                 <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="document.getElementById('avatarFileInput').click()">
+                                <button type="button" class="btn btn-primary">
                                     Parcourir les fichiers
                                 </button>
                                 <small class="form-text text-muted d-block mt-2">
@@ -166,14 +166,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="crop-actions mt-3">
-                        <button type="button" class="btn btn-success" onclick="confirmCrop()">
-                            <i class="fas fa-check me-1"></i> Confirmer le recadrage
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="cancelCrop()">
-                            <i class="fas fa-times me-1"></i> Annuler
-                        </button>
-                    </div>
+                                                <div class="crop-actions mt-3">
+                                <button type="button" class="btn btn-success" id="confirmCrop">
+                                    <i class="fas fa-check me-1"></i> Confirmer le recadrage
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelCrop">
+                                    <i class="fas fa-times me-1"></i> Annuler
+                                </button>
+                            </div>
                 </div>
 
                 {# Actions #}
@@ -182,6 +182,10 @@
                         <i class="fas fa-times me-1"></i> Fermer
                     </button>
                 </div>
+
+                {# Champs cachés nécessaires pour l'éditeur #}
+                <input type="hidden" id="avatarFilename" name="avatarFilename" value="{{ character.avatarFilename ?? '' }}">
+                <input type="hidden" id="avatarCropData" name="avatarCropData" value="{{ character.avatarCrop ? character.avatarCrop|json_encode : '' }}">
             </div>
         </div>
     </div>
@@ -215,6 +219,8 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script src="{{ asset('js/avatar-editor.js') }}"></script>
     <script>
         // Configuration globale
         const characterId = {{ character.id }};
@@ -230,16 +236,28 @@
         // Activation des modes
         function activateUploadMode() {
             document.getElementById('avatar-editor').style.display = 'block';
-            document.getElementById('tab-upload-btn').click();
             document.getElementById('upload-option').classList.add('active');
             document.getElementById('url-option').classList.remove('active');
+            
+            // Activer l'onglet upload
+            document.querySelectorAll('.avatar-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.avatar-tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            document.getElementById('tab-upload-btn').classList.add('active');
+            document.getElementById('tab-upload').classList.add('active');
         }
 
         function activateUrlMode() {
             document.getElementById('avatar-editor').style.display = 'block';
-            document.getElementById('tab-url-btn').click();
             document.getElementById('url-option').classList.add('active');
             document.getElementById('upload-option').classList.remove('active');
+            
+            // Activer l'onglet URL
+            document.querySelectorAll('.avatar-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.avatar-tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            document.getElementById('tab-url-btn').classList.add('active');
+            document.getElementById('tab-url').classList.add('active');
         }
 
         function closeEditor() {
@@ -267,6 +285,11 @@
                     showSuccess(data.message);
                     updateCurrentAvatar(data.avatarUrl);
                     closeEditor();
+                    
+                    // Mettre à jour aussi la prévisualisation de l'éditeur
+                    if (avatarEditor) {
+                        avatarEditor.updatePreview(data.avatarUrl);
+                    }
                 } else {
                     showError(data.error || 'Erreur lors de la mise à jour');
                 }
@@ -338,20 +361,26 @@
             alert('Erreur : ' + message);
         }
 
-        // Charger l'éditeur d'avatar au besoin
+        // Attendre que l'AvatarEditor soit automatiquement initialisé et le configurer
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof AvatarEditor === 'undefined') {
-                const script = document.createElement('script');
-                script.src = '{{ asset('js/avatar-editor.js') }}';
-                script.onload = () => {
-                    // Adapter les URLs pour le nouveau contrôleur
-                    if (window.avatarEditor) {
-                        window.avatarEditor.uploadUrl = uploadUrl;
-                        window.avatarEditor.cropUrl = cropUrl;
-                    }
-                };
-                document.head.appendChild(script);
-            }
+            // Attendre que l'initialisation automatique de avatar-editor.js se fasse
+            const checkAndConfigureEditor = () => {
+                if (window.avatarEditor && typeof window.avatarEditor.configure === 'function') {
+                    // Configuration des URLs spécifiques à ce contrôleur
+                    window.avatarEditor.configure({
+                        uploadUrl: uploadUrl,
+                        cropUrl: cropUrl
+                    });
+                    
+                    console.log('🎨 AvatarEditor configuré pour manage.html.twig');
+                } else {
+                    // Réessayer dans 200ms si l'éditeur n'est pas encore prêt
+                    setTimeout(checkAndConfigureEditor, 200);
+                }
+            };
+            
+            // Démarrer la vérification après un petit délai
+            setTimeout(checkAndConfigureEditor, 100);
         });
     </script>
 {% endblock %} 

@@ -1,0 +1,57 @@
+/* ===================================
+   BADGES MORAUX DARK
+   =================================== */
+
+.moral-badge {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border: var(--border-width-sm) solid;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+}
+
+.moral-badge--super-héros {
+    background: linear-gradient(135deg, var(--roleplay-glow), var(--roleplay-primary));
+    color: var(--text-white);
+    border-color: var(--roleplay-accent);
+    box-shadow: 0 2px 8px var(--roleplay-glow);
+}
+
+.moral-badge--super-vilain {
+    background: linear-gradient(135deg, var(--important-glow), var(--important-primary));
+    color: var(--text-white);
+    border-color: var(--important-accent);
+    box-shadow: 0 2px 8px var(--important-glow);
+}
+
+.moral-badge--anti-héros {
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.6), var(--warning));
+    color: var(--text-white);
+    border-color: var(--warning);
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+}
+
+.moral-badge--neutre {
+    background: linear-gradient(135deg, var(--glow-blue), var(--primary-medium));
+    color: var(--text-white);
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px var(--glow-blue);
+}
+
+.moral-badge--civil {
+    background: linear-gradient(135deg, var(--hrp-glow), var(--hrp-primary));
+    color: var(--text-white);
+    border-color: var(--hrp-accent);
+    box-shadow: 0 2px 8px var(--hrp-glow);
+}
+
+.moral-badge--vigilante {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.6), var(--info));
+    color: var(--text-white);
+    border-color: var(--info);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+} 

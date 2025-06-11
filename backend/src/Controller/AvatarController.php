@@ -73,15 +73,28 @@ class AvatarController extends AbstractController
         }
 
         try {
-            // Supprimer l'ancien avatar si il existe
+            // Supprimer tous les anciens avatars s'ils existent
             if ($character->getAvatarFilename()) {
-                $this->avatarService->delete($character->getAvatarFilename());
+                $this->avatarService->deleteAllVersions($character->getAvatarFilename());
+            }
+            
+            // Supprimer aussi les versions référencées individuellement au cas où
+            if ($character->getAvatarFilenamePortrait()) {
+                $this->avatarService->delete($character->getAvatarFilenamePortrait());
+            }
+            
+            if ($character->getAvatarFilenameCircle()) {
+                $this->avatarService->delete($character->getAvatarFilenameCircle());
             }
 
             $result = $this->avatarService->upload($file, $character->getName());
             
-            // Mettre à jour le personnage (sans sauvegarder encore)
+            // Mettre à jour le personnage avec le nouveau fichier et nettoyer les versions
             $character->setAvatarFilename($result['filename']);
+            $character->setAvatarFilenamePortrait(null);
+            $character->setAvatarFilenameCircle(null);
+            $character->setAvatarCrop(null);
+            $this->entityManager->flush();
             
             return new JsonResponse([
                 'success' => true,
@@ -112,6 +125,15 @@ class AvatarController extends AbstractController
         try {
             $versions = $this->avatarService->cropImage($data['filename'], $data['cropData']);
             
+            // Sauvegarder les noms de fichiers des versions générées
+            if (isset($versions['portrait'])) {
+                $character->setAvatarFilenamePortrait($versions['portrait']);
+            }
+            
+            if (isset($versions['circle'])) {
+                $character->setAvatarFilenameCircle($versions['circle']);
+            }
+            
             // Sauvegarder les données de recadrage et finaliser
             $character->setAvatarCrop($data['cropData']);
             $this->entityManager->flush();
@@ -120,7 +142,9 @@ class AvatarController extends AbstractController
                 'success' => true,
                 'versions' => $versions,
                 'message' => 'Avatar recadré et sauvegardé avec succès',
-                'avatarUrl' => $character->getAvatarUrl()
+                'avatarUrl' => $character->getAvatarUrl(),
+                'avatarPortraitUrl' => $character->getAvatarPortraitUrl(),
+                'avatarCircleUrl' => $character->getAvatarCircleUrl()
             ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -140,12 +164,24 @@ class AvatarController extends AbstractController
         $url = $data['url'] ?? '';
 
         try {
-            // Supprimer l'avatar uploadé si il existe
+            // Supprimer tous les avatars uploadés s'ils existent
             if ($character->getAvatarFilename()) {
-                $this->avatarService->delete($character->getAvatarFilename());
+                $this->avatarService->deleteAllVersions($character->getAvatarFilename());
                 $character->setAvatarFilename(null);
-                $character->setAvatarCrop(null);
             }
+            
+            // Supprimer aussi les versions référencées individuellement au cas où
+            if ($character->getAvatarFilenamePortrait()) {
+                $this->avatarService->delete($character->getAvatarFilenamePortrait());
+                $character->setAvatarFilenamePortrait(null);
+            }
+            
+            if ($character->getAvatarFilenameCircle()) {
+                $this->avatarService->delete($character->getAvatarFilenameCircle());
+                $character->setAvatarFilenameCircle(null);
+            }
+            
+            $character->setAvatarCrop(null);
 
             // Définir la nouvelle URL
             $character->setAvatar($url ?: null);
@@ -176,14 +212,25 @@ class AvatarController extends AbstractController
         }
 
         try {
-            // Supprimer le fichier si il existe
+            // Supprimer tous les fichiers s'ils existent
             if ($character->getAvatarFilename()) {
-                $this->avatarService->delete($character->getAvatarFilename());
+                $this->avatarService->deleteAllVersions($character->getAvatarFilename());
+            }
+            
+            // Supprimer aussi les versions référencées individuellement au cas où
+            if ($character->getAvatarFilenamePortrait()) {
+                $this->avatarService->delete($character->getAvatarFilenamePortrait());
+            }
+            
+            if ($character->getAvatarFilenameCircle()) {
+                $this->avatarService->delete($character->getAvatarFilenameCircle());
             }
 
             // Nettoyer toutes les données d'avatar
             $character->setAvatar(null);
             $character->setAvatarFilename(null);
+            $character->setAvatarFilenamePortrait(null);
+            $character->setAvatarFilenameCircle(null);
             $character->setAvatarCrop(null);
             
             $this->entityManager->flush();

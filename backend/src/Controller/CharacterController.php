@@ -37,6 +37,7 @@ class CharacterController extends AbstractController
     private CharacterForumManager $characterForumManager;
     private SluggerInterface $slugger;
     private AvatarService $avatarService;
+    private CharacterRepository $characterRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -44,7 +45,8 @@ class CharacterController extends AbstractController
         ForumRepository $forumRepository,
         CharacterForumManager $characterForumManager,
         SluggerInterface $slugger,
-        AvatarService $avatarService
+        AvatarService $avatarService,
+        CharacterRepository $characterRepository
     ) {
         $this->entityManager = $entityManager;
         $this->breadcrumbService = $breadcrumbService;
@@ -52,6 +54,7 @@ class CharacterController extends AbstractController
         $this->characterForumManager = $characterForumManager;
         $this->slugger = $slugger;
         $this->avatarService = $avatarService;
+        $this->characterRepository = $characterRepository;
     }
 
     #[Route('/', name: 'app_roleplay_characters', methods: ['GET'])]
@@ -679,67 +682,33 @@ class CharacterController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function uploadAvatar(Request $request): JsonResponse
     {
-        $file = $request->files->get('avatar');
-        $characterName = $request->request->get('character_name', 'character');
-
-        if (!$file) {
-            return new JsonResponse(['error' => 'Aucun fichier fourni'], 400);
-        }
-
-        // Vérifications immédiates avant de passer au service
-        if (!$file instanceof UploadedFile) {
-            return new JsonResponse(['error' => 'Type de fichier invalide'], 400);
-        }
-
-        if (!$file->isValid()) {
-            return new JsonResponse(['error' => 'Erreur lors de l\'upload : ' . $file->getErrorMessage()], 400);
-        }
-
-        // Validation de la taille (5MB max)
-        $maxFileSize = 5 * 1024 * 1024;
-        $fileSize = $file->getSize();
-        if ($fileSize === false || $fileSize > $maxFileSize) {
-            return new JsonResponse(['error' => 'Le fichier est trop volumineux. Taille maximum : 5MB'], 400);
-        }
-
-        // Validation du type MIME
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
-            return new JsonResponse(['error' => 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, GIF, WebP'], 400);
-        }
-
-        try {
-            $result = $this->avatarService->upload($file, $characterName);
-            return new JsonResponse([
-                'success' => true,
-                'filename' => $result['filename'],
-                'path' => $result['path'],
-                'message' => 'Avatar uploadé avec succès'
-            ]);
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
-        }
+        // Rediriger vers AvatarController
+        return $this->forward('App\Controller\AvatarController::upload', [
+            'character' => $this->getCharacterFromRequest($request),
+            'request' => $request
+        ]);
     }
 
     #[Route('/avatar/crop', name: 'app_character_avatar_crop', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function cropAvatar(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        
-        if (!isset($data['filename']) || !isset($data['cropData'])) {
-            return new JsonResponse(['error' => 'Données manquantes'], 400);
-        }
+        // Rediriger vers AvatarController
+        return $this->forward('App\Controller\AvatarController::crop', [
+            'character' => $this->getCharacterFromRequest($request),
+            'request' => $request
+        ]);
+    }
 
-        try {
-            $versions = $this->avatarService->cropImage($data['filename'], $data['cropData']);
-            return new JsonResponse([
-                'success' => true,
-                'versions' => $versions,
-                'message' => 'Avatar recadré avec succès'
-            ]);
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+    private function getCharacterFromRequest(Request $request): Character
+    {
+        $characterId = $request->request->get('characterId');
+        $character = $this->characterRepository->find($characterId);
+        
+        if (!$character) {
+            throw $this->createNotFoundException('Personnage non trouvé');
         }
+        
+        return $character;
     }
 }

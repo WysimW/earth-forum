@@ -126,6 +126,7 @@ class ThreadController extends AbstractController
         $thread->setForum($forum);
         $thread->setAuthor($this->getUser());
         $thread->setStatus('open');
+        $thread->setUniverse($univers);
 
         $isRpForum = $forum->isRoleplay();
         $thread->setType($isRpForum ? 'roleplay' : 'discussion');

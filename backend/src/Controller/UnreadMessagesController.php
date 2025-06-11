@@ -26,17 +26,20 @@ class UnreadMessagesController extends AbstractController
     private PostRepository $postRepository;
     private UniversRepository $universRepository;
     private UserRepository $userRepository;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         ReadPostRepository $readPostRepository,
         PostRepository $postRepository,
         UniversRepository $universRepository,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager
     ) {
         $this->readPostRepository = $readPostRepository;
         $this->postRepository = $postRepository;
         $this->universRepository = $universRepository;
         $this->userRepository = $userRepository;
+        $this->entityManager = $entityManager;
     }
 
     #[Route('/', name: 'app_unread_messages_index')]
@@ -65,13 +68,27 @@ class UnreadMessagesController extends AbstractController
         ]);
     }
     
-    #[Route('/mark-read/{id}', name: 'app_unread_messages_mark_read')]
-    public function markAsRead(Post $post): Response
+    #[Route('/mark-read/{id}', name: 'app_unread_messages_mark_read', methods: ['POST'])]
+    public function markRead(Request $request, Post $post): Response
     {
-        $user = $this->getUser();
-        $this->readPostRepository->markAsRead($user, $post);
+        $this->denyAccessUnlessGranted('ROLE_USER');
         
-        // Rediriger vers la page des messages non lus
+        $user = $this->getUser();
+        $unreadPost = $this->readPostRepository->findOneBy([
+            'user' => $user,
+            'post' => $post
+        ]);
+        
+        if ($unreadPost) {
+            $this->entityManager->remove($unreadPost);
+            $this->entityManager->flush();
+        }
+        
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['success' => true]);
+        }
+        
+        $this->addFlash('success', 'Message marqué comme lu');
         return $this->redirectToRoute('app_unread_messages_index');
     }
     

@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="{{ asset('css/components/editor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/components/posts.css') }}">
     <link rel="stylesheet" href="{{ asset('css/components/moderation-modal.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/components/subcomponents.css/quick-nav.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/quick-nav.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/components/subcomponents/moral-badge.css') }}">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 {% endblock %}
 
@@ -317,7 +318,7 @@
                     {% if post.isRoleplay and post.character %}
                         <div class="avatar-container">
                             {% if post.character.avatar %}
-                                <img src="{{ post.character.avatar }}" alt="{{ post.character.name }}" class="img-fluid rounded">
+                                <img src="{{ post.character.avatarPortraitUrl }}" alt="{{ post.character.name }}" class="img-fluid rounded">
                             {% else %}
                                 <div class="default-avatar">
                                     <i class="fas fa-user-astronaut"></i>
@@ -326,7 +327,14 @@
                         </div>
                         
                         <div class="post-character-info">
-                            {# Affiliation morale et factions au-dessus du nom #}
+                            {# Nom du personnage #}
+                            <div class="name-label">
+                                <a href="{{ path('app_roleplay_character_show', {'id': post.character.id}) }}" class="character-link">
+                                    {{ post.character.name }}
+                                </a>
+                            </div>
+                            
+                            {# Affiliation morale après le nom #}
                             {% if post.character.moralAffiliation %}
                                 <div class="character-affiliation">
                                     <span class="moral-badge moral-badge--{{ post.character.moralAffiliation|lower|replace({' ': '-'}) }}">
@@ -335,22 +343,6 @@
                                 </div>
                             {% endif %}
                             
-                            {% if post.character.factions|length > 0 %}
-                                <div class="character-factions">
-                                    {% for faction in post.character.factions|slice(0, 2) %}
-                                        <span class="faction-badge">{{ faction.name }}</span>
-                                    {% endfor %}
-                                    {% if post.character.factions|length > 2 %}
-                                        <span class="faction-badge-more">+{{ post.character.factions|length - 2 }}</span>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                            
-                            <div class="name-label">
-                                <a href="{{ path('app_roleplay_character_show', {'id': post.character.id}) }}" class="character-link">
-                                    {{ post.character.name }}
-                                </a>
-                            </div>
                             {% if post.character.actualPseudo %}
                                 <div class="character-alias">{{ post.character.actualPseudo }}</div>
                             {% endif %}
@@ -359,6 +351,40 @@
                         
                         {# Accordéons pour les détails du personnage #}
                         <div class="post-character-accordions mt-3">
+                            {# Accordéon des factions #}
+                            {% if post.character.factionsRelation|length > 0 %}
+                                <div class="post-character-accordion-item">
+                                    <button class="post-character-accordion-header" 
+                                            type="button" 
+                                            onclick="togglePostCharacterAccordion(event, 'post-factions-{{ post.id }}')">
+                                        <span class="post-character-accordion-title">
+                                            <i class="fas fa-users me-1"></i>
+                                            Factions
+                                        </span>
+                                        <i class="fas fa-chevron-down post-character-accordion-icon"></i>
+                                    </button>
+                                    <div class="post-character-accordion-content" id="post-factions-{{ post.id }}">
+                                        <div class="post-character-accordion-body">
+                                            <div class="faction-list">
+                                                {% for faction in post.character.factionsRelation %}
+                                                    <div class="faction-item">
+                                                        <a href="{{ path('app_faction_show', {'universeSlug': faction.universe.slug, 'factionSlug': faction.slug}) }}" 
+                                                           class="faction-link">
+                                                            {% if faction.icon %}
+                                                                <img src="{{ faction.icon }}" alt="{{ faction.name }}" class="faction-icon">
+                                                            {% else %}
+                                                                <i class="fas fa-users faction-icon-placeholder"></i>
+                                                            {% endif %}
+                                                            <span class="faction-name">{{ faction.name }}</span>
+                                                        </a>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
                             {% if post.character.abilities %}
                                 <div class="post-character-accordion-item">
                                     <button class="post-character-accordion-header" 
@@ -410,7 +436,7 @@
                     {% else %}
                         <div class="avatar-container">
                             {% if post.author.avatar %}
-                                <img src="{{ post.author.avatar }}" alt="{{ post.author.pseudo }}" class="img-fluid rounded">
+                                <img src="{{ post.author.avatarUrl }}" alt="{{ post.author.pseudo }}" class="img-fluid rounded">
                             {% else %}
                                 <div class="default-avatar">
                                     <i class="fas fa-user"></i>
