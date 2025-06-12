@@ -698,7 +698,7 @@ class CharacterController extends AbstractController
             'character' => $this->getCharacterFromRequest($request),
             'request' => $request
         ]);
-    }
+        }
 
     private function getCharacterFromRequest(Request $request): Character
     {

@@ -54,6 +54,47 @@
     --important-hover: rgba(187, 7, 14, 0.2);
     --important-primary-rgb: 187, 7, 14;
 
+    /* Couleurs Assistant IA - Tons harmonieux avec le forum */
+    --ai-primary: #6366f1;               /* Indigo principal */
+    --ai-secondary: #8b5cf6;             /* Violet secondaire */
+    --ai-accent: #a855f7;                /* Violet accent */
+    --ai-dark: #312e81;                  /* Indigo sombre */
+    --ai-light: #c4b5fd;                 /* Violet clair */
+    --ai-neural: #7c3aed;                /* Violet neural */
+    --ai-energy: #6d28d9;                /* Violet énergétique */
+    --ai-glow-color: #8b5cf6;            /* Couleur de lueur */
+    --ai-subtle: #e0e7ff;                /* Indigo très clair */
+
+    /* Variantes RGB pour transparences */
+    --ai-primary-rgb: 99, 102, 241;
+    --ai-secondary-rgb: 139, 92, 246;
+    --ai-accent-rgb: 168, 85, 247;
+    --ai-dark-rgb: 49, 46, 129;
+    --ai-neural-rgb: 124, 58, 237;
+
+    /* Effets lumineux IA */
+    --ai-glow-primary: rgba(99, 102, 241, 0.6);
+    --ai-glow-secondary: rgba(139, 92, 246, 0.5);
+    --ai-glow-accent: rgba(168, 85, 247, 0.4);
+    --ai-glow-neural: rgba(124, 58, 237, 0.3);
+
+    /* Transparences IA */
+    --ai-trans-primary: rgba(99, 102, 241, 0.15);
+    --ai-trans-secondary: rgba(139, 92, 246, 0.12);
+    --ai-trans-accent: rgba(168, 85, 247, 0.1);
+    --ai-trans-dark: rgba(49, 46, 129, 0.8);
+
+    /* Hovers IA */
+    --ai-hover-primary: rgba(99, 102, 241, 0.25);
+    --ai-hover-secondary: rgba(139, 92, 246, 0.2);
+    --ai-hover-accent: rgba(168, 85, 247, 0.18);
+
+    /* Gradients IA */
+    --ai-gradient-main: linear-gradient(135deg, var(--ai-primary), var(--ai-secondary));
+    --ai-gradient-accent: linear-gradient(135deg, var(--ai-accent), var(--ai-neural));
+    --ai-gradient-dark: linear-gradient(135deg, var(--ai-dark), var(--deep-black));
+    --ai-gradient-subtle: linear-gradient(135deg, var(--ai-light), var(--ai-subtle));
+
     /* Effets de lueur */
     --glow-blue: rgba(20, 93, 160, 0.6);
     --glow-green: rgba(0, 168, 107, 0.6);

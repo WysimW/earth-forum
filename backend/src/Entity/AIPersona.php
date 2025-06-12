@@ -45,7 +45,7 @@ class AIPersona implements TimestampableInterface
     private bool $isActive = true;
 
     #[ORM\ManyToOne(targetEntity: Character::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Character $character = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
@@ -204,5 +204,49 @@ class AIPersona implements TimestampableInterface
     {
         $this->creator = $creator;
         return $this;
+    }
+
+    /**
+     * Ajouter une entrée à l'historique des posts
+     */
+    public function addToPostHistory(array $entry): static
+    {
+        if ($this->postHistory === null) {
+            $this->postHistory = [];
+        }
+        
+        $this->postHistory[] = $entry;
+        
+        // Garder seulement les 50 dernières entrées pour éviter une base trop lourde
+        if (count($this->postHistory) > 50) {
+            $this->postHistory = array_slice($this->postHistory, -50);
+        }
+        
+        return $this;
+    }
+
+    /**
+     * Mettre à jour le contexte narratif
+     */
+    public function updateNarrativeContext(array $contextData): static
+    {
+        $context = [
+            'last_update' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'data' => $contextData
+        ];
+        
+        $this->narrativeContext = json_encode($context);
+        return $this;
+    }
+
+    /**
+     * Obtenir le contexte narratif décodé
+     */
+    public function getDecodedNarrativeContext(): ?array
+    {
+        if ($this->narrativeContext) {
+            return json_decode($this->narrativeContext, true);
+        }
+        return null;
     }
 } 

@@ -561,31 +561,146 @@
         <div id="replyForm">
             {% if is_granted('ROLE_ANIMATEUR_AI') %}
                 <div class="ai-assistant">
-                    <div class="ai-assistant__header">
-                        <h3>Assistant IA</h3>
-                        <button class="ai-assistant__toggle" aria-label="Toggle AI Assistant">
-                            <i class="fas fa-robot"></i>
+                    <div class="ai-assistant__accordion">
+                        <button class="ai-assistant__header" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#aiAssistantAccordion" 
+                                aria-expanded="false">
+                            <span class="ai-assistant__title">
+                                <i class="fas fa-robot me-2"></i>
+                                Assistant IA pour Personas
+                            </span>
+                            <i class="fas fa-chevron-down ai-assistant__icon"></i>
                         </button>
-                    </div>
-                    
-                    <div class="ai-assistant__content">
-                        <div class="ai-assistant__persona-select">
-                            <label for="ai-persona">Sélectionner un personnage :</label>
-                            <select id="ai-persona" class="form-control">
-                                <option value="">Choisir un personnage...</option>
-                            </select>
-                        </div>
+                        
+                        <div id="aiAssistantAccordion" class="collapse">
+                            <div class="ai-assistant__content">
+                                
+                                {# Sélection du persona avec cartes #}
+                                <div class="ai-persona-selector">
+                                    <div class="ai-persona-selector__header">
+                                        <h5 class="ai-persona-selector__title">
+                                            <i class="fas fa-user-astronaut me-2"></i>
+                                            Choisir un Persona IA
+                                        </h5>
+                                        <small class="ai-persona-selector__subtitle">
+                                            Personas IA actifs dans cet univers
+                                        </small>
+                                    </div>
+                                    
+                                    {# Galerie de cartes de personas IA #}
+                                    <div class="ai-persona-gallery" id="ai-persona-gallery">
+                                        {# Les personas seront chargés dynamiquement via JavaScript #}
+                                    </div>
+                                    
+                                    {# Message si aucun persona disponible #}
+                                    <div class="ai-persona-selector__empty" id="ai-personas-empty" style="display: none;">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Aucun persona IA actif disponible.
+                                            <br>
+                                            <a href="{{ path('app_ai_persona_new') }}" class="alert-link">
+                                                Créer un nouveau persona
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div class="ai-assistant__context">
-                            <label for="ai-context">Contexte supplémentaire (optionnel) :</label>
-                            <textarea id="ai-context" class="form-control" rows="3" 
-                                placeholder="Ajoutez des instructions ou du contexte supplémentaire pour la génération..."></textarea>
-                        </div>
+                                {# Choix du modèle IA #}
+                                <div class="ai-model-selector" id="ai-model-section" style="display: none;">
+                                    <label class="ai-context__label">
+                                        <i class="fas fa-brain me-2"></i>
+                                        Modèle d'IA
+                                    </label>
+                                    <div class="ai-model-options">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="ai-model" id="gpt4-model" value="gpt4" checked>
+                                            <label class="form-check-label" for="gpt4-model">
+                                                <strong>GPT-4 Turbo</strong> - Rapide et efficace
+                                                <small class="d-block text-muted">Excellent pour les réponses cohérentes</small>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="ai-model" id="claude-model" value="claude">
+                                            <label class="form-check-label" for="claude-model">
+                                                <strong>Claude 3 Opus</strong> - Créativité littéraire
+                                                <small class="d-block text-muted">Spécialisé dans la fiction et le roleplay</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div class="ai-assistant__actions">
-                            <button id="generate-ai-response" class="btn btn-primary" disabled>
-                                <i class="fas fa-magic"></i> Générer une réponse
-                            </button>
+                                {# Contexte supplémentaire #}
+                                <div class="ai-context" id="ai-context-section" style="display: none;">
+                                    <label class="ai-context__label" for="ai-context">
+                                        <i class="fas fa-comment-dots me-2"></i>
+                                        Contexte supplémentaire (optionnel)
+                                    </label>
+                                    <textarea id="ai-context" class="ai-context__textarea form-control" rows="3" 
+                                        placeholder="Ajoutez des instructions ou du contexte supplémentaire pour influencer la génération de la réponse..."></textarea>
+                                </div>
+
+                                {# Actions #}
+                                <div class="ai-actions" id="ai-actions-section" style="display: none;">
+                                    <button id="generate-ai-response" class="ai-actions__btn ai-actions__btn--generate" disabled>
+                                        <i class="fas fa-magic"></i>
+                                        Générer une réponse
+                                    </button>
+                                    <button id="reset-ai-selection" class="ai-actions__btn ai-actions__btn--reset">
+                                        <i class="fas fa-undo"></i>
+                                        Recommencer
+                                    </button>
+                                </div>
+                                
+                                {# Animation de génération #}
+                                <div class="ai-generating" id="ai-generating">
+                                    <div class="ai-generating__spinner">
+                                        <i class="fas fa-cog"></i>
+                                    </div>
+                                    <div class="ai-generating__text">
+                                        Génération de la réponse en cours...
+                                    </div>
+                                </div>
+                                
+                                {# Éditeur de réponse générée #}
+                                <div class="ai-response-editor" id="ai-response-editor">
+                                    <div class="ai-response-editor__header">
+                                        <h5 class="ai-response-editor__title">
+                                            <i class="fas fa-feather-alt"></i>
+                                            Réponse générée
+                                        </h5>
+                                        <div class="ai-response-editor__persona-info" id="ai-response-persona-info">
+                                            <span id="ai-response-persona-name"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ai-response-editor__content">
+                                        <div id="ai-response-content" class="ai-response-editor__wysiwyg"></div>
+                                    </div>
+                                    
+                                    <div class="ai-response-editor__actions">
+                                        <div class="ai-response-editor__actions-row">
+                                            <button id="publish-ai-response" class="ai-response-editor__btn ai-response-editor__btn--publish" disabled>
+                                                <i class="fas fa-paper-plane"></i>
+                                                Publier la réponse
+                                            </button>
+                                            <button id="save-draft-ai-response" class="ai-response-editor__btn ai-response-editor__btn--draft" disabled>
+                                                <i class="fas fa-save"></i>
+                                                Sauvegarder en brouillon
+                                            </button>
+                                            <button id="regenerate-ai-response" class="ai-response-editor__btn ai-response-editor__btn--regenerate" disabled>
+                                                <i class="fas fa-redo"></i>
+                                                Régénérer
+                                            </button>
+                                        </div>
+                                        <div class="ai-response-editor__note">
+                                            <i class="fas fa-info-circle"></i>
+                                            Vous pouvez modifier le texte avant de publier ou sauvegarder.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -818,8 +933,364 @@
             document.body.dataset.universSlug = '{{ univers.slug }}';
             document.body.dataset.threadId = '{{ thread.id }}';
             
+            // Initialiser l'assistant IA si présent
+            {% if is_granted('ROLE_ANIMATEUR_AI') %}
+                initializeAIAssistant();
+            {% endif %}
+            
             console.log('✅ Scripts thread chargés et initialisés');
         });
+        
+        {% if is_granted('ROLE_ANIMATEUR_AI') %}
+        // === ASSISTANT IA ===
+        let aiPersonas = [];
+        let selectedPersonaId = null;
+        let aiResponseQuill = null;
+        
+        async function initializeAIAssistant() {
+            try {
+                // Charger les personas IA
+                await loadAIPersonas();
+                
+                // Initialiser les événements
+                setupAIEventListeners();
+                
+                // Initialiser l'accordéon
+                setupAIAccordion();
+                
+                console.log('✅ Assistant IA initialisé');
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation de l\'assistant IA:', error);
+            }
+        }
+        
+        async function loadAIPersonas() {
+            try {
+                const response = await fetch('{{ path('app_ai_persona_list') }}');
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement des personas');
+                }
+                
+                aiPersonas = await response.json();
+                renderAIPersonaCards();
+                
+                console.log('✅ Personas IA chargés:', aiPersonas.length);
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des personas:', error);
+                showAIError('Impossible de charger les personas IA');
+            }
+        }
+        
+        function renderAIPersonaCards() {
+            const gallery = document.getElementById('ai-persona-gallery');
+            const emptyMessage = document.getElementById('ai-personas-empty');
+            
+            if (!gallery) return;
+            
+            if (aiPersonas.length === 0) {
+                gallery.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            
+            gallery.innerHTML = '';
+            emptyMessage.style.display = 'none';
+            gallery.style.display = 'grid';
+            
+            aiPersonas.forEach(persona => {
+                const card = createAIPersonaCard(persona);
+                gallery.appendChild(card);
+            });
+        }
+        
+        function createAIPersonaCard(persona) {
+            const card = document.createElement('div');
+            card.className = 'ai-persona-card';
+            card.dataset.personaId = persona.id;
+            card.onclick = () => selectAIPersona(persona.id);
+            
+            const traitsHTML = persona.personalityTraits && persona.personalityTraits.length > 0 
+                ? `<div class="ai-persona-card__traits">
+                     <div class="ai-persona-card__traits-title">Traits</div>
+                     <div class="ai-persona-card__traits-list">
+                       ${persona.personalityTraits.slice(0, 3).map(trait => 
+                         `<span class="ai-persona-card__trait">${trait}</span>`
+                       ).join('')}
+                     </div>
+                   </div>`
+                : '';
+            
+            card.innerHTML = `
+                <div class="ai-persona-card__inner">
+                    <div class="ai-persona-card__header">
+                        <div class="ai-persona-card__avatar">
+                            ${persona.character && persona.character.avatar 
+                                ? `<img src="${persona.character.avatar}" alt="${persona.name}" class="ai-persona-card__avatar-img">`
+                                : `<div class="ai-persona-card__avatar-placeholder"><i class="fas fa-robot"></i></div>`
+                            }
+                        </div>
+                        <div class="ai-persona-card__basic-info">
+                            <h6 class="ai-persona-card__name">${persona.name}</h6>
+                            ${persona.character 
+                                ? `<div class="ai-persona-card__character">Personnage: ${persona.character.name}</div>`
+                                : '<div class="ai-persona-card__character">Persona générique</div>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="ai-persona-card__body">
+                        <div class="ai-persona-card__description">
+                            ${persona.description || 'Aucune description disponible'}
+                        </div>
+                        ${traitsHTML}
+                    </div>
+                    
+                    <div class="ai-persona-card__footer">
+                        <div class="ai-persona-card__action-hint">
+                            <i class="fas fa-hand-pointer"></i>
+                            Cliquer pour sélectionner
+                        </div>
+                    </div>
+                    
+                    <div class="ai-persona-card__selection-overlay">
+                        <div class="ai-persona-card__selection-content">
+                            <div class="ai-persona-card__selection-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="ai-persona-card__selection-text">Persona ${persona.character.name} Sélectionné</div>
+                            <div class="ai-persona-card__selection-subtext">Prêt à générer</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function selectAIPersona(personaId) {
+            selectedPersonaId = personaId;
+            
+            // Mettre à jour la sélection visuelle
+            document.querySelectorAll('.ai-persona-card').forEach(card => {
+                card.classList.remove('ai-persona-card--selected');
+            });
+            
+            const selectedCard = document.querySelector(`[data-persona-id="${personaId}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('ai-persona-card--selected');
+                
+                // Animation de sélection
+                selectedCard.style.transform = 'translateY(-6px) scale(1.03)';
+                setTimeout(() => {
+                    selectedCard.style.transform = '';
+                }, 300);
+            }
+            
+            // Afficher les sections suivantes
+            showAIContextAndActions();
+            
+            console.log('✅ Persona IA sélectionné:', personaId);
+        }
+        
+        function showAIContextAndActions() {
+            const modelSection = document.getElementById('ai-model-section');
+            const contextSection = document.getElementById('ai-context-section');
+            const actionsSection = document.getElementById('ai-actions-section');
+            const generateBtn = document.getElementById('generate-ai-response');
+            
+            if (modelSection) {
+                modelSection.style.display = 'block';
+            }
+            
+            if (contextSection) {
+                contextSection.style.display = 'block';
+            }
+            
+            if (actionsSection) {
+                actionsSection.style.display = 'flex';
+            }
+            
+            if (generateBtn) {
+                generateBtn.disabled = false;
+            }
+        }
+        
+        function setupAIEventListeners() {
+            // Bouton de génération
+            const generateBtn = document.getElementById('generate-ai-response');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', generateAIResponse);
+            }
+            
+            // Bouton de reset
+            const resetBtn = document.getElementById('reset-ai-selection');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetAISelection);
+            }
+            
+            // Animation de l'accordéon
+            const accordion = document.getElementById('aiAssistantAccordion');
+            if (accordion) {
+                accordion.addEventListener('shown.bs.collapse', function() {
+                    const gallery = document.getElementById('ai-persona-gallery');
+                    if (gallery) {
+                        gallery.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }
+        }
+        
+        function setupAIAccordion() {
+            const accordionHeader = document.querySelector('.ai-assistant__header');
+            const accordionIcon = document.querySelector('.ai-assistant__icon');
+            
+            if (accordionHeader && accordionIcon) {
+                accordionHeader.addEventListener('click', function() {
+                    setTimeout(() => {
+                        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                        accordionIcon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }, 10);
+                });
+            }
+        }
+        
+        async function generateAIResponse() {
+            if (!selectedPersonaId) {
+                alert('Veuillez sélectionner un persona IA');
+                return;
+            }
+            
+            const contextTextarea = document.getElementById('ai-context');
+            const additionalContext = contextTextarea ? contextTextarea.value : '';
+            
+            // Récupérer le modèle sélectionné
+            const selectedModel = document.querySelector('input[name="ai-model"]:checked');
+            const useClaudeModel = selectedModel ? selectedModel.value === 'claude' : false;
+            
+            // Afficher l'animation de chargement
+            showAIGenerating(true);
+            
+            try {
+                const response = await fetch(`{{ path('app_ai_persona_generate_response', {'postId': '__POST_ID__'}) }}`.replace('__POST_ID__', '{{ posts|last.id }}'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        personaId: selectedPersonaId,
+                        additionalContext: additionalContext,
+                        useClaudeModel: useClaudeModel
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la génération');
+                }
+                
+                const data = await response.json();
+                displayAIResponse(data.response);
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la génération:', error);
+                showAIError('Erreur lors de la génération de la réponse');
+            } finally {
+                showAIGenerating(false);
+            }
+        }
+        
+        function showAIGenerating(show) {
+            const generatingDiv = document.getElementById('ai-generating');
+            if (generatingDiv) {
+                if (show) {
+                    generatingDiv.classList.add('show');
+                } else {
+                    generatingDiv.classList.remove('show');
+                }
+            }
+        }
+        
+        function displayAIResponse(responseText) {
+            const responseEditor = document.getElementById('ai-response-editor');
+            const responseContent = document.getElementById('ai-response-content');
+            const personaName = document.getElementById('ai-response-persona-name');
+            
+            if (!responseEditor || !responseContent) return;
+            
+            // Afficher les informations du persona
+            const selectedPersona = aiPersonas.find(p => p.id == selectedPersonaId);
+            if (personaName && selectedPersona) {
+                personaName.textContent = `Réponse générée par ${selectedPersona.name}`;
+            }
+            
+            // Initialiser Quill si pas encore fait
+            if (!aiResponseQuill) {
+                aiResponseQuill = new Quill(responseContent, {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['blockquote', 'link'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'La réponse générée apparaîtra ici...'
+                });
+            }
+            
+            // Insérer le contenu généré
+            aiResponseQuill.root.innerHTML = responseText;
+            
+            // Afficher l'éditeur
+            responseEditor.classList.add('show');
+            
+            // Scroll vers l'éditeur
+            responseEditor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            console.log('✅ Réponse IA affichée');
+        }
+        
+        function resetAISelection() {
+            selectedPersonaId = null;
+            
+            // Réinitialiser les cartes
+            document.querySelectorAll('.ai-persona-card').forEach(card => {
+                card.classList.remove('ai-persona-card--selected');
+            });
+            
+            // Masquer les sections
+            const modelSection = document.getElementById('ai-model-section');
+            const contextSection = document.getElementById('ai-context-section');
+            const actionsSection = document.getElementById('ai-actions-section');
+            const responseEditor = document.getElementById('ai-response-editor');
+            const contextTextarea = document.getElementById('ai-context');
+            const generateBtn = document.getElementById('generate-ai-response');
+            
+            if (modelSection) modelSection.style.display = 'none';
+            if (contextSection) contextSection.style.display = 'none';
+            if (actionsSection) actionsSection.style.display = 'none';
+            if (responseEditor) responseEditor.classList.remove('show');
+            if (contextTextarea) contextTextarea.value = '';
+            if (generateBtn) generateBtn.disabled = true;
+            
+            // Réinitialiser le choix du modèle
+            const gpt4Radio = document.getElementById('gpt4-model');
+            if (gpt4Radio) gpt4Radio.checked = true;
+            
+            // Réinitialiser Quill
+            if (aiResponseQuill) {
+                aiResponseQuill.root.innerHTML = '';
+            }
+            
+            console.log('✅ Sélection IA réinitialisée');
+        }
+        
+        function showAIError(message) {
+            // Vous pouvez implémenter une notification d'erreur ici
+            alert(message);
+        }
+        {% endif %}
         
         // Fonction pour gérer les accordéons des personnages dans les posts
         function togglePostCharacterAccordion(event, contentId) {

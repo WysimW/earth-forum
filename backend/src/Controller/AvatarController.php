@@ -181,7 +181,7 @@ class AvatarController extends AbstractController
                 $character->setAvatarFilenameCircle(null);
             }
             
-            $character->setAvatarCrop(null);
+                $character->setAvatarCrop(null);
 
             // Définir la nouvelle URL
             $character->setAvatar($url ?: null);

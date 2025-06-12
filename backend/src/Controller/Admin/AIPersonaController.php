@@ -7,6 +7,7 @@ use App\Entity\Character;
 use App\Entity\Post;
 use App\Form\AIPersonaType;
 use App\Service\AIPersonaService;
+use App\Service\ClaudeAIPersonaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +22,8 @@ class AIPersonaController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private AIPersonaService $aiPersonaService
+        private AIPersonaService $aiPersonaService,
+        private ClaudeAIPersonaService $claudeAIPersonaService
     ) {}
 
     #[Route('/', name: 'app_ai_persona_index', methods: ['GET'])]
@@ -110,9 +112,18 @@ class AIPersonaController extends AbstractController
         }
 
         $additionalContext = $data['additionalContext'] ?? null;
-        $response = $this->aiPersonaService->generateResponse($persona, $post, $additionalContext);
+        $useClaudeModel = $data['useClaudeModel'] ?? false;
+        
+        if ($useClaudeModel) {
+            $response = $this->claudeAIPersonaService->generateResponse($persona, $post, $additionalContext);
+        } else {
+            $response = $this->aiPersonaService->generateResponse($persona, $post, $additionalContext);
+        }
 
-        return new JsonResponse(['response' => $response]);
+        return new JsonResponse([
+            'response' => $response,
+            'model_used' => $useClaudeModel ? 'claude-3-opus' : 'gpt-4-turbo'
+        ]);
     }
 
     #[Route('/list', name: 'app_ai_persona_list', methods: ['GET'])]
@@ -122,17 +133,25 @@ class AIPersonaController extends AbstractController
         
         $data = array_map(function (AIPersona $persona) {
             $character = $persona->getCharacter();
+            $characterData = null;
+            
+            if ($character) {
+                $characterData = [
+                    'id' => $character->getId(),
+                    'name' => $character->getName(),
+                    'avatar' => $character->getAvatarCircleUrl(),
+                    'occupation' => $character->getOccupation(),
+                    'age' => $character->getAge(),
+                    'moralAffiliation' => $character->getMoralAffiliation()
+                ];
+            }
+            
             return [
                 'id' => $persona->getId(),
                 'name' => $persona->getName(),
                 'description' => $persona->getDescription(),
-                'character' => [
-                    'id' => $character->getId(),
-                    'name' => $character->getName(),
-                    'race' => $character->getRace(),
-                    'class' => $character->getClass(),
-                    'alignment' => $character->getAlignment()
-                ]
+                'personalityTraits' => $persona->getPersonalityTraits(),
+                'character' => $characterData
             ];
         }, $personas);
 
@@ -205,6 +224,92 @@ class AIPersonaController extends AbstractController
                 'id' => $persona->getCharacter()->getId(),
                 'name' => $persona->getCharacter()->getName()
             ]
+        ]);
+    }
+
+    #[Route('/publish-response/{threadId}', name: 'app_ai_persona_publish_response', methods: ['POST'])]
+    public function publishResponse(int $threadId, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['personaId']) || !isset($data['content'])) {
+            return new JsonResponse(['error' => 'Persona ID and content are required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $thread = $this->entityManager->getRepository(\App\Entity\Thread::class)->find($threadId);
+        if (!$thread) {
+            return new JsonResponse(['error' => 'Thread not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $persona = $this->entityManager->getRepository(AIPersona::class)->find($data['personaId']);
+        if (!$persona) {
+            return new JsonResponse(['error' => 'Persona not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $character = $persona->getCharacter();
+        if (!$character) {
+            return new JsonResponse(['error' => 'Character not found for this persona'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Vérifier les permissions
+        if (!$thread->isOpen() && !$this->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['error' => 'This thread is closed'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Créer le nouveau post
+        $post = new Post();
+        $post->setThread($thread);
+        $post->setAuthor($this->getUser()); // L'utilisateur actuel est l'auteur
+        $post->setCharacter($character); // Le personnage lié au persona
+        $post->setContent($data['content']);
+        $post->setType('roleplay'); // Post RP
+        
+        // Définir si c'est un brouillon ou non
+        $isDraft = $data['isDraft'] ?? false;
+        $post->setIsDraft($isDraft);
+
+        // Gérer les NPCs si fournis
+        if (isset($data['npcIds']) && is_array($data['npcIds'])) {
+            foreach ($data['npcIds'] as $npcId) {
+                $npc = $this->entityManager->getRepository(\App\Entity\Npc::class)->find($npcId);
+                if ($npc && $thread->getNpcs()->contains($npc)) {
+                    $post->addNpc($npc);
+                }
+            }
+        }
+
+        // Ajouter le personnage comme participant s'il n'y est pas déjà
+        if ($thread->getType() === 'roleplay' && !$thread->getParticipants()->contains($character)) {
+            if ($thread->isFull()) {
+                return new JsonResponse(['error' => 'This RP scene has reached its maximum number of participants'], Response::HTTP_BAD_REQUEST);
+            }
+            
+            $thread->addParticipant($character);
+        }
+
+        // Mettre à jour la date de dernière activité du thread
+        $thread->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // Marquer le post comme lu pour l'auteur
+        if (!$isDraft) {
+            $readPostRepo = $this->entityManager->getRepository(\App\Entity\ReadPost::class);
+            $readPostRepo->markAsRead($this->getUser(), $post);
+        }
+
+        $message = $isDraft ? 'Réponse sauvegardée en brouillon' : 'Réponse publiée avec succès';
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $message,
+            'postId' => $post->getId(),
+            'isDraft' => $isDraft,
+            'redirectUrl' => $this->generateUrl('app_thread_show', [
+                'universeSlug' => $thread->getForum()->getUniverse()->getSlug(),
+                'id' => $thread->getId()
+            ])
         ]);
     }
 } 
