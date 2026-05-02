@@ -32,14 +32,47 @@ class LastPostService
         $thread = $lastPost->getThread();
         $author = $lastPost->getAuthor();
         $character = $lastPost->getCharacter();
+        
+        // Vérifier si le thread du dernier post est un thread RP
+        $isThreadRoleplay = $thread->getType() === 'roleplay';
+        
+        // Pour les threads RP, utiliser les informations du personnage du dernier post si disponible
+        $avatar = null;
+        $displayName = null;
+        
+        if ($isThreadRoleplay) {
+            // Thread RP : prioriser le personnage du dernier post
+            if ($character) {
+                $avatar = $character->getAvatar() ?: ($author ? $author->getAvatar() : null);
+                $displayName = $character->getName();
+            } else {
+                // Si pas de personnage dans le post, essayer avec le characterCreator du thread
+                $threadCharacterCreator = $thread->getCharacterCreator();
+                if ($threadCharacterCreator) {
+                    $avatar = $threadCharacterCreator->getAvatar() ?: ($author ? $author->getAvatar() : null);
+                    $displayName = $threadCharacterCreator->getName();
+                } else {
+                    // Fallback sur l'utilisateur
+                    $avatar = $author ? $author->getAvatar() : null;
+                    $displayName = $author ? $author->getPseudo() : 'Anonyme';
+                }
+            }
+        } else {
+            // Thread non-RP : utiliser l'utilisateur
+            $avatar = $author ? $author->getAvatar() : null;
+            $displayName = $author ? $author->getPseudo() : 'Anonyme';
+        }
 
         return [
             'postId' => $lastPost->getId(),
             'threadId' => $thread->getId(),
+            'threadSlug' => $thread->getSlug(),
             'threadTitle' => $thread->getTitle(),
             'date' => $lastPost->getCreatedAt(),
-            'author' => $author ? $author->getPseudo() : 'Anonyme',
+            'author' => $displayName, // Nom du personnage pour les threads RP, sinon pseudo utilisateur
+            'authorId' => $author ? $author->getId() : null, // ID de l'utilisateur pour le filtrage
             'character' => $character ? $character->getName() : null,
+            'avatar' => $avatar,
         ];
     }
 
@@ -54,14 +87,50 @@ class LastPostService
             return null;
         }
 
+        $thread = $lastPost->getThread();
         $author = $lastPost->getAuthor();
         $character = $lastPost->getCharacter();
+        
+        // Vérifier si le thread du dernier post est un thread RP
+        $isThreadRoleplay = $thread->getType() === 'roleplay';
+        
+        // Pour les threads RP, utiliser les informations du personnage du dernier post si disponible
+        $avatar = null;
+        $displayName = null;
+        
+        if ($isThreadRoleplay) {
+            // Thread RP : prioriser le personnage du dernier post
+            if ($character) {
+                $avatar = $character->getAvatar() ?: ($author ? $author->getAvatar() : null);
+                $displayName = $character->getName();
+            } else {
+                // Si pas de personnage dans le post, essayer avec le characterCreator du thread
+                $threadCharacterCreator = $thread->getCharacterCreator();
+                if ($threadCharacterCreator) {
+                    $avatar = $threadCharacterCreator->getAvatar() ?: ($author ? $author->getAvatar() : null);
+                    $displayName = $threadCharacterCreator->getName();
+                } else {
+                    // Fallback sur l'utilisateur
+                    $avatar = $author ? $author->getAvatar() : null;
+                    $displayName = $author ? $author->getPseudo() : 'Anonyme';
+                }
+            }
+        } else {
+            // Thread non-RP : utiliser l'utilisateur
+            $avatar = $author ? $author->getAvatar() : null;
+            $displayName = $author ? $author->getPseudo() : 'Anonyme';
+        }
 
         return [
             'postId' => $lastPost->getId(),
+            'threadId' => $thread->getId(),
+            'threadSlug' => $thread->getSlug(),
+            'threadTitle' => $thread->getTitle(),
             'date' => $lastPost->getCreatedAt(),
-            'author' => $author ? $author->getPseudo() : 'Anonyme',
+            'author' => $displayName, // Nom du personnage pour les threads RP, sinon pseudo utilisateur
+            'authorId' => $author ? $author->getId() : null, // ID de l'utilisateur pour le filtrage
             'character' => $character ? $character->getName() : null,
+            'avatar' => $avatar,
         ];
     }
 }

@@ -1,0 +1,400 @@
+/* Forum Card V3 - Style bannière full + sidebar droite */
+
+.forumCard {
+  position: relative;
+  display: flex;
+  min-height: 180px;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+}
+
+.forumCard.unread {
+  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
+  box-shadow: 0 0 0 var(--border-width) color-mix(in srgb, var(--primary-color) 35%, transparent);
+}
+
+.forumCard.unread .cardInfo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--border-width);
+  background: var(--primary-color);
+}
+
+.cardBanner {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  transition: transform 0.4s ease;
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.4) 100%);
+  z-index: 1;
+  transition: background var(--transition-base);
+}
+
+.forumCard:not(:has(.cardBanner)) .cardOverlay {
+  background: var(--bg-card);
+}
+
+.forumCard:not(:has(.cardBanner)) .cardTitle,
+.forumCard:not(:has(.cardBanner)) .cardDesc,
+.forumCard:not(:has(.cardBanner)) .cardMeta,
+.forumCard:not(:has(.cardBanner)) .subforumChip,
+.forumCard:not(:has(.cardBanner)) .sidebarLabel,
+.forumCard:not(:has(.cardBanner)) .sidebarAuthor,
+.forumCard:not(:has(.cardBanner)) .sidebarDate {
+  color: var(--text-primary);
+  text-shadow: none;
+}
+
+.forumCard:not(:has(.cardBanner)) .cardDesc,
+.forumCard:not(:has(.cardBanner)) .cardMeta,
+.forumCard:not(:has(.cardBanner)) .sidebarDate {
+  color: var(--text-secondary);
+}
+
+.forumCard:not(:has(.cardBanner)) .subforumChip {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.forumCard:not(:has(.cardBanner)) .cardSidebar {
+  background: var(--bg-secondary);
+  border-left-color: var(--border-color);
+}
+
+.forumCard:not(:has(.cardBanner)) .sidebarAvatar {
+  border-color: var(--border-color);
+}
+
+.cardContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+}
+
+/* Left section - Info */
+.cardInfo {
+  flex: 1;
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.cardInfo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.cardInfo:hover::before {
+  left: 100%;
+}
+
+.cardInfo:hover .cardTitle {
+  color: var(--primary-color);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.cardTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: color var(--transition-base);
+}
+
+.cardBadge {
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: 1px solid;
+}
+
+.cardBadge.roleplay {
+  border-color: #fff;
+  color: #fff;
+}
+
+.cardBadge.important {
+  border-color: #FF6B6B;
+  color: #FF6B6B;
+}
+
+.cardBadge.player_platform {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.cardBadge.hrp {
+  border-color: #4FC3F7;
+  color: #4FC3F7;
+}
+
+.forumCard:not(:has(.cardBanner)) .cardBadge.hrp {
+  border-color: #4FC3F7;
+  color: #4FC3F7;
+}
+
+.cardDesc {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.subforumsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.subforumsRowCompact {
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.subforumChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.9);
+  transition: all var(--transition-base);
+}
+
+.subforumChipCompact {
+  padding: 2px 8px;
+  font-size: 10px;
+  gap: 4px;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subforumChipCompact svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.subforumChip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.subforumChip svg {
+  opacity: 0.7;
+}
+
+.subforumMore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.subforumMore:hover {
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.subforumMoreCompact {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: var(--spacing-xs);
+}
+
+.unreadPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 var(--spacing-xs);
+  border: var(--border-width) solid var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  color: var(--text-light);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metaDot {
+  opacity: 0.5;
+}
+
+/* Right section - Sidebar */
+.cardSidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding: var(--spacing-lg);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--spacing-sm);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background var(--transition-base), border-color var(--transition-base);
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardSidebar:hover {
+  background: rgba(0, 0, 0, 0.65);
+  border-left-color: var(--primary-color);
+}
+
+.cardSidebar:hover .sidebarAvatar {
+  border-color: var(--primary-color);
+}
+
+.sidebarLabel {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sidebarThreadTitle {
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  line-height: 1.3;
+  margin-bottom: var(--spacing-xs);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color var(--transition-base);
+}
+
+.sidebarAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.sidebarDate {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.noActivityIcon {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.forumCard:not(:has(.cardBanner)) .noActivityIcon {
+  color: var(--text-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .forumCard {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .cardInfo {
+    padding: var(--spacing-lg);
+  }
+
+  .cardSidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: var(--spacing-md);
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: var(--spacing-md);
+  }
+
+  .sidebarAvatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebarLabel {
+    display: none;
+  }
+
+  .sidebarThreadTitle {
+    display: none;
+  }
+}

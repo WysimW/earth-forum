@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Entity\Forum;
 use App\Entity\ForumCategory;
 use App\Repository\ForumRepository;
+use App\Repository\UniversRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\ForumCategoryRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,21 +16,40 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\BreadcrumbService;
+use App\Service\LastPostService;
+use App\Repository\ThreadRepository;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 
 class ForumController extends AbstractController
-{    private $entityManager;
+{
+    private const ALLOWED_FORUM_STATUSES = ['open', 'closed', 'archived'];
+
+    private $entityManager;
     private $forumRepository;
     private $categoryRepository;
     private $breadcrumbService;
+    private $lastPostService;
+    private $threadRepository;
+    private SluggerInterface $slugger;
 
-    public function __construct(EntityManagerInterface $entityManager,ForumRepository $forumRepository, ForumCategoryRepository $categoryRepository, BreadcrumbService $breadcrumbService) 
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ForumRepository $forumRepository,
+        ForumCategoryRepository $categoryRepository,
+        BreadcrumbService $breadcrumbService,
+        LastPostService $lastPostService,
+        ThreadRepository $threadRepository,
+        SluggerInterface $slugger
+    ) 
     {
         $this->entityManager = $entityManager;
         $this->forumRepository = $forumRepository;
         $this->categoryRepository = $categoryRepository;
         $this->breadcrumbService = $breadcrumbService;
-
+        $this->lastPostService = $lastPostService;
+        $this->threadRepository = $threadRepository;
+        $this->slugger = $slugger;
     }
 
     #[Route('/api/forumslist', name: 'get_forum_listing', methods: ['GET'])]
@@ -53,20 +73,83 @@ class ForumController extends AbstractController
         return new JsonResponse($data);
     }
 
-    #[Route('/api/forums', name: 'get_all_forums', methods: ['GET'])]
-    public function getAllForums(ForumRepository $forumRepository): JsonResponse
+    #[Route('/api/admin/forums', name: 'get_all_forums', methods: ['GET'])]
+    public function getAllForums(Request $request, ForumRepository $forumRepository): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        $allowedUniverseIds = array_map(
+            static fn ($universe) => $universe->getId(),
+            $user->getAdminUniverses()->toArray()
+        );
+        $contextUniverseId = $request->query->get('context_universe_id');
+        if ($contextUniverseId && !$isSuperAdmin && !in_array((int) $contextUniverseId, $allowedUniverseIds, true)) {
+            return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
         $forums = $forumRepository->findAll();
 
         $data = [];
+        $forumsById = [];
+        foreach ($forums as $forum) {
+            $forumsById[$forum->getId()] = $forum;
+        }
+
+        $resolveUniverseId = static function (Forum $forum) use (&$resolveUniverseId, $forumsById): ?int {
+            if ($forum->getUniverse()) {
+                return $forum->getUniverse()->getId();
+            }
+
+            $parent = $forum->getParent();
+            if (!$parent) {
+                return null;
+            }
+
+            $parentId = $parent->getId();
+            if (!$parentId || !isset($forumsById[$parentId])) {
+                return null;
+            }
+
+            return $resolveUniverseId($forumsById[$parentId]);
+        };
 
         foreach ($forums as $forum) {
+            $effectiveUniverseId = $resolveUniverseId($forum);
+            if (!$isSuperAdmin) {
+                // Les forums globaux (sans univers) restent visibles pour tous les admins.
+                if ($effectiveUniverseId && !in_array($effectiveUniverseId, $allowedUniverseIds, true)) {
+                    continue;
+                }
+            }
+
+            // Avec un contexte d'univers, on filtre les forums liés à cet univers
+            // mais on conserve toujours les forums globaux.
+            if ($contextUniverseId && $effectiveUniverseId !== null && (int) $contextUniverseId !== (int) $effectiveUniverseId) {
+                continue;
+            }
+
+            // Compter les sous-forums
+            $subforums = $forumRepository->findBy(['parent' => $forum]);
+            
             $data[] = [
                 'id' => $forum->getId(),
                 'name' => $forum->getName(),
                 'description' => $forum->getDescription(),
                 'banner' => $forum->getBanner(),
-                
+                'universe_id' => $forum->getUniverse() ? $forum->getUniverse()->getId() : null,
+                'universe_name' => $forum->getUniverse() ? $forum->getUniverse()->getName() : null,
+                'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
+                'parent_forum_id' => $forum->getParent() ? $forum->getParent()->getId() : null,
+                'parent_forum_name' => $forum->getParent() ? $forum->getParent()->getName() : null,
+                'type' => $forum->getType(),
+                'status' => $forum->getStatus(),
+                'position' => $forum->getPosition(),
+                'subforums_count' => count($subforums),
+                'is_parent' => $forum->getParent() === null,
             ];
         }
 
@@ -74,28 +157,59 @@ class ForumController extends AbstractController
     }
 
 
+    #[Route('/api/forums/by-slug/{slug}', name: 'get_forum_by_slug', methods: ['GET'])]
+    public function getForumBySlug(string $slug, Request $request): JsonResponse
+    {
+        // Essayer de trouver par slug d'abord, puis par ID si c'est un nombre
+        $forum = null;
+        if (is_numeric($slug)) {
+            $forum = $this->forumRepository->find((int)$slug);
+        } else {
+            $forum = $this->forumRepository->findOneBy(['slug' => $slug]);
+        }
+
+        if (!$forum) {
+            return new JsonResponse(['error' => 'Forum non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+        if ($forum->getStatus() === 'archived') {
+            return new JsonResponse(['error' => 'Forum non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Vérifier si on demande la pagination des threads
+        $page = $request->query->getInt('page', 0);
+        $limit = $request->query->getInt('limit', 0);
+        $usePagination = $page > 0 && $limit > 0;
+
+        if ($usePagination) {
+            return $this->getForumDetailDataWithPagination($forum, $request);
+        }
+
+        return $this->getForumDetailData($forum);
+    }
+
     #[Route('/api/forums/{id}', name: 'get_forum_read', methods: ['GET'])]
     public function getForumDetail(Forum $forum): JsonResponse
+    {
+        if ($forum->getStatus() === 'archived') {
+            return new JsonResponse(['error' => 'Forum non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        return $this->getForumDetailData($forum);
+    }
+
+    private function getForumDetailData(Forum $forum): JsonResponse
     {
         $subForums = [];
     
         foreach ($forum->getSubforums() as $subForum) {
-            $id = $subForum->getId();
-            $latestThread = $this->forumRepository->findLatestThreadByRecentPostInForum($id);
-            if ($latestThread != null) {
-                $lastPostDate = $latestThread->getPosts()->last()->getCreatedAt()->format('H\hi \l\e d/m/y');
-                $formattedDate = 'Posté à ' . $lastPostDate;
-                $lastThreadData = [
-                    'id' => $latestThread->getId(),
-                    'title' => $latestThread->getTitle(),
-                    'author' => $latestThread->getAuthor()->getPseudo(), // Assuming Thread entity has a relation to Author
-                    'avatar' => $latestThread->getAuthor()->getAvatar(),
-                    'date' => $formattedDate, // Get the date of the last post
-                ];
-            } else {
-                $lastThreadData = [];
+            if ($subForum->getStatus() === 'archived') {
+                continue;
             }
-    
+            $id = $subForum->getId();
+            
+            // Utiliser LastPostService pour récupérer les informations du dernier post
+            $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($id);
+            
             $stats = $this->forumRepository->countThreadsAndPostsInForum($id);
             $statsData = [
                 'totalThreads' => $stats['totalThreads'],
@@ -108,7 +222,7 @@ class ForumController extends AbstractController
                 $latestThreadsData[] = [
                     'id' => $thread->getId(),
                     'title' => $thread->getTitle(),
-                    'author' => $thread->getAuthor()->getPseudo(),
+                    'author' => $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme',
                     'createdAt' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
                     // Add more fields as necessary
                 ];
@@ -116,10 +230,22 @@ class ForumController extends AbstractController
     
             $subForums[] = [
                 'id' => $subForum->getId(),
+                'slug' => $subForum->getSlug(),
                 'name' => $subForum->getName(),
                 'description' => $subForum->getDescription(),
                 'banner' => $subForum->getBanner(),
-                'lastThread' => $lastThreadData,
+                'type' => $subForum->getType(),
+                'lastPost' => $lastPostInfo ? [
+                    'threadId' => $lastPostInfo['threadId'] ?? null,
+                    'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
+                    'threadTitle' => $lastPostInfo['threadTitle'] ?? null,
+                    'author' => $lastPostInfo['author'] ?? null,
+                    'character' => $lastPostInfo['character'] ?? null,
+                    'avatar' => $lastPostInfo['avatar'] ?? null,
+                    'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
+                        ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
+                        : ($lastPostInfo['date'] ?? null),
+                ] : null,
                 'stats' => $statsData,
                 'latestThreads' => $latestThreadsData,
             ];
@@ -145,42 +271,269 @@ class ForumController extends AbstractController
         });
         
     
+        $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+        
         $threadsData = [];
         foreach ($threads as $thread) {
-            $lastPost = $thread->getLastPostInfo();
+            // Utiliser LastPostService pour récupérer les informations du dernier post du thread
+            $lastPostInfo = $this->lastPostService->getLastPostInfoForThread($thread->getId());
+            
+            // Pour l'auteur du thread, utiliser les informations du personnage si c'est un thread RP
+            $author = $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme';
+            $avatar = $thread->getAuthor() ? $thread->getAuthor()->getAvatar() : null;
+            $character = null;
+            
+            // Vérifier si c'est un thread RP
+            $isThreadRoleplay = $thread->getType() === 'roleplay';
+            
+            if ($isThreadRoleplay) {
+                // D'abord essayer avec characterCreator
+                if ($thread->getCharacterCreator()) {
+                    $characterCreator = $thread->getCharacterCreator();
+                    $character = $characterCreator->getName();
+                    $characterAvatar = $characterCreator->getAvatar();
+                    if ($characterAvatar) {
+                        $avatar = $characterAvatar;
+                    }
+                } else {
+                    // Si pas de characterCreator, chercher le premier post avec un personnage
+                    foreach ($thread->getPosts() as $post) {
+                        if ($post->getCharacter()) {
+                            $postCharacter = $post->getCharacter();
+                            $character = $postCharacter->getName();
+                            $characterAvatar = $postCharacter->getAvatar();
+                            if ($characterAvatar) {
+                                $avatar = $characterAvatar;
+                            }
+                            break; // Prendre le premier post avec un personnage
+                        }
+                    }
+                }
+            }
+            
             $threadsData[] = [
                 'threadId' => $thread->getId(),
+                'threadSlug' => $thread->getSlug(),
                 'title' => $thread->getTitle(),
-                'author' => $thread->getAuthor()->getPseudo(),
-                'authorAvatar' => $thread->getAuthor()->getAvatar(),
-                'createdAt' => $thread->getCreatedAt()->format('d/m/y'),
-                'lastPost' => $lastPost ? [
-                    'id' => $lastPost['id'] ?? null,
-                    'author' => $lastPost['author'] ?? null,
-                    'avatar' => $lastPost['avatar'] ?? null,
-                    'date' => $lastPost['date'] ?? null,
-                    'excerpt' => $lastPost['excerpt'] ?? null,
+                'author' => $character ? $character : $author,
+                'authorAvatar' => $avatar,
+                'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
+                'character' => $character,
+                'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
+                    ? $thread->getCharacterCreator()->getUser()->getId() 
+                    : null,
+                'status' => $thread->getStatus(),
+                'pinned' => $thread->getSticky(),
+                'locked' => $thread->getStatus() === 'closed', // Un thread est verrouillé s'il est fermé
+                'createdAt' => $thread->getCreatedAt()->format('d/m/y H:i'),
+                'replies' => $thread->getPosts()->count() - 1,
+                'lastPost' => $lastPostInfo ? [
+                    'id' => $lastPostInfo['postId'] ?? null,
+                    'threadId' => $thread->getId(),
+                    'threadSlug' => $thread->getSlug(),
+                    'author' => $lastPostInfo['author'] ?? null,
+                    'authorId' => $lastPostInfo['authorId'] ?? null,
+                    'character' => $lastPostInfo['character'] ?? null,
+                    'avatar' => $lastPostInfo['avatar'] ?? null,
+                    'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
+                        ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
+                        : ($lastPostInfo['date'] ?? null),
                 ] : null,
             ];
         }
-    
-        $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+        
+        // Calculer les statistiques du forum principal
+        $forumStats = $this->forumRepository->countThreadsAndPostsInForum($forum->getId());
+        $statsData = [
+            'totalThreads' => $forumStats['totalThreads'],
+            'totalPosts' => $forumStats['totalPosts'],
+        ];
+        
         $breadcrumbs = $this->breadcrumbService->generateBreadcrumbs($forum);
     
         $data = [
             'forumId' => $forum->getId(),
+            'forumSlug' => $forum->getSlug(),
             'forumName' => $forum->getName(),
+            'type' => $forum->getType(),
             'description' => $forum->getDescription(),
             'bannerImage' => $forum->getBanner(),
             'isRoleplay' => $isRoleplay,
             'breadcrumb' => $breadcrumbs,
+            'stats' => $statsData,
             'subForums' => $subForums,
             'threads' => $threadsData,
+            'universe' => $forum->getUniverse() ? [
+                'id' => $forum->getUniverse()->getId(),
+                'name' => $forum->getUniverse()->getName(),
+                'slug' => $forum->getUniverse()->getSlug(),
+            ] : null,
         ];
     
         return new JsonResponse($data);
     }
+
+    private function getForumDetailDataWithPagination(Forum $forum, Request $request): JsonResponse
+    {
+        // Récupérer les paramètres de pagination et filtres
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 10);
+        $filters = [
+            'status' => $request->query->get('status', 'all'),
+            'search' => $request->query->get('search', ''),
+            'userId' => $request->query->getInt('userId', 0) ?: null,
+            'author' => $request->query->getInt('author', 0) ?: null,
+            'character' => $request->query->getInt('character', 0) ?: null,
+        ];
+
+        // Récupérer les threads avec pagination
+        $result = $this->threadRepository->findThreadsByForumWithPagination(
+            $forum->getId(),
+            $filters,
+            $page,
+            $limit
+        );
+
+        // Récupérer les sous-forums (même logique que getForumDetailData)
+        $subForums = [];
+        foreach ($forum->getSubforums() as $subForum) {
+            if ($subForum->getStatus() === 'archived') {
+                continue;
+            }
+            $id = $subForum->getId();
+            $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($id);
+            $stats = $this->forumRepository->countThreadsAndPostsInForum($id);
+            $statsData = [
+                'totalThreads' => $stats['totalThreads'],
+                'totalPosts' => $stats['totalPosts'],
+            ];
+            
+            $subForums[] = [
+                'id' => $subForum->getId(),
+                'slug' => $subForum->getSlug(),
+                'name' => $subForum->getName(),
+                'description' => $subForum->getDescription(),
+                'banner' => $subForum->getBanner(),
+                'lastPost' => $lastPostInfo ? [
+                    'threadId' => $lastPostInfo['threadId'] ?? null,
+                    'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
+                    'threadTitle' => $lastPostInfo['threadTitle'] ?? null,
+                    'author' => $lastPostInfo['author'] ?? null,
+                    'character' => $lastPostInfo['character'] ?? null,
+                    'avatar' => $lastPostInfo['avatar'] ?? null,
+                    'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
+                        ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
+                        : ($lastPostInfo['date'] ?? null),
+                ] : null,
+                'stats' => $statsData,
+            ];
+        }
+
+        // Serialiser les threads
+        $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+        $threadsData = [];
+        
+        foreach ($result['threads'] as $thread) {
+            $lastPostInfo = $this->lastPostService->getLastPostInfoForThread($thread->getId());
+            
+            $author = $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme';
+            $avatar = $thread->getAuthor() ? $thread->getAuthor()->getAvatar() : null;
+            $character = null;
+            
+            $isThreadRoleplay = $thread->getType() === 'roleplay';
+            
+            if ($isThreadRoleplay) {
+                if ($thread->getCharacterCreator()) {
+                    $characterCreator = $thread->getCharacterCreator();
+                    $character = $characterCreator->getName();
+                    $characterAvatar = $characterCreator->getAvatar();
+                    if ($characterAvatar) {
+                        $avatar = $characterAvatar;
+                    }
+                } else {
+                    foreach ($thread->getPosts() as $post) {
+                        if ($post->getCharacter()) {
+                            $postCharacter = $post->getCharacter();
+                            $character = $postCharacter->getName();
+                            $characterAvatar = $postCharacter->getAvatar();
+                            if ($characterAvatar) {
+                                $avatar = $characterAvatar;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            $threadsData[] = [
+                'threadId' => $thread->getId(),
+                'threadSlug' => $thread->getSlug(),
+                'title' => $thread->getTitle(),
+                'author' => $character ? $character : $author,
+                'authorAvatar' => $avatar,
+                'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
+                'character' => $character,
+                'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
+                    ? $thread->getCharacterCreator()->getUser()->getId() 
+                    : null,
+                'type' => $thread->getType(),
+                'status' => $thread->getStatus(),
+                'pinned' => $thread->getSticky(),
+                'locked' => $thread->getStatus() === 'closed', // Un thread est verrouillé s'il est fermé
+                'createdAt' => $thread->getCreatedAt()->format('d/m/y H:i'),
+                'replies' => $thread->getPosts()->count() - 1, // -1 pour exclure le premier post
+                'lastPost' => $lastPostInfo ? [
+                    'id' => $lastPostInfo['postId'] ?? null,
+                    'threadId' => $thread->getId(),
+                    'threadSlug' => $thread->getSlug(),
+                    'author' => $lastPostInfo['author'] ?? null,
+                    'authorId' => $lastPostInfo['authorId'] ?? null,
+                    'character' => $lastPostInfo['character'] ?? null,
+                    'avatar' => $lastPostInfo['avatar'] ?? null,
+                    'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
+                        ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
+                        : ($lastPostInfo['date'] ?? null),
+                ] : null,
+            ];
+        }
+
+        // Calculer les statistiques du forum principal
+        $forumStats = $this->forumRepository->countThreadsAndPostsInForum($forum->getId());
+        $statsData = [
+            'totalThreads' => $forumStats['totalThreads'],
+            'totalPosts' => $forumStats['totalPosts'],
+        ];
+        
+        $breadcrumbs = $this->breadcrumbService->generateBreadcrumbs($forum);
     
+        $data = [
+            'forumId' => $forum->getId(),
+            'forumSlug' => $forum->getSlug(),
+            'forumName' => $forum->getName(),
+            'type' => $forum->getType(),
+            'description' => $forum->getDescription(),
+            'bannerImage' => $forum->getBanner(),
+            'isRoleplay' => $isRoleplay,
+            'breadcrumb' => $breadcrumbs,
+            'stats' => $statsData,
+            'subForums' => $subForums,
+            'threads' => $threadsData,
+            'pagination' => [
+                'page' => $result['page'],
+                'limit' => $result['limit'],
+                'total' => $result['total'],
+                'totalPages' => $result['totalPages'],
+            ],
+            'filters' => $filters,
+            'universe' => $forum->getUniverse() ? [
+                'id' => $forum->getUniverse()->getId(),
+                'name' => $forum->getUniverse()->getName(),
+                'slug' => $forum->getUniverse()->getSlug(),
+            ] : null,
+        ];
+    
+        return new JsonResponse($data);
+    }
 
 
 #[Route('/api/forums/{id}/edit-data', name: 'get_forum_edit_data', methods: ['GET'])]
@@ -227,7 +580,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
                 return new JsonResponse(['status' => 'Parent forum not found'], JsonResponse::HTTP_NOT_FOUND);
             }
             $forum = new Forum();
-            $forum->setForum($parentForum);
+            $forum->setParent($parentForum);
         } elseif (!empty($data['category_id'])) {
             $category = $this->entityManager->getRepository(ForumCategory::class)->find($data['category_id']);
             if (!$category) {
@@ -240,9 +593,19 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         }
 
         $forum->setName($data['name']);
-        $forum->setDescription($data['description']);
-        $forum->setBanner($data['banner']);
-        $forum->setCreatedAt(new \DateTimeImmutable());
+        $forum->setSlug($this->generateUniqueSlug((string) $data['name']));
+        $forum->setDescription($data['description'] ?? null);
+        $forum->setBanner($data['banner'] ?? null);
+        if (isset($data['type'])) {
+            $forum->setType($data['type']);
+        }
+        if (isset($data['status'])) {
+            $status = (string) $data['status'];
+            if (!in_array($status, self::ALLOWED_FORUM_STATUSES, true)) {
+                return new JsonResponse(['error' => 'Statut de forum invalide'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $forum->setStatus($status);
+        }
 
         $this->entityManager->persist($forum);
         $this->entityManager->flush();
@@ -250,50 +613,227 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         return new JsonResponse(['status' => 'Forum or Subforum created'], JsonResponse::HTTP_CREATED);
     }
 
+    #[Route('/api/admin/forums', name: 'admin_create_forum', methods: ['POST'])]
+    public function adminCreateForum(Request $request, ForumRepository $forumRepository, UniversRepository $universRepository): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], JsonResponse::HTTP_FORBIDDEN);
+        }
 
-    #[Route('/api/forums/{id}', name: 'update_forum', methods: ['PUT'])]
+        $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        $allowedUniverseIds = array_map(
+            static fn ($universe) => $universe->getId(),
+            $user->getAdminUniverses()->toArray()
+        );
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['name'])) {
+            return new JsonResponse(['error' => 'Name is required'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $forum = new Forum();
+        $forum->setName($data['name']);
+        $forum->setSlug($this->generateUniqueSlug((string) $data['name']));
+        $forum->setDescription($data['description'] ?? null);
+        $forum->setBanner($data['banner'] ?? null);
+        $forum->setType($data['type'] ?? 'hrp');
+        if (isset($data['status'])) {
+            $status = (string) $data['status'];
+            if (!in_array($status, self::ALLOWED_FORUM_STATUSES, true)) {
+                return new JsonResponse(['error' => 'Statut de forum invalide'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $forum->setStatus($status);
+        }
+
+        if (!empty($data['parent_forum_id'])) {
+            $parentForum = $forumRepository->find($data['parent_forum_id']);
+            if (!$parentForum) {
+                return new JsonResponse(['error' => 'Parent forum not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+            if (!$isSuperAdmin) {
+                $parentUniverseId = $parentForum->getUniverse()?->getId();
+                if (!$parentUniverseId || !in_array($parentUniverseId, $allowedUniverseIds, true)) {
+                    return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+                }
+            }
+            $forum->setParent($parentForum);
+            // Hériter de l'univers du parent
+            if ($parentForum->getUniverse()) {
+                $forum->setUniverse($parentForum->getUniverse());
+            }
+        } elseif (!empty($data['universe_id'])) {
+            if (!$isSuperAdmin && !in_array((int) $data['universe_id'], $allowedUniverseIds, true)) {
+                return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+            }
+            $universe = $universRepository->find($data['universe_id']);
+            if (!$universe) {
+                return new JsonResponse(['error' => 'Universe not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+            $forum->setUniverse($universe);
+        } elseif (!empty($data['category_id'])) {
+            $category = $this->categoryRepository->find($data['category_id']);
+            if (!$category) {
+                return new JsonResponse(['error' => 'Category not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+            $forum->setCategory($category);
+        } else {
+            return new JsonResponse(['error' => 'Either parent_forum_id, universe_id or category_id must be provided'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Définir la position (à la fin par défaut)
+        if (isset($data['position'])) {
+            $forum->setPosition((int)$data['position']);
+        } else {
+            // Trouver la dernière position
+            $lastPosition = $forumRepository->createQueryBuilder('f')
+                ->select('MAX(f.position)')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0;
+            $forum->setPosition($lastPosition + 1);
+        }
+
+        $this->entityManager->persist($forum);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'status' => 'success',
+            'message' => !empty($data['parent_forum_id']) ? 'Sous-forum créé avec succès' : 'Forum créé avec succès',
+            'id' => $forum->getId()
+        ], JsonResponse::HTTP_CREATED);
+    }
+
+
+    #[Route('/api/admin/forums/{id}', name: 'update_forum', methods: ['PUT'])]
     public function updateForum(
-        Forum $forum,
+        int $id,
         Request $request,
         EntityManagerInterface $entityManager,
         ForumRepository $forumRepository,
-        ForumCategoryRepository $categoryRepository
+        ForumCategoryRepository $categoryRepository,
+        UniversRepository $universRepository
     ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+        $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        $allowedUniverseIds = array_map(
+            static fn ($universe) => $universe->getId(),
+            $user->getAdminUniverses()->toArray()
+        );
+
+        $forum = $forumRepository->find($id);
+        
+        if (!$forum) {
+            return new JsonResponse(['error' => 'Forum not found'], 404);
+        }
+
         // Decode the JSON payload
         $data = json_decode($request->getContent(), true);
     
         if (!$data) {
             return new JsonResponse(['error' => 'Invalid JSON'], 400);
         }
-    
-        if (!$forum) {
-            return new JsonResponse(['error' => 'Forum not found'], 404);
-        }
-    
-        // Update forum properties
-        $forum->setName($data['name'] ?? $forum->getName());
-        $forum->setDescription($data['description'] ?? $forum->getDescription());
-        $forum->setBanner($data['banner'] ?? $forum->getBanner());
-    
-        // Remove existing category or subforum association
-        $forum->setCategory(null);
-        $forum->setForum(null);
-    
-        if (isset($data['category_id'])) {
-            $category = $categoryRepository->find($data['category_id']);
-            if ($category) {
-                $forum->setCategory($category);
-            } else {
-                return new JsonResponse(['error' => 'Category not found'], 404);
+
+        $currentUniverseId = $forum->getUniverse()?->getId();
+        if (!$isSuperAdmin) {
+            // Si le forum est déjà lié à un univers, l'admin doit y avoir accès.
+            if ($currentUniverseId !== null && !in_array($currentUniverseId, $allowedUniverseIds, true)) {
+                return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+            }
+
+            // Si une cible universe_id est demandée, elle doit aussi être autorisée.
+            if (array_key_exists('universe_id', $data) && $data['universe_id'] !== null) {
+                $requestedUniverseId = (int) $data['universe_id'];
+                if (!in_array($requestedUniverseId, $allowedUniverseIds, true)) {
+                    return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+                }
             }
         }
     
-        if (isset($data['parent_forum_id'])) {
-            $parentForum = $forumRepository->find($data['parent_forum_id']);
-            if ($parentForum) {
-                $forum->setForum($parentForum);
+        // Update forum properties
+        if (isset($data['name'])) {
+            $forum->setName($data['name']);
+        }
+        if (isset($data['description'])) {
+            $forum->setDescription($data['description']);
+        }
+        if (isset($data['banner'])) {
+            $forum->setBanner($data['banner']);
+        }
+        if (isset($data['type'])) {
+            $forum->setType($data['type']);
+        }
+        if (isset($data['position'])) {
+            $forum->setPosition((int)$data['position']);
+        }
+        if (isset($data['status'])) {
+            $status = (string) $data['status'];
+            if (!in_array($status, self::ALLOWED_FORUM_STATUSES, true)) {
+                return new JsonResponse(['error' => 'Statut de forum invalide'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $forum->setStatus($status);
+        }
+    
+        // Handle category
+        if (isset($data['category_id'])) {
+            if ($data['category_id'] === null) {
+                $forum->setCategory(null);
             } else {
-                return new JsonResponse(['error' => 'Parent forum not found'], 404);
+                $category = $categoryRepository->find($data['category_id']);
+                if ($category) {
+                    $forum->setCategory($category);
+                } else {
+                    return new JsonResponse(['error' => 'Category not found'], 404);
+                }
+            }
+        }
+    
+        // Handle parent forum
+        if (isset($data['parent_forum_id'])) {
+            if ($data['parent_forum_id'] === null) {
+                $forum->setParent(null);
+            } else {
+                $parentForum = $forumRepository->find($data['parent_forum_id']);
+                if ($parentForum) {
+                    if (!$isSuperAdmin) {
+                        $parentUniverseId = $parentForum->getUniverse()?->getId();
+                        if (!$parentUniverseId || !in_array($parentUniverseId, $allowedUniverseIds, true)) {
+                            return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+                        }
+                    }
+                    $forum->setParent($parentForum);
+                    // Un sous-forum hérite toujours de l'univers du parent
+                    $forum->setUniverse($parentForum->getUniverse());
+                } else {
+                    return new JsonResponse(['error' => 'Parent forum not found'], 404);
+                }
+            }
+        }
+
+        // Handle universe (uniquement pour les forums sans parent)
+        if (array_key_exists('universe_id', $data)) {
+            if ($forum->getParent()) {
+                return new JsonResponse([
+                    'error' => 'Impossible de modifier l\'univers d\'un sous-forum : il hérite du forum parent'
+                ], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            if ($data['universe_id'] === null) {
+                $forum->setUniverse(null);
+            } else {
+                $targetUniverseId = (int) $data['universe_id'];
+                if (!$isSuperAdmin && !in_array($targetUniverseId, $allowedUniverseIds, true)) {
+                    return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+                }
+
+                $universe = $universRepository->find($targetUniverseId);
+                if (!$universe) {
+                    return new JsonResponse(['error' => 'Universe not found'], JsonResponse::HTTP_NOT_FOUND);
+                }
+                $forum->setUniverse($universe);
             }
         }
     
@@ -306,30 +846,72 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
     #[Route('/api/forums/{id}', name: 'delete_forum', methods: ['DELETE'])]
     public function deleteForum(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
-        $forum = $entityManager->getRepository(Forum::class)->find($id);
+        return $this->deleteForumInternal($id, $entityManager);
+    }
+
+    #[Route('/api/admin/forums/{id}', name: 'admin_delete_forum', methods: ['DELETE'])]
+    public function adminDeleteForum(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        return $this->deleteForumInternal($id, $entityManager);
+    }
+
+    private function deleteForumInternal(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], JsonResponse::HTTP_FORBIDDEN);
+        }
+        $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        $allowedUniverseIds = array_map(
+            static fn ($universe) => $universe->getId(),
+            $user->getAdminUniverses()->toArray()
+        );
+
+        $forumRepository = $entityManager->getRepository(Forum::class);
+        $forum = $forumRepository->find($id);
     
         if (!$forum) {
             return new JsonResponse(['message' => 'Forum not found'], 404);
         }
+
+        $forumUniverseId = $forum->getUniverse()?->getId();
+        if (!$isSuperAdmin && (!$forumUniverseId || !in_array($forumUniverseId, $allowedUniverseIds, true))) {
+            return new JsonResponse(['error' => 'Univers non autorisé'], JsonResponse::HTTP_FORBIDDEN);
+        }
     
-        // Option 1: Déplacer les threads dans un forum d'archives
-        $archiveForum = $entityManager->getRepository(Forum::class)->findOneBy(['name' => 'Archives']);
-        
-        if ($archiveForum) {
-            foreach ($forum->getThreads() as $thread) {
-                $thread->setForum($archiveForum);
-                $entityManager->persist($thread);
-            }
-        } else {
-            // Option 2: Supprimer tous les threads associés
-            foreach ($forum->getThreads() as $thread) {
-                $entityManager->remove($thread);
-            }
+        // Déplacer systématiquement les threads vers un forum d'archives
+        $archiveForum = $forumRepository->findOneBy(['slug' => 'archives']) ?? $forumRepository->findOneBy(['name' => 'Archives']);
+
+        // Empêcher la suppression si le forum ciblé EST le forum d'archives
+        if ($archiveForum && $archiveForum->getId() === $forum->getId()) {
+            return new JsonResponse(['error' => 'Le forum d\'archives ne peut pas être supprimé'], 409);
+        }
+
+        if (!$archiveForum) {
+            $archiveForum = new Forum();
+            $archiveForum->setName('Archives');
+            $archiveForum->setSlug('archives');
+            $archiveForum->setDescription('Forum d\'archivage automatique des sujets');
+            $archiveForum->setType('hrp');
+            $archiveForum->setStatus('archived');
+
+            $maxPosition = $forumRepository->createQueryBuilder('f')
+                ->select('MAX(f.position)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $archiveForum->setPosition(((int) ($maxPosition ?? 0)) + 1);
+            $entityManager->persist($archiveForum);
+        }
+
+        foreach ($forum->getThreads() as $thread) {
+            $thread->setForum($archiveForum);
+            $entityManager->persist($thread);
         }
     
         // Gérer les sous-forums (déplacement ou suppression)
         foreach ($forum->getSubforums() as $subForum) {
-            $subForum->setForum(null);
+            $subForum->setParent(null);
             $entityManager->persist($subForum);
         }
     
@@ -339,6 +921,50 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
     
         return new JsonResponse(['message' => 'Forum deleted successfully'], 200);
     }
-    
-    
+
+    #[Route('/api/admin/forums/update-positions', name: 'api_update_forum_positions', methods: ['POST'])]
+    public function updatePositions(Request $request, EntityManagerInterface $entityManager, ForumRepository $forumRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data || !is_array($data)) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        try {
+            foreach ($data as $item) {
+                if (!isset($item['id']) || !isset($item['position'])) {
+                    continue;
+                }
+                
+                $forum = $forumRepository->find($item['id']);
+                if ($forum) {
+                    $forum->setPosition((int)$item['position']);
+                }
+            }
+            
+            $entityManager->flush();
+            return new JsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = $this->slugger->slug($name)->lower()->toString();
+        if ($baseSlug === '') {
+            $baseSlug = 'forum';
+        }
+
+        $candidate = $baseSlug;
+        $counter = 2;
+        while ($this->forumRepository->findOneBy(['slug' => $candidate]) !== null) {
+            $candidate = sprintf('%s-%d', $baseSlug, $counter);
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
 }

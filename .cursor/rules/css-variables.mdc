@@ -1,0 +1,458 @@
+---
+description: Utilisation systématique des variables CSS définies dans variables.css et themes.css pour maintenir la cohérence du design
+globs:
+  - "frontend/src/**/*.css"
+  - "frontend/src/**/*.module.css"
+  - "frontend/src/**/*.scss"
+alwaysApply: false
+---
+
+# Utilisation des variables CSS - Earth Forum
+
+## Principe fondamental
+
+**TOUJOURS utiliser les variables CSS définies dans `variables.css` et `themes.css`** au lieu de valeurs en dur (couleurs, espacements, tailles de police, etc.). Cela garantit :
+- La cohérence du design à travers toute l'application
+- L'adaptation automatique aux thèmes par univers
+- La maintenabilité et la facilité de modification globale
+
+## Référence des fichiers
+
+- @frontend/src/styles/variables.css - Variables CSS principales
+- @frontend/src/styles/themes.css - Variables spécifiques aux thèmes d'univers
+- @frontend/src/styles/global.css - Exemples d'utilisation
+
+## Catégories de variables disponibles
+
+### 🎨 Couleurs
+
+#### Couleurs principales
+```css
+/* ✅ CORRECT - Utiliser les variables */
+.button {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* ❌ INCORRECT - Valeurs en dur */
+.button {
+  background-color: #0066CC;
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+```
+
+**Variables disponibles :**
+- `--primary-color`, `--primary-dark`, `--primary-light`
+- `--secondary-color`, `--secondary-dark`, `--secondary-light`
+- `--accent-color`, `--accent-dark`, `--accent-light`
+- `--success-color`, `--success-dark`, `--success-light`
+- `--danger-color`, `--danger-dark`, `--danger-light`
+- `--warning-color`, `--warning-dark`, `--warning-light`
+- `--info-color`, `--info-dark`, `--info-light`
+
+#### Couleurs de texte
+```css
+/* ✅ CORRECT */
+.text {
+  color: var(--text-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+```
+
+**Variables disponibles :**
+- `--text-primary` : Texte principal (blanc)
+- `--text-secondary` : Texte secondaire (#E5E5E5)
+- `--text-muted` : Texte atténué (#B0B0B0)
+- `--text-light` : Texte clair (blanc)
+- `--text-dark` : Texte foncé (#0A0A0A)
+
+#### Couleurs de fond
+```css
+/* ✅ CORRECT */
+.card {
+  background-color: var(--bg-card);
+}
+
+.card:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.section {
+  background-color: var(--bg-secondary);
+}
+```
+
+**Variables disponibles :**
+- `--bg-primary` : Fond principal (#0A0A0A)
+- `--bg-secondary` : Fond secondaire (#141414)
+- `--bg-tertiary` : Fond tertiaire (#1A1A1A)
+- `--bg-dark` : Fond très sombre (#000000)
+- `--bg-light` : Fond clair (#1F1F1F)
+- `--bg-card` : Fond de carte (#141414)
+- `--bg-card-hover` : Fond de carte au survol (#1A1A1A)
+
+### 📏 Espacements
+
+**TOUJOURS utiliser les variables d'espacement** au lieu de valeurs en pixels ou rem en dur.
+
+```css
+/* ✅ CORRECT */
+.container {
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-sm);
+}
+
+.section {
+  padding: var(--section-padding);
+}
+
+.card {
+  padding: var(--card-padding);
+}
+
+/* ❌ INCORRECT */
+.container {
+  padding: 24px;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+```
+
+**Variables disponibles :**
+- `--spacing-xs` : 4px
+- `--spacing-sm` : 8px
+- `--spacing-md` : 16px
+- `--spacing-lg` : 24px
+- `--spacing-xl` : 32px
+- `--spacing-xxl` : 48px
+- `--spacing-xxxl` : 64px
+- `--section-padding` : var(--spacing-xxl)
+- `--card-padding` : var(--spacing-lg)
+
+### 🔤 Typographie
+
+#### Tailles de police
+```css
+/* ✅ CORRECT */
+.title {
+  font-size: var(--font-size-h1);
+}
+
+.subtitle {
+  font-size: var(--font-size-h3);
+}
+
+.body {
+  font-size: var(--font-size-base);
+}
+
+/* ❌ INCORRECT */
+.title {
+  font-size: 3rem;
+}
+
+.subtitle {
+  font-size: 1.75rem;
+}
+```
+
+**Variables disponibles :**
+- `--font-size-hero` : 5rem
+- `--font-size-h1` : 3rem
+- `--font-size-h2` : 2.25rem
+- `--font-size-h3` : 1.75rem
+- `--font-size-h4` : 1.5rem
+- `--font-size-xs` : 0.75rem
+- `--font-size-sm` : 0.875rem
+- `--font-size-base` : 1rem
+- `--font-size-lg` : 1.125rem
+- `--font-size-xl` : 1.25rem
+- `--font-size-xxl` : 1.5rem
+- `--font-size-xxxl` : 2rem
+- `--font-size-caption` : 0.75rem
+
+#### Polices
+```css
+/* ✅ CORRECT */
+.heading {
+  font-family: var(--font-family-title);
+}
+
+.body {
+  font-family: var(--font-family-base);
+}
+
+.code {
+  font-family: var(--font-family-monospace);
+}
+```
+
+**Variables disponibles :**
+- `--font-family-title` : Polices pour titres (Bangers, Bebas Neue, Impact...)
+- `--font-family-base` : Police de base (Inter, Roboto...)
+- `--font-family-accent` : Police d'accent (Arial Rounded, Comic Sans MS...)
+- `--font-family-monospace` : Police monospace (Courier New, Roboto Mono...)
+
+#### Poids et hauteurs de ligne
+```css
+/* ✅ CORRECT */
+.bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.tight {
+  line-height: var(--line-height-tight);
+}
+
+.relaxed {
+  line-height: var(--line-height-relaxed);
+}
+```
+
+**Variables disponibles :**
+- `--font-weight-light` : 300
+- `--font-weight-normal` : 400
+- `--font-weight-medium` : 500
+- `--font-weight-semibold` : 600
+- `--font-weight-bold` : 700
+- `--line-height-tight` : 1.25
+- `--line-height-normal` : 1.5
+- `--line-height-relaxed` : 1.75
+
+### 🔲 Bordures
+
+```css
+/* ✅ CORRECT */
+.card {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.card:hover {
+  border-color: var(--border-color-hover);
+}
+
+/* ❌ INCORRECT */
+.card {
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0;
+}
+```
+
+**Variables disponibles :**
+- `--border-color` : rgba(255, 255, 255, 0.15)
+- `--border-color-hover` : rgba(0, 102, 204, 0.5)
+- `--border-radius` : 0 (style comics carré)
+- `--border-radius-sm` : 0
+- `--border-radius-lg` : 0
+- `--border-radius-xl` : 0
+- `--border-width` : 2px
+
+### ⚡ Transitions et animations
+
+```css
+/* ✅ CORRECT */
+.button {
+  transition: all var(--transition-base);
+}
+
+.fast {
+  transition: opacity var(--transition-fast);
+}
+
+.slow {
+  transition: transform var(--transition-slow);
+}
+```
+
+**Variables disponibles :**
+- `--transition-fast` : 150ms cubic-bezier(0.4, 0, 0.2, 1)
+- `--transition-base` : 250ms cubic-bezier(0.4, 0, 0.2, 1)
+- `--transition-slow` : 350ms cubic-bezier(0.4, 0, 0.2, 1)
+
+### 📐 Dimensions et layouts
+
+```css
+/* ✅ CORRECT */
+.container {
+  max-width: var(--container-lg);
+}
+
+.header {
+  height: var(--header-height);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+}
+```
+
+**Variables disponibles :**
+- `--container-sm` : 540px
+- `--container-md` : 720px
+- `--container-lg` : 960px
+- `--container-xl` : 1140px
+- `--container-xxl` : 1320px
+- `--header-height` : 60px
+- `--footer-height` : 80px
+- `--sidebar-width` : 250px
+
+### 🎯 Z-index
+
+```css
+/* ✅ CORRECT */
+.modal {
+  z-index: var(--z-index-modal);
+}
+
+.dropdown {
+  z-index: var(--z-index-dropdown);
+}
+
+.tooltip {
+  z-index: var(--z-index-tooltip);
+}
+```
+
+**Variables disponibles :**
+- `--z-index-dropdown` : 1000
+- `--z-index-sticky` : 1020
+- `--z-index-fixed` : 1030
+- `--z-index-modal-backdrop` : 1040
+- `--z-index-modal` : 1050
+- `--z-index-popover` : 1060
+- `--z-index-tooltip` : 1070
+
+### 👻 Opacités
+
+```css
+/* ✅ CORRECT */
+.disabled {
+  opacity: var(--opacity-disabled);
+}
+
+.hover-effect:hover {
+  opacity: var(--opacity-hover);
+}
+
+.active {
+  opacity: var(--opacity-active);
+}
+```
+
+**Variables disponibles :**
+- `--opacity-disabled` : 0.6
+- `--opacity-hover` : 0.8
+- `--opacity-active` : 0.9
+
+## Variables spécifiques aux univers
+
+Les variables `--universe-*` sont automatiquement définies selon l'univers sélectionné via `UniverseThemeContext`. Elles sont utilisées dans `themes.css` pour surcharger les variables principales.
+
+**Variables disponibles par univers :**
+- `--universe-primary` : Couleur primaire de l'univers
+- `--universe-secondary` : Couleur secondaire de l'univers
+- `--universe-accent` : Couleur d'accent de l'univers
+- `--universe-bg` : Fond de l'univers
+- `--universe-bg-secondary` : Fond secondaire de l'univers
+- `--universe-text` : Texte de l'univers
+- `--universe-text-secondary` : Texte secondaire de l'univers
+- `--universe-font-title` : Police de titre de l'univers
+- `--universe-font-body` : Police de corps de l'univers
+
+## Règles strictes
+
+1. **JAMAIS de valeurs en dur** pour les couleurs, espacements, tailles de police
+2. **Toujours vérifier** si une variable existe avant d'en créer une nouvelle
+3. **Utiliser les variables composées** comme `--section-padding` qui référencent d'autres variables
+4. **Respecter la hiérarchie** : utiliser `--primary-color` plutôt que `--universe-primary` sauf cas spécifique
+5. **Pour les nouveaux besoins**, ajouter la variable dans `variables.css` plutôt que d'utiliser une valeur en dur
+
+## Exemple complet : Composant avec variables
+
+```css
+/* ✅ EXEMPLE CORRECT */
+.myComponent {
+  /* Couleurs */
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  
+  /* Espacements */
+  padding: var(--card-padding);
+  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-sm);
+  
+  /* Typographie */
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  
+  /* Bordures */
+  border-radius: var(--border-radius);
+  
+  /* Transitions */
+  transition: all var(--transition-base);
+}
+
+.myComponent:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  opacity: var(--opacity-hover);
+}
+
+.myComponent__title {
+  font-family: var(--font-family-title);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.myComponent__button {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-base);
+}
+
+.myComponent__button:hover {
+  background-color: var(--primary-dark);
+  opacity: var(--opacity-hover);
+}
+
+.myComponent__button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+```
+
+## Vérification avant commit
+
+Avant de commiter du CSS, vérifier :
+- ✅ Aucune couleur hexadécimale ou rgb/rgba en dur
+- ✅ Aucun espacement en px/rem/em en dur (sauf cas très spécifique justifié)
+- ✅ Aucune taille de police en rem/px en dur
+- ✅ Utilisation des variables de transition
+- ✅ Utilisation des variables de z-index pour les overlays
+
+## Cas d'exception
+
+Les seuls cas où des valeurs en dur sont acceptables :
+- Valeurs calculées dynamiquement (ex: `calc(var(--spacing-md) * 2)`)
+- Valeurs très spécifiques et uniques qui ne seront jamais réutilisées (à justifier)
+- Valeurs pour des animations complexes nécessitant des valeurs précises
+
+Dans tous les autres cas, **utiliser les variables CSS**.

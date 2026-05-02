@@ -13,15 +13,17 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Messaging\ConversationParticipant;
 use App\Entity\Messaging\Message;
 use App\Entity\Messaging\Conversation;
+use App\Entity\Univers;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ApiResource]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column]
     private ?int $id = null;
 
@@ -67,7 +69,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $pseudo = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $avatar = null;
 
     #[ORM\Column]
@@ -103,6 +105,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $canCreateRpForum = false;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $isActive = true;
+
     /**
      * @var Collection<int, ConversationParticipant>
      */
@@ -121,6 +126,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'creator')]
     private Collection $createdConversations;
 
+    /**
+     * @var Collection<int, Univers>
+     */
+    #[ORM\ManyToMany(targetEntity: Univers::class)]
+    #[ORM\JoinTable(name: 'user_admin_universe')]
+    private Collection $adminUniverses;
+
+    /**
+     * @var Collection<int, UserDialogueTheme>
+     */
+    #[ORM\OneToMany(targetEntity: UserDialogueTheme::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $dialogueThemes;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -133,6 +151,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->conversationParticipations = new ArrayCollection();
         $this->messages = new ArrayCollection();
         $this->createdConversations = new ArrayCollection();
+        $this->adminUniverses = new ArrayCollection();
+        $this->dialogueThemes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -347,7 +367,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->avatar;
     }
 
-    public function setAvatar(string $avatar): static
+    public function setAvatar(?string $avatar): static
     {
         $this->avatar = $avatar;
 
@@ -510,6 +530,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, ConversationParticipant>
      */
@@ -594,6 +626,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($conversation->getCreator() === $this) {
                 $conversation->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Univers>
+     */
+    public function getAdminUniverses(): Collection
+    {
+        return $this->adminUniverses;
+    }
+
+    public function addAdminUniverse(Univers $universe): static
+    {
+        if (!$this->adminUniverses->contains($universe)) {
+            $this->adminUniverses->add($universe);
+        }
+
+        return $this;
+    }
+
+    public function removeAdminUniverse(Univers $universe): static
+    {
+        $this->adminUniverses->removeElement($universe);
+
+        return $this;
+    }
+
+    public function clearAdminUniverses(): static
+    {
+        $this->adminUniverses->clear();
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserDialogueTheme>
+     */
+    public function getDialogueThemes(): Collection
+    {
+        return $this->dialogueThemes;
+    }
+
+    public function addDialogueTheme(UserDialogueTheme $dialogueTheme): static
+    {
+        if (!$this->dialogueThemes->contains($dialogueTheme)) {
+            $this->dialogueThemes->add($dialogueTheme);
+            $dialogueTheme->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDialogueTheme(UserDialogueTheme $dialogueTheme): static
+    {
+        if ($this->dialogueThemes->removeElement($dialogueTheme)) {
+            if ($dialogueTheme->getUser() === $this) {
+                $dialogueTheme->setUser(null);
             }
         }
 

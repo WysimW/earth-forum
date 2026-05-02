@@ -1,0 +1,130 @@
+services:
+  # Base de données MariaDB
+  database:
+    image: mariadb:${MARIADB_VERSION:-latest}
+    container_name: earth-forum-database
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-!ChangeMe!}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - database_data:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+    networks:
+      - earth-forum-network
+
+  # Service PHP-FPM pour Symfony
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: earth-forum-php
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - php_vendor:/var/www/html/vendor
+    environment:
+      - DATABASE_URL=mysql://${MYSQL_USER:-app}:${MYSQL_PASSWORD:-!ChangeMe!}@database:3306/${MYSQL_DATABASE:-app}?charset=utf8mb4
+      - APP_ENV=${APP_ENV:-dev}
+      - APP_SECRET=${APP_SECRET:-change-this-secret}
+      - JWT_PASSPHRASE=${JWT_PASSPHRASE:-change-this-jwt-passphrase}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - earth-forum-network
+
+  # Service Nginx pour le backend Symfony
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: earth-forum-nginx
+    ports:
+      - "8050:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - earth-forum-network
+
+  # Frontend React (Mode développement)
+  frontend:
+    image: node:18-alpine
+    container_name: earth-forum-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3003:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8050
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WDS_SOCKET_HOST=localhost
+      - WDS_SOCKET_PORT=3003
+      - FAST_REFRESH=true
+    command: sh -c "npm install && npm start"
+    stdin_open: true
+    tty: true
+    networks:
+      - earth-forum-network
+
+  # Frontend Backoffice React avec Ant Design (Mode développement)
+  frontend-backoffice:
+    image: node:18-alpine
+    container_name: earth-forum-backoffice
+    working_dir: /app
+    volumes:
+      - ./frontend-backoffice:/app
+      - /app/node_modules
+    ports:
+      - "3004:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8050
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WDS_SOCKET_HOST=localhost
+      - WDS_SOCKET_PORT=3004
+      - FAST_REFRESH=true
+    command: sh -c "npm install && npm start"
+    stdin_open: true
+    tty: true
+    networks:
+      - earth-forum-network
+
+  # phpMyAdmin pour MariaDB/MySQL
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: earth-forum-phpmyadmin
+    environment:
+      - PMA_HOST=database
+      - PMA_PORT=3306
+      - PMA_USER=${MYSQL_USER:-app}
+      - PMA_PASSWORD=${MYSQL_PASSWORD:-!ChangeMe!}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+    networks:
+      - earth-forum-network
+
+volumes:
+  database_data:
+  php_vendor:
+
+networks:
+  earth-forum-network:
+    driver: bridge
+

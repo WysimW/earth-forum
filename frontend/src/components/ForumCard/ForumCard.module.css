@@ -1,0 +1,275 @@
+.forumCard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  position: relative;
+  min-height: 200px;
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+
+.forumCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--primary-color);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.forumCard:hover {
+  border-color: var(--border-color-hover);
+  background-color: var(--bg-card-hover);
+}
+
+.forumCard:hover::before {
+  opacity: 0.05;
+}
+
+.banner {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  position: relative;
+  z-index: 1;
+}
+
+.bannerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-base);
+}
+
+.forumCard:hover .bannerImage {
+  transform: scale(1.05);
+}
+
+.content {
+  padding: var(--card-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: var(--line-height-tight);
+  transition: color var(--transition-base);
+}
+
+.forumCard:hover .title {
+  color: var(--primary-color);
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  line-height: var(--line-height-normal);
+  flex: 1;
+}
+
+.lastThread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.lastThreadLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lastThreadTitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.lastThreadAuthor {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.stats {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(20, 20, 20, 0.3);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-base);
+}
+
+.forumCard:hover .statItem {
+  border-color: var(--border-color-hover);
+  background-color: rgba(20, 20, 20, 0.5);
+  color: var(--text-primary);
+}
+
+.typeBadge {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border: var(--border-width) solid var(--border-color);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.typeBadge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.forumCard.important .typeBadge {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+.forumCard.roleplay .typeBadge {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.forumCard.hrp .typeBadge {
+  border-color: var(--info-color);
+  color: var(--info-color);
+}
+
+.subforums {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.subforumsLabel {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.subforumsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.subforumBadge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(20, 20, 20, 0.3);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.subforumBadge:hover {
+  border-color: var(--border-color-hover);
+  background-color: rgba(20, 20, 20, 0.5);
+  color: var(--text-primary);
+}
+
+.lastPost {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.lastPostRow {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: flex-start;
+}
+
+.lastPostRow strong {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.lastPostTitle {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .banner {
+    height: 100px;
+  }
+
+  .content {
+    padding: var(--spacing-md);
+  }
+}

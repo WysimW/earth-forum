@@ -1,4 +1,7 @@
 security:
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN]
+
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -13,6 +16,11 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+            provider: app_user_provider
         main:
             lazy: true
             provider: app_user_provider
@@ -36,7 +44,25 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/universes, roles: PUBLIC_ACCESS }
+        - { path: ^/api/categories, roles: PUBLIC_ACCESS }
+        - { path: ^/api/sidebar/important, roles: PUBLIC_ACCESS }
+        - { path: ^/api/reglement$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/mode-emploi$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/member-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/character-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/ajax/characters/available, roles: PUBLIC_ACCESS }
+        - { path: ^/api/admin/site-settings, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/member-of-month, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/character-of-month, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/users, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/forums, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/characters, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
+        - { path: ^/api/admin/media, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/media/proxy, roles: ROLE_ADMIN }
         - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

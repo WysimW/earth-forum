@@ -1,0 +1,43 @@
+{
+  "name": "earth-forum-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^6.26.0",
+    "axios": "^1.7.0",
+    "dompurify": "^3.0.6",
+    "react-easy-crop": "^5.5.5"
+  },
+  "scripts": {
+    "prestart": "rm -f node_modules/.cache/.eslintcache 2>/dev/null || sudo rm -f node_modules/.cache/.eslintcache 2>/dev/null || true",
+    "start": "ESLINT_NO_DEV_ERRORS=true react-scripts start",
+    "start:safe": "./start-dev.sh",
+    "fix-cache": "sudo chown -R $(whoami):$(whoami) node_modules/.cache 2>/dev/null || chown -R $(whoami):$(whoami) node_modules/.cache 2>/dev/null || true",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "react-scripts": "5.0.1"
+  }
+}
+

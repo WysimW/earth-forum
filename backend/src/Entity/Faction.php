@@ -14,7 +14,10 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: FactionRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    operations: [],
+    routePrefix: '/admin/factions'
+)]
 class Faction implements TimestampableInterface
 {
     use TimestampableTrait;
@@ -45,6 +48,18 @@ class Faction implements TimestampableInterface
 
     #[ORM\ManyToMany(targetEntity: Character::class, inversedBy: 'factionsRelation')]
     private Collection $characters;
+
+    /**
+     * @var Collection<int, FactionCharacterMembership>
+     */
+    #[ORM\OneToMany(targetEntity: FactionCharacterMembership::class, mappedBy: 'faction', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $characterMemberships;
+
+    /**
+     * @var Collection<int, FactionCharacterApplication>
+     */
+    #[ORM\OneToMany(targetEntity: FactionCharacterApplication::class, mappedBy: 'faction', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $characterApplications;
 
     #[ORM\ManyToMany(targetEntity: Npc::class, inversedBy: 'factionsRelation')]
     private Collection $npcs;
@@ -83,6 +98,8 @@ class Faction implements TimestampableInterface
     public function __construct()
     {
         $this->characters = new ArrayCollection();
+        $this->characterMemberships = new ArrayCollection();
+        $this->characterApplications = new ArrayCollection();
         $this->npcs = new ArrayCollection();
         $this->scenes = new ArrayCollection();
     }
@@ -172,6 +189,64 @@ class Faction implements TimestampableInterface
     public function removeCharacter(Character $character): static
     {
         $this->characters->removeElement($character);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FactionCharacterMembership>
+     */
+    public function getCharacterMemberships(): Collection
+    {
+        return $this->characterMemberships;
+    }
+
+    public function addCharacterMembership(FactionCharacterMembership $membership): static
+    {
+        if (!$this->characterMemberships->contains($membership)) {
+            $this->characterMemberships->add($membership);
+            $membership->setFaction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCharacterMembership(FactionCharacterMembership $membership): static
+    {
+        if ($this->characterMemberships->removeElement($membership)) {
+            if ($membership->getFaction() === $this) {
+                $membership->setFaction(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FactionCharacterApplication>
+     */
+    public function getCharacterApplications(): Collection
+    {
+        return $this->characterApplications;
+    }
+
+    public function addCharacterApplication(FactionCharacterApplication $application): static
+    {
+        if (!$this->characterApplications->contains($application)) {
+            $this->characterApplications->add($application);
+            $application->setFaction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCharacterApplication(FactionCharacterApplication $application): static
+    {
+        if ($this->characterApplications->removeElement($application)) {
+            if ($application->getFaction() === $this) {
+                $application->setFaction(null);
+            }
+        }
 
         return $this;
     }

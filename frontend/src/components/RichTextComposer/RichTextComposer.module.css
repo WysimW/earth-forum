@@ -1,0 +1,118 @@
+.wrapper {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-card);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.toolbarButton {
+  min-width: 32px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.toolbarButton:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-card);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.toolbarButton:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.toolbarSelect {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.toolbarSelect:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-card);
+}
+
+.toolbarSelect:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.colorPickerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 var(--spacing-xs);
+  border: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.colorPickerLabel:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-card);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.colorPickerInput {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editor {
+  min-height: 240px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  color: var(--text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.editor:focus {
+  outline: none;
+  background-color: var(--bg-secondary);
+}
+
+.meta {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.dialogueMeta {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.editor :global(.dialogueThemeSpan) {
+  border-radius: 3px;
+  padding: 0 1px;
+}

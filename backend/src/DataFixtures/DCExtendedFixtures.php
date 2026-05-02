@@ -18,7 +18,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class DCExtendedFixtures extends Fixture implements FixtureGroupInterface
+class DCExtendedFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     private ?ContainerInterface $container = null;
 
@@ -393,8 +393,15 @@ class DCExtendedFixtures extends Fixture implements FixtureGroupInterface
             // Trouver le forum
             $forum = $forumRepository->findOneBy(['name' => $threadData['forumName']]);
             if (!$forum) {
-                // Forum par défaut si non trouvé
+                // Forum par défaut si non trouvé - chercher le premier forum RP
+                $forum = $forumRepository->findOneBy(['isRoleplay' => true]);
+            }
+            if (!$forum) {
+                // Si toujours pas trouvé, chercher n'importe quel forum
                 $forum = $forumRepository->findOneBy([]);
+            }
+            if (!$forum) {
+                throw new \Exception("Aucun forum trouvé dans la base de données. Assurez-vous que ForumFixtures est chargé avant DCExtendedFixtures.");
             }
             $thread->setForum($forum);
             
@@ -470,8 +477,19 @@ class DCExtendedFixtures extends Fixture implements FixtureGroupInterface
         $manager->flush();
     }
 
+    public function getDependencies()
+    {
+        return [
+            UniverseFixtures::class,
+            ForumCategoryFixtures::class,
+            ForumFixtures::class,
+            UserFixtures::class,
+            CharacterFixtures::class,
+        ];
+    }
+
     public static function getGroups(): array
     {
-        return ['dc-extended-fixtures'];
+        return ['main-fixtures'];
     }
 } 

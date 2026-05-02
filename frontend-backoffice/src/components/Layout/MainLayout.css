@@ -1,0 +1,34 @@
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  background: rgba(0, 102, 204, 0.3);
+  margin: 0 0 16px 0;
+  padding: 0 8px;
+  border-radius: 4px;
+}
+
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.ant-layout-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.ant-layout-sider .ant-menu {
+  border-right: none;
+}
+

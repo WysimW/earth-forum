@@ -11,11 +11,15 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Interface\TimestampableInterface;
 use App\Entity\Trait\TimestampableTrait;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity(repositoryClass: CharacterRepository::class)]
 #[ORM\Table(name: '`character`')]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    operations: [],
+    routePrefix: '/admin/characters'
+)]
 class Character implements TimestampableInterface
 {
     use TimestampableTrait;
@@ -64,6 +68,18 @@ class Character implements TimestampableInterface
      */
     #[ORM\ManyToMany(targetEntity: Faction::class, mappedBy: 'characters')]
     private Collection $factionsRelation;
+
+    /**
+     * @var Collection<int, FactionCharacterMembership>
+     */
+    #[ORM\OneToMany(targetEntity: FactionCharacterMembership::class, mappedBy: 'character', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $factionMemberships;
+
+    /**
+     * @var Collection<int, FactionCharacterApplication>
+     */
+    #[ORM\OneToMany(targetEntity: FactionCharacterApplication::class, mappedBy: 'character', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $factionApplications;
     
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $civilStatus = null;
@@ -92,7 +108,7 @@ class Character implements TimestampableInterface
     #[ORM\ManyToOne(inversedBy: 'characters')]
     private ?Location $location = null;
     
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $avatar = null;
     
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -114,12 +130,15 @@ class Character implements TimestampableInterface
     private ?string $abilities = null;
     
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'character')]
+    #[Ignore]
     private Collection $posts;
     
     #[ORM\OneToMany(targetEntity: Thread::class, mappedBy: 'characterCreator')]
+    #[Ignore]
     private Collection $threads;
 
     #[ORM\OneToMany(targetEntity: Thread::class, mappedBy: 'characterSheet')]
+    #[Ignore]
     private Collection $characterSheetThread;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
@@ -140,12 +159,17 @@ class Character implements TimestampableInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $dialogueStyle = null;
     
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $sheetTheme = 'default';
+    
     public function __construct()
     {
         $this->posts = new ArrayCollection();
         $this->threads = new ArrayCollection();
         $this->characterSheetThread = new ArrayCollection();
         $this->factionsRelation = new ArrayCollection();
+        $this->factionMemberships = new ArrayCollection();
+        $this->factionApplications = new ArrayCollection();
         $this->status = self::STATUS_DRAFT;
     }
 
@@ -286,6 +310,64 @@ class Character implements TimestampableInterface
             $faction->removeCharacter($this);
         }
         
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FactionCharacterMembership>
+     */
+    public function getFactionMemberships(): Collection
+    {
+        return $this->factionMemberships;
+    }
+
+    public function addFactionMembership(FactionCharacterMembership $membership): static
+    {
+        if (!$this->factionMemberships->contains($membership)) {
+            $this->factionMemberships->add($membership);
+            $membership->setCharacter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFactionMembership(FactionCharacterMembership $membership): static
+    {
+        if ($this->factionMemberships->removeElement($membership)) {
+            if ($membership->getCharacter() === $this) {
+                $membership->setCharacter(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FactionCharacterApplication>
+     */
+    public function getFactionApplications(): Collection
+    {
+        return $this->factionApplications;
+    }
+
+    public function addFactionApplication(FactionCharacterApplication $application): static
+    {
+        if (!$this->factionApplications->contains($application)) {
+            $this->factionApplications->add($application);
+            $application->setCharacter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFactionApplication(FactionCharacterApplication $application): static
+    {
+        if ($this->factionApplications->removeElement($application)) {
+            if ($application->getCharacter() === $this) {
+                $application->setCharacter(null);
+            }
+        }
+
         return $this;
     }
     
@@ -561,6 +643,17 @@ class Character implements TimestampableInterface
     public function setDialogueStyle(?string $dialogueStyle): self
     {
         $this->dialogueStyle = $dialogueStyle;
+        return $this;
+    }
+
+    public function getSheetTheme(): ?string
+    {
+        return $this->sheetTheme ?? 'default';
+    }
+
+    public function setSheetTheme(?string $sheetTheme): static
+    {
+        $this->sheetTheme = $sheetTheme ?? 'default';
         return $this;
     }
 

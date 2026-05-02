@@ -1,0 +1,47 @@
+.content {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--section-padding);
+}
+
+.header {
+  margin-bottom: var(--spacing-xxl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.title {
+  font-size: var(--font-size-h1);
+  font-family: var(--font-family-title);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+}
+
+.universesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xxl);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--spacing-xxl);
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+

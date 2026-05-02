@@ -1,6 +1,4 @@
 # Docker
-docker-compose.override.yml
-docker-compose.yml
 .env
 docker/mysql/data/
 

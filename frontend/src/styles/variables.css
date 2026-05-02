@@ -1,0 +1,148 @@
+:root {
+  /* PORTAL COMMUN - Couleurs Principales */
+  --portal-primary: #0066CC;
+  --portal-secondary: #CC0000;
+  --portal-accent: #FFD700;
+  --portal-bg-dark: #0A0A0A;
+  --portal-bg-light: #FFFFFF;
+  
+  /* Couleurs Principales (basées sur le portail) */
+  --primary-color: #0066CC;
+  --primary-dark: #003366;
+  --primary-light: #3399FF;
+  
+  --secondary-color: #CC0000;
+  --secondary-dark: #990000;
+  --secondary-light: #FF3333;
+  
+  --accent-color: #FFD700;
+  --accent-dark: #CCAA00;
+  --accent-light: #FFE44D;
+  
+  --success-color: #28a745;
+  --success-dark: #1e7e34;
+  --success-light: #34ce57;
+  
+  --danger-color: #dc3545;
+  --danger-dark: #c82333;
+  --danger-light: #e4606d;
+  
+  --warning-color: #ffc107;
+  --warning-dark: #e0a800;
+  --warning-light: #ffcd39;
+  
+  --info-color: #17a2b8;
+  --info-dark: #138496;
+  --info-light: #3ab0c3;
+  
+  /* Couleurs de texte */
+  --text-primary: #FFFFFF;
+  --text-secondary: #E5E5E5;
+  --text-muted: #B0B0B0;
+  --text-light: #FFFFFF;
+  --text-dark: #0A0A0A;
+  
+  /* Couleurs de fond - Mode sombre moderne */
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1A1A1A;
+  --bg-dark: #000000;
+  --bg-light: #1F1F1F;
+  --bg-card: #141414;
+  --bg-card-hover: #1A1A1A;
+  --bg-dropdown: #141414;
+  
+  /* Bordures - Style comics carré */
+  --border-color: rgba(255, 255, 255, 0.15);
+  --border-color-hover: rgba(0, 102, 204, 0.5);
+  --border-radius: 0;
+  --border-radius-sm: 0;
+  --border-radius-lg: 0;
+  --border-radius-xl: 0;
+  --border-width: 2px;
+  
+  /* Espacements - Plus généreux pour un design moderne */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-xxxl: 64px;
+  
+  /* Espacements de section */
+  --section-padding: var(--spacing-xxl);
+  --card-padding: var(--spacing-lg);
+  
+  /* Tailles de police - Typographie expressive et surdimensionnée */
+  --font-size-hero: 5rem;
+  --font-size-h1: 3rem;
+  --font-size-h2: 2.25rem;
+  --font-size-h3: 1.75rem;
+  --font-size-h4: 1.5rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xxl: 1.5rem;
+  --font-size-xxxl: 2rem;
+  --font-size-caption: 0.75rem;
+  
+  /* Polices - Portail Commun */
+  --font-family-title: 'Bangers', 'Bebas Neue', 'Impact', 'Arial Black', sans-serif;
+  --universe-font-title: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif;
+  --font-family-base: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  --font-family-accent: 'Arial Rounded', 'Comic Sans MS', sans-serif;
+  --font-family-monospace: 'Courier New', 'Roboto Mono', Courier, monospace;
+  
+  /* Poids de police */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Hauteurs de ligne */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Transitions - Micro-interactions subtiles */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Effets subtils */
+  --opacity-hover: 0.85;
+  --brightness-hover: 1.1;
+  
+  /* Z-index */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  
+  /* Largeurs */
+  --container-sm: 540px;
+  --container-md: 720px;
+  --container-lg: 960px;
+  --container-xl: 1140px;
+  --container-xxl: 1320px;
+  
+  /* Hauteurs */
+  --header-height: 60px;
+  --footer-height: 80px;
+  --sidebar-width: 250px;
+  
+  /* Opacités */
+  --opacity-disabled: 0.6;
+  --opacity-hover: 0.8;
+  --opacity-active: 0.9;
+}
+

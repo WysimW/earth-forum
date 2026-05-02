@@ -1,0 +1,1003 @@
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--section-padding);
+}
+
+.controls {
+  margin-bottom: var(--spacing-xxl);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.controlsTitle {
+  font-size: var(--font-size-h2);
+  font-family: var(--font-family-title);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.styleSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.styleButton {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border-radius: var(--border-radius-sm);
+}
+
+.styleButton:hover {
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+.styleButtonActive {
+  background-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Styles communs */
+.forumHeader {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.forumTitle {
+  font-size: var(--font-size-h1);
+  font-family: var(--font-family-title);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.forumDescription {
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  margin: 0;
+}
+
+.forumsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.forumCard {
+  display: flex;
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.forumCard:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.forumName {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.forumType {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-medium);
+}
+
+.forumStats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.lastPostAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.lastPostAvatarSmall {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.lastPostAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.lastPostDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.lastPostLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Style 1: Compact - Avatar dernier post */
+.style1 .forumCard {
+  align-items: center;
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
+.style1 .forumMain {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.style1 .forumIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.style1 .forumContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.style1 .forumHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style1 .lastPostCompact {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.style1 .lastPostInfoCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.style1 .lastPostAuthorCompact {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.style1 .lastPostDateCompact {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Style 2: Bannière mise en avant */
+.style2 .forumCard {
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.style2 .forumBanner {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+.style2 .forumBanner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.style2 .forumCardBody {
+  padding: var(--spacing-lg);
+}
+
+.style2 .forumHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style2 .lastPostSection {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.style2 .lastPostContent {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.style2 .lastPostDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Style 3: Minimaliste avec icône */
+.style3 .forumCard {
+  align-items: center;
+  padding: var(--spacing-md);
+  gap: var(--spacing-lg);
+}
+
+.style3 .forumIconLarge {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.style3 .forumContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.style3 .lastPostArrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Style 4: Statistiques proéminentes */
+.style4 .forumCard {
+  flex-direction: column;
+  padding: var(--spacing-lg);
+}
+
+.style4 .forumContent {
+  margin-bottom: var(--spacing-md);
+}
+
+.style4 .forumHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style4 .statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.style4 .statItem {
+  text-align: center;
+}
+
+.style4 .statValue {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style4 .statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.style4 .lastPostSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.style4 .lastPostInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Style 5: Dernier post détaillé */
+.style5 .forumCard {
+  flex-direction: column;
+  padding: var(--spacing-lg);
+}
+
+.style5 .forumContent {
+  margin-bottom: var(--spacing-md);
+}
+
+.style5 .forumHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style5 .lastPostDetailed {
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--primary-color);
+}
+
+.style5 .lastPostHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style5 .lastPostTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style5 .lastPostMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Style 6: Sous-forums visibles */
+.style6 .forumCard {
+  flex-direction: column;
+  padding: var(--spacing-lg);
+}
+
+.style6 .forumContent {
+  margin-bottom: var(--spacing-md);
+}
+
+.style6 .forumHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style6 .subforumsList {
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.style6 .subforumsLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.style6 .subforumsTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.style6 .subforumTag {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+}
+
+.style6 .lastPostSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.style6 .lastPostInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Style 7: Bannière en fond total */
+.style7 .forumCard {
+  position: relative;
+  min-height: 200px;
+  padding: var(--spacing-xl);
+  overflow: hidden;
+  border: none;
+}
+
+.style7 .forumCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-card);
+  z-index: -1;
+}
+
+.style7 .forumOverlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 160px;
+}
+
+.style7 .forumName {
+  color: var(--text-light);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.style7 .forumDescription {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style7 .forumType {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.style7 .forumStats {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style7 .lastPostSection {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.style7 .lastPostLabel {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.style7 .lastPostAuthor {
+  color: var(--text-light);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style7 .lastPostDate {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.style7 .lastPostAvatar {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Style 8: Bannière fond total + Dernier message droite + Sous-forums */
+.style8 .forumCard {
+  position: relative;
+  min-height: 200px;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+}
+
+.style8 .forumCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-card);
+  z-index: -1;
+}
+
+.style8 .forumOverlay {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 200px;
+  padding: var(--spacing-xl);
+}
+
+.style8 .forumMainContent {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+  height: 100%;
+}
+
+.style8 .forumContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.style8 .forumName {
+  color: var(--text-light);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.style8 .forumDescription {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style8 .forumType {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.style8 .forumStats {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style8 .subforumsList {
+  margin: var(--spacing-md) 0;
+}
+
+.style8 .subforumsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style8 .subforumItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  transition: all var(--transition-base);
+}
+
+.style8 .subforumItem:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(4px);
+}
+
+.style8 .subforumItem svg {
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.style8 .subforumName {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: var(--font-weight-medium);
+}
+
+.style8 .lastPostSectionRight {
+  flex-shrink: 0;
+  width: 240px;
+  padding: var(--spacing-lg);
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.style8 .lastPostLabel {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-md);
+}
+
+.style8 .lastPostContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-align: center;
+}
+
+.style8 .lastPostDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.style8 .lastPostAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-light);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style8 .lastPostDate {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.style8 .lastPostAvatar {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Style 9: Bannière full + Sidebar droite */
+.style9 .forumsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.style9 .forumCard {
+  position: relative;
+  display: flex;
+  min-height: 180px;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+}
+
+.style9 .cardBanner {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  transition: transform 0.4s ease;
+}
+
+.style9 .cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.4) 100%);
+  z-index: 1;
+  transition: background var(--transition-base);
+}
+
+.style9 .forumCard:not(:has(.cardBanner)) .cardOverlay {
+  background: var(--bg-card);
+}
+
+.style9 .cardContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+}
+
+.style9 .cardInfo {
+  flex: 1;
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.style9 .cardInfo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.style9 .cardInfo:hover::before {
+  left: 100%;
+}
+
+.style9 .cardInfo:hover .cardTitle {
+  color: var(--primary-color);
+}
+
+.style9 .cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.style9 .cardTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: color var(--transition-base);
+}
+
+.style9 .cardBadge {
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: 1px solid;
+}
+
+.style9 .cardBadge.roleplay {
+  border-color: #4FC3F7;
+  color: #4FC3F7;
+}
+
+.style9 .cardBadge.important {
+  border-color: #FF6B6B;
+  color: #FF6B6B;
+}
+
+.style9 .cardBadge.hrp {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.style9 .cardDesc {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style9 .subforumsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.style9 .subforumChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.9);
+  transition: all var(--transition-base);
+}
+
+.style9 .subforumChip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.style9 .subforumChip svg {
+  opacity: 0.7;
+}
+
+.style9 .cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: var(--spacing-xs);
+}
+
+.style9 .metaDot {
+  opacity: 0.5;
+}
+
+/* Sidebar droite pour le dernier post */
+.style9 .cardSidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding: var(--spacing-lg);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--spacing-sm);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.style9 .cardSidebar:hover {
+  background: rgba(0, 0, 0, 0.65);
+  border-left-color: var(--primary-color);
+}
+
+.style9 .sidebarLabel {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.style9 .sidebarAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color var(--transition-base);
+}
+
+.style9 .cardSidebar:hover .sidebarAvatar {
+  border-color: var(--primary-color);
+}
+
+.style9 .sidebarAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.style9 .sidebarDate {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .style1 .forumCard,
+  .style3 .forumCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .style1 .lastPostCompact,
+  .style3 .lastPostArrow {
+    width: 100%;
+    margin-top: var(--spacing-sm);
+  }
+
+  .style4 .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .style7 .forumCard,
+  .style8 .forumCard {
+    min-height: 180px;
+    padding: var(--spacing-lg);
+  }
+
+  .style8 .forumOverlay {
+    padding: var(--spacing-lg);
+  }
+
+  .style8 .forumMainContent {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .style8 .lastPostSectionRight {
+    width: 100%;
+    border-left: none;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    padding: var(--spacing-md);
+  }
+
+  .style8 .lastPostContent {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .style8 .lastPostDetails {
+    align-items: flex-start;
+  }
+
+  .style9 .forumCard {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .style9 .cardSidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: var(--spacing-md);
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .style9 .sidebarAvatar {
+    width: 40px;
+    height: 40px;
+  }
+}
+

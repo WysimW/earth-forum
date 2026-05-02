@@ -102,6 +102,49 @@ class CharacterRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Retourne les personnages validés d'un univers (inclut les elseworlds de cet univers).
+     *
+     * @return Character[]
+     */
+    public function findValidatedByUniverseSlug(string $universeSlug): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.universe', 'u')
+            ->leftJoin('c.elseworld', 'e')
+            ->leftJoin('e.parentUniverse', 'pu')
+            ->andWhere('(u.slug = :slug OR pu.slug = :slug)')
+            ->andWhere('c.status = :status')
+            ->setParameter('slug', $universeSlug)
+            ->setParameter('status', 'validated')
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne les personnages validés d'un utilisateur sur un univers donné
+     * (inclut les elseworlds de cet univers).
+     *
+     * @return Character[]
+     */
+    public function findValidatedByUniverseSlugAndUser(string $universeSlug, User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.universe', 'u')
+            ->leftJoin('c.elseworld', 'e')
+            ->leftJoin('e.parentUniverse', 'pu')
+            ->andWhere('(u.slug = :slug OR pu.slug = :slug)')
+            ->andWhere('c.status = :status')
+            ->andWhere('c.user = :user')
+            ->setParameter('slug', $universeSlug)
+            ->setParameter('status', 'validated')
+            ->setParameter('user', $user)
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findValidatedCharactersForUser(User $user): array
     {
         return $this->createQueryBuilder('c')

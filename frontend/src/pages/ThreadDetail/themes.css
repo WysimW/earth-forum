@@ -1,0 +1,172 @@
+/* Thèmes pour les fiches de personnage */
+/* Les sélecteurs utilisent [data-theme] pour cibler les éléments avec les classes CSS Modules hashées */
+
+/* Thème par défaut */
+/* Utilise les styles par défaut définis dans ThreadDetail.module.css */
+
+/* Thème sombre élégant */
+[data-theme="dark-elegant"] > div > div[class*="characterSection"],
+[data-theme="dark-elegant"] div[class*="characterSection"] {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-light) 100%) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark-elegant"] h2[class*="sectionTitle"],
+[data-theme="dark-elegant"] [class*="sectionTitle"] {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark-elegant"] [class*="sectionContent"] {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark-elegant"] [class*="infoLabel"] {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark-elegant"] [class*="infoValue"] {
+  color: var(--text-primary) !important;
+}
+
+/* Thème coloré */
+[data-theme="colorful"] > div > div[class*="characterSection"],
+[data-theme="colorful"] div[class*="characterSection"] {
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.15) 0%, var(--bg-card) 100%) !important;
+  border-left: 4px solid var(--primary-color) !important;
+  border-top: var(--border-width) solid var(--primary-color) !important;
+  border-right: var(--border-width) solid var(--primary-color) !important;
+  border-bottom: var(--border-width) solid var(--primary-color) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2) !important;
+}
+
+[data-theme="colorful"] h2[class*="sectionTitle"],
+[data-theme="colorful"] [class*="sectionTitle"] {
+  color: var(--primary-color) !important;
+  border-bottom-color: var(--primary-color) !important;
+  font-weight: var(--font-weight-bold) !important;
+}
+
+[data-theme="colorful"] [class*="sectionContent"] {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="colorful"] [class*="infoLabel"] {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="colorful"] [class*="infoValue"] {
+  color: var(--primary-color) !important;
+  font-weight: var(--font-weight-medium) !important;
+}
+
+[data-theme="colorful"] [class*="tabs"] {
+  border-bottom-color: var(--primary-color) !important;
+}
+
+[data-theme="colorful"] [class*="tab"]:not([class*="tabActive"]) {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="colorful"] [class*="tab"]:not([class*="tabActive"]):hover {
+  color: var(--primary-color) !important;
+  background-color: rgba(0, 102, 204, 0.1) !important;
+}
+
+[data-theme="colorful"] [class*="tabActive"] {
+  background-color: var(--primary-color) !important;
+  color: #fff !important;
+  border-bottom-color: var(--primary-color) !important;
+}
+
+/* Thème minimaliste */
+[data-theme="minimal"] > div > div[class*="characterSection"],
+[data-theme="minimal"] div[class*="characterSection"] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+[data-theme="minimal"] h2[class*="sectionTitle"],
+[data-theme="minimal"] [class*="sectionTitle"] {
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-normal) !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: var(--spacing-sm) !important;
+}[data-theme="minimal"] [class*="tabs"] {
+  border-bottom: none !important;
+}[data-theme="minimal"] [class*="tab"] {
+  border-bottom: none !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+}
+
+[data-theme="minimal"] [class*="tabActive"] {
+  border-bottom: none !important;
+  background-color: var(--bg-secondary) !important;
+  border-radius: var(--border-radius-md) !important;
+}/* Thème comics */
+[data-theme="comics"] > div > div[class*="characterSection"],
+[data-theme="comics"] div[class*="characterSection"] {
+  background: var(--bg-card) !important;
+  border: 3px solid var(--text-primary) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2) !important;
+}[data-theme="comics"] h2[class*="sectionTitle"],
+[data-theme="comics"] [class*="sectionTitle"] {
+  font-weight: var(--font-weight-bold) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  border-bottom: 3px solid var(--text-primary) !important;
+}[data-theme="comics"] [class*="tab"]:not([class*="tabActive"]) {
+  font-weight: var(--font-weight-bold) !important;
+  text-transform: uppercase !important;
+  border-bottom: 3px solid transparent !important;
+}
+
+[data-theme="comics"] [class*="tabActive"] {
+  border-bottom: 3px solid var(--primary-color) !important;
+}
+
+/* Thème vintage */
+[data-theme="vintage"] > div > div[class*="characterSection"],
+[data-theme="vintage"] div[class*="characterSection"] {
+  background: linear-gradient(135deg, #f4e4bc 0%, #e8d5a3 100%) !important;
+  border: 2px solid #8b7355 !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="vintage"] h2[class*="sectionTitle"],
+[data-theme="vintage"] [class*="sectionTitle"] {
+  color: #5d4e37 !important;
+  border-bottom-color: #8b7355 !important;
+  font-family: 'Georgia', serif !important;
+}
+
+[data-theme="vintage"] [class*="sectionContent"] {
+  color: #3d2e17 !important;
+}
+
+[data-theme="vintage"] [class*="infoLabel"] {
+  color: #6b5d47 !important;
+}
+
+[data-theme="vintage"] [class*="infoValue"] {
+  color: #3d2e17 !important;
+}
+
+[data-theme="vintage"] [class*="tabs"] {
+  border-bottom-color: #8b7355 !important;
+}
+
+[data-theme="vintage"] [class*="tab"]:not([class*="tabActive"]) {
+  color: #5d4e37 !important;
+}
+
+[data-theme="vintage"] [class*="tabActive"] {
+  color: #3d2e17 !important;
+  border-bottom-color: #8b7355 !important;
+}

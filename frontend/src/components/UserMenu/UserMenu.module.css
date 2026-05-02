@@ -1,0 +1,117 @@
+.userMenu {
+  position: relative;
+}
+
+.userButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color var(--transition-base);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+.userButton:hover {
+  color: var(--text-secondary);
+}
+
+.userName {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+.chevron {
+  transition: transform var(--transition-base);
+  color: var(--text-secondary);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-base);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.menuItem svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.menuItemDanger {
+  color: var(--danger-color);
+}
+
+.menuItemDanger:hover {
+  background-color: rgba(255, 77, 79, 0.1);
+}
+
+.menuItemDanger svg {
+  color: var(--danger-color);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .dropdown {
+    right: -1rem;
+    min-width: 180px;
+  }
+}
+
+
+
+
+
+

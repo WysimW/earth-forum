@@ -1,0 +1,197 @@
+/* THÈMES PAR UNIVERS */
+
+/* ============================================
+   DC COMICS THEME
+   ============================================ */
+[data-universe="dc-comics"],
+[data-universe="dc"] {
+  --universe-primary: #0066CC;
+  --universe-secondary: #CC0000;
+  --universe-accent: #FFD700;
+  --universe-bg: #1A1A1A;
+  --universe-bg-secondary: rgba(2, 19, 36);;
+  --universe-text: #FFFFFF;
+  --universe-text-secondary: #E5E5E5;
+  --universe-font-title: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif;
+  --universe-font-body: 'Inter', 'Roboto', sans-serif;
+  
+  /* Override des couleurs principales pour DC */
+  --primary-color: var(--universe-primary);
+  --primary-dark: #003366;
+  --secondary-color: var(--universe-secondary);
+  --accent-color: var(--universe-accent);
+  --bg-primary: var(--universe-bg);
+  --bg-dropdown: var(--universe-bg-secondary);
+  --bg-secondary: var(--universe-bg-secondary);
+  --bg-card: rgb(3 27 51 / 80%);
+  --bg-card-hover: rgba(3, 27, 51, 0.329);
+  --text-primary: var(--universe-text);
+  --text-secondary: var(--universe-text-secondary);
+  --font-family-title: var(--universe-font-title);
+  
+  /* Variables pour Layout */
+  --bg-header-topbar: rgba(10, 10, 10, 0.3);
+  --bg-header: rgba(10, 10, 10, 0.4);
+  --border-header: rgba(255, 255, 255, 0.05);
+  
+  /* Variables pour Body */
+  --bg-body: #0C2D48;
+  --bg-body-gradient-1: radial-gradient(circle at 10% 20%, rgba(20, 93, 160, 0.2) 0%, transparent 20%);
+  --bg-body-gradient-2: radial-gradient(circle at 90% 80%, rgba(0, 168, 107, 0.1) 0%, transparent 20%);
+  --bg-filigrane: var(--bg-filigrane-dc);
+}
+
+/* ============================================
+   MARVEL COMICS THEME
+   ============================================ */
+[data-universe="marvel-comics"],
+[data-universe="marvel"] {
+  --universe-primary: #ED1D24;
+  --universe-secondary: #0066CC;
+  --universe-accent: #FFD700;
+  --universe-bg: #000000;
+  --universe-bg-secondary: #1A1A1A;
+  --universe-text: #FFFFFF;
+  --universe-text-secondary: #E5E5E5;
+  --universe-font-title: 'Impact', 'Arial Black', sans-serif;
+  --universe-font-body: 'Inter', 'Roboto', sans-serif;
+  
+  /* Override des couleurs principales pour Marvel */
+  --primary-color: var(--universe-primary);
+  --primary-dark: #990000;
+  --secondary-color: var(--universe-secondary);
+  --accent-color: var(--universe-accent);
+  --bg-primary: var(--universe-bg);
+  --bg-secondary: var(--universe-bg-secondary);
+  --bg-card: rgba(237, 29, 36, 0.1);
+  --bg-card-hover: rgba(237, 29, 36, 0.2);
+  --text-primary: var(--universe-text);
+  --text-secondary: var(--universe-text-secondary);
+  --font-family-title: var(--universe-font-title);
+  
+  /* Variables pour Layout */
+  --bg-header-topbar: rgba(10, 10, 10, 0.3);
+  --bg-header: rgba(10, 10, 10, 0.4);
+  --border-header: rgba(255, 255, 255, 0.05);
+  
+  /* Variables pour Body */
+  --bg-body: #000000;
+  --bg-body-gradient-1: radial-gradient(circle at 10% 20%, rgba(237, 29, 36, 0.15) 0%, transparent 20%);
+  --bg-body-gradient-2: radial-gradient(circle at 90% 80%, rgba(0, 102, 204, 0.1) 0%, transparent 20%);
+  --bg-filigrane: var(--bg-filigrane-marvel);
+}
+
+/* ============================================
+   DC ABSOLUTE THEME
+   ============================================ */
+[data-universe="dc-absolute"],
+[data-universe="dc-absolute-comics"],
+[data-universe="absolute-dc-comics"],
+[data-universe="absolute-dc"] {
+  --universe-primary: #0052CC;
+  --universe-secondary: #FFFFFF;
+  --universe-accent: #00BFFF;
+  --universe-accent-secondary: #C0C0C0;
+  --universe-bg: #000000;
+  --universe-bg-secondary: #0A0A0A;
+  --universe-text: #FFFFFF;
+  --universe-text-secondary: #E5E5E5;
+  --universe-font-title: 'Bebas Neue', 'Impact', 'Arial Black', sans-serif;
+  --universe-font-body: 'Inter', 'Roboto', sans-serif;
+  
+  /* Override des couleurs principales pour Absolute DC */
+  --primary-color: var(--universe-primary);
+  --primary-dark: #003399;
+  --secondary-color: var(--universe-secondary);
+  --accent-color: var(--universe-accent);
+  --bg-primary: var(--universe-bg);
+  --bg-secondary: var(--universe-bg-secondary);
+  --bg-card: rgba(0, 82, 204, 0.1);
+  --bg-card-hover: rgba(0, 82, 204, 0.2);
+  --text-primary: var(--universe-text);
+  --text-secondary: var(--universe-text-secondary);
+  --font-family-title: var(--universe-font-title);
+  
+  /* Variables pour Layout */
+  --bg-header-topbar: rgba(10, 10, 10, 0.3);
+  --bg-header: rgba(10, 10, 10, 0.4);
+  --border-header: rgba(255, 255, 255, 0.05);
+  
+  /* Variables pour Body */
+  --bg-body: #000000;
+  --bg-body-gradient-1: radial-gradient(circle at 10% 20%, rgba(0, 82, 204, 0.15) 0%, transparent 20%);
+  --bg-body-gradient-2: radial-gradient(circle at 90% 80%, rgba(0, 191, 255, 0.1) 0%, transparent 20%);
+  --bg-filigrane: var(--bg-filigrane-absolute-dc);
+}
+
+/* ============================================
+   STAR WARS THEME
+   ============================================ */
+[data-universe="star-wars"] {
+  --universe-primary: #00BFFF;
+  --universe-secondary: #FFD700;
+  --universe-accent: #DC143C;
+  --universe-bg: #000000;
+  --universe-bg-secondary: #0A0A0A;
+  --universe-text: #FFFFFF;
+  --universe-text-secondary: #E5E5E5;
+  --universe-font-title: 'Impact', 'Arial Black', sans-serif;
+  --universe-font-body: 'Inter', 'Roboto', sans-serif;
+  
+  /* Override des couleurs principales pour Star Wars */
+  --primary-color: var(--universe-primary);
+  --primary-dark: #0080CC;
+  --secondary-color: var(--universe-secondary);
+  --accent-color: var(--universe-accent);
+  --bg-primary: var(--universe-bg);
+  --bg-dropdown: var(--universe-bg-secondary);
+  --bg-secondary: var(--universe-bg-secondary);
+  --bg-card: rgba(0, 191, 255, 0.1);
+  --bg-card-hover: rgba(0, 191, 255, 0.2);
+  --text-primary: var(--universe-text);
+  --text-secondary: var(--universe-text-secondary);
+  --font-family-title: var(--universe-font-title);
+  
+  /* Variables pour Layout */
+  --bg-header-topbar: rgba(10, 10, 10, 0.3);
+  --bg-header: rgba(10, 10, 10, 0.4);
+  --border-header: rgba(255, 255, 255, 0.05);
+  
+  /* Variables pour Body */
+  --bg-body: #000000;
+  --bg-body-gradient-1: radial-gradient(circle at 10% 20%, rgba(0, 191, 255, 0.15) 0%, transparent 20%);
+  --bg-body-gradient-2: radial-gradient(circle at 90% 80%, rgba(220, 20, 60, 0.1) 0%, transparent 20%);
+  --bg-filigrane: var(--bg-filigrane-star-wars);
+}
+
+/* ============================================
+   PORTAL COMMUN (Défaut)
+   ============================================ */
+[data-universe="portal"],
+body:not([data-universe]) {
+  --universe-primary: var(--portal-primary);
+  --universe-secondary: var(--portal-secondary);
+  --universe-accent: var(--portal-accent);
+  --universe-bg: var(--portal-bg-dark);
+  --universe-bg-secondary: #1A1A1A;
+  --universe-text: var(--portal-bg-light);
+  --universe-text-secondary: #E5E5E5;
+  --universe-font-title: var(--font-family-title);
+  --universe-font-body: var(--font-family-base);
+  
+  /* Override pour le portail */
+  --bg-card: rgba(0, 102, 204, 0.1);
+  --bg-card-hover: rgba(0, 102, 204, 0.2);
+  
+  /* Variables pour Layout */
+  --bg-header-topbar: rgba(10, 10, 10, 0.3);
+  --bg-header: rgba(10, 10, 10, 0.4);
+  --border-header: rgba(255, 255, 255, 0.05);
+  
+  /* Variables pour Body */
+  --bg-body: var(--portal-bg-dark);
+  --bg-body-gradient-1: radial-gradient(circle at 10% 20%, rgba(0, 102, 204, 0.15) 0%, transparent 20%);
+  --bg-body-gradient-2: radial-gradient(circle at 90% 80%, rgba(204, 0, 0, 0.1) 0%, transparent 20%);
+  --bg-filigrane: var(--bg-filigrane-portal);
+}
+

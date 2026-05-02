@@ -1,0 +1,164 @@
+---
+description: Pattern de filtrage par univers utilisant UniverseThemeContext pour les pages frontend
+globs:
+  - "frontend/src/pages/**/*.jsx"
+  - "frontend/src/pages/**/*.js"
+alwaysApply: false
+---
+
+# Filtrage par univers avec UniverseThemeContext
+
+## Principe
+Le contexte `UniverseThemeContext` doit être utilisé comme **filtre global** pour toutes les pages qui affichent du contenu lié à un univers spécifique (forums, personnages, threads, etc.).
+
+## Import et utilisation
+```javascript
+import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
+
+const MyComponent = () => {
+  const { currentUniverse } = useUniverseTheme();
+  // currentUniverse peut être :
+  // - 'portal' : afficher tout le contenu (pas de filtre)
+  // - 'slug-univers' : filtrer pour n'afficher que le contenu de cet univers
+};
+```
+
+## Pattern de filtrage
+
+### 1. Pour les pages qui chargent des données depuis l'API
+
+**Exemple : Page de forums**
+- Si `currentUniverse === 'portal'` : afficher un message invitant à sélectionner un univers
+- Sinon : utiliser `currentUniverse` comme slug pour charger les données
+- Compatibilité URL : si un `slug` est fourni dans l'URL, l'utiliser en priorité, sinon utiliser le contexte
+
+```javascript
+useEffect(() => {
+  const fetchData = async () => {
+    // Priorité au slug de l'URL si fourni, sinon utiliser le contexte
+    const universeSlug = slug || (currentUniverse !== 'portal' ? currentUniverse : null);
+    
+    if (!universeSlug) {
+      setError('Veuillez sélectionner un univers pour voir ses forums');
+      setLoading(false);
+      return;
+    }
+
+    const data = await universeService.getUniversForums(universeSlug);
+    setForumData(data);
+  };
+
+  fetchData();
+}, [slug, currentUniverse]);
+```
+
+### 2. Pour les pages qui filtrent des données déjà chargées
+
+**Exemple : Page de personnages**
+- Charger toutes les données une fois
+- Utiliser `useMemo` pour filtrer selon `currentUniverse`
+- Si `currentUniverse === 'portal'` : afficher tout
+- Sinon : filtrer pour n'afficher que l'univers sélectionné
+
+```javascript
+const filteredData = useMemo(() => {
+  if (!data) return null;
+  
+  // Si portal, afficher tout
+  if (currentUniverse === 'portal') {
+    return data;
+  }
+
+  // Filtrer par univers (comparer avec universe.slug)
+  const filtered = data.contentByUniverse?.filter(
+    (universeData) => universeData.universe.slug === currentUniverse
+  ) || [];
+
+  return {
+    contentByUniverse: filtered,
+    contentWithoutUniverse: currentUniverse === 'portal' 
+      ? data.contentWithoutUniverse 
+      : { items: [], total: 0 }
+  };
+}, [data, currentUniverse]);
+```
+
+## Règles importantes
+
+1. **Toujours vérifier `currentUniverse === 'portal'`** avant de filtrer
+2. **Utiliser `useMemo`** pour le filtrage côté client (optimisation)
+3. **Comparer avec `universe.slug`** et non avec `universe.id` lors du filtrage
+4. **Gérer le cas "Sans univers"** : ne pas l'afficher si un univers spécifique est sélectionné (sauf si portal)
+5. **Dépendances useEffect** : inclure `currentUniverse` dans les dépendances pour recharger les données quand l'univers change
+
+## Pages concernées
+
+- ✅ `/forums` ou `/univers/:slug` - ForumDetail
+- ✅ `/characters` - Characters
+- 🔄 Pages futures à implémenter avec ce pattern :
+  - Threads par univers
+  - Recherche filtrée par univers
+  - Statistiques par univers
+  - Toute page listant du contenu lié à un univers
+
+## Exemple complet : Nouvelle page avec filtrage
+
+```javascript
+import React, { useState, useEffect, useMemo } from 'react';
+import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
+import Layout from '../../components/Layout/Layout';
+
+const MyPage = () => {
+  const { currentUniverse } = useUniverseTheme();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // Si portal, ne pas charger ou charger tout
+      if (currentUniverse === 'portal') {
+        // Option 1: Charger tout
+        const allData = await api.getAll();
+        setData(allData);
+        // Option 2: Afficher message
+        // setError('Veuillez sélectionner un univers');
+        setLoading(false);
+        return;
+      }
+
+      // Charger les données filtrées par univers
+      const filteredData = await api.getByUniverse(currentUniverse);
+      setData(filteredData);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [currentUniverse]);
+
+  // OU si les données sont déjà chargées, filtrer côté client
+  const filteredData = useMemo(() => {
+    if (!data) return null;
+    if (currentUniverse === 'portal') return data;
+    
+    return data.filter(item => item.universe?.slug === currentUniverse);
+  }, [data, currentUniverse]);
+
+  return (
+    <Layout>
+      {/* Afficher filteredData */}
+    </Layout>
+  );
+};
+```
+
+## Notes importantes
+
+- Le contexte `UniverseThemeContext` est déjà fourni au niveau de l'App, pas besoin de l'ajouter
+- Le filtre doit être **réactif** : quand l'utilisateur change d'univers, les données doivent se mettre à jour automatiquement
+- Toujours prévoir un état de chargement et de gestion d'erreur approprié
+
+## Références
+
+- @frontend/src/contexts/UniverseThemeContext.jsx
+- @frontend/src/pages/ForumDetail/ForumDetail.jsx
+- @frontend/src/pages/Characters/Characters.jsx

@@ -1,0 +1,445 @@
+/* Style HRP - Style 1 Classique */
+.postCardHRP {
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.postCardHRP:hover {
+  border-color: var(--border-color-hover);
+  background-color: var(--bg-card-hover);
+}
+
+.postCardHRP .postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.postCardHRP .postAuthor {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.postCardHRP .avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: var(--border-width) solid var(--border-color);
+}
+
+.postCardHRP .authorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.postCardHRP .authorName {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+}
+
+.postCardHRP .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.postCardHRP .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.postCardHRP .actionButton {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  cursor: pointer;
+}
+
+.postCardHRP .actionButton:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.postCardHRP .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+}
+
+.postCardHRP .postContent p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardHRP .postContent p:last-child {
+  margin-bottom: 0;
+}
+
+/* Styles globaux pour les messages de modération injectés en HTML */
+.postCardHRP .postContent :global(.moderation-alert) {
+  border: var(--border-width) solid var(--border-color);
+  border-left-width: 6px;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  margin: var(--spacing-xs) 0;
+  background-color: var(--bg-secondary);
+}
+
+.postCardHRP .postContent :global(.moderation-header) {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardHRP .postContent :global(.moderation-header svg) {
+  flex-shrink: 0;
+}
+
+.postCardHRP .postContent :global(.moderation-title) {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.postCardHRP .postContent :global(.moderation-preambule),
+.postCardHRP .postContent :global(.moderation-note),
+.postCardHRP .postContent :global(.moderation-conclusion),
+.postCardHRP .postContent :global(.moderation-rejection-reason),
+.postCardHRP .postContent :global(.moderation-section) {
+  margin-top: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.postCardHRP .postContent :global(.moderation-fields) {
+  margin-top: var(--spacing-sm);
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.postCardHRP .postContent :global(.moderation-field-item) {
+  padding: var(--spacing-sm);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-card);
+}
+
+.postCardHRP .postContent :global(.moderation-field-name) {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.postCardHRP .postContent :global(.moderation-citation) {
+  margin-top: var(--spacing-xs);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-success) {
+  border-left-color: var(--success-color);
+  background-color: var(--bg-card);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-success) :global(.moderation-title) {
+  color: var(--success-color);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-warning) {
+  border-left-color: var(--warning-color);
+  background-color: var(--bg-card);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-warning) :global(.moderation-title) {
+  color: var(--warning-color);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-danger) {
+  border-left-color: var(--danger-color);
+  background-color: var(--bg-card);
+}
+
+.postCardHRP .postContent :global(.moderation-alert-danger) :global(.moderation-title) {
+  color: var(--danger-color);
+}
+
+/* Style RP - Style 2 Sidebar personnage */
+.postCardRP {
+  display: flex;
+  gap: var(--spacing-lg);
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-base);
+}
+
+.postCardRP:hover {
+  border-color: var(--border-color-hover);
+  background-color: var(--bg-card-hover);
+}
+
+.postCardRP .characterSidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  flex: 0 0 220px;
+  padding-right: var(--spacing-lg);
+  border-right: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.postCardRP .avatarLarge {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.postCardRP .avatarToneHero {
+  border-color: var(--success-color);
+}
+
+.postCardRP .avatarToneVillain {
+  border-color: #8b5cf6;
+}
+
+.postCardRP .avatarToneAntiHero {
+  border-color: var(--warning-color);
+}
+
+.postCardRP .avatarToneVigilante {
+  border-color: #f97316;
+}
+
+.postCardRP .avatarToneNeutral {
+  border-color: #eab308;
+}
+
+.postCardRP .characterDetails {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.postCardRP .characterName {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+}
+
+.postCardRP .characterNameHero {
+  color: var(--success-color);
+}
+
+.postCardRP .characterNameVillain {
+  color: #8b5cf6;
+}
+
+.postCardRP .characterNameAntiHero {
+  color: var(--warning-color);
+}
+
+.postCardRP .characterNameVigilante {
+  color: #f97316;
+}
+
+.postCardRP .characterNameNeutral {
+  color: #eab308;
+}
+
+.postCardRP .characterIdentity {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--spacing-xs);
+  overflow-wrap: anywhere;
+}
+
+.postCardRP .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardRP .alignmentBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardRP .characterDetailsLine {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--spacing-xs);
+  overflow-wrap: anywhere;
+}
+
+.postCardRP .factionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardRP .factionTag {
+  padding: 2px 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+}
+
+.postCardRP .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.postCardRP .postMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.postCardRP .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+  flex: 1;
+}
+
+.postCardRP .postParagraph {
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardRP .postParagraph:last-child {
+  margin-bottom: 0;
+}
+
+.postCardRP .postParagraph:hover {
+  outline: var(--border-width) dashed var(--border-color);
+  outline-offset: 2px;
+  cursor: text;
+}
+
+.postCardRP .postContent p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardRP .postContent p:last-child {
+  margin-bottom: 0;
+}
+
+.postCardRP .postContent :global(.dialogueThemeSpan),
+.postCardHRP .postContent :global(.dialogueThemeSpan) {
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.postCardRP .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--border-color);
+}.postCardRP .actionButton {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  cursor: pointer;
+}
+
+.postCardRP .actionButton:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.postCardRP .inlineEditor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.postCardRP .inlineEditorBlock {
+  border: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.postCardRP .inlineEditorLabel {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: var(--border-width) solid var(--border-color);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.postCardRP .inlineEditorContent {
+  min-height: 56px;
+  padding: var(--spacing-sm);
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+}
+
+.postCardRP .inlineEditorContent:focus {
+  outline: none;
+  background-color: var(--bg-card);
+}
+
+/* Responsive pour RP */
+@media (max-width: 768px) {
+  .postCardRP {
+    flex-direction: column;
+  }  .postCardRP .characterSidebar {
+    min-width: auto;
+    padding-right: 0;
+    padding-bottom: var(--spacing-lg);
+    border-right: none;
+    border-bottom: var(--border-width) solid var(--border-color);
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }  .postCardRP .characterDetails {
+    text-align: left;
+    flex: 1;
+  }  .postCardRP .factionsList {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

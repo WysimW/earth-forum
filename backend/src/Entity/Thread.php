@@ -477,6 +477,8 @@ class Thread implements TimestampableInterface
             if ($lastPost->getCharacter()) {
                 return [
                     'id' => $lastPost->getId(),
+                    'threadId' => $this->getId(),
+                    'threadSlug' => $this->getSlug(),
                     'title' => $this->getTitle(),
                     'author' => $lastPost->getCharacter()->getName(),
                     'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
@@ -489,6 +491,8 @@ class Thread implements TimestampableInterface
             } else {
                 return [
                     'id' => $lastPost->getId(),
+                    'threadId' => $this->getId(),
+                    'threadSlug' => $this->getSlug(),
                     'title' => $this->getTitle(),
                     'author' => $lastPost->getAuthor() ? $lastPost->getAuthor()->getPseudo() : 'Anonymous',
                     'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),

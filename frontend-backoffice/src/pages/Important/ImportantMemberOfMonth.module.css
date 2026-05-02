@@ -1,0 +1,25 @@
+.actionButton {
+  border-color: #7a5af8;
+  color: #7a5af8;
+}
+
+.actionButton:hover {
+  border-color: #5b3ed4 !important;
+  color: #5b3ed4 !important;
+}
+
+.customTable :global(.ant-table-container) {
+  background: #f8f6ff;
+}
+
+.customTable :global(.ant-table-thead > tr > th) {
+  background: #ede7ff;
+}
+
+.customTable :global(.ant-table-tbody > tr.ant-table-row:hover > td) {
+  background: #f1ebff;
+}
+
+.statsAccordion :global(.ant-collapse-content-box) {
+  padding-top: 0 !important;
+}

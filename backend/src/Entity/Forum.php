@@ -50,7 +50,7 @@ class Forum implements TimestampableInterface
     #[Groups(['forum_detail'])]
     private Collection $threads;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['subforum_detail', 'forum_detail'])]
     private ?string $banner = null;
 

@@ -1,0 +1,57 @@
+.badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: opacity var(--transition-fast);
+}
+
+/* Types de badges */
+.rp {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.hrp {
+  background-color: var(--success-color);
+  color: var(--text-light);
+}
+
+.important {
+  background-color: var(--danger-color);
+  color: var(--text-light);
+}
+
+.new {
+  background-color: var(--accent-color);
+  color: var(--text-dark);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.default {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+
+/* Variants */
+.filled {
+  /* Styles déjà définis ci-dessus */
+}
+
+.outline {
+  background-color: transparent;
+  border: var(--border-width) solid currentColor;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: var(--opacity-hover);
+  }
+}
+

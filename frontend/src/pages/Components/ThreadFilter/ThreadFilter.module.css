@@ -1,0 +1,844 @@
+.container {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.controls {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.pageTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.styleSelector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.styleBtn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.styleBtn:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.styleBtn.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.preview {
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.previewTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Style 1 - Horizontal compact */
+.style1 .filtersContainer {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.style1 .filtersRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.style1 .searchBox {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.style1 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style1 .clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.style1 .filterGroup {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.style1 .filterSelect {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.style1 .toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.style1 .toggleInput {
+  display: none;
+}
+
+.style1 .toggleSwitch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.style1 .toggleInput:checked + .toggleSwitch {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.style1 .toggleSlider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.style1 .toggleInput:checked + .toggleSwitch .toggleSlider {
+  transform: translateX(20px);
+}
+
+.style1 .toggleText {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.style1 .resetButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+/* Style 2 - Vertical empilé */
+.style2 .filtersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.style2 .searchBox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.style2 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style2 .filtersRow {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.style2 .filterSelect,
+.style2 .toggleLabel,
+.style2 .resetButton {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Style 3 - Barre avec badges */
+.style3 .filtersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.style3 .searchBox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.style3 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style3 .badgesRow {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.style3 .badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.style3 .badge:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.style3 .badge.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.style3 .toggleBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Style 4 - Onglets */
+.style4 .filtersContainer {
+  padding: 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.style4 .tabsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.style4 .tab {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  position: relative;
+}
+
+.style4 .tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.style4 .tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: var(--bg-card);
+  font-weight: var(--font-weight-semibold);
+}
+
+.style4 .tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+}
+
+.style4 .tabSpacer {
+  flex: 1;
+}
+
+.style4 .searchBox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.style4 .searchBox:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.style4 .searchInput {
+  width: 180px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style4 .searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.style4 .toggleLabel {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.style4 .toggleLabel:hover {
+  border-color: var(--primary-color);
+  background: var(--bg-hover);
+}
+
+/* Style 5 - Dropdown groupé */
+.style5 .filtersContainer {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.style5 .filtersRow {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.style5 .searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.style5 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style5 .filterDropdown {
+  position: relative;
+}
+
+.style5 .dropdownButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.style5 .dropdownContent {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 200px;
+  padding: var(--spacing-md);
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.style5 .dropdownItem {
+  margin-bottom: var(--spacing-md);
+}
+
+.style5 .dropdownItem:last-child {
+  margin-bottom: 0;
+}
+
+.style5 .dropdownItem label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Style 6 - Minimaliste moderne */
+.style6 .filtersContainer {
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: none;
+}
+
+.style6 .filtersRow {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.style6 .searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  border-radius: 0;
+  transition: border-color 0.2s ease;
+}
+
+.style6 .searchBox:focus-within {
+  border-bottom-color: var(--primary-color);
+}
+
+.style6 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style6 .filterSelect {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  border-radius: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.style6 .filterSelect:focus {
+  border-bottom-color: var(--primary-color);
+  outline: none;
+}
+
+/* Style 7 - Onglets moderne avec couleurs cohérentes */
+.style7 .filtersContainer {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.style7 .tabsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.style7 .tabsRow {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.style7 .tab {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.style7 .tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.style7 .tab.active {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  font-weight: var(--font-weight-semibold);
+}
+
+.style7 .tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - var(--spacing-md));
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: 2px 2px 0 0;
+}
+
+.style7 .toolsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+}
+
+.style7 .searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.style7 .searchBox:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+  background: var(--bg-primary);
+}
+
+.style7 .searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.style7 .searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.style7 .clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.style7 .clearButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.style7 .toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.style7 .toggleLabel:hover {
+  border-color: var(--primary-color);
+  background: var(--bg-hover);
+}
+
+.style7 .toggleSwitch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  transition: all 0.2s ease;
+}
+
+.style7 .toggleInput:checked + .toggleSwitch {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.style7 .toggleSlider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.style7 .toggleInput:checked + .toggleSwitch .toggleSlider {
+  transform: translateX(18px);
+}
+
+.style7 .toggleText {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Styles communs pour tous les styles */
+.filtersContainer {
+  margin-bottom: var(--spacing-lg);
+}
+
+.searchBox svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.clearButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filterSelect {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  outline: none;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleInput {
+  display: none;
+}
+
+.toggleSwitch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.toggleInput:checked + .toggleSwitch {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.toggleSlider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.toggleInput:checked + .toggleSwitch .toggleSlider {
+  transform: translateX(20px);
+}
+
+.toggleText {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.resetButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resetButton:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .style1 .filtersRow,
+  .style2 .filtersRow,
+  .style3 .badgesRow,
+  .style4 .tabsRow,
+  .style5 .filtersRow,
+  .style6 .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .style1 .searchBox,
+  .style2 .searchBox,
+  .style3 .searchBox,
+  .style5 .searchBox,
+  .style6 .searchBox {
+    min-width: 100%;
+  }
+}
+

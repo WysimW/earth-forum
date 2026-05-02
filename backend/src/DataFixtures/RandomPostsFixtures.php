@@ -9,10 +9,12 @@ use App\Repository\ThreadRepository;
 use App\Repository\UserRepository;
 use App\Repository\CharacterRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-class RandomPostsFixtures extends Fixture
+class RandomPostsFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
     private SluggerInterface $slugger;
     private ForumRepository $forumRepository;
@@ -177,5 +179,19 @@ class RandomPostsFixtures extends Fixture
         $location = $locations[array_rand($locations)];
         
         return "Une $adjective $noun $location";
+    }
+
+    public function getDependencies()
+    {
+        return [
+            ForumFixtures::class,
+            CharacterFixtures::class,
+            UserFixtures::class,
+        ];
+    }
+
+    public static function getGroups(): array
+    {
+        return ['main-fixtures'];
     }
 } 

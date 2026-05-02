@@ -101,6 +101,46 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Retourne une page de posts d'un thread, triés du plus ancien au plus récent.
+     *
+     * @return array{posts: Post[], total: int, page: int, limit: int, totalPages: int}
+     */
+    public function findPaginatedByThread(int $threadId, int $page = 1, int $limit = 20): array
+    {
+        $page = max(1, $page);
+        $limit = max(1, $limit);
+
+        $baseQb = $this->createQueryBuilder('p')
+            ->where('p.thread = :threadId')
+            ->setParameter('threadId', $threadId);
+
+        $total = (int) (clone $baseQb)
+            ->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $offset = ($page - 1) * $limit;
+        $posts = $baseQb
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.character', 'c')->addSelect('c')
+            ->orderBy('p.createdAt', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $totalPages = max(1, (int) ceil($total / $limit));
+
+        return [
+            'posts' => $posts,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages,
+        ];
+    }
     
     /**
      * Compte le nombre de posts dans une liste de forums

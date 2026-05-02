@@ -77,25 +77,30 @@ class BreadcrumbService
     
     public function generateBreadcrumbs(Forum $forum): array
     {
-        $breadcrumbs = [];
+        $forumChain = [];
+        $currentForum = $forum;
 
-        // Traverse the parent forums recursively to build the breadcrumb trail
-        while ($forum !== null) {
-            $breadcrumbs[] = [
-                'name' => $forum->getName(),
-                'url' => "/forum/{$forum->getId()}"
-            ];
-            $forum = $forum->getParent(); // Move to the parent forum
+        // Construire la chaine complète des forums jusqu'au forum racine
+        while ($currentForum !== null) {
+            $forumChain[] = $currentForum;
+            $currentForum = $currentForum->getParent();
         }
 
-        // Add the root or home breadcrumb
-        $breadcrumbs[] = [
-            'name' => 'Home',
-            'url' => '/'
-        ];
+        $forumChain = array_reverse($forumChain);
 
-        // The breadcrumbs need to be in the correct order, so we reverse the array
-        return array_reverse($breadcrumbs);
+        $breadcrumbs = [[
+            'name' => 'FORUMS',
+            'url' => '/forums',
+        ]];
+
+        foreach ($forumChain as $forumItem) {
+            $breadcrumbs[] = [
+                'name' => $forumItem->getName(),
+                'url' => $forumItem->getSlug() ? "/forums/{$forumItem->getSlug()}" : null,
+            ];
+        }
+
+        return $breadcrumbs;
     }
 
     public function generateBreadcrumbsForThread(Thread $thread): array

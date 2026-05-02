@@ -1,0 +1,655 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.controls {
+  margin-bottom: var(--spacing-xl);
+}
+
+.pageTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.styleSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.styleBtn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-size: var(--font-size-sm);
+}
+
+.styleBtn:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--primary-color);
+}
+
+.styleBtn.active {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.preview {
+  margin-top: var(--spacing-xl);
+}
+
+.previewTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.postsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Style 1 - Classique avec infos personnage */
+.style1Post {
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.style1Post .postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.style1Post .characterSection {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.style1Post .avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.style1Post .characterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style1Post .characterNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.style1Post .characterName {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+}
+
+.style1Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.style1Post .characterMeta {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.style1Post .alignment {
+  padding: 2px 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.style1Post .factions {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.style1Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.style1Post .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.style1Post .actionBtn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.style1Post .actionBtn:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.style1Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  font-size: var(--font-size-base);
+}
+
+/* Style 2 - Sidebar personnage */
+.style2Post {
+  display: flex;
+  gap: var(--spacing-lg);
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+}
+
+.style2Post .characterSidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 180px;
+  padding-right: var(--spacing-lg);
+  border-right: var(--border-width) solid var(--border-color);
+}
+
+.style2Post .avatarLarge {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.style2Post .characterDetails {
+  text-align: center;
+  width: 100%;
+}
+
+.style2Post .characterName {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style2Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin-bottom: var(--spacing-sm);
+}
+
+.style2Post .alignmentBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.style2Post .factionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.style2Post .factionTag {
+  padding: 2px 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+}
+
+.style2Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.style2Post .postMain {
+  flex: 1;
+}
+
+.style2Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.style2Post .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+/* Style 3 - Card élégante */
+.style3Post {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.style3Post .postCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.style3Post .postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.style3Post .characterHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.style3Post .avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.style3Post .characterName {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  font-size: var(--font-size-base);
+}
+
+.style3Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.style3Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.style3Post .characterBadges {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.style3Post .alignmentBadge {
+  padding: 4px 10px;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.style3Post .factionBadge {
+  padding: 4px 10px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+}
+
+.style3Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  font-size: var(--font-size-base);
+}
+
+/* Style 4 - Moderne avec badges */
+.style4Post {
+  background-color: var(--bg-card);
+  border-left: 4px solid var(--primary-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.style4Post .postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.style4Post .characterSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.style4Post .avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.style4Post .characterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style4Post .characterName {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  font-size: var(--font-size-base);
+}
+
+.style4Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.style4Post .postMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.style4Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.style4Post .badgesRow {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.style4Post .alignmentBadge {
+  padding: 3px 8px;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.style4Post .factionBadge {
+  padding: 3px 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+}
+
+.style4Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.style4Post .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+/* Style 5 - Minimaliste RP */
+.style5Post {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  border-left: 3px solid var(--primary-color);
+}
+
+.style5Post .postMinimal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.style5Post .characterLine {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.style5Post .avatarSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--primary-color);
+}
+
+.style5Post .characterName {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  font-size: var(--font-size-sm);
+}
+
+.style5Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}
+
+.style5Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.style5Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-base);
+}
+
+/* Style 6 - Immersif */
+.style6Post {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.style6Post::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), transparent);
+}
+
+.style6Post .immersiveHeader {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.style6Post .characterPortrait {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.style6Post .avatarPortrait {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.style6Post .portraitOverlay {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-card);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--border-color);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.style6Post .characterName {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  font-size: var(--font-size-sm);
+}
+
+.style6Post .characterAlias {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}
+
+.style6Post .characterStats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.style6Post .statItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style6Post .statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.style6Post .statValue {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.style6Post .factionsRow {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.style6Post .factionTag {
+  padding: 3px 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+}
+
+.style6Post .postDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: auto;
+}
+
+.style6Post .postContent {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+  white-space: pre-wrap;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-md);
+}
+
+.style6Post .postActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+/* Actions communes */
+.actionBtn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+

@@ -1,0 +1,403 @@
+.card {
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 280px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardImageContainer {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: var(--bg-dark);
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageGradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.statusBadgeContainer {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 10;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(8px);
+  border: 1px solid;
+}
+
+.statusBadge.draft {
+  color: var(--text-muted);
+  background-color: rgba(20, 20, 20, 0.8);
+  border-color: var(--border-color);
+}
+
+.statusBadge.pending {
+  color: var(--warning-color);
+  background-color: rgba(255, 199, 7, 0.2);
+  border-color: var(--warning-color);
+}
+
+.statusBadge.validated {
+  color: var(--success-color);
+  background-color: rgba(40, 167, 69, 0.2);
+  border-color: var(--success-color);
+}
+
+.statusBadge.rejected {
+  color: var(--danger-color);
+  background-color: rgba(220, 53, 69, 0.2);
+  border-color: var(--danger-color);
+}
+
+.statusBadge.editing {
+  color: var(--info-color);
+  background-color: rgba(23, 162, 184, 0.2);
+  border-color: var(--info-color);
+}
+
+.cardBody {
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeader {
+  margin-bottom: var(--spacing-md);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-title);
+  line-height: var(--line-height-tight);
+}
+
+.cardSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  flex: 1;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.infoItem svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.infoItemInteractive {
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.infoItemInteractive:hover {
+  color: var(--text-primary);
+}
+
+.infoItemInteractive:focus-visible {
+  outline: 1px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.infoItemEditor {
+  width: 100%;
+}
+
+.cardActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: auto;
+  align-items: center;
+}
+
+.btnIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btnIcon:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btnIcon svg {
+  flex-shrink: 0;
+}
+
+.dropdownContainer {
+  position: relative;
+  margin-left: auto;
+}
+
+.dropdownMenu {
+  position: absolute;
+  bottom: calc(100% + var(--spacing-xs));
+  right: 0;
+  background-color: var(--bg-dropdown);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 180px;
+  z-index: 1000;
+  overflow: visible;
+  backdrop-filter: none;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: transparent;
+  color: var(--text-primary);
+  border: none;
+  border-radius: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: left;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.dropdownItemText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownItem:hover {
+  background-color: var(--bg-secondary);
+  color: var(--primary-color);
+}
+
+.dropdownItem svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.dropdownItemDanger {
+  color: var(--danger-color);
+}
+
+.dropdownItemDanger:hover {
+  background-color: var(--bg-secondary);
+  color: var(--danger-color);
+}
+
+/* Modal de sélection de thème */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: var(--spacing-md);
+}
+
+.modal {
+  background-color: var(--bg-dropdown);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.modalTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base);
+}
+
+.modalClose:hover {
+  color: var(--text-primary);
+}
+
+.modalBody {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.themeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.themeOption {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  background-color: var(--bg-card);
+}
+
+.themeOption:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-card-hover);
+}
+
+.radioInput {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.radioLabel {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  cursor: pointer;
+  flex: 1;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.modalButtonCancel,
+.modalButtonConfirm {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 6px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.modalButtonCancel {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.modalButtonCancel:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+}
+
+.modalButtonConfirm {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.modalButtonConfirm:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.dropdownItemActive {
+  background-color: var(--bg-secondary);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-medium);
+}
+
+.dropdownItemActive svg {
+  margin-left: auto;
+}
+

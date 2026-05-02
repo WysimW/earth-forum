@@ -379,6 +379,96 @@ class ThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve les threads d'un forum avec pagination et filtres
+     * 
+     * @param int $forumId ID du forum
+     * @param array $filters Filtres à appliquer ['type' => 'roleplay', 'status' => 'open', 'search' => 'keyword', 'author' => userId]
+     * @param int $page Numéro de page (commence à 1)
+     * @param int $limit Nombre d'éléments par page
+     * @return array ['threads' => Thread[], 'total' => int, 'pages' => int]
+     */
+    public function findThreadsByForumWithPagination(int $forumId, array $filters = [], int $page = 1, int $limit = 20): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.forum = :forumId')
+            ->setParameter('forumId', $forumId);
+
+        // Filtre par type
+        if (isset($filters['type']) && $filters['type'] !== 'all') {
+            $qb->andWhere('t.type = :type')
+               ->setParameter('type', $filters['type']);
+        }
+
+        // Filtre par statut
+        if (isset($filters['status']) && $filters['status'] !== 'all') {
+            $qb->andWhere('t.status = :status')
+               ->setParameter('status', $filters['status']);
+        }
+
+        // Filtre par recherche (titre)
+        if (isset($filters['search']) && !empty($filters['search'])) {
+            $qb->andWhere('t.title LIKE :search')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        // Filtre par auteur
+        if (isset($filters['author']) && $filters['author']) {
+            $qb->andWhere('t.author = :author')
+               ->setParameter('author', $filters['author']);
+        }
+
+        // Filtre par personnage créateur (pour les threads RP)
+        if (isset($filters['character']) && $filters['character']) {
+            $qb->andWhere('t.characterCreator = :character')
+               ->setParameter('character', $filters['character']);
+        }
+
+        // Filtre par participation utilisateur (threads où l'utilisateur a posté)
+        $hasUserFilter = isset($filters['userId']) && $filters['userId'];
+        if ($hasUserFilter) {
+            $qb->leftJoin('t.posts', 'p')
+               ->leftJoin('p.character', 'pc')
+               ->andWhere('(p.author = :userId OR pc.user = :userId)')
+               ->setParameter('userId', $filters['userId'])
+               ->groupBy('t.id'); // Important pour éviter les doublons
+        }
+
+        // Compter le total avant pagination
+        $totalQb = clone $qb;
+        if ($hasUserFilter) {
+            // Retirer le GROUP BY du clone pour le COUNT
+            $totalQb->resetDQLPart('groupBy');
+            $total = (int) $totalQb->select('COUNT(DISTINCT t.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+        } else {
+            $total = (int) $totalQb->select('COUNT(t.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+        }
+
+        // Tri : sticky d'abord, puis par date de mise à jour
+        $qb->orderBy('t.sticky', 'DESC')
+           ->addOrderBy('t.updatedAt', 'DESC');
+
+        // Pagination
+        $offset = ($page - 1) * $limit;
+        $qb->setFirstResult($offset)
+           ->setMaxResults($limit);
+
+        $threads = $qb->getQuery()->getResult();
+        $totalPages = (int) ceil($total / $limit);
+
+        return [
+            'threads' => $threads,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages,
+        ];
+    }
+
+    /**
      * Trouve toutes les fiches de personnage créées par un utilisateur (via l'auteur du thread ou les threads liés aux personnages de l'utilisateur)
      */
     public function findCharacterSheetsByUser(User $user): array

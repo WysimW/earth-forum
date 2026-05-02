@@ -1,0 +1,8 @@
+# Ce répertoire contiendra les clés JWT (private.pem et public.pem)
+# Ces fichiers seront générés par la commande: php bin/console lexik:jwt:generate-keypair
+
+
+
+
+
+

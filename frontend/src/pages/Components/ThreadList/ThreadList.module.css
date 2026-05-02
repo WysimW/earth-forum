@@ -1,0 +1,554 @@
+.container {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.controls {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 12px;
+}
+
+.pageTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.styleSelector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.styleBtn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.styleBtn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.styleBtn.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
+.preview {
+  padding: var(--spacing-lg);
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+}
+
+.previewTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Styles communs */
+.forumHeader {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.forumTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.forumDescription {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+
+/* Style 5 - Minimaliste */
+.style5 .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5 .threadItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5 .threadItem:hover {
+  border-left-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+  padding-left: calc(var(--spacing-md) + 3px);
+}
+
+.style5 .threadContent {
+  flex: 1;
+}
+
+.style5 .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.style5 .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5 .separator {
+  color: var(--text-muted);
+}
+
+.style5 .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5a - Minimaliste avec point coloré */
+.style5a .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5a .threadItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5a .threadItem:hover {
+  background-color: var(--bg-secondary);
+}
+
+.style5a .threadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+}
+
+.style5a .threadItem:hover .threadDot {
+  transform: scale(1.3);
+  box-shadow: 0 0 8px var(--primary-color);
+}
+
+.style5a .threadContent {
+  flex: 1;
+}
+
+.style5a .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.style5a .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5a .separator {
+  color: var(--text-muted);
+}
+
+.style5a .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5b - Minimaliste avec ligne de séparation */
+.style5b .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.style5b .threadItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5b .threadItem:last-child {
+  border-bottom: none;
+}
+
+.style5b .threadItem:hover {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--primary-color);
+}
+
+.style5b .threadContent {
+  flex: 1;
+}
+
+.style5b .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.style5b .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5b .separator {
+  color: var(--text-muted);
+}
+
+.style5b .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5c - Minimaliste avec fond hover */
+.style5c .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5c .threadItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5c .threadItem:hover {
+  background-color: var(--bg-secondary);
+}
+
+.style5c .threadContent {
+  flex: 1;
+}
+
+.style5c .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.style5c .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5c .separator {
+  color: var(--text-muted);
+}
+
+.style5c .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5d - Minimaliste avec avatar compact */
+.style5d .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5d .threadItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5d .threadItem:hover {
+  border-left-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+}
+
+.style5d .threadAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.style5d .threadContent {
+  flex: 1;
+}
+
+.style5d .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.style5d .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5d .separator {
+  color: var(--text-muted);
+}
+
+.style5d .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5e - Minimaliste avec badge statut */
+.style5e .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5e .threadItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5e .threadItem:hover {
+  border-left-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+  padding-left: calc(var(--spacing-md) + 3px);
+}
+
+.style5e .threadContent {
+  flex: 1;
+}
+
+.style5e .threadHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style5e .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.style5e .threadBadges {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.style5e .badgePinned,
+.style5e .badgeLocked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.style5e .badgePinned {
+  background-color: rgba(var(--warning-color-rgb), 0.2);
+  color: var(--warning-color);
+}
+
+.style5e .badgeLocked {
+  background-color: rgba(var(--text-muted-rgb), 0.2);
+  color: var(--text-muted);
+}
+
+.style5e .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5e .separator {
+  color: var(--text-muted);
+}
+
+.style5e .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Style 5f - Minimaliste avec avatar + badge statut */
+.style5f .threadsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.style5f .threadItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+}
+
+.style5f .threadItem:hover {
+  border-left-color: var(--primary-color);
+  background-color: var(--bg-secondary);
+}
+
+.style5f .threadAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.style5f .threadContent {
+  flex: 1;
+}
+
+.style5f .threadHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.style5f .threadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.style5f .threadBadges {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.style5f .badgePinned,
+.style5f .badgeLocked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.style5f .badgePinned {
+  background-color: rgba(var(--warning-color-rgb), 0.2);
+  color: var(--warning-color);
+}
+
+.style5f .badgeLocked {
+  background-color: rgba(var(--text-muted-rgb), 0.2);
+  color: var(--text-muted);
+}
+
+.style5f .threadInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.style5f .separator {
+  color: var(--text-muted);
+}
+
+.style5f .lastPostIndicator {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
