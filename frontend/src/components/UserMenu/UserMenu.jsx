@@ -1,13 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import messagingService, { MESSAGING_UNREAD_REFRESH_EVENT } from '../../services/messagingService';
 import styles from './UserMenu.module.css';
 
 const UserMenu = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [messagingUnread, setMessagingUnread] = useState(0);
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!user) {
+      setMessagingUnread(0);
+      return undefined;
+    }
+    let cancelled = false;
+    const fetchUnread = async () => {
+      try {
+        const data = await messagingService.getUnreadCount();
+        const total = typeof data?.total === 'number' ? data.total : 0;
+        if (!cancelled) setMessagingUnread(total);
+      } catch {
+        if (!cancelled) setMessagingUnread(0);
+      }
+    };
+    fetchUnread();
+    const t = setInterval(fetchUnread, 45000);
+    const onRefresh = () => {
+      fetchUnread();
+    };
+    window.addEventListener(MESSAGING_UNREAD_REFRESH_EVENT, onRefresh);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+      window.removeEventListener(MESSAGING_UNREAD_REFRESH_EVENT, onRefresh);
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,7 +92,7 @@ const UserMenu = () => {
       {isOpen && (
         <div className={styles.dropdown}>
           <Link
-            to="/dashboard"
+            to="/tableau-de-bord"
             className={styles.menuItem}
             onClick={() => setIsOpen(false)}
           >
@@ -76,6 +106,22 @@ const UserMenu = () => {
           </Link>
           
           <Link
+            to="/messagerie"
+            className={styles.menuItem}
+            onClick={() => setIsOpen(false)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+            </svg>
+            <span className={styles.menuItemLabel}>Messagerie</span>
+            {messagingUnread > 0 && (
+              <span className={styles.menuBadge} aria-label={`${messagingUnread} messages non lus`}>
+                {messagingUnread > 99 ? '99+' : messagingUnread}
+              </span>
+            )}
+          </Link>
+
+          <Link
             to="/characters"
             className={styles.menuItem}
             onClick={() => setIsOpen(false)}
@@ -85,6 +131,18 @@ const UserMenu = () => {
               <circle cx="12" cy="7" r="4" />
             </svg>
             Mes personnages
+          </Link>
+
+          <Link
+            to="/profil"
+            className={styles.menuItem}
+            onClick={() => setIsOpen(false)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20a8 8 0 0 1 16 0" />
+            </svg>
+            Mon profil
           </Link>
           
           <Link

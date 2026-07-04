@@ -125,6 +125,12 @@ class Npc implements TimestampableInterface
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $secrets = null;
+
+    /**
+     * PNJ créé pour une fiche faction : n'apparaît pas dans « Mes PNJ » du joueur.
+     */
+    #[ORM\Column(name: 'exclude_from_personal_npcs', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $excludeFromPersonalNpcs = false;
     
     public function __construct()
     {
@@ -481,6 +487,17 @@ class Npc implements TimestampableInterface
     public function setSecrets(?string $secrets): static
     {
         $this->secrets = $secrets;
+        return $this;
+    }
+
+    public function isExcludeFromPersonalNpcs(): bool
+    {
+        return $this->excludeFromPersonalNpcs;
+    }
+
+    public function setExcludeFromPersonalNpcs(bool $excludeFromPersonalNpcs): static
+    {
+        $this->excludeFromPersonalNpcs = $excludeFromPersonalNpcs;
         return $this;
     }
 

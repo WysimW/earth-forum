@@ -50,6 +50,12 @@ class MessageReport
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $moderationNotes = null;
 
+    /**
+     * Copie HTML du message au moment du signalement (inchangée si le message est édité ou supprimé ensuite).
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reportedContentSnapshot = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -149,6 +155,31 @@ class MessageReport
         $this->moderationNotes = $moderationNotes;
 
         return $this;
+    }
+
+    public function getReportedContentSnapshot(): ?string
+    {
+        return $this->reportedContentSnapshot;
+    }
+
+    public function setReportedContentSnapshot(?string $reportedContentSnapshot): static
+    {
+        $this->reportedContentSnapshot = $reportedContentSnapshot;
+
+        return $this;
+    }
+
+    /**
+     * Contenu à afficher pour la modération : copie figée si présente, sinon le message actuel (anciens signalements).
+     */
+    public function getBodyForModeration(): string
+    {
+        $snap = $this->reportedContentSnapshot;
+        if (null !== $snap && '' !== $snap) {
+            return $snap;
+        }
+
+        return (string) ($this->message?->getContent() ?? '');
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable

@@ -11,19 +11,17 @@
   border: 1px solid transparent;
 }
 
-.forumCard.unread {
-  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
-  box-shadow: 0 0 0 var(--border-width) color-mix(in srgb, var(--primary-color) 35%, transparent);
+.forumCard.unread:not(.participatingHighlight) {
+  border: var(--border-width) solid color-mix(in srgb, var(--warning-color) 65%, var(--border-color));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning-color) 22%, transparent);
 }
 
-.forumCard.unread .cardInfo::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--border-width);
-  background: var(--primary-color);
+.forumCard.participatingHighlight {
+  border: var(--border-width) solid color-mix(in srgb, var(--text-light) 55%, var(--border-color));
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--text-light) 45%, transparent),
+    0 0 12px color-mix(in srgb, var(--text-light) 24%, transparent),
+    0 0 24px color-mix(in srgb, var(--text-light) 12%, transparent);
 }
 
 .cardBanner {
@@ -138,42 +136,6 @@
   transition: color var(--transition-base);
 }
 
-.cardBadge {
-  font-size: 9px;
-  font-weight: var(--font-weight-semibold);
-  padding: 3px 8px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: transparent;
-  border: 1px solid;
-}
-
-.cardBadge.roleplay {
-  border-color: #fff;
-  color: #fff;
-}
-
-.cardBadge.important {
-  border-color: #FF6B6B;
-  color: #FF6B6B;
-}
-
-.cardBadge.player_platform {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.cardBadge.hrp {
-  border-color: #4FC3F7;
-  color: #4FC3F7;
-}
-
-.forumCard:not(:has(.cardBanner)) .cardBadge.hrp {
-  border-color: #4FC3F7;
-  color: #4FC3F7;
-}
-
 .cardDesc {
   font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.85);
@@ -263,22 +225,57 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  width: 100%;
+  min-height: 20px;
   font-size: var(--font-size-xs);
+  line-height: 1;
   color: rgba(255, 255, 255, 0.7);
   margin-top: var(--spacing-xs);
+}
+
+.metaBadges {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .unreadPill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   min-height: 20px;
   padding: 0 var(--spacing-xs);
-  border: var(--border-width) solid var(--primary-color);
-  background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  flex-shrink: 0;
+  line-height: 1;
+  border: var(--border-width) solid var(--warning-color);
+  background: color-mix(in srgb, var(--warning-color) 24%, transparent);
+  color: var(--warning-color);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.participatingPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 20px;
+  padding: 0 var(--spacing-xs);
+  line-height: 1;
+  border: var(--border-width) solid var(--text-light);
   color: var(--text-light);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  background: color-mix(in srgb, var(--text-light) 18%, transparent);
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--text-light) 50%, transparent),
+    0 0 10px color-mix(in srgb, var(--text-light) 28%, transparent);
 }
 
 .metaDot {
@@ -365,6 +362,178 @@
   color: var(--text-muted);
 }
 
+/* Variante compacte (liste horizontale, avatar dernier message) */
+.forumCardCompact {
+  min-height: 0;
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  align-items: stretch;
+}
+
+.forumCardCompact:hover {
+  border-color: var(--border-color-hover);
+  background-color: var(--bg-card-hover);
+}
+
+.forumCardCompact.unread:not(.participatingHighlight) {
+  border: var(--border-width) solid color-mix(in srgb, var(--warning-color) 65%, var(--border-color));
+  box-shadow: none;
+}
+
+.forumCardCompact.participatingHighlight {
+  border: var(--border-width) solid color-mix(in srgb, var(--text-light) 55%, var(--border-color));
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--text-light) 40%, transparent),
+    0 0 12px color-mix(in srgb, var(--text-light) 20%, transparent);
+}
+
+.forumCardCompact .compactRow {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.forumCardCompact .compactMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.forumCardCompact .compactHeaderRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.forumCardCompact .compactTitle {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-title);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.forumCardCompact .compactDesc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.forumCardCompact .subforumChip {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.forumCardCompact .subforumChip:hover {
+  border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
+  color: var(--text-primary);
+}
+
+.forumCardCompact .subforumMore {
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.forumCardCompact .subforumMore:hover {
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+}
+
+.forumCardCompact .compactMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: 20px;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  color: var(--text-muted);
+  margin-top: 0;
+}
+
+.forumCardCompact .compactLastPost {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  max-width: 220px;
+  padding-left: var(--spacing-md);
+  border-left: var(--border-width) solid var(--border-color);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+
+.forumCardCompact .compactLastPost:hover {
+  border-left-color: var(--primary-color);
+}
+
+.forumCardCompact .compactLastAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: var(--border-width) solid var(--border-color);
+}
+
+.forumCardCompact .compactLastInfo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.forumCardCompact .compactLastLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.forumCardCompact .compactLastAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.forumCardCompact .compactLastDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.forumCardCompact .compactLastPostMuted {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-left: var(--spacing-md);
+  border-left: var(--border-width) solid var(--border-color);
+  min-width: 120px;
+}
+
+.forumCardCompact .compactLastMutedText {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .forumCard {
@@ -396,5 +565,23 @@
 
   .sidebarThreadTitle {
     display: none;
+  }
+
+  .forumCardCompact .compactRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .forumCardCompact .compactLastPost,
+  .forumCardCompact .compactLastPostMuted {
+    border-left: none;
+    border-top: var(--border-width) solid var(--border-color);
+    padding-left: 0;
+    padding-top: var(--spacing-sm);
+    max-width: none;
+  }
+
+  .forumCardCompact .compactLastPost {
+    flex-direction: row;
   }
 }

@@ -58,6 +58,8 @@ class CharacterRepository extends ServiceEntityRepository
                 JOIN t.participants p
                 WHERE t.id = :threadId
             )')
+            ->andWhere('c.kind = :kind')
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->setParameter('threadId', $thread->getId())
             ->orderBy('c.name', 'ASC');
             
@@ -80,7 +82,9 @@ class CharacterRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->where('c.user = :user')
+            ->andWhere('c.kind = :kind')
             ->setParameter('user', $user)
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
@@ -96,7 +100,9 @@ class CharacterRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.universe = :univers')
+            ->andWhere('c.kind = :kind')
             ->setParameter('univers', $univers)
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
@@ -115,8 +121,10 @@ class CharacterRepository extends ServiceEntityRepository
             ->leftJoin('e.parentUniverse', 'pu')
             ->andWhere('(u.slug = :slug OR pu.slug = :slug)')
             ->andWhere('c.status = :status')
+            ->andWhere('c.kind = :kind')
             ->setParameter('slug', $universeSlug)
             ->setParameter('status', 'validated')
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
@@ -137,9 +145,11 @@ class CharacterRepository extends ServiceEntityRepository
             ->andWhere('(u.slug = :slug OR pu.slug = :slug)')
             ->andWhere('c.status = :status')
             ->andWhere('c.user = :user')
+            ->andWhere('c.kind = :kind')
             ->setParameter('slug', $universeSlug)
             ->setParameter('status', 'validated')
             ->setParameter('user', $user)
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
@@ -150,8 +160,10 @@ class CharacterRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere('c.user = :user')
             ->andWhere('c.status = :status')
+            ->andWhere('c.kind = :kind')
             ->setParameter('user', $user)
             ->setParameter('status', 'validated')
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
             ->getResult();
@@ -163,9 +175,11 @@ class CharacterRepository extends ServiceEntityRepository
             ->andWhere('c.user = :user')
             ->andWhere('c.status = :status')
             ->andWhere(':thread MEMBER OF c.threads')
+            ->andWhere('c.kind = :kind')
             ->setParameter('user', $user)
             ->setParameter('status', 'validated')
             ->setParameter('thread', $thread)
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->getQuery()
             ->getResult();
     }
@@ -178,11 +192,13 @@ class CharacterRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere('c.user = :user')
             ->andWhere('c.status = :status')
+            ->andWhere('c.kind = :kind')
             ->andWhere('c.universe = :universe OR c.elseworld IN (
                 SELECT e FROM App\Entity\Elseworld e WHERE e.parentUniverse = :universe
             )')
             ->setParameter('user', $user)
             ->setParameter('status', 'validated')
+            ->setParameter('kind', Character::KIND_STANDARD)
             ->setParameter('universe', $universe)
             ->orderBy('c.name', 'ASC')
             ->getQuery()

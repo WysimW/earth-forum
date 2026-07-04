@@ -180,4 +180,152 @@ class ReadPostRepository extends ServiceEntityRepository
         
         $entityManager->flush();
     }
+
+    /**
+     * @param int[] $threadIds
+     * @return array<int,int> [threadId => unreadCount]
+     */
+    public function getUnreadCountsForUserAndThreads(User $user, array $threadIds): array
+    {
+        $threadIds = array_values(array_unique(array_filter(array_map('intval', $threadIds))));
+        if ($threadIds === []) {
+            return [];
+        }
+
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('t.id AS threadId', 'COUNT(p.id) AS unreadCount')
+            ->from(Post::class, 'p')
+            ->join('p.thread', 't')
+            ->leftJoin(ReadPost::class, 'rp', 'WITH', 'rp.post = p AND rp.user = :user')
+            ->where('t.id IN (:threadIds)')
+            ->andWhere('rp.id IS NULL')
+            ->andWhere('p.isDraft = false')
+            ->andWhere('p.author != :user')
+            ->setParameter('threadIds', $threadIds)
+            ->setParameter('user', $user)
+            ->groupBy('t.id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['threadId']] = (int) $row['unreadCount'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int[] $forumIds
+     * @return array<int,int> [forumId => unreadCount]
+     */
+    public function getUnreadCountsForUserAndForums(User $user, array $forumIds): array
+    {
+        $forumIds = array_values(array_unique(array_filter(array_map('intval', $forumIds))));
+        if ($forumIds === []) {
+            return [];
+        }
+
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('f.id AS forumId', 'COUNT(p.id) AS unreadCount')
+            ->from(Post::class, 'p')
+            ->join('p.thread', 't')
+            ->join('t.forum', 'f')
+            ->leftJoin(ReadPost::class, 'rp', 'WITH', 'rp.post = p AND rp.user = :user')
+            ->where('f.id IN (:forumIds)')
+            ->andWhere('rp.id IS NULL')
+            ->andWhere('p.isDraft = false')
+            ->andWhere('p.author != :user')
+            ->setParameter('forumIds', $forumIds)
+            ->setParameter('user', $user)
+            ->groupBy('f.id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['forumId']] = (int) $row['unreadCount'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int[] $forumIds
+     * @return array<int,int> [forumId => participatingUnreadCount]
+     */
+    public function getParticipatingUnreadCountsForUserAndForums(User $user, array $forumIds): array
+    {
+        $forumIds = array_values(array_unique(array_filter(array_map('intval', $forumIds))));
+        if ($forumIds === []) {
+            return [];
+        }
+
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('f.id AS forumId', 'COUNT(DISTINCT p.id) AS unreadCount')
+            ->from(Post::class, 'p')
+            ->join('p.thread', 't')
+            ->join('t.forum', 'f')
+            ->leftJoin('t.characterCreator', 'cc')
+            ->leftJoin('t.participants', 'participantCharacter')
+            ->leftJoin('participantCharacter.user', 'participantUser')
+            ->leftJoin('t.posts', 'threadPosts')
+            ->leftJoin('threadPosts.author', 'threadPostAuthor')
+            ->leftJoin('threadPosts.character', 'threadPostCharacter')
+            ->leftJoin('threadPostCharacter.user', 'threadPostCharacterUser')
+            ->leftJoin(ReadPost::class, 'rp', 'WITH', 'rp.post = p AND rp.user = :user')
+            ->where('f.id IN (:forumIds)')
+            ->andWhere('rp.id IS NULL')
+            ->andWhere('p.isDraft = false')
+            ->andWhere('p.author != :user')
+            ->andWhere('(t.author = :user OR cc.user = :user OR participantUser = :user OR threadPostAuthor = :user OR threadPostCharacterUser = :user)')
+            ->setParameter('forumIds', $forumIds)
+            ->setParameter('user', $user)
+            ->groupBy('f.id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['forumId']] = (int) $row['unreadCount'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int[] $forumIds
+     */
+    public function markForumsAsRead(User $user, array $forumIds): void
+    {
+        $forumIds = array_values(array_unique(array_filter(array_map('intval', $forumIds))));
+        if ($forumIds === []) {
+            return;
+        }
+
+        $unreadPosts = $this->getEntityManager()->createQueryBuilder()
+            ->select('p')
+            ->from(Post::class, 'p')
+            ->join('p.thread', 't')
+            ->join('t.forum', 'f')
+            ->leftJoin(ReadPost::class, 'rp', 'WITH', 'rp.post = p AND rp.user = :user')
+            ->where('f.id IN (:forumIds)')
+            ->andWhere('rp.id IS NULL')
+            ->andWhere('p.isDraft = false')
+            ->andWhere('p.author != :user')
+            ->setParameter('forumIds', $forumIds)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $entityManager = $this->getEntityManager();
+        foreach ($unreadPosts as $post) {
+            $readPost = new ReadPost();
+            $readPost->setUser($user);
+            $readPost->setPost($post);
+            $entityManager->persist($readPost);
+        }
+
+        $entityManager->flush();
+    }
 } 

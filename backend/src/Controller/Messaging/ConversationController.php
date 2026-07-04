@@ -13,6 +13,7 @@ use App\Repository\Messaging\ConversationRepository;
 use App\Repository\Messaging\MessageRepository;
 use App\Repository\UserRepository;
 use App\Service\UserSanctionService;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,7 +35,8 @@ class ConversationController extends AbstractController
         private MessageRepository $messageRepository,
         private UserRepository $userRepository,
         private SerializerInterface $serializer,
-        private UserSanctionService $sanctionService
+        private UserSanctionService $sanctionService,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -459,7 +461,7 @@ class ConversationController extends AbstractController
                 'author' => [
                     'id' => $message->getAuthor()->getId(),
                     'username' => $message->getAuthor()->getUsername(),
-                    'avatar' => $message->getAuthor()->getAvatar() ?: $this->getParameter('app.default_avatar')
+                    'avatar' => $this->messagingAvatar($message->getAuthor()->getAvatar(), (string) $this->getParameter('app.default_avatar'))
                 ]
             ];
             
@@ -467,7 +469,7 @@ class ConversationController extends AbstractController
                 $messageData['character'] = [
                     'id' => $message->getCharacter()->getId(),
                     'name' => $message->getCharacter()->getName(),
-                    'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+                    'avatar' => $this->messagingAvatar($message->getCharacter()->getAvatar(), (string) $this->getParameter('app.default_character_avatar'))
                 ];
             }
             
@@ -526,7 +528,7 @@ class ConversationController extends AbstractController
                 'author' => [
                     'id' => $message->getAuthor()->getId(),
                     'username' => $message->getAuthor()->getUsername(),
-                    'avatar' => $message->getAuthor()->getAvatar() ?: $this->getParameter('app.default_avatar')
+                    'avatar' => $this->messagingAvatar($message->getAuthor()->getAvatar(), (string) $this->getParameter('app.default_avatar'))
                 ]
             ];
             
@@ -534,7 +536,7 @@ class ConversationController extends AbstractController
                 $messageData['character'] = [
                     'id' => $message->getCharacter()->getId(),
                     'name' => $message->getCharacter()->getName(),
-                    'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+                    'avatar' => $this->messagingAvatar($message->getCharacter()->getAvatar(), (string) $this->getParameter('app.default_character_avatar'))
                 ];
             }
             
@@ -600,6 +602,7 @@ class ConversationController extends AbstractController
         
         // Enregistrer le message
         $this->entityManager->persist($message);
+        $conversation->setUpdatedAt(new \DateTime());
         $this->entityManager->flush();
         
         // Préparer la réponse
@@ -612,7 +615,7 @@ class ConversationController extends AbstractController
             'author' => [
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
-                'avatar' => $user->getAvatar() ?: $this->getParameter('app.default_avatar')
+                'avatar' => $this->messagingAvatar($user->getAvatar(), (string) $this->getParameter('app.default_avatar'))
             ]
         ];
         
@@ -620,10 +623,17 @@ class ConversationController extends AbstractController
             $messageData['character'] = [
                 'id' => $message->getCharacter()->getId(),
                 'name' => $message->getCharacter()->getName(),
-                'avatar' => $message->getCharacter()->getAvatar() ?: $this->getParameter('app.default_character_avatar')
+                'avatar' => $this->messagingAvatar($message->getCharacter()->getAvatar(), (string) $this->getParameter('app.default_character_avatar'))
             ];
         }
         
         return new JsonResponse(['success' => true, 'message' => $messageData]);
+    }
+
+    private function messagingAvatar(?string $storedUrl, string $fallback): string
+    {
+        $resolved = $this->s3MediaUrlResolver->resolve($storedUrl);
+
+        return ($resolved !== null && $resolved !== '') ? $resolved : $fallback;
     }
 } 

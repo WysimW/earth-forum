@@ -7,8 +7,9 @@
 [data-universe="dc"] {
   --universe-primary: #0066CC;
   --universe-secondary: #CC0000;
+  --universe-tertiary: #001a35;
   --universe-accent: #FFD700;
-  --universe-bg: #1A1A1A;
+  --universe-bg: #1a1a1a;
   --universe-bg-secondary: rgba(2, 19, 36);;
   --universe-text: #FFFFFF;
   --universe-text-secondary: #E5E5E5;
@@ -23,6 +24,7 @@
   --bg-primary: var(--universe-bg);
   --bg-dropdown: var(--universe-bg-secondary);
   --bg-secondary: var(--universe-bg-secondary);
+  --bg-tertiary: var(--universe-tertiary);
   --bg-card: rgb(3 27 51 / 80%);
   --bg-card-hover: rgba(3, 27, 51, 0.329);
   --text-primary: var(--universe-text);
@@ -63,6 +65,7 @@
   --accent-color: var(--universe-accent);
   --bg-primary: var(--universe-bg);
   --bg-secondary: var(--universe-bg-secondary);
+  --bg-tertiary: var(--universe-bg-secondary);
   --bg-card: rgba(237, 29, 36, 0.1);
   --bg-card-hover: rgba(237, 29, 36, 0.2);
   --text-primary: var(--universe-text);
@@ -106,6 +109,7 @@
   --accent-color: var(--universe-accent);
   --bg-primary: var(--universe-bg);
   --bg-secondary: var(--universe-bg-secondary);
+  --bg-tertiary: var(--universe-bg-secondary);
   --bg-card: rgba(0, 82, 204, 0.1);
   --bg-card-hover: rgba(0, 82, 204, 0.2);
   --text-primary: var(--universe-text);
@@ -146,6 +150,7 @@
   --bg-primary: var(--universe-bg);
   --bg-dropdown: var(--universe-bg-secondary);
   --bg-secondary: var(--universe-bg-secondary);
+  --bg-tertiary: var(--universe-bg-secondary);
   --bg-card: rgba(0, 191, 255, 0.1);
   --bg-card-hover: rgba(0, 191, 255, 0.2);
   --text-primary: var(--universe-text);
@@ -180,6 +185,7 @@ body:not([data-universe]) {
   --universe-font-body: var(--font-family-base);
   
   /* Override pour le portail */
+  --bg-tertiary: var(--universe-bg-secondary);
   --bg-card: rgba(0, 102, 204, 0.1);
   --bg-card-hover: rgba(0, 102, 204, 0.2);
   

@@ -10,8 +10,11 @@ class LastPostService
     private PostRepository $postRepository;
     private ThreadRepository $threadRepository;
 
-    public function __construct(PostRepository $postRepository, ThreadRepository $threadRepository)
-    {
+    public function __construct(
+        PostRepository $postRepository,
+        ThreadRepository $threadRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
+    ) {
         $this->postRepository = $postRepository;
         $this->threadRepository = $threadRepository;
     }
@@ -72,7 +75,7 @@ class LastPostService
             'author' => $displayName, // Nom du personnage pour les threads RP, sinon pseudo utilisateur
             'authorId' => $author ? $author->getId() : null, // ID de l'utilisateur pour le filtrage
             'character' => $character ? $character->getName() : null,
-            'avatar' => $avatar,
+            'avatar' => $this->s3MediaUrlResolver->resolve($avatar),
         ];
     }
 
@@ -130,7 +133,7 @@ class LastPostService
             'author' => $displayName, // Nom du personnage pour les threads RP, sinon pseudo utilisateur
             'authorId' => $author ? $author->getId() : null, // ID de l'utilisateur pour le filtrage
             'character' => $character ? $character->getName() : null,
-            'avatar' => $avatar,
+            'avatar' => $this->s3MediaUrlResolver->resolve($avatar),
         ];
     }
 }

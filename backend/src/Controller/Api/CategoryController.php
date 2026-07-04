@@ -8,6 +8,7 @@ use App\Repository\ForumRepository;
 use App\Repository\ForumCategoryRepository;
 use App\Repository\PostRepository;
 use App\Repository\UniversRepository;
+use App\Service\S3MediaUrlResolver;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,8 +21,12 @@ class CategoryController extends AbstractController
     private $postRepository;
     private $universRepository;
 
-    public function __construct(ForumRepository $forumRepository, PostRepository $postRepository, UniversRepository $universRepository)
-    {
+    public function __construct(
+        ForumRepository $forumRepository,
+        PostRepository $postRepository,
+        UniversRepository $universRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
+    ) {
         $this->forumRepository = $forumRepository;
         $this->postRepository = $postRepository;
         $this->universRepository = $universRepository;
@@ -67,7 +72,7 @@ class CategoryController extends AbstractController
                             'id' => $latestThread->getId(),
                             'title' => $latestThread->getTitle(),
                             'author' => $latestThread->getAuthor()->getPseudo(),
-                            'avatar' => $latestThread->getAuthor()->getAvatar(),
+                            'avatar' => $this->s3MediaUrlResolver->resolve($latestThread->getAuthor()->getAvatar()),
                             'date' => $formattedDate,
                         ];
                     } else {
@@ -88,7 +93,7 @@ class CategoryController extends AbstractController
                         'id' => $subForum->getId(),
                         'name' => $subForum->getName(),
                         'description' => $subForum->getDescription(),
-                        'bannerImage' => $subForum->getBanner(),
+                        'bannerImage' => $this->s3MediaUrlResolver->resolve($subForum->getBanner()),
                     ];
                 };
 
@@ -96,8 +101,8 @@ class CategoryController extends AbstractController
                     'id' => $forum->getId(),
                     'name' => $forum->getName(),
                     'description' => $forum->getDescription(),
-                    'banner' => $forum->getBanner(),
-                    'heroLogo' => $forum->getHeroLogo(),
+                    'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
+                    'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
                     'lastThread' => $lastThreadData,
                     'stats' => $statsData,
                     'subforums' => $subForums,

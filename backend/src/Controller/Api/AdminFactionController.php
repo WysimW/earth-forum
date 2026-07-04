@@ -9,6 +9,7 @@ use App\Repository\FactionRepository;
 use App\Repository\LocationRepository;
 use App\Repository\UniversRepository;
 use App\Repository\UserRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,7 +27,8 @@ class AdminFactionController extends AbstractController
         private UniversRepository $universRepository,
         private LocationRepository $locationRepository,
         private EntityManagerInterface $entityManager,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -370,8 +372,8 @@ class AdminFactionController extends AbstractController
             'scope' => $faction->getScope(),
             'status' => $faction->getStatus(),
             'objectives' => $faction->getObjectives(),
-            'logo' => $faction->getLogo(),
-            'icon' => $faction->getIcon(),
+            'logo' => $this->s3MediaUrlResolver->resolve($faction->getLogo()),
+            'icon' => $this->s3MediaUrlResolver->resolve($faction->getIcon()),
             'headquartersDescription' => $faction->getHeadquartersDescription(),
             'universe' => $faction->getUniverse() ? [
                 'id' => $faction->getUniverse()->getId(),

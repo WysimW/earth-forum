@@ -19,6 +19,17 @@ import Regulation from './pages/Regulation/Regulation';
 import Guide from './pages/Guide/Guide';
 import MemberOfMonth from './pages/MemberOfMonth/MemberOfMonth';
 import CharacterOfMonth from './pages/CharacterOfMonth/CharacterOfMonth';
+import RpActivities from './pages/RpActivities/RpActivities';
+import RpActivityDetail from './pages/RpActivityDetail/RpActivityDetail';
+import RpActivityCreate from './pages/RpActivityCreate/RpActivityCreate';
+import RpActivityEdit from './pages/RpActivityEdit/RpActivityEdit';
+import RpActivityThreadCreate from './pages/RpActivityThreadCreate/RpActivityThreadCreate';
+import Profile from './pages/Profile/Profile';
+import Dashboard from './pages/Dashboard/Dashboard';
+import MessagingList from './pages/Messaging/MessagingList';
+import MessagingModeration from './pages/Messaging/MessagingModeration';
+import MessagingNew from './pages/Messaging/MessagingNew';
+import MessagingThread from './pages/Messaging/MessagingThread';
 import Cards from './pages/Components/Cards/Cards';
 import Sidebar from './pages/Components/Sidebar/Sidebar';
 import ThreadHeader from './pages/Components/ThreadHeader/ThreadHeader';
@@ -29,6 +40,7 @@ import ForumDetailHeader from './pages/Components/ForumDetailHeader/ForumDetailH
 import ThreadFilter from './pages/Components/ThreadFilter/ThreadFilter';
 import ThreadPostHRP from './pages/Components/ThreadPostHRP/ThreadPostHRP';
 import ThreadPostRP from './pages/Components/ThreadPostRP/ThreadPostRP';
+import RpActivityCardComponent from './pages/Components/RpActivityCard/RpActivityCard';
 import Components from './pages/Components/Components';
 import Loading from './components/Loading/Loading';
 import './styles/global.css';
@@ -56,6 +68,17 @@ const AppRoutes = () => {
             <Route path="/member-of-month/:universeSlug" element={<MemberOfMonth />} />
             <Route path="/character-of-month" element={<CharacterOfMonth />} />
             <Route path="/character-of-month/:universeSlug" element={<CharacterOfMonth />} />
+            <Route path="/rp-activities" element={<RpActivities />} />
+            <Route path="/rp-activities/new" element={<PrivateRoute><RpActivityCreate /></PrivateRoute>} />
+            <Route path="/rp-activities/:id" element={<RpActivityDetail />} />
+            <Route path="/rp-activities/:id/edit" element={<PrivateRoute><RpActivityEdit /></PrivateRoute>} />
+            <Route path="/rp-activities/:id/create-thread" element={<PrivateRoute><RpActivityThreadCreate /></PrivateRoute>} />
+          <Route path="/tableau-de-bord" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/messagerie" element={<PrivateRoute><MessagingList /></PrivateRoute>} />
+          <Route path="/messagerie/nouveau" element={<PrivateRoute><MessagingNew /></PrivateRoute>} />
+          <Route path="/messagerie/moderation" element={<PrivateRoute><MessagingModeration /></PrivateRoute>} />
+          <Route path="/messagerie/:id" element={<PrivateRoute><MessagingThread /></PrivateRoute>} />
+          <Route path="/profil" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/test" element={<TestComponent />} />
             <Route path="/univers/:slug" element={<ForumDetail />} />
             <Route path="/forums" element={<ForumDetail />} />
@@ -82,6 +105,7 @@ const AppRoutes = () => {
             <Route path="/components/threadfilter" element={<ThreadFilter />} />
             <Route path="/components/threadposthrp" element={<ThreadPostHRP />} />
             <Route path="/components/threadpostrp" element={<ThreadPostRP />} />
+            <Route path="/components/rpactivitycard" element={<RpActivityCardComponent />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
   );

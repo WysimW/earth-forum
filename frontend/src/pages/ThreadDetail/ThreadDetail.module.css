@@ -29,7 +29,8 @@
 }
 
 .threadTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-tight);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin: 0 0 var(--spacing-md) 0;
@@ -1456,4 +1457,72 @@
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-size-xs);
   }
+}
+
+.rpActivitiesPanel {
+  margin-bottom: var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-card);
+  padding: var(--spacing-md);
+}
+
+.rpActivitiesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.rpActivitiesList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.rpActivityItem {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-tertiary);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.rpActivityTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rpActivityKind {
+  display: inline-flex;
+  width: fit-content;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  padding: 0 var(--spacing-xs);
+}
+
+.rpActivityTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+}
+
+.rpActivitySpeech {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.rpActivityMeta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
 }

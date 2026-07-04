@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CharacterRepository;
 use App\Repository\UniversRepository;
 use App\Repository\UserRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +22,8 @@ class AdminCharacterController extends AbstractController
         private CharacterRepository $characterRepository,
         private EntityManagerInterface $entityManager,
         private UniversRepository $universRepository,
-        private UserRepository $userRepository
+        private UserRepository $userRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -93,12 +95,11 @@ class AdminCharacterController extends AbstractController
             return true;
         });
 
-        $data = array_map(function (Character $character) {
-            return [
+        $data = array_map(fn (Character $character): array => [
                 'id' => $character->getId(),
                 'name' => $character->getName(),
                 'actualPseudo' => $character->getActualPseudo(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'status' => $character->getStatus(),
                 'universe_id' => $character->getUniverse()?->getId(),
                 'universe_name' => $character->getUniverse()?->getName(),
@@ -107,8 +108,7 @@ class AdminCharacterController extends AbstractController
                 'user_email' => $character->getUser()?->getEmail(),
                 'createdAt' => $character->getCreatedAt()?->format('Y-m-d H:i:s'),
                 'validatedAt' => $character->getValidatedAt()?->format('Y-m-d H:i:s'),
-            ];
-        }, array_values($filteredCharacters));
+            ], array_values($filteredCharacters));
 
         return new JsonResponse($data);
     }
@@ -144,7 +144,7 @@ class AdminCharacterController extends AbstractController
             'firstName' => $character->getFirstName(),
             'lastName' => $character->getLastName(),
             'actualPseudo' => $character->getActualPseudo(),
-            'avatar' => $character->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
             'status' => $character->getStatus(),
             'biography' => $character->getBiography(),
             'universe_id' => $character->getUniverse()?->getId(),

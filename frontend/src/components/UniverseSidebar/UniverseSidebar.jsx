@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
 import importantService from '../../services/importantService';
+import messagingService, { MESSAGING_UNREAD_REFRESH_EVENT } from '../../services/messagingService';
+import rpActivityService from '../../services/rpActivityService';
 import styles from './UniverseSidebar.module.css';
-
-const MEMBER_OF_MONTH_SEEN_KEY = 'member-of-month-seen';
-const CHARACTER_OF_MONTH_SEEN_KEY = 'character-of-month-seen';
 
 const ICONS_BY_KEY = {
   reglement: (
@@ -33,6 +33,13 @@ const ICONS_BY_KEY = {
       <path d="M5 21a7 7 0 0 1 14 0" />
     </svg>
   ),
+  rp_activities: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5h16v4H4z" />
+      <path d="M4 11h10v8H4z" />
+      <path d="M16 12h4v7h-4z" />
+    </svg>
+  ),
   vote: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 11l4 4L19 5" />
@@ -40,17 +47,101 @@ const ICONS_BY_KEY = {
       <path d="M8 19v2h8v-2" />
     </svg>
   ),
+  factions: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3l8 4v6c0 4.5-3.5 9-8 10-4.5-1-8-5.5-8-10V7l8-4z" />
+    </svg>
+  ),
+  dashboard: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="8" height="8" rx="1" />
+      <rect x="13" y="3" width="8" height="5" rx="1" />
+      <rect x="13" y="11" width="8" height="10" rx="1" />
+      <rect x="3" y="14" width="8" height="7" rx="1" />
+    </svg>
+  ),
+  profile: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4 20v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1" />
+    </svg>
+  ),
+  messaging: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5h16v10H8l-4 3V5z" />
+    </svg>
+  ),
+  my_characters: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="9" cy="7" r="3.5" />
+      <path d="M4 20v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1" />
+      <circle cx="17" cy="8" r="2.5" />
+      <path d="M15 20v-0.5a3 3 0 0 1 3-3h1" />
+    </svg>
+  ),
+  my_factions: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 3h12v18l-6-4-6 4V3z" />
+    </svg>
+  ),
 };
+
+const SIDEBAR_PARTITION_KEYS = new Set([
+  'reglement',
+  'mode_emploi',
+  'vote',
+  'rp_activities',
+  'member_of_month',
+  'character_of_month',
+]);
+
+const ACCOUNT_LINKS = [
+  { key: 'dashboard', url: '/tableau-de-bord', label: 'Mon tableau de bord' },
+  { key: 'messaging', url: '/messagerie', label: 'Messagerie' },
+  { key: 'profile', url: '/profil', label: 'Mon profil' },
+  { key: 'my_characters', url: '/characters', label: 'Mes Personnages' },
+  { key: 'my_factions', url: '/mes-factions', label: 'Mes Factions' },
+];
 
 const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
   const location = useLocation();
+  const { user } = useAuth();
   const { currentUniverse } = useUniverseTheme();
   const [items, setItems] = useState([]);
   const [openMobile, setOpenMobile] = useState(false);
   const [memberOfMonthUnread, setMemberOfMonthUnread] = useState(false);
   const [characterOfMonthUnread, setCharacterOfMonthUnread] = useState(false);
+  const [rpActivitiesUnread, setRpActivitiesUnread] = useState(false);
+  const [messagingUnread, setMessagingUnread] = useState(false);
 
   const universeSlug = useMemo(() => (currentUniverse !== 'portal' ? currentUniverse : ''), [currentUniverse]);
+
+  const itemsByKey = useMemo(() => {
+    const map = new Map();
+    items.forEach((item) => map.set(item.key, item));
+    return map;
+  }, [items]);
+
+  const guidanceItems = useMemo(
+    () => ['reglement', 'mode_emploi', 'vote'].map((key) => itemsByKey.get(key)).filter(Boolean),
+    [itemsByKey],
+  );
+
+  const forumOrphanItems = useMemo(
+    () => items.filter((item) => !SIDEBAR_PARTITION_KEYS.has(item.key)),
+    [items],
+  );
+
+  const hasForumSection = useMemo(
+    () => Boolean(
+      itemsByKey.get('rp_activities')
+      || user
+      || itemsByKey.get('member_of_month')
+      || itemsByKey.get('character_of_month')
+      || forumOrphanItems.length > 0,
+    ),
+    [itemsByKey, user, forumOrphanItems],
+  );
 
   useEffect(() => {
     const loadSidebar = async () => {
@@ -71,30 +162,21 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
 
   useEffect(() => {
     const syncMemberOfMonthUnread = async () => {
-      if (!universeSlug || typeof window === 'undefined') {
+      if (!universeSlug) {
         setMemberOfMonthUnread(false);
         return;
       }
 
       try {
-        const response = await importantService.getMemberOfMonth(universeSlug);
-        const latestEntryId = response?.entry?.id ? String(response.entry.id) : '';
-        const storageKey = `${MEMBER_OF_MONTH_SEEN_KEY}:${universeSlug}`;
-
-        if (!latestEntryId) {
-          setMemberOfMonthUnread(false);
-          return;
-        }
-
         const onMemberPage = location.pathname.startsWith('/member-of-month');
         if (onMemberPage) {
-          localStorage.setItem(storageKey, latestEntryId);
+          await importantService.markMemberOfMonthSeen(universeSlug);
           setMemberOfMonthUnread(false);
           return;
         }
 
-        const seenEntryId = localStorage.getItem(storageKey);
-        setMemberOfMonthUnread(seenEntryId !== latestEntryId);
+        const response = await importantService.getMemberOfMonth(universeSlug);
+        setMemberOfMonthUnread(Boolean(response?.isUnread));
       } catch (error) {
         setMemberOfMonthUnread(false);
       }
@@ -105,30 +187,21 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
 
   useEffect(() => {
     const syncCharacterOfMonthUnread = async () => {
-      if (!universeSlug || typeof window === 'undefined') {
+      if (!universeSlug) {
         setCharacterOfMonthUnread(false);
         return;
       }
 
       try {
-        const response = await importantService.getCharacterOfMonth(universeSlug);
-        const latestEntryId = response?.entry?.id ? String(response.entry.id) : '';
-        const storageKey = `${CHARACTER_OF_MONTH_SEEN_KEY}:${universeSlug}`;
-
-        if (!latestEntryId) {
-          setCharacterOfMonthUnread(false);
-          return;
-        }
-
         const onCharacterPage = location.pathname.startsWith('/character-of-month');
         if (onCharacterPage) {
-          localStorage.setItem(storageKey, latestEntryId);
+          await importantService.markCharacterOfMonthSeen(universeSlug);
           setCharacterOfMonthUnread(false);
           return;
         }
 
-        const seenEntryId = localStorage.getItem(storageKey);
-        setCharacterOfMonthUnread(seenEntryId !== latestEntryId);
+        const response = await importantService.getCharacterOfMonth(universeSlug);
+        setCharacterOfMonthUnread(Boolean(response?.isUnread));
       } catch (error) {
         setCharacterOfMonthUnread(false);
       }
@@ -137,11 +210,101 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
     syncCharacterOfMonthUnread();
   }, [location.pathname, universeSlug]);
 
+  useEffect(() => {
+    const syncRpActivitiesUnread = async () => {
+      if (!universeSlug) {
+        setRpActivitiesUnread(false);
+        return;
+      }
+
+      try {
+        const onActivitiesPage = location.pathname.startsWith('/rp-activities');
+        if (onActivitiesPage) {
+          await rpActivityService.markUniverseActivitiesSeen(universeSlug);
+          setRpActivitiesUnread(false);
+          return;
+        }
+
+        const response = await rpActivityService.getUniverseActivities(universeSlug);
+        const hasUnread = Boolean(response?.hasUnread)
+          || (Array.isArray(response?.items) && response.items.some((item) => Boolean(item?.isUnread)));
+        setRpActivitiesUnread(hasUnread);
+      } catch (error) {
+        setRpActivitiesUnread(false);
+      }
+    };
+
+    syncRpActivitiesUnread();
+  }, [location.pathname, universeSlug]);
+
+  useEffect(() => {
+    if (!user) {
+      setMessagingUnread(false);
+      return undefined;
+    }
+    let cancelled = false;
+    const syncMessagingUnread = async () => {
+      try {
+        const data = await messagingService.getUnreadCount();
+        const total = typeof data?.total === 'number' ? data.total : 0;
+        if (!cancelled) setMessagingUnread(total > 0);
+      } catch {
+        if (!cancelled) setMessagingUnread(false);
+      }
+    };
+    syncMessagingUnread();
+    const t = setInterval(syncMessagingUnread, 60000);
+    const onRefresh = () => {
+      syncMessagingUnread();
+    };
+    window.addEventListener(MESSAGING_UNREAD_REFRESH_EVENT, onRefresh);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+      window.removeEventListener(MESSAGING_UNREAD_REFRESH_EVENT, onRefresh);
+    };
+  }, [user, location.pathname]);
+
+  const isLinkActive = (item) => {
+    switch (item.key) {
+      case 'factions':
+        return location.pathname.startsWith('/factions');
+      case 'my_factions':
+        return location.pathname.startsWith('/mes-factions');
+      case 'dashboard':
+        return location.pathname.startsWith('/tableau-de-bord');
+      case 'messaging':
+        return location.pathname.startsWith('/messagerie');
+      case 'profile':
+        return location.pathname.startsWith('/profil');
+      case 'my_characters':
+        return location.pathname.startsWith('/characters');
+      case 'rp_activities':
+        return location.pathname.startsWith('/rp-activities');
+      case 'reglement':
+        return location.pathname.startsWith('/reglement');
+      case 'mode_emploi':
+        return location.pathname.startsWith('/mode-emploi');
+      case 'member_of_month':
+        return location.pathname.startsWith('/member-of-month');
+      case 'character_of_month':
+        return location.pathname.startsWith('/character-of-month');
+      default:
+        return location.pathname === item.url;
+    }
+  };
+
   const renderLink = (item) => {
-    const disabled = !universeSlug && (item.key === 'member_of_month' || item.key === 'character_of_month');
+    const disabled = !universeSlug && (
+      item.key === 'member_of_month'
+      || item.key === 'character_of_month'
+      || item.key === 'rp_activities'
+    );
     const unread = (
       (item.key === 'member_of_month' && memberOfMonthUnread)
       || (item.key === 'character_of_month' && characterOfMonthUnread)
+      || (item.key === 'rp_activities' && rpActivitiesUnread)
+      || (item.key === 'messaging' && messagingUnread)
     ) && !disabled;
     const icon = ICONS_BY_KEY[item.key] || (
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -182,7 +345,7 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
     return (
       <Link
         to={item.url}
-        className={`${styles.link} ${unread ? styles.linkUnread : ''} ${location.pathname === item.url ? styles.linkActive : ''} ${disabled ? styles.linkDisabled : ''}`}
+        className={`${styles.link} ${unread ? styles.linkUnread : ''} ${isLinkActive(item) ? styles.linkActive : ''} ${disabled ? styles.linkDisabled : ''}`}
         title={item.label}
         onClick={(event) => {
           if (disabled) {
@@ -225,10 +388,54 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
             </svg>
           </button>
         </div>
-        <div className={styles.links}>
-          {items.map((item) => (
-            <div key={item.key}>{renderLink(item)}</div>
-          ))}
+        <div className={styles.scroll}>
+          <div className={styles.links}>
+          {guidanceItems.length > 0 && (
+            <section className={styles.category} aria-label="Règlement et liens">
+              <div className={styles.categoryLinks}>
+                {guidanceItems.map((item) => (
+                  <div key={item.key}>{renderLink(item)}</div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {hasForumSection && (
+            <section className={styles.category} aria-label="Forum">
+              {!collapsed && <h4 className={styles.categoryTitle}>Forum</h4>}
+              <div className={styles.categoryLinks}>
+                {itemsByKey.get('rp_activities') && (
+                  <div key="rp_activities">{renderLink(itemsByKey.get('rp_activities'))}</div>
+                )}
+                {user && (
+                  <div key="factions">
+                    {renderLink({ key: 'factions', url: '/factions', label: 'Factions' })}
+                  </div>
+                )}
+                {itemsByKey.get('member_of_month') && (
+                  <div key="member_of_month">{renderLink(itemsByKey.get('member_of_month'))}</div>
+                )}
+                {itemsByKey.get('character_of_month') && (
+                  <div key="character_of_month">{renderLink(itemsByKey.get('character_of_month'))}</div>
+                )}
+                {forumOrphanItems.map((item) => (
+                  <div key={item.key}>{renderLink(item)}</div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {user && (
+            <section className={styles.category} aria-label="Mon compte">
+              {!collapsed && <h4 className={styles.categoryTitle}>Mon compte</h4>}
+              <div className={styles.categoryLinks}>
+                {ACCOUNT_LINKS.map((item) => (
+                  <div key={item.key}>{renderLink(item)}</div>
+                ))}
+              </div>
+            </section>
+          )}
+          </div>
         </div>
       </aside>
     </>

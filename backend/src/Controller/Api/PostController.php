@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Character;
+use App\Entity\Npc;
 use App\Entity\Post;
 use App\Entity\Thread;
 use App\Entity\User;
@@ -42,9 +43,23 @@ class PostController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $character = $this->resolveCharacterForPost($thread, $data, $em, $securityUser->getId());
-        if ($thread->isRoleplay() && !$character instanceof Character) {
-            return new JsonResponse(['error' => 'characterId requis pour un thread RP'], Response::HTTP_BAD_REQUEST);
+        $hasCharacterId = isset($data['characterId']) && (int) $data['characterId'] > 0;
+        $hasNpcId = isset($data['npcId']) && (int) $data['npcId'] > 0;
+
+        if ($hasCharacterId && $hasNpcId) {
+            return new JsonResponse(['error' => 'Indiquez soit characterId soit npcId'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $character = !$hasNpcId ? $this->resolveCharacterForPost($thread, $data, $em, $securityUser) : null;
+        $npc = $hasNpcId ? $this->resolveFactionNpcForMissionPost($thread, $data, $em) : null;
+
+        if ($thread->isRoleplay() && !$character instanceof Character && !$npc instanceof Npc) {
+            return new JsonResponse(['error' => 'characterId ou npcId requis pour un thread RP'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$thread->isRoleplay()) {
+            $character = null;
+            $npc = null;
         }
 
         $post = new Post();
@@ -60,6 +75,11 @@ class PostController extends AbstractController
         if ($character) {
             $post->setCharacter($character);
             $thread->addParticipant($character);
+        }
+
+        if ($npc) {
+            $post->addNpc($npc);
+            $thread->addNpc($npc);
         }
 
         if (isset($data['quotedPostId'])) {
@@ -144,7 +164,12 @@ class PostController extends AbstractController
             return new JsonResponse(['error' => 'Post introuvable'], Response::HTTP_NOT_FOUND);
         }
 
-        $authorName = $post->getCharacter()?->getName() ?: ($post->getAuthor()?->getPseudo() ?: 'Anonyme');
+        $authorName = $post->getCharacter()?->getName();
+        if (!$authorName && $post->getNpcs()->count() > 0) {
+            $firstNpc = $post->getNpcs()->first();
+            $authorName = $firstNpc instanceof Npc ? ($firstNpc->getName() ?: null) : null;
+        }
+        $authorName = $authorName ?: ($post->getAuthor()?->getPseudo() ?: 'Anonyme');
         $quoted = sprintf(
             '<blockquote><p><strong>%s a dit :</strong></p>%s</blockquote><p><br></p>',
             htmlspecialchars($authorName, ENT_QUOTES),
@@ -157,7 +182,7 @@ class PostController extends AbstractController
         ]);
     }
 
-    private function resolveCharacterForPost(Thread $thread, array $data, EntityManagerInterface $em, int $userId): ?Character
+    private function resolveCharacterForPost(Thread $thread, array $data, EntityManagerInterface $em, User $user): ?Character
     {
         if (!$thread->isRoleplay()) {
             return null;
@@ -169,11 +194,76 @@ class PostController extends AbstractController
         }
 
         $character = $em->getRepository(Character::class)->find($characterId);
-        if (!$character || !$character->getUser() || $character->getUser()->getId() !== $userId) {
+        if (!$character instanceof Character) {
+            return null;
+        }
+
+        if ($character->isEventCharacter()) {
+            $eventActivity = $character->getEventActivity();
+            if (!$eventActivity) {
+                return null;
+            }
+
+            $isThreadLinked = false;
+            foreach ($thread->getRpActivities() as $linkedActivity) {
+                if ((int) $linkedActivity->getId() === (int) $eventActivity->getId()) {
+                    $isThreadLinked = true;
+                    break;
+                }
+            }
+            if (!$isThreadLinked) {
+                return null;
+            }
+
+            $isAllowedUser = (int) ($eventActivity->getCreatedBy()?->getId() ?? 0) === (int) $user->getId();
+            if (!$isAllowedUser) {
+                foreach ($eventActivity->getAllowedUsers() as $allowedUser) {
+                    if ((int) $allowedUser->getId() === (int) $user->getId()) {
+                        $isAllowedUser = true;
+                        break;
+                    }
+                }
+            }
+
+            return $isAllowedUser ? $character : null;
+        }
+
+        if (!$character->getUser() || $character->getUser()->getId() !== $user->getId()) {
             return null;
         }
 
         return $character;
+    }
+
+    private function resolveFactionNpcForMissionPost(Thread $thread, array $data, EntityManagerInterface $em): ?Npc
+    {
+        $npcId = isset($data['npcId']) ? (int) $data['npcId'] : 0;
+        if ($npcId <= 0 || !$thread->isRoleplay()) {
+            return null;
+        }
+
+        $npc = $em->getRepository(Npc::class)->find($npcId);
+        if (!$npc instanceof Npc || $npc->getStatus() !== Npc::STATUS_VALIDATED) {
+            return null;
+        }
+
+        foreach ($thread->getRpActivities() as $activity) {
+            if ($activity->getKind() !== \App\Entity\RpActivity::KIND_MISSION || !$activity->getFaction()) {
+                continue;
+            }
+
+            if ($activity->getUniverse()?->getId() !== $npc->getUniverse()?->getId()) {
+                continue;
+            }
+
+            foreach ($npc->getFactionsRelation() as $faction) {
+                if ($faction && (int) $faction->getId() === (int) $activity->getFaction()?->getId()) {
+                    return $npc;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function normalizePostHtml(string $html): string

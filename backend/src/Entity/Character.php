@@ -30,6 +30,8 @@ class Character implements TimestampableInterface
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_ABANDONED = 'abandoned';
     public const STATUS_EDITING = 'editing';
+    public const KIND_STANDARD = 'standard';
+    public const KIND_EVENT = 'event';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -104,6 +106,13 @@ class Character implements TimestampableInterface
 
     #[ORM\ManyToOne(inversedBy: 'characters')]
     private ?User $user = null;
+
+    #[ORM\Column(length: 20, options: ['default' => self::KIND_STANDARD])]
+    private string $kind = self::KIND_STANDARD;
+
+    #[ORM\ManyToOne(inversedBy: 'eventCharacters')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?RpActivity $eventActivity = null;
     
     #[ORM\ManyToOne(inversedBy: 'characters')]
     private ?Location $location = null;
@@ -161,6 +170,12 @@ class Character implements TimestampableInterface
     
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $sheetTheme = 'default';
+
+    /**
+     * @var Collection<int, RpActivityRegistration>
+     */
+    #[ORM\OneToMany(targetEntity: RpActivityRegistration::class, mappedBy: 'character', orphanRemoval: true)]
+    private Collection $rpActivityRegistrations;
     
     public function __construct()
     {
@@ -170,6 +185,7 @@ class Character implements TimestampableInterface
         $this->factionsRelation = new ArrayCollection();
         $this->factionMemberships = new ArrayCollection();
         $this->factionApplications = new ArrayCollection();
+        $this->rpActivityRegistrations = new ArrayCollection();
         $this->status = self::STATUS_DRAFT;
     }
 
@@ -478,6 +494,28 @@ class Character implements TimestampableInterface
 
         return $this;
     }
+
+    public function getKind(): string
+    {
+        return $this->kind;
+    }
+
+    public function setKind(string $kind): static
+    {
+        $this->kind = $kind;
+        return $this;
+    }
+
+    public function getEventActivity(): ?RpActivity
+    {
+        return $this->eventActivity;
+    }
+
+    public function setEventActivity(?RpActivity $eventActivity): static
+    {
+        $this->eventActivity = $eventActivity;
+        return $this;
+    }
     
     public function getAvatar(): ?string
     {
@@ -709,6 +747,11 @@ class Character implements TimestampableInterface
         return $this->status === self::STATUS_EDITING;
     }
 
+    public function isEventCharacter(): bool
+    {
+        return $this->kind === self::KIND_EVENT;
+    }
+
     /**
      * @return Collection<int, Post>
      */
@@ -807,5 +850,34 @@ class Character implements TimestampableInterface
     public function getOwner(): ?User
     {
         return $this->user;
+    }
+
+    /**
+     * @return Collection<int, RpActivityRegistration>
+     */
+    public function getRpActivityRegistrations(): Collection
+    {
+        return $this->rpActivityRegistrations;
+    }
+
+    public function addRpActivityRegistration(RpActivityRegistration $rpActivityRegistration): static
+    {
+        if (!$this->rpActivityRegistrations->contains($rpActivityRegistration)) {
+            $this->rpActivityRegistrations->add($rpActivityRegistration);
+            $rpActivityRegistration->setCharacter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpActivityRegistration(RpActivityRegistration $rpActivityRegistration): static
+    {
+        if ($this->rpActivityRegistrations->removeElement($rpActivityRegistration)) {
+            if ($rpActivityRegistration->getCharacter() === $this) {
+                $rpActivityRegistration->setCharacter(null);
+            }
+        }
+
+        return $this;
     }
 }

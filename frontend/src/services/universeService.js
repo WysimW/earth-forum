@@ -20,6 +20,11 @@ const universeService = {
     const response = await api.get(`/api/universes/${slug}/forums`);
     return response.data;
   },
+
+  async markUniverseAsRead(slug) {
+    const response = await api.post(`/api/universes/${slug}/mark-read`);
+    return response.data;
+  },
 };
 
 export default universeService;

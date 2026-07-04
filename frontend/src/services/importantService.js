@@ -31,6 +31,11 @@ const importantService = {
     return response.data;
   },
 
+  async markMemberOfMonthSeen(universeSlug) {
+    const response = await api.post(`/api/member-of-month/${universeSlug}/mark-seen`);
+    return response.data;
+  },
+
   async getMemberOfMonthHistory(universeSlug) {
     const response = await api.get(`/api/member-of-month/${universeSlug}/history`);
     return response.data;
@@ -48,6 +53,11 @@ const importantService = {
 
   async getCharacterOfMonth(universeSlug) {
     const response = await api.get(`/api/character-of-month/${universeSlug}`);
+    return response.data;
+  },
+
+  async markCharacterOfMonthSeen(universeSlug) {
+    const response = await api.post(`/api/character-of-month/${universeSlug}/mark-seen`);
     return response.data;
   },
 

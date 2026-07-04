@@ -664,6 +664,15 @@
     gap: var(--spacing-md);
   }
 
+  .activitiesSliderHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .activitiesGrid {
+    grid-template-columns: 1fr;
+  }
+
   .threadCard {
     padding: var(--spacing-md);
   }
@@ -934,14 +943,41 @@
 }
 
 .threadItemUnread {
-  border-left-color: var(--primary-color);
-  background-color: color-mix(in srgb, var(--primary-color) 8%, var(--bg-card));
+  border-left: var(--border-width) solid var(--warning-color);
+  background-color: color-mix(in srgb, var(--warning-color) 8%, var(--bg-card));
+}
+
+.threadItemUnread:hover {
+  border-left-color: var(--warning-color);
+  background-color: color-mix(in srgb, var(--warning-color) 12%, var(--bg-secondary));
 }
 
 .threadItemParticipatingUnread {
-  border-left-color: var(--warning-color);
-  background-color: color-mix(in srgb, var(--warning-color) 10%, var(--bg-card));
-  box-shadow: 0 0 0 var(--border-width) color-mix(in srgb, var(--warning-color) 30%, transparent);
+  border-left: var(--border-width) solid var(--text-light);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--text-light) 16%, transparent) 0%,
+      color-mix(in srgb, var(--text-light) 8%, transparent) 48%,
+      var(--bg-card) 100%
+    );
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--text-light) 35%, transparent),
+    0 0 10px color-mix(in srgb, var(--text-light) 18%, transparent);
+}
+
+.threadItemParticipatingUnread:hover {
+  border-left-color: var(--text-light);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--text-light) 22%, transparent) 0%,
+      color-mix(in srgb, var(--text-light) 12%, transparent) 54%,
+      var(--bg-secondary) 100%
+    );
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--text-light) 42%, transparent),
+    0 0 14px color-mix(in srgb, var(--text-light) 22%, transparent);
 }
 
 .threadItem:hover {
@@ -974,10 +1010,22 @@
 
 .threadHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
   flex-wrap: wrap;
+}
+
+.threadTitleRow {
+  position: relative;
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+.threadTitleRowWithBadges {
+  max-width: calc(100% - 9rem);
 }
 
 .threadTitle {
@@ -985,42 +1033,59 @@
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0;
+  line-height: 1.25;
 }
 
 .threadBadges {
   display: flex;
+  align-items: center;
   gap: var(--spacing-xs);
+  flex-shrink: 0;
+  height: calc(var(--font-size-base) * 1.25);
 }
 
 .threadStateBadges {
+  position: absolute;
+  top: 0;
+  left: 100%;
   display: inline-flex;
   align-items: center;
+  height: calc(var(--font-size-base) * 1.25);
+  padding-left: var(--spacing-sm);
+  flex-shrink: 0;
   gap: var(--spacing-xs);
+  white-space: nowrap;
 }
 
 .badgeUnread,
 .badgeParticipating {
   display: inline-flex;
   align-items: center;
-  min-height: 18px;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 1.25rem;
   padding: 0 var(--spacing-xs);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  line-height: 1;
   border: var(--border-width) solid transparent;
 }
 
 .badgeUnread {
-  border-color: var(--primary-color);
-  color: var(--text-light);
-  background-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  border: var(--border-width) solid var(--warning-color);
+  color: var(--warning-color);
+  background-color: color-mix(in srgb, var(--warning-color) 24%, transparent);
 }
 
 .badgeParticipating {
-  border-color: var(--warning-color);
+  border: var(--border-width) solid var(--text-light);
   color: var(--text-light);
-  background-color: color-mix(in srgb, var(--warning-color) 26%, transparent);
+  background-color: color-mix(in srgb, var(--text-light) 18%, transparent);
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--text-light) 45%, transparent),
+    0 0 8px color-mix(in srgb, var(--text-light) 24%, transparent);
 }
 
 .badgePinned,
@@ -1122,4 +1187,98 @@
   flex-shrink: 0;
   color: var(--text-muted);
   margin-left: auto;
+}
+
+.activitiesSection {
+  margin: var(--spacing-md) 0 var(--spacing-xl);
+  padding: var(--spacing-md);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-card);
+}
+
+.activitiesSection .sectionHeader {
+  justify-content: space-between;
+}
+
+.activitiesSlider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.activitiesSliderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.activitiesSliderMeta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.activitiesSliderControls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.activitiesNavButton {
+  min-width: 34px;
+  height: 34px;
+  border: var(--border-width) solid color-mix(in srgb, var(--primary-color) 40%, var(--border-color));
+  background-color: color-mix(in srgb, var(--primary-color) 14%, var(--bg-secondary));
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.activitiesNavButton:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--text-light);
+  background-color: color-mix(in srgb, var(--primary-color) 26%, var(--bg-secondary));
+}
+
+.activitiesNavButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.activitiesViewport {
+  overflow: hidden;
+}
+
+.activitiesTrack {
+  display: flex;
+  transition: transform var(--transition-slow);
+  will-change: transform;
+}
+
+.activitiesSlide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.activitiesGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-md);
+  align-items: stretch;
+}
+
+.activitiesGrid > * {
+  height: 100%;
+}
+
+.activitiesLoading,
+.activitiesEmpty {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--text-secondary);
 }

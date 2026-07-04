@@ -14,6 +14,7 @@ use App\Repository\FactionCharacterMembershipRepository;
 use App\Repository\FactionRepository;
 use App\Repository\NpcRepository;
 use App\Repository\UniversRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,7 +34,8 @@ class FactionController extends AbstractController
         private NpcRepository $npcRepository,
         private UniversRepository $universRepository,
         private EntityManagerInterface $entityManager,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -117,7 +119,10 @@ class FactionController extends AbstractController
             return new JsonResponse(['characters' => []]);
         }
 
-        $characters = $this->characterRepository->findByUnivers($universe);
+        $characters = array_values(array_filter(
+            $this->characterRepository->findByUnivers($universe),
+            static fn (Character $c) => !$c->isEventCharacter()
+        ));
         $existingMemberIds = [];
         foreach ($faction->getCharacters() as $member) {
             $existingMemberIds[] = $member->getId();
@@ -129,7 +134,7 @@ class FactionController extends AbstractController
                     'id' => $character->getId(),
                     'name' => $character->getName(),
                     'slug' => $character->getSlug(),
-                    'avatar' => $character->getAvatar(),
+                    'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                     'moralAffiliation' => $character->getMoralAffiliation(),
                     'status' => $character->getStatus(),
                     'universe' => $character->getUniverse() ? [
@@ -168,7 +173,20 @@ class FactionController extends AbstractController
         $characters = $this->characterRepository->findBy(['user' => $user], ['name' => 'ASC']);
         $eligibleCharacters = [];
 
+        $factionUniverse = $faction->getUniverse();
+
         foreach ($characters as $character) {
+            if ($character->isEventCharacter()) {
+                continue;
+            }
+
+            if ($factionUniverse !== null) {
+                $characterUniverseId = $this->resolveCharacterUniverseId($character);
+                if ($characterUniverseId !== $factionUniverse->getId()) {
+                    continue;
+                }
+            }
+
             if ($faction->getCharacters()->contains($character)) {
                 continue;
             }
@@ -181,9 +199,19 @@ class FactionController extends AbstractController
             $eligibleCharacters[] = [
                 'id' => $character->getId(),
                 'name' => $character->getName(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'status' => $character->getStatus(),
                 'moralAffiliation' => $character->getMoralAffiliation(),
+                'kind' => $character->getKind(),
+                'universe' => $character->getUniverse() ? [
+                    'id' => $character->getUniverse()->getId(),
+                    'name' => $character->getUniverse()->getName(),
+                    'slug' => $character->getUniverse()->getSlug(),
+                ] : ($character->getElseworld()?->getParentUniverse() ? [
+                    'id' => $character->getElseworld()->getParentUniverse()->getId(),
+                    'name' => $character->getElseworld()->getParentUniverse()->getName(),
+                    'slug' => $character->getElseworld()->getParentUniverse()->getSlug(),
+                ] : null),
             ];
         }
 
@@ -344,6 +372,10 @@ class FactionController extends AbstractController
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Les personnages événementiels ne peuvent pas être ajoutés comme membres de faction'], Response::HTTP_BAD_REQUEST);
+        }
+
         $faction->addCharacter($character);
 
         $membership = $this->membershipRepository->findOneByFactionAndCharacter($faction, $character);
@@ -435,6 +467,83 @@ class FactionController extends AbstractController
             'message' => 'PNJ ajouté à la faction',
             'faction' => $this->serializeFaction($faction, true),
         ]);
+    }
+
+    /**
+     * Crée un PNJ rattaché à la faction uniquement (n'apparaît pas dans « Mes PNJ » du créateur).
+     */
+    #[Route('/{id}/npcs', name: 'api_factions_create_faction_npc', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function createFactionDefinitionNpc(int $id, Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return new JsonResponse(['error' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $faction = $this->factionRepository->find($id);
+        if (!$faction instanceof Faction) {
+            return new JsonResponse(['error' => 'Faction non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->canManageFaction($faction, $user)) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return new JsonResponse(['error' => 'Payload invalide'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $name = trim((string) ($data['name'] ?? ''));
+        if ($name === '') {
+            return new JsonResponse(['error' => 'Le nom est requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $npc = new Npc();
+        $npc->setUser($user);
+        $npc->setName($name);
+        $npc->setExcludeFromPersonalNpcs(true);
+        $npc->setStatus(Npc::STATUS_PENDING);
+
+        $occupation = isset($data['occupation']) ? trim((string) $data['occupation']) : '';
+        if ($occupation !== '') {
+            $npc->setOccupation($occupation);
+        }
+
+        if (isset($data['avatar'])) {
+            $avatar = trim((string) $data['avatar']);
+            if ($avatar !== '') {
+                $npc->setAvatar($avatar);
+            }
+        }
+
+        $factionUniverse = $faction->getUniverse();
+        if ($factionUniverse !== null) {
+            $npc->setUniverse($factionUniverse);
+        }
+
+        $errors = $this->validator->validate($npc);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getPropertyPath().': '.$error->getMessage();
+            }
+
+            return new JsonResponse(['error' => 'Validation échouée', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
+
+        $faction->addNpc($npc);
+        $this->entityManager->persist($npc);
+        $this->entityManager->flush();
+
+        $npc->setStatus(Npc::STATUS_VALIDATED);
+        $npc->setValidatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'id' => $npc->getId(),
+            'message' => 'PNJ de faction créé et validé',
+        ], Response::HTTP_CREATED);
     }
 
     #[Route('/{id}/members/npcs/{npcId}', name: 'api_factions_remove_npc', methods: ['DELETE'], requirements: ['id' => '\d+', 'npcId' => '\d+'])]
@@ -549,6 +658,18 @@ class FactionController extends AbstractController
 
         if ($character->getUser()?->getId() !== $user->getId()) {
             return new JsonResponse(['error' => 'Vous ne pouvez postuler qu\'avec vos personnages'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Les personnages événementiels ne peuvent pas postuler à une faction'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $factionUniverse = $faction->getUniverse();
+        if ($factionUniverse !== null) {
+            $characterUniverseId = $this->resolveCharacterUniverseId($character);
+            if ($characterUniverseId !== $factionUniverse->getId()) {
+                return new JsonResponse(['error' => 'Ce personnage n’appartient pas à l’univers de cette faction'], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         if ($faction->getCharacters()->contains($character)) {
@@ -745,8 +866,8 @@ class FactionController extends AbstractController
             'scope' => $faction->getScope(),
             'status' => $faction->getStatus(),
             'objectives' => $faction->getObjectives(),
-            'logo' => $faction->getLogo(),
-            'icon' => $faction->getIcon(),
+            'logo' => $this->s3MediaUrlResolver->resolve($faction->getLogo()),
+            'icon' => $this->s3MediaUrlResolver->resolve($faction->getIcon()),
             'headquartersDescription' => $faction->getHeadquartersDescription(),
             'universe' => $faction->getUniverse() ? [
                 'id' => $faction->getUniverse()->getId(),
@@ -801,7 +922,7 @@ class FactionController extends AbstractController
                 'id' => $character->getId(),
                 'name' => $character->getName(),
                 'slug' => $character->getSlug(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'status' => $character->getStatus(),
                 'roleRp' => $membership->getRoleRp(),
@@ -827,7 +948,7 @@ class FactionController extends AbstractController
                 'id' => $character->getId(),
                 'name' => $character->getName(),
                 'slug' => $character->getSlug(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'status' => $character->getStatus(),
                 'roleRp' => null,
@@ -861,7 +982,7 @@ class FactionController extends AbstractController
                     'character' => $character ? [
                         'id' => $character->getId(),
                         'name' => $character->getName(),
-                        'avatar' => $character->getAvatar(),
+                        'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                         'moralAffiliation' => $character->getMoralAffiliation(),
                         'status' => $character->getStatus(),
                         'user' => $character->getUser() ? [
@@ -885,6 +1006,24 @@ class FactionController extends AbstractController
         $withoutQuery = preg_split('/[?#]/', $url)[0] ?? $url;
 
         return $withoutQuery !== '' ? $withoutQuery : null;
+    }
+
+    /**
+     * Identifiant d’univers « effectif » du personnage (univers direct ou parent de l’elseworld).
+     */
+    private function resolveCharacterUniverseId(Character $character): ?int
+    {
+        $universe = $character->getUniverse();
+        if ($universe !== null) {
+            return $universe->getId();
+        }
+
+        $elseworld = $character->getElseworld();
+        if ($elseworld !== null && $elseworld->getParentUniverse() !== null) {
+            return $elseworld->getParentUniverse()->getId();
+        }
+
+        return null;
     }
 }
 

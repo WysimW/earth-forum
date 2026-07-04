@@ -15,6 +15,16 @@ use Doctrine\Common\Collections\Collection;
 #[ApiResource]
 class Message
 {
+    /**
+     * Texte stocké en base lors d'une suppression par l'auteur (suppression logique).
+     */
+    public const CONTENT_PLACEHOLDER_USER_DELETED = '[message supprimé]';
+
+    /**
+     * Texte stocké en base lors d'une suppression / masquage par la modération.
+     */
+    public const CONTENT_PLACEHOLDER_MODERATED = '[message modéré]';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -261,5 +271,31 @@ class Message
             }
         }
         return $count;
+    }
+
+    public function isUserSelfDeletedContent(): bool
+    {
+        if (!$this->isDeleted) {
+            return false;
+        }
+        $c = trim((string) $this->content);
+
+        return $c === self::CONTENT_PLACEHOLDER_USER_DELETED
+            || strcasecmp($c, self::CONTENT_PLACEHOLDER_USER_DELETED) === 0;
+    }
+
+    public function isModeratedDeletedContent(): bool
+    {
+        if (!$this->isDeleted || $this->isUserSelfDeletedContent()) {
+            return false;
+        }
+        $raw = (string) $this->content;
+        $c = trim($raw);
+
+        if ($c === self::CONTENT_PLACEHOLDER_MODERATED) {
+            return true;
+        }
+
+        return str_contains($raw, 'supprimé par un modérateur');
     }
 } 

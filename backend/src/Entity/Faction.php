@@ -95,6 +95,12 @@ class Faction implements TimestampableInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $icon = null;
 
+    /**
+     * @var Collection<int, RpActivity>
+     */
+    #[ORM\OneToMany(targetEntity: RpActivity::class, mappedBy: 'faction')]
+    private Collection $rpActivities;
+
     public function __construct()
     {
         $this->characters = new ArrayCollection();
@@ -102,6 +108,7 @@ class Faction implements TimestampableInterface
         $this->characterApplications = new ArrayCollection();
         $this->npcs = new ArrayCollection();
         $this->scenes = new ArrayCollection();
+        $this->rpActivities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -415,6 +422,35 @@ class Faction implements TimestampableInterface
     public function isClosed(): bool
     {
         return $this->status === self::STATUS_CLOSED;
+    }
+
+    /**
+     * @return Collection<int, RpActivity>
+     */
+    public function getRpActivities(): Collection
+    {
+        return $this->rpActivities;
+    }
+
+    public function addRpActivity(RpActivity $rpActivity): static
+    {
+        if (!$this->rpActivities->contains($rpActivity)) {
+            $this->rpActivities->add($rpActivity);
+            $rpActivity->setFaction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpActivity(RpActivity $rpActivity): static
+    {
+        if ($this->rpActivities->removeElement($rpActivity)) {
+            if ($rpActivity->getFaction() === $this) {
+                $rpActivity->setFaction(null);
+            }
+        }
+
+        return $this;
     }
 
     #[ORM\PrePersist]

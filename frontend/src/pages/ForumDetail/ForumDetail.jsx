@@ -5,8 +5,9 @@ import forumService from '../../services/forumService';
 import threadService from '../../services/threadService';
 import { characterApi } from '../../services/characterApi';
 import factionService from '../../services/factionService';
+import rpActivityService from '../../services/rpActivityService';
 import dialogueThemeService from '../../services/dialogueThemeService';
-import RichTextComposer from '../../components/RichTextComposer/RichTextComposer';
+import RichTextComposer from '../../components/RichTextComposer/RichTextComposerTiptap';
 import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useThreadFilters from '../../hooks/useThreadFilters';
@@ -17,6 +18,7 @@ import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import ForumCardV3 from '../../components/ForumCardV3/ForumCardV3';
 import Pagination from '../../components/Pagination/Pagination';
 import ThreadFilters from '../../components/ThreadFilters/ThreadFilters';
+import RpActivityCard from '../../components/RpActivityCard/RpActivityCard';
 import { normalizeForum } from '../../utils/forumUtils';
 import styles from './ForumDetail.module.css';
 
@@ -27,8 +29,13 @@ const FILTER_RP = 'roleplay';
 const FILTER_HRP = 'hrp';
 const FORUM_LAYOUT_SINGLE = 'single';
 const FORUM_LAYOUT_DOUBLE = 'double';
-const THREAD_READ_STORAGE_PREFIX = 'thread:last-read:';
-const FORUM_READ_STORAGE_PREFIX = 'forum:last-read:';
+const FORUM_CARD_VARIANT_DEFAULT = 'default';
+const FORUM_CARD_VARIANT_COMPACT = 'compact';
+const ACTIVITY_FILTER_ALL = 'all';
+const ACTIVITY_FILTER_EVENT = 'event';
+const ACTIVITY_FILTER_MISSION = 'mission';
+/** Une carte d’activité RP par slide (carrousel). */
+const ACTIVITY_CARDS_PER_SLIDE = 1;
 
 const MultiSelectField = ({
   label,
@@ -143,6 +150,7 @@ const ForumDetail = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSingleForum, setIsSingleForum] = useState(false);
   const [forumLayout, setForumLayout] = useState(FORUM_LAYOUT_SINGLE);
+  const [forumCardVariant, setForumCardVariant] = useState(FORUM_CARD_VARIANT_DEFAULT);
   const [isCreateThreadOpen, setIsCreateThreadOpen] = useState(false);
   const [creatingThread, setCreatingThread] = useState(false);
   const [createThreadError, setCreateThreadError] = useState('');
@@ -156,7 +164,11 @@ const ForumDetail = () => {
   const [newThreadFactionIds, setNewThreadFactionIds] = useState([]);
   const [dialogueThemes, setDialogueThemes] = useState([]);
   const [activeDialogueThemeId, setActiveDialogueThemeId] = useState('');
-  const [readSyncToken, setReadSyncToken] = useState(0);
+  const [rpActivities, setRpActivities] = useState([]);
+  const [rpActivitiesLoading, setRpActivitiesLoading] = useState(false);
+  const [rpActivityFilter, setRpActivityFilter] = useState(ACTIVITY_FILTER_ALL);
+  const [activitySlideIndex, setActivitySlideIndex] = useState(0);
+  const [activitySelectableCharacters, setActivitySelectableCharacters] = useState([]);
   const isRoleplayForum = Boolean(singleForumData?.isRoleplay || singleForumData?.type === 'roleplay');
   
   // Hook personnalisé pour les filtres de threads (utilise l'URL comme source de vérité)
@@ -203,6 +215,16 @@ const ForumDetail = () => {
 
           const data = await universeService.getUniversForums(universeSlug);
           setForumData(data);
+          setRpActivitiesLoading(true);
+          try {
+            const activityData = await rpActivityService.getUniverseActivities(universeSlug);
+            setRpActivities(Array.isArray(activityData?.items) ? activityData.items : []);
+          } catch (activityError) {
+            console.error(activityError);
+            setRpActivities([]);
+          } finally {
+            setRpActivitiesLoading(false);
+          }
         }
       } catch (err) {
         setError('Erreur lors du chargement des données');
@@ -214,6 +236,25 @@ const ForumDetail = () => {
 
     fetchData();
   }, [id, slug, currentUniverse, currentPage, apiFilters]);
+
+  useEffect(() => {
+    const fetchActivityCharacters = async () => {
+      if (!isAuthenticated || !currentUniverse || currentUniverse === 'portal') {
+        setActivitySelectableCharacters([]);
+        return;
+      }
+
+      try {
+        const data = await characterApi.getUniverseSelectableCharacters(currentUniverse);
+        setActivitySelectableCharacters(Array.isArray(data?.items) ? data.items : []);
+      } catch (err) {
+        console.error(err);
+        setActivitySelectableCharacters([]);
+      }
+    };
+
+    fetchActivityCharacters();
+  }, [isAuthenticated, currentUniverse]);
 
   useEffect(() => {
     setIsCreateThreadOpen(false);
@@ -267,7 +308,8 @@ const ForumDetail = () => {
       try {
         const universeSlug = singleForumData?.universe?.slug;
         if (!universeSlug) {
-          setThreadCharacters([]);
+          setOwnedThreadCharacters([]);
+          setUniverseThreadCharacters([]);
           return;
         }
 
@@ -468,98 +510,87 @@ const ForumDetail = () => {
   }, [singleForumData?.type, isRoleplayForum]);
 
   const threadVisualStateById = useMemo(() => {
-    const toTimestamp = (value) => {
-      if (!value) return null;
-      const parsed = new Date(value).getTime();
-      return Number.isNaN(parsed) ? null : parsed;
-    };
-
-    const isParticipantThread = (thread) => {
-      if (!thread || !user?.id) return false;
-      if (thread.isParticipant || thread.userIsParticipant || thread.isUserParticipant) {
-        return true;
-      }
-      if (thread.authorId === user.id || thread.characterCreatorId === user.id) {
-        return true;
-      }
-      if (Array.isArray(thread.participants)) {
-        return thread.participants.some((participant) => (
-          participant?.userId === user.id || participant?.id === user.id
-        ));
-      }
-      return false;
-    };
-
-    const computeUnread = (thread, latestTimestamp) => {
-      if (!isAuthenticated || !latestTimestamp) return false;
-      try {
-        const raw = localStorage.getItem(`${THREAD_READ_STORAGE_PREFIX}${thread.threadId}`);
-        if (!raw) return true;
-        const readTimestamp = Number(raw);
-        if (Number.isNaN(readTimestamp)) return true;
-        return readTimestamp < latestTimestamp;
-      } catch {
-        return false;
-      }
-    };
-
     const state = new Map();
     (singleForumData?.threads || []).forEach((thread) => {
-      const latestTimestamp = toTimestamp(thread.lastPost?.date) || toTimestamp(thread.createdAt);
-      const isUnread = computeUnread(thread, latestTimestamp);
-      const isParticipating = isParticipantThread(thread);
-      state.set(thread.threadId, { isUnread, isParticipating, latestTimestamp });
+      state.set(thread.threadId, {
+        isUnread: Boolean(thread.isUnread),
+        isParticipating: Boolean(thread.isParticipant || thread.userIsParticipant || thread.isUserParticipant),
+      });
     });
     return state;
-  }, [singleForumData?.threads, isAuthenticated, user?.id, readSyncToken]);
+  }, [singleForumData?.threads]);
 
-  const markThreadAsRead = (threadId, latestTimestamp) => {
-    if (!threadId || !latestTimestamp) return;
+  const markAllAsRead = async () => {
     try {
-      localStorage.setItem(`${THREAD_READ_STORAGE_PREFIX}${threadId}`, String(latestTimestamp));
-    } catch {
-      // noop
+      if (isSingleForum && singleForumData?.forumId) {
+        await forumService.markForumAsRead(singleForumData.forumId);
+        const refreshed = await forumService.getForumBySlug(slug || id, {
+          page: currentPage,
+          limit: 10,
+          filters: apiFilters,
+        });
+        setSingleForumData(refreshed);
+        return;
+      }
+
+      if (currentUniverse && currentUniverse !== 'portal') {
+        await universeService.markUniverseAsRead(currentUniverse);
+        const refreshed = await universeService.getUniversForums(currentUniverse);
+        setForumData(refreshed);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const markAllAsRead = () => {
-    const toTimestamp = (value) => {
-      if (!value) return null;
-      const parsed = new Date(value).getTime();
-      return Number.isNaN(parsed) ? null : parsed;
-    };
-    const markByKey = (key, dateValue) => {
-      const timestamp = toTimestamp(dateValue);
-      if (!key || !timestamp) return;
-      try {
-        localStorage.setItem(key, String(timestamp));
-      } catch {
-        // noop
-      }
-    };
+  const hasParticipatingUnreadInForumTree = (forum) => {
+    if (!forum) return false;
+    const subforums = forum.subforums || forum.subForums || [];
+    if (forum.hasParticipatingUnreadThreads) return true;
+    return subforums.some((subforum) => hasParticipatingUnreadInForumTree(subforum));
+  };
 
-    if (singleForumData?.threads?.length) {
-      singleForumData.threads.forEach((thread) => {
-        markByKey(
-          `${THREAD_READ_STORAGE_PREFIX}${thread.threadId}`,
-          thread.lastPost?.date || thread.createdAt
-        );
-      });
+  const hasUnreadInForumTree = (forum) => {
+    if (!forum) return false;
+    const subforums = forum.subforums || forum.subForums || [];
+    if (forum.hasUnreadThreads) return true;
+    return subforums.some((subforum) => hasUnreadInForumTree(subforum));
+  };
+
+  const filteredActivities = useMemo(() => {
+    if (rpActivityFilter === ACTIVITY_FILTER_ALL) return rpActivities;
+    return rpActivities.filter((activity) => activity.kind === rpActivityFilter);
+  }, [rpActivities, rpActivityFilter]);
+
+  const activitySlides = useMemo(() => {
+    if (filteredActivities.length === 0) return [];
+    const slides = [];
+    for (let index = 0; index < filteredActivities.length; index += ACTIVITY_CARDS_PER_SLIDE) {
+      slides.push(filteredActivities.slice(index, index + ACTIVITY_CARDS_PER_SLIDE));
     }
+    return slides;
+  }, [filteredActivities]);
 
-    const visibleForums = [
-      ...filteredForums.important,
-      ...filteredForums.playerPlatform,
-      ...filteredForums.roleplay,
-      ...filteredForums.hrp,
-      ...filteredElseworlds.flatMap((elseworld) => elseworld.forums || []),
-    ];
-    visibleForums.forEach((forum) => {
-      const forumKeyPart = forum.id ?? forum.slug ?? forum.name;
-      markByKey(`${FORUM_READ_STORAGE_PREFIX}${forumKeyPart}`, forum.lastPost?.date);
-    });
+  useEffect(() => {
+    setActivitySlideIndex(0);
+  }, [rpActivityFilter]);
 
-    setReadSyncToken((previous) => previous + 1);
+  useEffect(() => {
+    if (activitySlides.length === 0) {
+      setActivitySlideIndex(0);
+      return;
+    }
+    setActivitySlideIndex((prev) => Math.min(prev, activitySlides.length - 1));
+  }, [activitySlides]);
+
+  const refreshActivities = async () => {
+    if (!currentUniverse || currentUniverse === 'portal') return;
+    try {
+      const activityData = await rpActivityService.getUniverseActivities(currentUniverse);
+      setRpActivities(Array.isArray(activityData?.items) ? activityData.items : []);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) {
@@ -644,8 +675,10 @@ const ForumDetail = () => {
               <div className={styles.forumsList}>
                 {singleForumData.subForums.map((subForum) => (
                   <ForumCardV3 
-                    key={subForum.id} 
-                  readSyncToken={readSyncToken}
+                    key={subForum.id}
+                    variant={FORUM_CARD_VARIANT_COMPACT}
+                    hasUnread={hasUnreadInForumTree(subForum)}
+                    hasParticipatingHighlight={hasParticipatingUnreadInForumTree(subForum)}
                     forum={normalizeForum({
                       id: subForum.id,
                       slug: subForum.slug,
@@ -653,6 +686,8 @@ const ForumDetail = () => {
                       description: subForum.description,
                       banner: subForum.banner,
                       type: subForum.type,
+                      hasUnreadThreads: subForum.hasUnreadThreads,
+                      hasParticipatingUnreadThreads: subForum.hasParticipatingUnreadThreads,
                       lastPost: subForum.lastPost ? {
                         threadId: subForum.lastPost.threadId,
                         threadSlug: subForum.lastPost.threadSlug,
@@ -790,7 +825,6 @@ const ForumDetail = () => {
                     const threadState = threadVisualStateById.get(thread.threadId) || {
                       isUnread: false,
                       isParticipating: false,
-                      latestTimestamp: null,
                     };
                     const isParticipatingUnread = threadState.isUnread && threadState.isParticipating;
                     return (
@@ -800,7 +834,6 @@ const ForumDetail = () => {
                     className={`${styles.threadItem} ${
                       threadState.isUnread ? styles.threadItemUnread : ''
                     } ${isParticipatingUnread ? styles.threadItemParticipatingUnread : ''}`}
-                    onClick={() => markThreadAsRead(thread.threadId, threadState.latestTimestamp)}
                   >
                     <div className={styles.threadMainContent}>
                       {thread.authorAvatar && (
@@ -808,17 +841,23 @@ const ForumDetail = () => {
                       )}
                       <div className={styles.threadContent}>
                         <div className={styles.threadHeader}>
-                          <h3 className={styles.threadTitle}>{thread.title}</h3>
-                          {(threadState.isUnread || isParticipatingUnread) && (
-                            <div className={styles.threadStateBadges}>
-                              {threadState.isUnread && (
-                                <span className={styles.badgeUnread}>Non lu</span>
-                              )}
-                              {isParticipatingUnread && (
-                                <span className={styles.badgeParticipating}>Ta participation</span>
-                              )}
-                            </div>
-                          )}
+                          <div
+                            className={`${styles.threadTitleRow} ${
+                              (threadState.isUnread || isParticipatingUnread) ? styles.threadTitleRowWithBadges : ''
+                            }`}
+                          >
+                            <h3 className={styles.threadTitle}>{thread.title}</h3>
+                            {(threadState.isUnread || isParticipatingUnread) && (
+                              <div className={styles.threadStateBadges}>
+                                {threadState.isUnread && (
+                                  <span className={styles.badgeUnread}>Non lu</span>
+                                )}
+                                {isParticipatingUnread && (
+                                  <span className={styles.badgeParticipating}>Ta participation</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           <div className={styles.threadBadges}>
                             {thread.pinned && (
                               <span className={styles.badgePinned}>
@@ -957,6 +996,99 @@ const ForumDetail = () => {
           </div>
         </header>
 
+        <section className={styles.activitiesSection}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>Events & Missions RP</h2>
+              <p className={styles.sectionSubtitle}>Inscriptions par personnage et relances planifiées.</p>
+            </div>
+            <div className={styles.filterButtons}>
+              <button
+                className={`${styles.filterButton} ${rpActivityFilter === ACTIVITY_FILTER_ALL ? styles.active : ''}`}
+                onClick={() => setRpActivityFilter(ACTIVITY_FILTER_ALL)}
+                type="button"
+              >
+                Tous
+              </button>
+              <button
+                className={`${styles.filterButton} ${rpActivityFilter === ACTIVITY_FILTER_EVENT ? styles.active : ''}`}
+                onClick={() => setRpActivityFilter(ACTIVITY_FILTER_EVENT)}
+                type="button"
+              >
+                Events
+              </button>
+              <button
+                className={`${styles.filterButton} ${rpActivityFilter === ACTIVITY_FILTER_MISSION ? styles.active : ''}`}
+                onClick={() => setRpActivityFilter(ACTIVITY_FILTER_MISSION)}
+                type="button"
+              >
+                Missions
+              </button>
+            </div>
+          </div>
+
+          {rpActivitiesLoading ? (
+            <p className={styles.activitiesLoading}>Chargement des activités RP...</p>
+          ) : filteredActivities.length === 0 ? (
+            <p className={styles.activitiesEmpty}>Aucun event ou mission pour ce filtre.</p>
+          ) : (
+            <div className={styles.activitiesSlider}>
+              {activitySlides.length > 1 && (
+                <div className={styles.activitiesSliderHeader}>
+                  <p className={styles.activitiesSliderMeta}>
+                    Slide {activitySlideIndex + 1} / {activitySlides.length}
+                  </p>
+                  <div className={styles.activitiesSliderControls}>
+                    <button
+                      type="button"
+                      className={styles.activitiesNavButton}
+                      onClick={() => setActivitySlideIndex((prev) => Math.max(0, prev - 1))}
+                      disabled={activitySlideIndex === 0}
+                      aria-label="Slide précédent"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.activitiesNavButton}
+                      onClick={() => setActivitySlideIndex((prev) => Math.min(activitySlides.length - 1, prev + 1))}
+                      disabled={activitySlideIndex === activitySlides.length - 1}
+                      aria-label="Slide suivant"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className={styles.activitiesViewport}>
+                <div
+                  className={styles.activitiesTrack}
+                  style={{ transform: `translateX(-${activitySlideIndex * 100}%)` }}
+                >
+                  {activitySlides.map((slideItems, slideIdx) => (
+                    <div key={`activity-slide-${slideIdx}`} className={styles.activitiesSlide}>
+                      <div
+                        className={styles.activitiesGrid}
+                      >
+                        {slideItems.map((activity) => (
+                          <RpActivityCard
+                            key={activity.id}
+                            activity={activity}
+                            selectableCharacters={activitySelectableCharacters}
+                            showRegistration={false}
+                            onRegistrationChanged={() => { void refreshActivities(); }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* Système de filtres */}
         <div className={styles.filtersSection}>
           <div className={styles.filtersToolbar}>
@@ -1020,6 +1152,25 @@ const ForumDetail = () => {
                   </button>
                 </div>
               </div>
+              <div className={styles.controlGroup}>
+                <span className={styles.controlLabel}>Présentation</span>
+                <div className={styles.viewButtons}>
+                  <button
+                    className={`${styles.filterButton} ${forumCardVariant === FORUM_CARD_VARIANT_DEFAULT ? styles.active : ''}`}
+                    onClick={() => setForumCardVariant(FORUM_CARD_VARIANT_DEFAULT)}
+                    type="button"
+                  >
+                    Bannière
+                  </button>
+                  <button
+                    className={`${styles.filterButton} ${forumCardVariant === FORUM_CARD_VARIANT_COMPACT ? styles.active : ''}`}
+                    onClick={() => setForumCardVariant(FORUM_CARD_VARIANT_COMPACT)}
+                    type="button"
+                  >
+                    Compact
+                  </button>
+                </div>
+              </div>
             </div>
             <div className={styles.toolbarActions}>
               <div className={styles.searchBox}>
@@ -1051,7 +1202,7 @@ const ForumDetail = () => {
               <button
                 type="button"
                 className={styles.markAllReadButton}
-                onClick={markAllAsRead}
+                onClick={() => { void markAllAsRead(); }}
               >
                 Tout marquer comme lu
               </button>
@@ -1080,7 +1231,9 @@ const ForumDetail = () => {
                 <ForumCardV3 
                   key={forum.id} 
                   compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  readSyncToken={readSyncToken}
+                  variant={forumCardVariant}
+                  hasUnread={hasUnreadInForumTree(forum)}
+                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
                   forum={normalizeForum({
                     ...forum,
                     lastThread: forum.lastPost ? {
@@ -1122,7 +1275,9 @@ const ForumDetail = () => {
                 <ForumCardV3
                   key={forum.id}
                   compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  readSyncToken={readSyncToken}
+                  variant={forumCardVariant}
+                  hasUnread={hasUnreadInForumTree(forum)}
+                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
                   forum={normalizeForum({
                     ...forum,
                     lastThread: forum.lastPost ? {
@@ -1164,7 +1319,9 @@ const ForumDetail = () => {
                 <ForumCardV3 
                   key={forum.id} 
                   compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  readSyncToken={readSyncToken}
+                  variant={forumCardVariant}
+                  hasUnread={hasUnreadInForumTree(forum)}
+                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
                   forum={normalizeForum({
                     ...forum,
                     lastThread: forum.lastPost ? {
@@ -1203,7 +1360,9 @@ const ForumDetail = () => {
                 <ForumCardV3 
                   key={forum.id} 
                   compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  readSyncToken={readSyncToken}
+                  variant={forumCardVariant}
+                  hasUnread={hasUnreadInForumTree(forum)}
+                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
                   forum={normalizeForum({
                     ...forum,
                     lastThread: forum.lastPost ? {
@@ -1257,7 +1416,9 @@ const ForumDetail = () => {
                       <ForumCardV3 
                         key={forum.id} 
                         compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                        readSyncToken={readSyncToken}
+                        variant={forumCardVariant}
+                        hasUnread={hasUnreadInForumTree(forum)}
+                        hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
                         forum={normalizeForum({
                           ...forum,
                           lastThread: forum.lastPost ? {

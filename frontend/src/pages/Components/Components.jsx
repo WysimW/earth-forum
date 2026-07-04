@@ -24,6 +24,11 @@ const Components = () => {
           path: '/components/cards',
           description: 'Différents styles de cartes pour afficher les personnages',
         },
+        {
+          name: 'Card Event RP',
+          path: '/components/rpactivitycard',
+          description: 'Variantes de design pour la card des activites RP',
+        },
       ],
     },
     {

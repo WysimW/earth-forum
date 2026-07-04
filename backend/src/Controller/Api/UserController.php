@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\UniversRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +21,8 @@ class UserController extends AbstractController
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
-        private UniversRepository $universRepository
+        private UniversRepository $universRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -97,7 +99,7 @@ class UserController extends AbstractController
                 'id' => $user->getId(),
                 'pseudo' => $user->getPseudo(),
                 'email' => $user->getEmail(),
-                'avatar' => $user->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($user->getAvatar()),
                 'roles' => $roles,
                 'role' => $isSuperAdmin ? 'super_admin' : ($isAdmin ? 'admin' : ($isModerator ? 'moderator' : 'user')),
                 'status' => $user->isActive() ? 'active' : 'inactive',
@@ -144,7 +146,7 @@ class UserController extends AbstractController
             'id' => $targetUser->getId(),
             'pseudo' => $targetUser->getPseudo(),
             'email' => $targetUser->getEmail(),
-            'avatar' => $targetUser->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($targetUser->getAvatar()),
             'roles' => $roles,
             'role' => $isSuperAdmin ? 'super_admin' : ($isAdmin ? 'admin' : ($isModerator ? 'moderator' : 'user')),
             'status' => $targetUser->isActive() ? 'active' : 'inactive',

@@ -86,6 +86,11 @@ const forumService = {
     const response = await api.delete(`/api/forums/${id}`);
     return response.data;
   },
+
+  async markForumAsRead(id) {
+    const response = await api.post(`/api/forums/${id}/mark-read`);
+    return response.data;
+  },
 };
 
 export default forumService;

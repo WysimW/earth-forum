@@ -4,6 +4,8 @@ namespace App\Controller\Api;
 
 use App\Entity\MemberOfMonthMessage;
 use App\Entity\SiteSetting;
+use App\Entity\UserImportantSeen;
+use App\Entity\User;
 use App\Entity\UniverseCharacterOfMonth;
 use App\Entity\UniverseMemberOfMonth;
 use App\Entity\UserRegulationAcceptance;
@@ -11,8 +13,10 @@ use App\Repository\MemberOfMonthMessageRepository;
 use App\Repository\SiteSettingRepository;
 use App\Repository\UniverseCharacterOfMonthRepository;
 use App\Repository\UniverseMemberOfMonthRepository;
+use App\Repository\UserImportantSeenRepository;
 use App\Repository\UniversRepository;
 use App\Repository\UserRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,7 +38,9 @@ class ImportantController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly UniverseMemberOfMonthRepository $memberOfMonthRepository,
         private readonly UniverseCharacterOfMonthRepository $characterOfMonthRepository,
-        private readonly MemberOfMonthMessageRepository $memberMessageRepository
+        private readonly MemberOfMonthMessageRepository $memberMessageRepository,
+        private readonly UserImportantSeenRepository $importantSeenRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -67,6 +73,12 @@ class ImportantController extends AbstractController
                     'key' => 'character_of_month',
                     'label' => 'Personnage du mois',
                     'url' => $universeSlug !== '' ? sprintf('/character-of-month/%s', $universeSlug) : '/character-of-month',
+                    'isExternal' => false,
+                ],
+                [
+                    'key' => 'rp_activities',
+                    'label' => 'Events & Missions',
+                    'url' => '/rp-activities',
                     'isExternal' => false,
                 ],
                 [
@@ -141,11 +153,20 @@ class ImportantController extends AbstractController
             ['year' => 'DESC', 'month' => 'DESC']
         );
 
-        if (!$entry) {
-            return new JsonResponse(['entry' => null]);
+        $isUnread = false;
+        if ($entry && $this->getUser()) {
+            $seen = $this->importantSeenRepository->findOneFor(
+                $this->getUser(),
+                $universe,
+                UserImportantSeen::CONTENT_MEMBER_OF_MONTH
+            );
+            $isUnread = !$seen || (int) $seen->getLastSeenEntryId() !== (int) $entry->getId();
         }
 
-        return new JsonResponse(['entry' => $this->serializeMemberEntry($entry)]);
+        return new JsonResponse([
+            'entry' => $entry ? $this->serializeMemberEntry($entry) : null,
+            'isUnread' => $isUnread,
+        ]);
     }
 
     #[Route('/api/member-of-month/{universeSlug}/history', name: 'api_member_of_month_history', methods: ['GET'])]
@@ -179,17 +200,30 @@ class ImportantController extends AbstractController
             ['createdAt' => 'DESC']
         );
 
+        $memberUser = $entry->getUser();
+        $memberUserId = $memberUser?->getId();
+        $messageAuthorIds = array_values(array_unique(array_filter(array_map(
+            static fn (MemberOfMonthMessage $message): ?int => $message->getUser()?->getId(),
+            $messages
+        ))));
+        $commonThreadsByUserId = ($memberUser && $messageAuthorIds !== [])
+            ? $this->getCommonThreadCountsByUser($memberUser, $messageAuthorIds, $entry->getUniverse()?->getId())
+            : [];
+
         return new JsonResponse([
             'items' => array_map(
-                static fn (MemberOfMonthMessage $message) => [
+                fn (MemberOfMonthMessage $message): array => [
                     'id' => $message->getId(),
                     'content' => $message->getContent(),
                     'createdAt' => $message->getCreatedAt()?->format(\DateTimeInterface::ATOM),
                     'user' => [
                         'id' => $message->getUser()?->getId(),
                         'pseudo' => $message->getUser()?->getPseudo(),
-                        'avatar' => $message->getUser()?->getAvatar(),
+                        'avatar' => $this->s3MediaUrlResolver->resolve($message->getUser()?->getAvatar()),
                     ],
+                    'commonThreadsCount' => ($message->getUser() && $memberUserId !== null && $message->getUser()->getId() !== $memberUserId)
+                        ? (int) ($commonThreadsByUserId[$message->getUser()->getId()] ?? 0)
+                        : null,
                 ],
                 $messages
             ),
@@ -239,11 +273,78 @@ class ImportantController extends AbstractController
             ['year' => 'DESC', 'month' => 'DESC']
         );
 
-        if (!$entry) {
-            return new JsonResponse(['entry' => null]);
+        $isUnread = false;
+        if ($entry && $this->getUser()) {
+            $seen = $this->importantSeenRepository->findOneFor(
+                $this->getUser(),
+                $universe,
+                UserImportantSeen::CONTENT_CHARACTER_OF_MONTH
+            );
+            $isUnread = !$seen || (int) $seen->getLastSeenEntryId() !== (int) $entry->getId();
         }
 
-        return new JsonResponse(['entry' => $this->serializeCharacterEntry($entry)]);
+        return new JsonResponse([
+            'entry' => $entry ? $this->serializeCharacterEntry($entry) : null,
+            'isUnread' => $isUnread,
+        ]);
+    }
+
+    #[Route('/api/member-of-month/{universeSlug}/mark-seen', name: 'api_member_of_month_mark_seen', methods: ['POST'])]
+    public function markMemberOfMonthSeen(string $universeSlug): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentification requise'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $universe = $this->universRepository->findOneBy(['slug' => $universeSlug]);
+        if (!$universe) {
+            return new JsonResponse(['error' => 'Univers introuvable'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $entry = $this->memberOfMonthRepository->findOneBy(
+            ['universe' => $universe],
+            ['year' => 'DESC', 'month' => 'DESC']
+        );
+        $entryId = $entry?->getId();
+
+        $this->importantSeenRepository->markSeen(
+            $user,
+            $universe,
+            UserImportantSeen::CONTENT_MEMBER_OF_MONTH,
+            $entryId ? (int) $entryId : null
+        );
+
+        return new JsonResponse(['status' => 'ok']);
+    }
+
+    #[Route('/api/character-of-month/{universeSlug}/mark-seen', name: 'api_character_of_month_mark_seen', methods: ['POST'])]
+    public function markCharacterOfMonthSeen(string $universeSlug): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentification requise'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $universe = $this->universRepository->findOneBy(['slug' => $universeSlug]);
+        if (!$universe) {
+            return new JsonResponse(['error' => 'Univers introuvable'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $entry = $this->characterOfMonthRepository->findOneBy(
+            ['universe' => $universe],
+            ['year' => 'DESC', 'month' => 'DESC']
+        );
+        $entryId = $entry?->getId();
+
+        $this->importantSeenRepository->markSeen(
+            $user,
+            $universe,
+            UserImportantSeen::CONTENT_CHARACTER_OF_MONTH,
+            $entryId ? (int) $entryId : null
+        );
+
+        return new JsonResponse(['status' => 'ok']);
     }
 
     #[Route('/api/character-of-month/{universeSlug}/history', name: 'api_character_of_month_history', methods: ['GET'])]
@@ -598,7 +699,7 @@ class ImportantController extends AbstractController
             'user' => [
                 'id' => $entry->getUser()?->getId(),
                 'pseudo' => $entry->getUser()?->getPseudo(),
-                'avatar' => $entry->getUser()?->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($entry->getUser()?->getAvatar()),
             ],
             'monthlyStats' => $this->buildMemberMonthlyStats($entry),
         ];
@@ -713,7 +814,7 @@ class ImportantController extends AbstractController
             'alignment' => $entry->getAlignment(),
             'powers' => $entry->getPowers(),
             'weaknesses' => $entry->getWeaknesses(),
-            'imageUrl' => $entry->getImageUrl(),
+            'imageUrl' => $this->s3MediaUrlResolver->resolve($entry->getImageUrl()),
             'whoIsText' => $entry->getWhoIsText(),
             'whyPlayText' => $entry->getWhyPlayText(),
             'quickCreatePayload' => $entry->getQuickCreatePayload(),
@@ -724,6 +825,47 @@ class ImportantController extends AbstractController
                 'slug' => $entry->getUniverse()?->getSlug(),
             ],
         ];
+    }
+
+    /**
+     * @param int[] $otherUserIds
+     * @return array<int,int> [userId => commonThreadCount]
+     */
+    private function getCommonThreadCountsByUser(User $referenceUser, array $otherUserIds, ?int $universeId = null): array
+    {
+        $otherUserIds = array_values(array_unique(array_filter(array_map('intval', $otherUserIds))));
+        if ($otherUserIds === []) {
+            return [];
+        }
+
+        $qb = $this->entityManager->createQueryBuilder()
+            ->select('otherAuthor.id AS userId', 'COUNT(DISTINCT t.id) AS commonThreadsCount')
+            ->from('App\Entity\Thread', 't')
+            ->join('t.posts', 'referencePosts')
+            ->join('referencePosts.author', 'referenceAuthor')
+            ->join('t.posts', 'otherPosts')
+            ->join('otherPosts.author', 'otherAuthor')
+            ->join('t.forum', 'f')
+            ->leftJoin('f.parent', 'fp')
+            ->where('referenceAuthor = :referenceUser')
+            ->andWhere('otherAuthor.id IN (:otherUserIds)')
+            ->andWhere('otherAuthor != :referenceUser')
+            ->setParameter('referenceUser', $referenceUser)
+            ->setParameter('otherUserIds', $otherUserIds)
+            ->groupBy('otherAuthor.id');
+
+        if ($universeId) {
+            $qb->andWhere('(f.universe = :universeId OR fp.universe = :universeId)')
+                ->setParameter('universeId', $universeId);
+        }
+
+        $rows = $qb->getQuery()->getArrayResult();
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['userId']] = (int) $row['commonThreadsCount'];
+        }
+
+        return $result;
     }
 }
 

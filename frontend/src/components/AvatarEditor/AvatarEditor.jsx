@@ -23,8 +23,8 @@ const AvatarEditor = ({
   };
 
   const handleSave = () => {
-    if (onSave && selectedAvatar) {
-      onSave(selectedAvatar);
+    if (onSave) {
+      onSave(selectedAvatar ?? null);
     }
   };
 

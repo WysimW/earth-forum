@@ -1,0 +1,197 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
+}
+
+.toolbarBtn:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+.toolbarBtn:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.toolbarBtnActive {
+  border-color: var(--primary-color);
+  background-color: color-mix(in srgb, var(--primary-color) 18%, var(--bg-primary));
+  color: var(--text-primary);
+}
+
+.toolbarIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.colorLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.colorLabel:hover {
+  border-color: var(--primary-color);
+}
+
+.colorInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.emojiPopover {
+  position: relative;
+}
+
+.emojiPanel {
+  position: absolute;
+  z-index: var(--z-index-dropdown, 50);
+  bottom: calc(100% + var(--spacing-xs));
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--bg-card);
+  box-shadow: 0 var(--spacing-xs) var(--spacing-md) color-mix(in srgb, var(--bg-dark) 40%, transparent);
+  max-width: min(18rem, 90vw);
+}
+
+.emojiCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm, 4px);
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.emojiCell:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.editorShell {
+  position: relative;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--bg-primary);
+  transition: border-color var(--transition-base);
+}
+
+.placeholderOverlay {
+  position: absolute;
+  z-index: 0;
+  left: var(--spacing-md);
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  pointer-events: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  user-select: none;
+}
+
+.editorShell:focus-within {
+  border-color: var(--primary-color);
+}
+
+.editorRoot {
+  position: relative;
+  z-index: 1;
+  min-height: calc(var(--spacing-xl) * 2.5);
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-primary);
+}
+
+.editorRoot :global(.ProseMirror) {
+  outline: none;
+  min-height: calc(var(--spacing-xl) * 1.75);
+}
+
+.editorRoot :global(.ProseMirror p) {
+  margin: 0 0 0.35em;
+}
+
+.editorRoot :global(.ProseMirror p:last-child) {
+  margin-bottom: 0;
+}
+
+.editorRoot :global(.ProseMirror img) {
+  max-width: 25%;
+  height: auto;
+  border-radius: var(--border-radius-sm, 4px);
+  vertical-align: middle;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.imageError {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--danger-color);
+}
+
+.hiddenFile {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}

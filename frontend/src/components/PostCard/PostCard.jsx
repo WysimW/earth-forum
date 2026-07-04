@@ -18,7 +18,7 @@ const parseBlocks = (content) => {
       tag: el.tagName.toLowerCase(),
       html: el.innerHTML,
       text: (el.textContent || '').replace(/\u00a0/g, ' ').trim(),
-      hasRichContent: Boolean(el.querySelector('img, video, iframe, table, ul, ol, blockquote, pre, hr')),
+      hasRichContent: Boolean(el.querySelector('img, video, iframe, table, ul, ol, blockquote, pre, hr, .rich-spacer')),
     }))
     .filter((block) => block.text !== '' || block.hasRichContent)
     .map(({ tag, html: blockHtml }) => ({ tag, html: blockHtml }));

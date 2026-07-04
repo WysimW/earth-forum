@@ -39,6 +39,15 @@ export const sanitizeHtml = (dirty) => {
     }
   });
 
+  const listItems = container.querySelectorAll('li');
+  listItems.forEach((item) => {
+    const text = (item.textContent || '').replace(/\u00a0/g, ' ').trim();
+    const hasRichContent = Boolean(item.querySelector('img, video, iframe, table, blockquote, pre, code, hr'));
+    if (!text && !hasRichContent) {
+      item.remove();
+    }
+  });
+
   return container.innerHTML;
 };
 

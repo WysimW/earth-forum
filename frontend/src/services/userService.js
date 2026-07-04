@@ -7,7 +7,7 @@ const userService = {
   },
 
   async updateProfile(userData) {
-    const response = await api.put('/api/users/me', userData);
+    const response = await api.put('/api/profile/me', userData);
     return response.data;
   },
 };

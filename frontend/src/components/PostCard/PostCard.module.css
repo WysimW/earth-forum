@@ -89,6 +89,62 @@
   margin-bottom: 0;
 }
 
+.postCardHRP .postContent h1,
+.postCardHRP .postContent h2,
+.postCardHRP .postContent h3,
+.postCardHRP .postContent h4,
+.postCardHRP .postContent h5,
+.postCardHRP .postContent h6,
+.postCardRP .postContent h1,
+.postCardRP .postContent h2,
+.postCardRP .postContent h3,
+.postCardRP .postContent h4,
+.postCardRP .postContent h5,
+.postCardRP .postContent h6,
+.postCardRP .inlineEditorContent h1,
+.postCardRP .inlineEditorContent h2,
+.postCardRP .inlineEditorContent h3,
+.postCardRP .inlineEditorContent h4,
+.postCardRP .inlineEditorContent h5,
+.postCardRP .inlineEditorContent h6 {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  margin-bottom: var(--spacing-sm);
+}
+
+.postCardHRP .postContent ul,
+.postCardHRP .postContent ol,
+.postCardRP .postContent ul,
+.postCardRP .postContent ol,
+.postCardRP .inlineEditorContent ul,
+.postCardRP .inlineEditorContent ol {
+  margin: 0 0 var(--spacing-md);
+  padding-left: var(--spacing-xl);
+  list-style-position: outside;
+}
+
+.postCardHRP .postContent ul,
+.postCardRP .postContent ul,
+.postCardRP .inlineEditorContent ul {
+  list-style-type: disc;
+}
+
+.postCardHRP .postContent ol,
+.postCardRP .postContent ol,
+.postCardRP .inlineEditorContent ol {
+  list-style-type: decimal;
+}
+
+.postCardHRP .postContent li,
+.postCardRP .postContent li,
+.postCardRP .inlineEditorContent li {
+  margin-bottom: var(--spacing-xs);
+}
+
 /* Styles globaux pour les messages de modération injectés en HTML */
 .postCardHRP .postContent :global(.moderation-alert) {
   border: var(--border-width) solid var(--border-color);
@@ -365,6 +421,13 @@
 .postCardHRP .postContent :global(.dialogueThemeSpan) {
   border-radius: 3px;
   padding: 0 1px;
+}
+
+.postCardHRP .postContent :global(.rich-spacer),
+.postCardRP .postContent :global(.rich-spacer),
+.postCardRP .inlineEditorContent :global(.rich-spacer) {
+  display: block;
+  min-height: var(--spacing-lg);
 }
 
 .postCardRP .postActions {

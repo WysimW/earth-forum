@@ -101,12 +101,19 @@ class Thread implements TimestampableInterface
     #[ORM\JoinTable(name: 'thread_factions')]
     private Collection $factions;
 
+    /**
+     * @var Collection<int, RpActivity>
+     */
+    #[ORM\ManyToMany(targetEntity: RpActivity::class, mappedBy: 'threads')]
+    private Collection $rpActivities;
+
     public function __construct()
     {  
         $this->posts = new ArrayCollection();
         $this->participants = new ArrayCollection();
         $this->npcs = new ArrayCollection();
         $this->factions = new ArrayCollection();
+        $this->rpActivities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -437,6 +444,33 @@ class Thread implements TimestampableInterface
     public function isRoleplay(): bool
     {
         return $this->type === 'roleplay';
+    }
+
+    /**
+     * @return Collection<int, RpActivity>
+     */
+    public function getRpActivities(): Collection
+    {
+        return $this->rpActivities;
+    }
+
+    public function addRpActivity(RpActivity $rpActivity): static
+    {
+        if (!$this->rpActivities->contains($rpActivity)) {
+            $this->rpActivities->add($rpActivity);
+            $rpActivity->addThread($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpActivity(RpActivity $rpActivity): static
+    {
+        if ($this->rpActivities->removeElement($rpActivity)) {
+            $rpActivity->removeThread($this);
+        }
+
+        return $this;
     }
 
     public function isCharacterSheet(): bool

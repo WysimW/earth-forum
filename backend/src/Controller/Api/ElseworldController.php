@@ -9,6 +9,7 @@ use App\Entity\Univers;
 use App\Repository\ElseworldRepository;
 use App\Repository\CharacterRepository;
 use App\Repository\NpcRepository;
+use App\Service\S3MediaUrlResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,12 +17,17 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/ajax/elseworlds')]
 class ElseworldController extends AbstractController
 {
+    public function __construct(
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
+    ) {
+    }
+
     #[Route('/', name: 'api_elseworlds_list', methods: ['GET'])]
     public function getElseworlds(ElseworldRepository $elseworldRepository): JsonResponse
     {
         $elseworlds = $elseworldRepository->findAll();
         
-        $data = array_map(function(Elseworld $elseworld) {
+        $data = array_map(function (Elseworld $elseworld): array {
             return [
                 'id' => $elseworld->getId(),
                 'name' => $elseworld->getName(),
@@ -32,8 +38,8 @@ class ElseworldController extends AbstractController
                     'name' => $elseworld->getParentUniverse()->getName(),
                     'slug' => $elseworld->getParentUniverse()->getSlug()
                 ],
-                'banner' => $elseworld->getBanner(),
-                'logo' => $elseworld->getLogo()
+                'banner' => $this->s3MediaUrlResolver->resolve($elseworld->getBanner()),
+                'logo' => $this->s3MediaUrlResolver->resolve($elseworld->getLogo())
             ];
         }, $elseworlds);
         
@@ -45,14 +51,14 @@ class ElseworldController extends AbstractController
     {
         $elseworlds = $elseworldRepository->findByParentUniverse($universe->getId());
         
-        $data = array_map(function(Elseworld $elseworld) {
+        $data = array_map(function (Elseworld $elseworld): array {
             return [
                 'id' => $elseworld->getId(),
                 'name' => $elseworld->getName(),
                 'description' => $elseworld->getDescription(),
                 'slug' => $elseworld->getSlug(),
-                'banner' => $elseworld->getBanner(),
-                'logo' => $elseworld->getLogo()
+                'banner' => $this->s3MediaUrlResolver->resolve($elseworld->getBanner()),
+                'logo' => $this->s3MediaUrlResolver->resolve($elseworld->getLogo())
             ];
         }, $elseworlds);
         
@@ -67,12 +73,12 @@ class ElseworldController extends AbstractController
             'status' => 'validated'
         ]);
         
-        $data = array_map(function(Character $character) {
+        $data = array_map(function (Character $character): array {
             return [
                 'id' => $character->getId(),
                 'name' => $character->getName(),
                 'slug' => $character->getSlug(),
-                'avatar' => $character->getAvatar()
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar())
             ];
         }, $characters);
         
@@ -87,12 +93,12 @@ class ElseworldController extends AbstractController
             'status' => 'validated'
         ]);
         
-        $data = array_map(function(Npc $npc) {
+        $data = array_map(function (Npc $npc): array {
             return [
                 'id' => $npc->getId(),
                 'name' => $npc->getName(),
                 'slug' => $npc->getSlug(),
-                'avatar' => $npc->getAvatar()
+                'avatar' => $this->s3MediaUrlResolver->resolve($npc->getAvatar())
             ];
         }, $npcs);
         
@@ -112,8 +118,8 @@ class ElseworldController extends AbstractController
                 'name' => $elseworld->getParentUniverse()->getName(),
                 'slug' => $elseworld->getParentUniverse()->getSlug()
             ],
-            'banner' => $elseworld->getBanner(),
-            'logo' => $elseworld->getLogo(),
+            'banner' => $this->s3MediaUrlResolver->resolve($elseworld->getBanner()),
+            'logo' => $this->s3MediaUrlResolver->resolve($elseworld->getLogo()),
             'createdAt' => $elseworld->getCreatedAt() ? $elseworld->getCreatedAt()->format('Y-m-d H:i:s') : null,
             'updatedAt' => $elseworld->getUpdatedAt() ? $elseworld->getUpdatedAt()->format('Y-m-d H:i:s') : null
         ];

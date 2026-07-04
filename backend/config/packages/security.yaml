@@ -48,12 +48,15 @@ security:
         - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/universes, roles: PUBLIC_ACCESS }
+        - { path: ^/api/universes/.+/rp-activities$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/rp-activities/\d+$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/categories, roles: PUBLIC_ACCESS }
         - { path: ^/api/sidebar/important, roles: PUBLIC_ACCESS }
         - { path: ^/api/reglement$, roles: PUBLIC_ACCESS }
         - { path: ^/api/mode-emploi$, roles: PUBLIC_ACCESS }
         - { path: ^/api/member-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/character-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/footer/live-stats$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/ajax/characters/available, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin/site-settings, roles: ROLE_ADMIN }
         - { path: ^/api/admin/member-of-month, roles: ROLE_ADMIN }

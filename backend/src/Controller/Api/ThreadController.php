@@ -6,12 +6,16 @@ namespace App\Controller\Api;
 
 use App\Entity\Character;
 use App\Entity\Faction;
+use App\Entity\Npc;
 use App\Entity\Post;
+use App\Entity\RpActivity;
 use App\Entity\User;
 use App\Entity\Forum;
 use App\Entity\Thread;
 use App\Repository\PostRepository;
+use App\Repository\ReadPostRepository;
 use App\Repository\ThreadRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,7 +26,9 @@ class ThreadController extends AbstractController
 {
     public function __construct(
         private ThreadRepository $threadRepository,
-        private PostRepository $postRepository
+        private PostRepository $postRepository,
+        private ReadPostRepository $readPostRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -33,6 +39,12 @@ class ThreadController extends AbstractController
 
         if (!$thread) {
             return new JsonResponse(['error' => 'Thread non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
+        if ($currentUser) {
+            $this->readPostRepository->markThreadAsRead($currentUser, $thread);
         }
 
         $page = max(1, $request->query->getInt('page', 1));
@@ -54,10 +66,14 @@ class ThreadController extends AbstractController
             fn (Faction $faction): array => [
                 'id' => $faction->getId(),
                 'name' => $faction->getName(),
-                'icon' => $faction->getIcon(),
-                'logo' => $faction->getLogo(),
+                'icon' => $this->s3MediaUrlResolver->resolve($faction->getIcon()),
+                'logo' => $this->s3MediaUrlResolver->resolve($faction->getLogo()),
             ],
             $thread->getFactions()->toArray()
+        );
+        $threadActivities = array_map(
+            fn (RpActivity $activity): array => $this->serializeRpActivity($activity, $currentUser),
+            $thread->getRpActivities()->toArray()
         );
 
         $allowedActors = $this->buildAllowedActors($thread);
@@ -68,7 +84,7 @@ class ThreadController extends AbstractController
             'title' => $thread->getTitle(),
             'author' => $thread->getAuthor()->getPseudo(),
             'authorId' => $thread->getAuthor()->getId(),
-            'authorAvatar' => $thread->getAuthor()->getAvatar(),
+            'authorAvatar' => $this->s3MediaUrlResolver->resolve($thread->getAuthor()->getAvatar()),
             'date' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
             'createdAt' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
             'type' => $thread->getType(),
@@ -87,6 +103,7 @@ class ThreadController extends AbstractController
             'isFull' => $thread->isFull(),
             'participants' => $participants,
             'factions' => $threadFactions,
+            'rpActivities' => $threadActivities,
             'forum' => [
                 'id' => $thread->getForum()->getId(),
                 'name' => $thread->getForum()->getName(),
@@ -108,7 +125,7 @@ class ThreadController extends AbstractController
                 'name' => $character->getName(),
                 'firstName' => $character->getFirstName(),
                 'lastName' => $character->getLastName(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'biography' => $character->getBiography(),
                 'personality' => $character->getPersonality(),
                 'appearance' => $character->getAppearance(),
@@ -319,16 +336,59 @@ class ThreadController extends AbstractController
                     'slug' => $postCharacter->getElseworld()->getSlug(),
                 ] : null,
                 'factions' => $factions,
+                'entityType' => 'character',
             ];
             $author = $postCharacter->getName() ?: $author;
             $avatar = $postCharacter->getAvatar() ?: ($postAuthor ? $postAuthor->getAvatar() : null);
+        } elseif ($isRoleplay && $post->getNpcs()->count() > 0) {
+            $postNpc = $post->getNpcs()->first();
+            if ($postNpc instanceof Npc) {
+                $factions = [];
+                foreach ($postNpc->getFactionsRelation() as $faction) {
+                    if ($faction && $faction->getName()) {
+                        $factions[] = $faction->getName();
+                    }
+                }
+
+                $character = [
+                    'id' => $postNpc->getId(),
+                    'name' => $postNpc->getName() ?: $author,
+                    'firstName' => $postNpc->getFirstName(),
+                    'lastName' => $postNpc->getLastName(),
+                    'actualPseudo' => null,
+                    'alias' => null,
+                    'avatar' => $postNpc->getAvatar() ?: ($postAuthor ? $postAuthor->getAvatar() : null),
+                    'moralAlignment' => $postNpc->getMoralAffiliation(),
+                    'occupation' => $postNpc->getOccupation(),
+                    'age' => $postNpc->getAge(),
+                    'gender' => $postNpc->getGender(),
+                    'universe' => $postNpc->getUniverse() ? [
+                        'id' => $postNpc->getUniverse()->getId(),
+                        'name' => $postNpc->getUniverse()->getName(),
+                        'slug' => $postNpc->getUniverse()->getSlug(),
+                    ] : null,
+                    'elseworld' => $postNpc->getElseworld() ? [
+                        'id' => $postNpc->getElseworld()->getId(),
+                        'name' => $postNpc->getElseworld()->getName(),
+                        'slug' => $postNpc->getElseworld()->getSlug(),
+                    ] : null,
+                    'factions' => $factions,
+                    'entityType' => 'npc',
+                ];
+                $author = $postNpc->getName() ?: $author;
+                $avatar = $postNpc->getAvatar() ?: ($postAuthor ? $postAuthor->getAvatar() : null);
+            }
+        }
+
+        if ($character !== null && array_key_exists('avatar', $character)) {
+            $character['avatar'] = $this->s3MediaUrlResolver->resolve($character['avatar']);
         }
 
         return [
             'postId' => $post->getId(),
             'author' => $author,
             'authorId' => $postAuthor ? $postAuthor->getId() : null,
-            'avatar' => $avatar,
+            'avatar' => $this->s3MediaUrlResolver->resolve($avatar),
             'date' => $post->getCreatedAt() ? $post->getCreatedAt()->format('Y-m-d H:i:s') : null,
             'createdAt' => $post->getCreatedAt() ? $post->getCreatedAt()->format('Y-m-d H:i:s') : null,
             'content' => $post->getContent(),
@@ -344,7 +404,7 @@ class ThreadController extends AbstractController
             'id' => $participant->getId(),
             'name' => $participant->getName(),
             'alias' => $participant->getAlias(),
-            'avatar' => $participant->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($participant->getAvatar()),
             'userId' => $participant->getUser()?->getId(),
         ];
     }
@@ -356,13 +416,104 @@ class ThreadController extends AbstractController
             $characters[] = [
                 'id' => $participant->getId(),
                 'name' => $participant->getName(),
-                'avatar' => $participant->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($participant->getAvatar()),
             ];
         }
 
         return [
             'mode' => $thread->isRoleplay() ? 'character' : 'user',
             'characters' => $characters,
+        ];
+    }
+
+    private function serializeRpActivity(RpActivity $activity, ?User $currentUser): array
+    {
+        $registrationCount = 0;
+        $pendingCount = 0;
+        $userCharacterIds = [];
+        $userPendingCharacterIds = [];
+        $registeredPreview = [];
+        $canManageRegistrations = $currentUser
+            && (int) ($activity->getCreatedBy()?->getId() ?? 0) === (int) $currentUser->getId();
+
+        foreach ($activity->getRegistrations() as $registration) {
+            $character = $registration->getCharacter();
+            if ($registration->isPending()) {
+                $pendingCount++;
+                if ($currentUser && $character?->getUser()?->getId() === $currentUser->getId()) {
+                    $userPendingCharacterIds[] = (int) $character->getId();
+                }
+                continue;
+            }
+
+            if (!$registration->isRegistered()) {
+                continue;
+            }
+            $registrationCount++;
+            $registeredPreview[] = [
+                'id' => $registration->getId(),
+                'status' => $registration->getStatus(),
+                'character' => [
+                    'id' => $character?->getId(),
+                    'name' => $character?->getName(),
+                    'avatar' => $this->s3MediaUrlResolver->resolve($character?->getAvatar()),
+                    'userId' => $character?->getUser()?->getId(),
+                ],
+                'registeredAt' => $registration->getRegisteredAt()?->format(\DateTimeInterface::ATOM),
+            ];
+            if ($currentUser && $character?->getUser()?->getId() === $currentUser->getId()) {
+                $userCharacterIds[] = (int) $character->getId();
+            }
+        }
+
+        $linkedThreads = [];
+        foreach ($activity->getThreads() as $thread) {
+            $lastPostInfo = $thread->getLastPostInfo();
+            $linkedThreads[] = [
+                'id' => $thread->getId(),
+                'slug' => $thread->getSlug(),
+                'title' => $thread->getTitle(),
+                'status' => $thread->getStatus(),
+                'lastPost' => $lastPostInfo ? [
+                    'id' => $lastPostInfo['id'] ?? null,
+                    'threadId' => $lastPostInfo['threadId'] ?? null,
+                    'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
+                    'threadTitle' => $lastPostInfo['title'] ?? null,
+                    'author' => $lastPostInfo['author'] ?? null,
+                    'character' => $lastPostInfo['character'] ?? null,
+                    'avatar' => $this->s3MediaUrlResolver->resolve($lastPostInfo['avatar'] ?? null),
+                    'date' => $lastPostInfo['date'] ?? null,
+                ] : null,
+            ];
+        }
+
+        return [
+            'id' => $activity->getId(),
+            'kind' => $activity->getKind(),
+            'title' => $activity->getTitle(),
+            'slug' => $activity->getSlug(),
+            'status' => $activity->getStatus(),
+            'description' => $activity->getDescription(),
+            'openingSpeech' => $activity->getOpeningSpeech(),
+            'illustrationUrl' => $this->s3MediaUrlResolver->resolve($activity->getIllustrationUrl()),
+            'reminderAt' => $activity->getReminderAt()?->format(\DateTimeInterface::ATOM),
+            'registrationEndAt' => $activity->getRegistrationEndAt()?->format(\DateTimeInterface::ATOM),
+            'registrationsCount' => $registrationCount,
+            'pendingRegistrationsCount' => $pendingCount,
+            'registrationsPreview' => array_slice($registeredPreview, 0, 6),
+            'userRegistration' => [
+                'isRegistered' => count($userCharacterIds) > 0,
+                'characterIds' => array_values(array_unique($userCharacterIds)),
+                'pendingCharacterIds' => array_values(array_unique($userPendingCharacterIds)),
+            ],
+            'permissions' => [
+                'canManageRegistrations' => (bool) $canManageRegistrations,
+            ],
+            'faction' => $activity->getFaction() ? [
+                'id' => $activity->getFaction()?->getId(),
+                'name' => $activity->getFaction()?->getName(),
+            ] : null,
+            'linkedThreads' => $linkedThreads,
         ];
     }
 

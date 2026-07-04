@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use App\Entity\UserDialogueTheme;
 use App\Repository\UserDialogueThemeRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,8 @@ class AuthController extends AbstractController
         private SerializerInterface $serializer,
         private ValidatorInterface $validator,
         private JWTTokenManagerInterface $jwtManager,
-        private UserDialogueThemeRepository $dialogueThemeRepository
+        private UserDialogueThemeRepository $dialogueThemeRepository,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -46,6 +48,8 @@ class AuthController extends AbstractController
                 'message' => 'Identifiants invalides'
             ], 401);
         }
+
+        $this->touchLastLogin($user);
 
         // Générer un token JWT avec lexik/jwt-authentication-bundle
         $token = $this->jwtManager->create($user);
@@ -107,6 +111,8 @@ class AuthController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        $this->touchLastLogin($user);
+
         // Générer un token JWT avec lexik/jwt-authentication-bundle
         $token = $this->jwtManager->create($user);
         $refreshToken = bin2hex(random_bytes(32));
@@ -160,7 +166,15 @@ class AuthController extends AbstractController
             ], 401);
         }
 
+        $this->touchLastLogin($user);
+
         return new JsonResponse($this->serializeUserData($user));
+    }
+
+    private function touchLastLogin(User $user): void
+    {
+        $user->setLastLogin(new \DateTimeImmutable());
+        $this->entityManager->flush();
     }
 
     private function serializeUserData(User $user): array
@@ -171,7 +185,7 @@ class AuthController extends AbstractController
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'pseudo' => $user->getPseudo(),
-            'avatar' => $user->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($user->getAvatar()),
             'roles' => $user->getRoles(),
             'canCreateFaction' => $user->canCreateFaction(),
             'adminUniverses' => array_map(

@@ -63,6 +63,29 @@ class MessageReportRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param int[] $messageIds
+     * @return int[] identifiants de messages déjà signalés par cet utilisateur
+     */
+    public function findMessageIdsReportedByUser(User $user, array $messageIds): array
+    {
+        $messageIds = array_values(array_unique(array_filter($messageIds, static fn ($id) => null !== $id && $id > 0)));
+        if ($messageIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('r')
+            ->select('IDENTITY(r.message) AS mid')
+            ->andWhere('r.reporter = :user')
+            ->andWhere('r.message IN (:ids)')
+            ->setParameter('user', $user)
+            ->setParameter('ids', $messageIds)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map(static fn (array $row): int => (int) $row['mid'], $rows);
+    }
+
+    /**
      * Vérifier si un message a déjà été signalé par un utilisateur
      */
     public function isMessageReportedByUser(int $messageId, User $user): bool

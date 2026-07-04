@@ -80,6 +80,26 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.menuItemLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuBadge {
+  flex-shrink: 0;
+  min-width: var(--spacing-lg);
+  padding: 0 var(--spacing-xs);
+  height: var(--spacing-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
 .menuItem svg {
   flex-shrink: 0;
   color: var(--text-secondary);

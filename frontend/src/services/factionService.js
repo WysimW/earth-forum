@@ -80,6 +80,11 @@ const factionService = {
     const response = await api.delete(`/api/factions/${factionId}/members/npcs/${npcId}`);
     return response.data;
   },
+
+  async createFactionNpc(factionId, payload) {
+    const response = await api.post(`/api/factions/${factionId}/npcs`, payload);
+    return response.data;
+  },
 };
 
 export default factionService;

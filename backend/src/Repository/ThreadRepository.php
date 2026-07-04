@@ -469,6 +469,36 @@ class ThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param int[] $threadIds
+     * @return int[]
+     */
+    public function findParticipatingThreadIdsForUser(User $user, array $threadIds): array
+    {
+        $threadIds = array_values(array_unique(array_filter(array_map('intval', $threadIds))));
+        if ($threadIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('t')
+            ->select('DISTINCT t.id AS id')
+            ->leftJoin('t.characterCreator', 'cc')
+            ->leftJoin('t.participants', 'participantCharacter')
+            ->leftJoin('participantCharacter.user', 'participantUser')
+            ->leftJoin('t.posts', 'threadPost')
+            ->leftJoin('threadPost.author', 'threadPostAuthor')
+            ->leftJoin('threadPost.character', 'threadPostCharacter')
+            ->leftJoin('threadPostCharacter.user', 'threadPostCharacterUser')
+            ->where('t.id IN (:threadIds)')
+            ->andWhere('(t.author = :user OR cc.user = :user OR participantUser = :user OR threadPostAuthor = :user OR threadPostCharacterUser = :user)')
+            ->setParameter('threadIds', $threadIds)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
      * Trouve toutes les fiches de personnage créées par un utilisateur (via l'auteur du thread ou les threads liés aux personnages de l'utilisateur)
      */
     public function findCharacterSheetsByUser(User $user): array
@@ -550,5 +580,245 @@ class ThreadRepository extends ServiceEntityRepository
             ->setParameter('forumIds', $forumIds);
 
         return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Threads créés par un utilisateur (RP + HRP), avec filtres optionnels.
+     *
+     * @return Thread[]
+     */
+    public function findThreadsCreatedByUser(
+        int $userId,
+        ?string $threadType = null,
+        ?string $status = null,
+        ?int $universeId = null,
+        ?int $limit = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->andWhere('t.author = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('t.updatedAt', 'DESC');
+
+        $this->applyThreadTypeFilter($qb, $threadType);
+        $this->applyStatusFilter($qb, $status);
+        $this->applyUniverseFilter($qb, $universeId);
+
+        if ($limit !== null) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Threads où l'utilisateur participe (RP via personnages + HRP via posts utilisateur).
+     *
+     * @return Thread[]
+     */
+    public function findThreadsWithUserParticipationAllTypes(
+        int $userId,
+        ?string $threadType = null,
+        ?string $status = null,
+        ?int $universeId = null,
+        ?int $limit = null,
+    ): array {
+        $rpThreads = [];
+        $hrpThreads = [];
+
+        if ($threadType === null || $threadType === 'all' || $threadType === 'roleplay') {
+            $rpThreads = $this->findAllThreadsWithUserParticipation($userId, $status !== 'all' ? $status : null);
+            if ($universeId !== null) {
+                $rpThreads = $this->filterThreadsByUniverse($rpThreads, $universeId);
+            }
+        }
+
+        if ($threadType === null || $threadType === 'all' || $threadType === 'hrp') {
+            $hrpThreads = $this->findHrpThreadsWithUserParticipation($userId, $status, $universeId);
+        }
+
+        $merged = $this->mergeThreadsById($rpThreads, $hrpThreads);
+
+        if ($limit !== null) {
+            return array_slice($merged, 0, $limit);
+        }
+
+        return $merged;
+    }
+
+    /**
+     * Compteurs agrégés pour les threads créés par un utilisateur.
+     *
+     * @return array{total: int, open: int, closed: int, archived: int, roleplay: int, hrp: int}
+     */
+    public function countThreadsCreatedByUser(int $userId, ?int $universeId = null): array
+    {
+        $threads = $this->findThreadsCreatedByUser($userId, null, null, $universeId);
+
+        return $this->buildThreadStats($threads);
+    }
+
+    /**
+     * Compteurs agrégés pour les participations utilisateur.
+     *
+     * @return array{total: int, open: int, closed: int, archived: int, roleplay: int, hrp: int}
+     */
+    public function countThreadsParticipatingByUser(int $userId, ?int $universeId = null): array
+    {
+        $threads = $this->findThreadsWithUserParticipationAllTypes($userId, null, null, $universeId);
+
+        return $this->buildThreadStats($threads);
+    }
+
+    /**
+     * @return Thread[]
+     */
+    private function findHrpThreadsWithUserParticipation(
+        int $userId,
+        ?string $status = null,
+        ?int $universeId = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->distinct()
+            ->join('t.posts', 'po')
+            ->andWhere('po.author = :userId')
+            ->andWhere('t.type != :roleplayType')
+            ->setParameter('userId', $userId)
+            ->setParameter('roleplayType', 'roleplay')
+            ->orderBy('t.updatedAt', 'DESC');
+
+        $this->applyStatusFilter($qb, $status);
+        $this->applyUniverseFilter($qb, $universeId);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Thread[] $threads
+     *
+     * @return array{total: int, open: int, closed: int, archived: int, roleplay: int, hrp: int}
+     */
+    private function buildThreadStats(array $threads): array
+    {
+        $stats = [
+            'total' => count($threads),
+            'open' => 0,
+            'closed' => 0,
+            'archived' => 0,
+            'roleplay' => 0,
+            'hrp' => 0,
+        ];
+
+        foreach ($threads as $thread) {
+            $threadStatus = $thread->getStatus();
+            if (isset($stats[$threadStatus])) {
+                $stats[$threadStatus]++;
+            }
+
+            if ($thread->getType() === 'roleplay') {
+                $stats['roleplay']++;
+            } else {
+                $stats['hrp']++;
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * @param Thread[] ...$threadLists
+     *
+     * @return Thread[]
+     */
+    private function mergeThreadsById(array ...$threadLists): array
+    {
+        $byId = [];
+
+        foreach ($threadLists as $list) {
+            foreach ($list as $thread) {
+                $byId[$thread->getId()] = $thread;
+            }
+        }
+
+        $all = array_values($byId);
+        usort($all, static fn (Thread $a, Thread $b): int => $b->getUpdatedAt() <=> $a->getUpdatedAt());
+
+        return $all;
+    }
+
+    /**
+     * @param Thread[] $threads
+     *
+     * @return Thread[]
+     */
+    private function filterThreadsByUniverse(array $threads, int $universeId): array
+    {
+        return array_values(array_filter(
+            $threads,
+            static fn (Thread $thread): bool => self::resolveThreadUniverseId($thread) === $universeId
+        ));
+    }
+
+    private static function resolveThreadUniverseId(Thread $thread): ?int
+    {
+        if ($thread->getUniverse() !== null) {
+            return $thread->getUniverse()->getId();
+        }
+
+        $forum = $thread->getForum();
+        if ($forum === null) {
+            return null;
+        }
+
+        if ($forum->getUniverse() !== null) {
+            return $forum->getUniverse()->getId();
+        }
+
+        $elseworld = $forum->getElseworld();
+        if ($elseworld !== null && $elseworld->getParentUniverse() !== null) {
+            return $elseworld->getParentUniverse()->getId();
+        }
+
+        return null;
+    }
+
+    private function applyThreadTypeFilter(\Doctrine\ORM\QueryBuilder $qb, ?string $threadType): void
+    {
+        if ($threadType === null || $threadType === 'all') {
+            return;
+        }
+
+        if ($threadType === 'roleplay') {
+            $qb->andWhere('t.type = :threadType')->setParameter('threadType', 'roleplay');
+
+            return;
+        }
+
+        if ($threadType === 'hrp') {
+            $qb->andWhere('t.type != :threadType')->setParameter('threadType', 'roleplay');
+        }
+    }
+
+    private function applyStatusFilter(\Doctrine\ORM\QueryBuilder $qb, ?string $status): void
+    {
+        if ($status === null || $status === 'all') {
+            return;
+        }
+
+        $qb->andWhere('t.status = :status')->setParameter('status', $status);
+    }
+
+    private function applyUniverseFilter(\Doctrine\ORM\QueryBuilder $qb, ?int $universeId): void
+    {
+        if ($universeId === null) {
+            return;
+        }
+
+        $qb->join('t.forum', 'dashForum')
+            ->leftJoin('dashForum.universe', 'dashFu')
+            ->leftJoin('dashForum.elseworld', 'dashFe')
+            ->leftJoin('dashFe.parentUniverse', 'dashFeu')
+            ->leftJoin('t.universe', 'dashTu')
+            ->andWhere('(dashFu.id = :universeId OR dashFeu.id = :universeId OR dashTu.id = :universeId)')
+            ->setParameter('universeId', $universeId);
     }
 }

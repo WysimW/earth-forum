@@ -3,10 +3,13 @@
 namespace App\Controller\Api;
 
 use App\Entity\Univers;
+use App\Entity\User;
 use App\Repository\UniversRepository;
 use App\Repository\ForumRepository;
-use App\Service\LastPostService;
+use App\Repository\ReadPostRepository;
 use App\Service\ForumStatisticsService;
+use App\Service\LastPostService;
+use App\Service\S3MediaUrlResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,18 +21,24 @@ class UniversController extends AbstractController
     private $forumRepository;
     private $lastPostService;
     private $forumStatsService;
+    private ReadPostRepository $readPostRepository;
+    private S3MediaUrlResolver $s3MediaUrlResolver;
 
     public function __construct(
         UniversRepository $universRepository, 
         ForumRepository $forumRepository,
         LastPostService $lastPostService,
-        ForumStatisticsService $forumStatsService
+        ForumStatisticsService $forumStatsService,
+        ReadPostRepository $readPostRepository,
+        S3MediaUrlResolver $s3MediaUrlResolver
     )
     {
         $this->universRepository = $universRepository;
         $this->forumRepository = $forumRepository;
         $this->lastPostService = $lastPostService;
         $this->forumStatsService = $forumStatsService;
+        $this->readPostRepository = $readPostRepository;
+        $this->s3MediaUrlResolver = $s3MediaUrlResolver;
     }
 
     #[Route('', name: 'api_universes_list', methods: ['GET'])]
@@ -115,6 +124,10 @@ class UniversController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
+        $allForumIds = $this->collectForumIdsWithChildren($universeForums);
+
         // Organiser les forums par type
         $forumsByType = [
             'important' => [],
@@ -157,14 +170,16 @@ class UniversController extends AbstractController
                     'slug' => $subforum->getSlug(),
                     'name' => $subforum->getName(),
                     'description' => $subforum->getDescription(),
-                    'banner' => $subforum->getBanner(),
-                    'heroLogo' => $subforum->getHeroLogo(),
+                    'banner' => $this->s3MediaUrlResolver->resolve($subforum->getBanner()),
+                    'heroLogo' => $this->s3MediaUrlResolver->resolve($subforum->getHeroLogo()),
                     'type' => $subforum->getType(),
                     'isRoleplay' => $subforum->isRoleplay(),
                     'stats' => [
                         'totalThreads' => $subStats['thread_count'] ?? 0,
                         'totalPosts' => $subStats['post_count'] ?? 0,
                     ],
+                    'hasUnreadThreads' => false,
+                    'hasParticipatingUnreadThreads' => false,
                     'lastPost' => $subLastPostInfo ? [
                         'threadId' => $subLastPostInfo['threadId'] ?? null,
                         'threadSlug' => $subLastPostInfo['threadSlug'] ?? null,
@@ -184,8 +199,8 @@ class UniversController extends AbstractController
                 'slug' => $forum->getSlug(),
                 'name' => $forum->getName(),
                 'description' => $forum->getDescription(),
-                'banner' => $forum->getBanner(),
-                'heroLogo' => $forum->getHeroLogo(),
+                'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
+                'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
                 'type' => $forum->getType(),
                 'isRoleplay' => $forum->isRoleplay(),
                 'stats' => [
@@ -193,6 +208,8 @@ class UniversController extends AbstractController
                     'totalPosts' => $stats['post_count'] ?? 0,
                     'subforumCount' => count($subforums),
                 ],
+                'hasUnreadThreads' => false,
+                'hasParticipatingUnreadThreads' => false,
                 'subforums' => $subforumsData,
                 'lastPost' => $lastPostInfo ? [
                     'threadId' => $lastPostInfo['threadId'] ?? null,
@@ -272,14 +289,16 @@ class UniversController extends AbstractController
                             'slug' => $subforum->getSlug(),
                             'name' => $subforum->getName(),
                             'description' => $subforum->getDescription(),
-                            'banner' => $subforum->getBanner(),
-                            'heroLogo' => $subforum->getHeroLogo(),
+                            'banner' => $this->s3MediaUrlResolver->resolve($subforum->getBanner()),
+                            'heroLogo' => $this->s3MediaUrlResolver->resolve($subforum->getHeroLogo()),
                             'type' => $subforum->getType(),
                             'isRoleplay' => $subforum->isRoleplay(),
                             'stats' => [
                                 'totalThreads' => $subStats['thread_count'] ?? 0,
                                 'totalPosts' => $subStats['post_count'] ?? 0,
                             ],
+                            'hasUnreadThreads' => false,
+                            'hasParticipatingUnreadThreads' => false,
                             'lastPost' => $subLastPostInfo ? [
                                 'threadId' => $subLastPostInfo['threadId'] ?? null,
                                 'threadSlug' => $subLastPostInfo['threadSlug'] ?? null,
@@ -299,8 +318,8 @@ class UniversController extends AbstractController
                         'slug' => $forum->getSlug(),
                         'name' => $forum->getName(),
                         'description' => $forum->getDescription(),
-                        'banner' => $forum->getBanner(),
-                        'heroLogo' => $forum->getHeroLogo(),
+                        'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
+                        'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
                         'type' => $forum->getType(),
                         'isRoleplay' => $forum->isRoleplay(),
                         'stats' => [
@@ -308,6 +327,8 @@ class UniversController extends AbstractController
                             'totalPosts' => $stats['post_count'] ?? 0,
                             'subforumCount' => count($subforums),
                         ],
+                        'hasUnreadThreads' => false,
+                        'hasParticipatingUnreadThreads' => false,
                         'subforums' => $subforumsData,
                         'lastPost' => $lastPostInfo ? [
                             'threadId' => $lastPostInfo['threadId'] ?? null,
@@ -328,10 +349,43 @@ class UniversController extends AbstractController
                     'name' => $elseworld->getName(),
                     'slug' => $elseworld->getSlug(),
                     'description' => $elseworld->getDescription(),
-                    'logo' => $elseworld->getLogo(),
+                    'logo' => $this->s3MediaUrlResolver->resolve($elseworld->getLogo()),
                     'forums' => $elseworldForumsData,
                 ];
             }
+        }
+
+        if ($currentUser && $allForumIds !== []) {
+            $unreadByForumId = $this->readPostRepository->getUnreadCountsForUserAndForums($currentUser, $allForumIds);
+            $participatingUnreadByForumId = $this->readPostRepository->getParticipatingUnreadCountsForUserAndForums($currentUser, $allForumIds);
+
+            $applyFlags = function (array &$forumItem) use (&$applyFlags, $unreadByForumId, $participatingUnreadByForumId): void {
+                $forumId = (int) ($forumItem['id'] ?? 0);
+                $forumItem['hasUnreadThreads'] = (($unreadByForumId[$forumId] ?? 0) > 0);
+                $forumItem['hasParticipatingUnreadThreads'] = (($participatingUnreadByForumId[$forumId] ?? 0) > 0);
+                if (!empty($forumItem['subforums']) && is_array($forumItem['subforums'])) {
+                    foreach ($forumItem['subforums'] as &$subforum) {
+                        $applyFlags($subforum);
+                    }
+                    unset($subforum);
+                }
+            };
+
+            foreach ($forumsByType as &$forumsOfType) {
+                foreach ($forumsOfType as &$forumItem) {
+                    $applyFlags($forumItem);
+                }
+                unset($forumItem);
+            }
+            unset($forumsOfType);
+
+            foreach ($elseworldsData as &$elseworldItem) {
+                foreach ($elseworldItem['forums'] as &$forumItem) {
+                    $applyFlags($forumItem);
+                }
+                unset($forumItem);
+            }
+            unset($elseworldItem);
         }
 
         return new JsonResponse([
@@ -344,6 +398,71 @@ class UniversController extends AbstractController
             'forums' => $forumsByType,
             'elseworlds' => $elseworldsData,
         ]);
+    }
+
+    #[Route('/{slug}/mark-read', name: 'api_universe_mark_read', methods: ['POST'])]
+    public function markUniverseRead(string $slug): JsonResponse
+    {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentification requise'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $univers = $this->universRepository->findOneBy(['slug' => $slug]);
+        if (!$univers) {
+            return new JsonResponse(['error' => 'Univers introuvable'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $universeForums = $this->forumRepository->createQueryBuilder('f')
+            ->where('f.parent IS NULL')
+            ->andWhere('f.elseworld IS NULL')
+            ->andWhere('f.status != :archivedStatus')
+            ->andWhere('(f.universe = :universe OR (f.universe IS NULL AND f.type IN (:globalForumTypes)))')
+            ->setParameter('archivedStatus', 'archived')
+            ->setParameter('universe', $univers)
+            ->setParameter('globalForumTypes', ['important', 'hrp'])
+            ->getQuery()
+            ->getResult();
+
+        $forumIds = $this->collectForumIdsWithChildren($universeForums);
+        foreach ($univers->getElseworlds() as $elseworld) {
+            $elseworldForums = $this->forumRepository->createQueryBuilder('f')
+                ->where('f.parent IS NULL')
+                ->andWhere('f.elseworld = :elseworld')
+                ->andWhere('f.status != :archivedStatus')
+                ->setParameter('elseworld', $elseworld)
+                ->setParameter('archivedStatus', 'archived')
+                ->getQuery()
+                ->getResult();
+            $forumIds = array_merge($forumIds, $this->collectForumIdsWithChildren($elseworldForums));
+        }
+
+        $this->readPostRepository->markForumsAsRead($currentUser, array_values(array_unique($forumIds)));
+
+        return new JsonResponse(['status' => 'ok']);
+    }
+
+    /**
+     * @param array<int,\App\Entity\Forum> $forums
+     * @return int[]
+     */
+    private function collectForumIdsWithChildren(array $forums): array
+    {
+        $ids = [];
+        foreach ($forums as $forum) {
+            $ids[] = $forum->getId();
+            $children = $this->forumRepository->createQueryBuilder('sf')
+                ->where('sf.parent = :parent')
+                ->andWhere('sf.status != :archivedStatus')
+                ->setParameter('parent', $forum)
+                ->setParameter('archivedStatus', 'archived')
+                ->getQuery()
+                ->getResult();
+            $ids = array_merge($ids, $this->collectForumIdsWithChildren($children));
+        }
+
+        return array_values(array_unique(array_filter($ids)));
     }
 }
 

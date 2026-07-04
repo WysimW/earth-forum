@@ -11,6 +11,7 @@ use App\Repository\UniversRepository;
 use App\Repository\ElseworldRepository;
 use App\Repository\ForumRepository;
 use App\Service\CharacterForumManager;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +32,8 @@ class CharacterController extends AbstractController
         private CharacterForumManager $characterForumManager,
         private ForumRepository $forumRepository,
         private SluggerInterface $slugger,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -43,7 +45,7 @@ class CharacterController extends AbstractController
             return new JsonResponse(['error' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $characters = $this->characterRepository->findBy(['user' => $user]);
+        $characters = $this->characterRepository->findCharactersByUser($user);
         $universes = $this->universRepository->findAll();
 
         // Structure pour regrouper par univers et elseworlds
@@ -137,7 +139,7 @@ class CharacterController extends AbstractController
                 'firstName' => $character->getFirstName(),
                 'lastName' => $character->getLastName(),
                 'actualPseudo' => $character->getActualPseudo(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'alias' => $character->getAlias(),
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'occupation' => $character->getOccupation(),
@@ -177,7 +179,7 @@ class CharacterController extends AbstractController
             return [
                 'id' => $character->getId(),
                 'name' => $character->getName(),
-                'avatar' => $character->getAvatar(),
+                'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'user' => $character->getUser() ? [
                     'id' => $character->getUser()->getId(),
@@ -213,6 +215,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         // Vérifier que l'utilisateur est propriétaire ou modérateur
@@ -361,6 +366,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         // Vérifier que l'utilisateur est propriétaire ou modérateur
@@ -520,6 +528,9 @@ class CharacterController extends AbstractController
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
         }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
+        }
 
         // Vérifier que l'utilisateur est propriétaire ou modérateur
         if ($character->getUser() !== $user && !$this->isGranted('ROLE_MODERATOR')) {
@@ -543,6 +554,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         // Vérifier que l'utilisateur est propriétaire
@@ -584,6 +598,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         if (!$this->canModerateCharacter($user, $character)) {
@@ -649,6 +666,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         if (!$this->canModerateCharacter($user, $character)) {
@@ -717,6 +737,9 @@ class CharacterController extends AbstractController
         $character = $this->characterRepository->find($id);
         if (!$character) {
             return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
         if (!$this->canModerateCharacter($user, $character)) {
@@ -861,7 +884,8 @@ class CharacterController extends AbstractController
         $html .= '<h1>' . htmlspecialchars($character->getName()) . '</h1>';
         
         if ($character->getAvatar()) {
-            $html .= '<img src="' . htmlspecialchars($character->getAvatar()) . '" alt="' . htmlspecialchars($character->getName()) . '" style="max-width: 200px; border-radius: 50%;">';
+            $avatarSrc = $this->s3MediaUrlResolver->resolve($character->getAvatar()) ?? $character->getAvatar();
+            $html .= '<img src="' . htmlspecialchars((string) $avatarSrc) . '" alt="' . htmlspecialchars($character->getName()) . '" style="max-width: 200px; border-radius: 50%;">';
         }
         
         $html .= '</div>';
@@ -918,7 +942,7 @@ class CharacterController extends AbstractController
             'name' => $character->getName(),
             'status' => $character->getStatus(),
             'statusMessage' => $character->getStatusMessage(),
-            'avatar' => $character->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($character->getAvatar()),
             'firstName' => $character->getFirstName(),
             'lastName' => $character->getLastName(),
             'universe' => $character->getUniverse() ? [

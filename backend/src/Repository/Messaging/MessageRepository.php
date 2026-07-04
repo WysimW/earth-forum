@@ -39,6 +39,58 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Fenêtre de messages pour affichage type chat : les plus récents d'abord,
+     * puis retour ordre chronologique croissant.
+     *
+     * @param int|null $beforeMessageId Si défini, charge les messages strictement plus anciens que cet id (scroll vers le haut).
+     *
+     * @return Message[]
+     */
+    public function findRecentMessagesForChat(Conversation $conversation, int $limit = 30, ?int $beforeMessageId = null): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->where('m.conversation = :conversation')
+            ->setParameter('conversation', $conversation)
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($beforeMessageId !== null && $beforeMessageId > 0) {
+            $qb->andWhere('m.id < :beforeId')
+                ->setParameter('beforeId', $beforeMessageId);
+        }
+
+        $rows = $qb->getQuery()->getResult();
+
+        return array_reverse($rows);
+    }
+
+    /**
+     * Nombre de messages plus anciens que $beforeMessageId dans la conversation.
+     */
+    public function countMessagesOlderThan(Conversation $conversation, int $beforeMessageId): int
+    {
+        $qb = $this->createQueryBuilder('m');
+        $qb->select('COUNT(m.id)')
+            ->where('m.conversation = :conversation')
+            ->andWhere('m.id < :beforeId')
+            ->setParameter('conversation', $conversation)
+            ->setParameter('beforeId', $beforeMessageId);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function findLastMessageInConversation(Conversation $conversation): ?Message
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.conversation = :conversation')
+            ->setParameter('conversation', $conversation)
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Compte les messages non lus dans une conversation pour un utilisateur
      */
     public function countUnreadByConversation(Conversation $conversation, User $user): int
@@ -47,6 +99,7 @@ class MessageRepository extends ServiceEntityRepository
         $qb->select('COUNT(m.id)')
             ->where('m.conversation = :conversation')
             ->andWhere('m.author != :user')
+            ->andWhere('m.isDeleted = :deleted')
             ->andWhere('m.createdAt > (
                 SELECT COALESCE(MAX(p.lastReadAt), :old_date)
                 FROM App\Entity\Messaging\ConversationParticipant p
@@ -55,6 +108,7 @@ class MessageRepository extends ServiceEntityRepository
             )')
             ->setParameter('conversation', $conversation)
             ->setParameter('user', $user)
+            ->setParameter('deleted', false)
             ->setParameter('old_date', new \DateTime('2000-01-01'));
         
         return (int) $qb->getQuery()->getSingleScalarResult();
@@ -110,11 +164,13 @@ class MessageRepository extends ServiceEntityRepository
             ->join('c.participants', 'p')
             ->where('p.user = :user')
             ->andWhere('p.isActive = :active')
+            ->andWhere('c.isArchived = :archived')
             ->andWhere('m.author != :user')
             ->andWhere('m.createdAt > COALESCE(p.lastReadAt, :old_date)')
             ->andWhere('m.isDeleted = :deleted')
             ->setParameter('user', $user)
             ->setParameter('active', true)
+            ->setParameter('archived', false)
             ->setParameter('old_date', new \DateTime('2000-01-01'))
             ->setParameter('deleted', false);
         

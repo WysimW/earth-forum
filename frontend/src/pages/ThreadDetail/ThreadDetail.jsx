@@ -4,17 +4,51 @@ import threadService from '../../services/threadService';
 import { characterApi } from '../../services/characterApi';
 import postService from '../../services/postService';
 import dialogueThemeService from '../../services/dialogueThemeService';
+import rpActivityService from '../../services/rpActivityService';
 import Layout from '../../components/Layout/Layout';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import PostCard from '../../components/PostCard/PostCard';
-import RichTextComposer from '../../components/RichTextComposer/RichTextComposer';
+import RichTextComposer from '../../components/RichTextComposer/RichTextComposerTiptap';
+import RpActivityCard from '../../components/RpActivityCard/RpActivityCard';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './ThreadDetail.module.css';
 import './themes.css';
 
 const THREAD_PAGE_SIZE = 15;
+
+const ACTOR_KEY_CHAR = 'c:';
+const ACTOR_KEY_NPC = 'n:';
+
+function actorKeyFromPostCharacter(character) {
+  if (!character?.id) return '';
+  if (character.entityType === 'npc') return `${ACTOR_KEY_NPC}${character.id}`;
+  return `${ACTOR_KEY_CHAR}${character.id}`;
+}
+
+function normalizeDraftActorKey(raw) {
+  if (raw === undefined || raw === null || raw === '') return '';
+  const s = String(raw);
+  if (s.startsWith(ACTOR_KEY_CHAR) || s.startsWith(ACTOR_KEY_NPC)) return s;
+  if (/^\d+$/.test(s)) return `${ACTOR_KEY_CHAR}${s}`;
+  return s;
+}
+
+function parseActorKeyForPost(actorKey) {
+  if (!actorKey) return { characterId: null, npcId: null };
+  const s = String(actorKey);
+  if (s.startsWith(ACTOR_KEY_NPC)) {
+    const id = Number(s.slice(ACTOR_KEY_NPC.length));
+    return { characterId: null, npcId: Number.isFinite(id) && id > 0 ? id : null };
+  }
+  if (s.startsWith(ACTOR_KEY_CHAR)) {
+    const id = Number(s.slice(ACTOR_KEY_CHAR.length));
+    return { characterId: Number.isFinite(id) && id > 0 ? id : null, npcId: null };
+  }
+  const legacy = Number(s);
+  return { characterId: Number.isFinite(legacy) && legacy > 0 ? legacy : null, npcId: null };
+}
 
 const ThreadDetail = () => {
   const { slug } = useParams();
@@ -87,7 +121,7 @@ const ThreadDetail = () => {
         return;
       }
       setComposerContent(parsed.content || '');
-      setSelectedCharacterId(parsed.selectedCharacterId ? String(parsed.selectedCharacterId) : '');
+      setSelectedCharacterId(normalizeDraftActorKey(parsed.selectedCharacterId));
       setDraftSavedAt(parsed.updatedAt || null);
       setDraftMessage('Brouillon restauré');
     } catch (error) {
@@ -117,12 +151,30 @@ const ThreadDetail = () => {
 
   useEffect(() => {
     const fetchCharacters = async () => {
-      if (!user || !isRoleplayThread) return;
+      if (!user || !isRoleplayThread) {
+        setAvailableCharacters([]);
+        return;
+      }
       try {
+        const linkedActivityId = Array.isArray(thread?.rpActivities) && thread.rpActivities.length > 0
+          ? Number(thread.rpActivities[0]?.id || 0)
+          : 0;
+        if (linkedActivityId > 0) {
+          const data = await rpActivityService.getSelectableCharacters(linkedActivityId);
+          const items = Array.isArray(data?.items) ? data.items : [];
+          const npcs = Array.isArray(data?.npcs) ? data.npcs : [];
+          setAvailableCharacters([
+            ...items.map((c) => ({ ...c, _actorKey: `${ACTOR_KEY_CHAR}${c.id}` })),
+            ...npcs.map((n) => ({ ...n, _actorKey: `${ACTOR_KEY_NPC}${n.id}` })),
+          ]);
+          return;
+        }
+
         const universeSlug = thread?.universe?.slug;
         if (universeSlug) {
           const data = await characterApi.getUniverseSelectableCharacters(universeSlug);
-          setAvailableCharacters(Array.isArray(data?.items) ? data.items : []);
+          const items = Array.isArray(data?.items) ? data.items : [];
+          setAvailableCharacters(items.map((c) => ({ ...c, _actorKey: `${ACTOR_KEY_CHAR}${c.id}` })));
           return;
         }
 
@@ -133,14 +185,14 @@ const ThreadDetail = () => {
           ...(universeBlock?.mainContent?.characters || []),
           ...Object.values(universeBlock?.elseworlds || {}).flatMap((e) => e?.characters || []),
         ]);
-        setAvailableCharacters(flattenCharacters);
+        setAvailableCharacters(flattenCharacters.map((c) => ({ ...c, _actorKey: `${ACTOR_KEY_CHAR}${c.id}` })));
       } catch (err) {
         console.error(err);
         setAvailableCharacters([]);
       }
     };
     fetchCharacters();
-  }, [user, isRoleplayThread, thread?.universe?.slug]);
+  }, [user, isRoleplayThread, thread?.universe?.slug, thread?.rpActivities]);
 
   useEffect(() => {
     const fetchDialogueThemes = async () => {
@@ -176,7 +228,9 @@ const ThreadDetail = () => {
 
   const selectedCharacter = useMemo(() => {
     if (!selectedCharacterId) return null;
-    return availableCharacters.find((character) => String(character.id) === String(selectedCharacterId)) || null;
+    const byKey = availableCharacters.find((a) => a._actorKey === selectedCharacterId);
+    if (byKey) return byKey;
+    return availableCharacters.find((a) => String(a.id) === String(selectedCharacterId)) || null;
   }, [availableCharacters, selectedCharacterId]);
 
   const selectedDialogueTheme = useMemo(() => {
@@ -199,32 +253,37 @@ const ThreadDetail = () => {
     }
 
     const participantIds = new Set((thread?.participants || []).map((participant) => String(participant.id)));
-    const participantOwnedCharacters = availableCharacters.filter((character) => participantIds.has(String(character.id)));
+    const participantOwnedCharacters = availableCharacters.filter(
+      (character) => character.entityType !== 'npc' && participantIds.has(String(character.id)),
+    );
     const candidates = participantOwnedCharacters.length > 0 ? participantOwnedCharacters : availableCharacters;
 
-    const latestPostByCharacterId = new Map();
+    const latestPostByActorKey = new Map();
     posts.forEach((post) => {
-      const characterId = post?.character?.id;
-      if (!characterId) return;
+      const key = actorKeyFromPostCharacter(post?.character);
+      if (!key) return;
       const timestamp = post?.date ? new Date(post.date).getTime() : 0;
       if (!Number.isFinite(timestamp)) return;
-      const current = latestPostByCharacterId.get(String(characterId)) ?? 0;
+      const current = latestPostByActorKey.get(key) ?? 0;
       if (timestamp > current) {
-        latestPostByCharacterId.set(String(characterId), timestamp);
+        latestPostByActorKey.set(key, timestamp);
       }
     });
 
     const sortedCandidates = [...candidates].sort((a, b) => {
-      const aLatest = latestPostByCharacterId.get(String(a.id)) ?? -1;
-      const bLatest = latestPostByCharacterId.get(String(b.id)) ?? -1;
+      const aKey = a._actorKey || `${ACTOR_KEY_CHAR}${a.id}`;
+      const bKey = b._actorKey || `${ACTOR_KEY_CHAR}${b.id}`;
+      const aLatest = latestPostByActorKey.get(aKey) ?? -1;
+      const bLatest = latestPostByActorKey.get(bKey) ?? -1;
       if (aLatest === bLatest) {
         return String(a.name || '').localeCompare(String(b.name || ''), 'fr', { sensitivity: 'base' });
       }
       return aLatest - bLatest;
     });
 
-    if (sortedCandidates[0]?.id) {
-      setSelectedCharacterId(String(sortedCandidates[0].id));
+    if (sortedCandidates[0]) {
+      const first = sortedCandidates[0];
+      setSelectedCharacterId(first._actorKey || `${ACTOR_KEY_CHAR}${first.id}`);
     }
 
     setAutoCharacterPrefillDone(true);
@@ -240,6 +299,14 @@ const ThreadDetail = () => {
 
   const selectedCharacterIdentity = useMemo(() => {
     if (!selectedCharacter) return '';
+
+    if (selectedCharacter.entityType === 'npc') {
+      const fullName = [selectedCharacter.firstName, selectedCharacter.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      return fullName || '';
+    }
 
     const fullName = [selectedCharacter.firstName, selectedCharacter.lastName]
       .filter(Boolean)
@@ -308,10 +375,12 @@ const ThreadDetail = () => {
       if (editingPostId) {
         await postService.updatePost(editingPostId, { content: composerContent });
       } else {
+        const { characterId, npcId } = parseActorKeyForPost(selectedCharacterId);
         await postService.createPost({
           threadId: thread.threadId,
           content: composerContent,
-          characterId: isRoleplayThread ? Number(selectedCharacterId) || null : null,
+          characterId: isRoleplayThread ? characterId : null,
+          npcId: isRoleplayThread ? npcId : null,
           quotedPostId: quotedPostId || null,
         });
       }
@@ -354,7 +423,7 @@ const ThreadDetail = () => {
     setComposerContent(post.content || '');
     setQuotedPostId(null);
     if (post.character?.id) {
-      setSelectedCharacterId(String(post.character.id));
+      setSelectedCharacterId(actorKeyFromPostCharacter(post.character));
     }
     setDraftMessage('Edition complète du post dans le composer');
     window.requestAnimationFrame(() => {
@@ -905,53 +974,42 @@ const ThreadDetail = () => {
           </div>
         </div>
 
-        <section className={styles.participantsPanel}>
-          <div className={styles.participantsHeader}>
-            <h2 className={styles.participantsTitle}>Participants</h2>
-            <span className={styles.participantsCount}>{participantsLabel}</span>
-          </div>
+        {Array.isArray(thread.rpActivities) && thread.rpActivities.length > 0 && thread.rpActivities.map((activity) => (
+          <RpActivityCard
+            key={activity.id}
+            activity={activity}
+            selectableCharacters={availableCharacters.filter((actor) => actor.entityType !== 'npc')}
+            onRegistrationChanged={() => { void fetchThread(1, true); }}
+            showRegistration={false}
+          />
+        ))}
 
-          <div className={styles.participantsList}>
-            {thread.participants?.length > 0 ? thread.participants.map((participant) => (
-              <article key={participant.id} className={styles.participantItem}>
-                {participant.avatar ? (
-                  <img src={participant.avatar} alt={participant.name} className={styles.participantAvatar} />
-                ) : (
-                  <span className={styles.participantAvatarFallback}>
-                    {(participant.name || '?').charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span className={styles.participantName}>{participant.name}</span>
-              </article>
-            )) : (
-              <p className={styles.participantsEmpty}>Aucun participant renseigné.</p>
-            )}
-          </div>
-
-          {thread.factions?.length > 0 && (
-            <div className={styles.participantsFactionsBlock}>
-              <p className={styles.participantsSubheading}>Factions impliquées</p>
-              <div className={styles.factionsList}>
-                {thread.factions.map((faction) => (
-                  <span key={faction.id} className={styles.factionBadge}>
-                    {(faction.icon || faction.logo) ? (
-                      <img
-                        src={faction.icon || faction.logo}
-                        alt={faction.name}
-                        className={styles.factionIcon}
-                      />
-                    ) : (
-                      <span className={styles.factionIconFallback}>
-                        {(faction.name || '?').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                    <span>{faction.name}</span>
-                  </span>
-                ))}
-              </div>
+        {isRoleplayThread && (
+          <section className={styles.participantsPanel}>
+            <div className={styles.participantsHeader}>
+              <h2 className={styles.participantsTitle}>Participants</h2>
+              <span className={styles.participantsCount}>{participantsLabel}</span>
             </div>
-          )}
-        </section>
+
+            <div className={styles.participantsList}>
+              {thread.participants?.length > 0 ? thread.participants.map((participant) => (
+                <article key={participant.id} className={styles.participantItem}>
+                  {participant.avatar ? (
+                    <img src={participant.avatar} alt={participant.name} className={styles.participantAvatar} />
+                  ) : (
+                    <span className={styles.participantAvatarFallback}>
+                      {(participant.name || '?').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className={styles.participantName}>{participant.name}</span>
+                </article>
+              )) : (
+                <p className={styles.participantsEmpty}>Aucun participant renseigné.</p>
+              )}
+            </div>
+
+          </section>
+        )}
 
         <div className={styles.posts}>
             <div className={styles.postsList}>
@@ -1009,7 +1067,13 @@ const ThreadDetail = () => {
               >
                 <option value="">Selectionner un personnage</option>
                 {availableCharacters.map((character) => (
-                  <option key={character.id} value={character.id}>{character.name}</option>
+                  <option key={character._actorKey || character.id} value={character._actorKey || `${ACTOR_KEY_CHAR}${character.id}`}>
+                    {character.entityType === 'npc'
+                      ? `[PNJ] ${character.name}`
+                      : character.kind === 'event'
+                        ? `[Event] ${character.name}`
+                        : character.name}
+                  </option>
                 ))}
               </select>
             )}
@@ -1032,14 +1096,17 @@ const ThreadDetail = () => {
                     {selectedCharacterIdentity && (
                       <p className={styles.selectedCharacterIdentity}>{selectedCharacterIdentity}</p>
                     )}
-                    {selectedCharacter.alias && (
+                    {selectedCharacter.entityType !== 'npc' && selectedCharacter.alias && (
                       <p className={styles.selectedCharacterAlias}>{selectedCharacter.alias}</p>
                     )}
                   </div>
                 </div>
                 <div className={styles.selectedCharacterMeta}>
-                  {selectedCharacter.moralAffiliation && (
-                    <span className={styles.selectedCharacterTag}>{selectedCharacter.moralAffiliation}</span>
+                  {selectedCharacter.entityType === 'npc' && (
+                    <span className={styles.selectedCharacterTag}>PNJ (faction)</span>
+                  )}
+                  {(selectedCharacter.moralAffiliation || selectedCharacter.moralAlignment) && (
+                    <span className={styles.selectedCharacterTag}>{selectedCharacter.moralAffiliation || selectedCharacter.moralAlignment}</span>
                   )}
                   {selectedCharacter.occupation && (
                     <span className={styles.selectedCharacterTag}>{selectedCharacter.occupation}</span>
@@ -1051,7 +1118,11 @@ const ThreadDetail = () => {
                     <span className={styles.selectedCharacterTag}>{selectedCharacter.gender}</span>
                   )}
                   {selectedCharacter.factions && (
-                    <span className={styles.selectedCharacterTag}>{selectedCharacter.factions}</span>
+                    <span className={styles.selectedCharacterTag}>
+                      {Array.isArray(selectedCharacter.factions)
+                        ? selectedCharacter.factions.join(', ')
+                        : selectedCharacter.factions}
+                    </span>
                   )}
                 </div>
               </div>

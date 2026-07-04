@@ -38,6 +38,25 @@ const MemberOfMonth = () => {
     }).format(date);
   };
 
+  const formatMessageDate = (isoDate) => {
+    if (!isoDate) {
+      return '';
+    }
+
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
+
   const loadData = async () => {
     if (!universeSlug) {
       setLoading(false);
@@ -72,6 +91,14 @@ const MemberOfMonth = () => {
   useEffect(() => {
     loadData();
   }, [universeSlug]);
+
+  useEffect(() => {
+    if (!universeSlug || !isAuthenticated) {
+      return;
+    }
+
+    importantService.markMemberOfMonthSeen(universeSlug).catch(() => {});
+  }, [universeSlug, isAuthenticated]);
 
   const submitMessage = async () => {
     if (!entry?.id || !messageInput.trim()) {
@@ -185,8 +212,31 @@ const MemberOfMonth = () => {
             <div className={styles.messageList}>
               {messages.map((message) => (
                 <article key={message.id} className={styles.messageItem}>
-                  <strong>{message.user?.pseudo || 'Membre'}</strong>
-                  <p>{message.content}</p>
+                  <header className={styles.messageHeader}>
+                    <div className={styles.messageAuthor}>
+                      {message.user?.avatar ? (
+                        <img
+                          src={message.user.avatar}
+                          alt={message.user?.pseudo || 'Membre'}
+                          className={styles.messageAvatar}
+                        />
+                      ) : (
+                        <span className={styles.messageAvatarFallback}>
+                          {(message.user?.pseudo || 'M').slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                      <div className={styles.messageAuthorMeta}>
+                        <strong className={styles.messageAuthorName}>{message.user?.pseudo || 'Membre'}</strong>
+                        <span className={styles.messageDate}>{formatMessageDate(message.createdAt)}</span>
+                      </div>
+                    </div>
+                    {typeof message.commonThreadsCount === 'number' && (
+                      <span className={styles.commonThreadsBadge}>
+                        {message.commonThreadsCount} thread{message.commonThreadsCount > 1 ? 's' : ''} en commun
+                      </span>
+                    )}
+                  </header>
+                  <p className={styles.messageContent}>{message.content}</p>
                 </article>
               ))}
             </div>

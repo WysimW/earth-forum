@@ -74,6 +74,12 @@ class Univers
     #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'universe')]
     private Collection $conversations;
 
+    /**
+     * @var Collection<int, RpActivity>
+     */
+    #[ORM\OneToMany(targetEntity: RpActivity::class, mappedBy: 'universe')]
+    private Collection $rpActivities;
+
     public function __construct()
     {   
         $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
@@ -84,6 +90,7 @@ class Univers
         $this->elseworlds = new ArrayCollection();
         $this->factions = new ArrayCollection();
         $this->conversations = new ArrayCollection();
+        $this->rpActivities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -342,6 +349,35 @@ class Univers
             // set the owning side to null (unless already changed)
             if ($conversation->getUniverse() === $this) {
                 $conversation->setUniverse(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RpActivity>
+     */
+    public function getRpActivities(): Collection
+    {
+        return $this->rpActivities;
+    }
+
+    public function addRpActivity(RpActivity $rpActivity): static
+    {
+        if (!$this->rpActivities->contains($rpActivity)) {
+            $this->rpActivities->add($rpActivity);
+            $rpActivity->setUniverse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpActivity(RpActivity $rpActivity): static
+    {
+        if ($this->rpActivities->removeElement($rpActivity)) {
+            if ($rpActivity->getUniverse() === $this) {
+                $rpActivity->setUniverse(null);
             }
         }
 

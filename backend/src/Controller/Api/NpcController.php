@@ -6,6 +6,7 @@ use App\Entity\Npc;
 use App\Repository\NpcRepository;
 use App\Repository\UniversRepository;
 use App\Repository\ElseworldRepository;
+use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,7 +23,8 @@ class NpcController extends AbstractController
         private EntityManagerInterface $entityManager,
         private UniversRepository $universRepository,
         private ElseworldRepository $elseworldRepository,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -63,6 +65,10 @@ class NpcController extends AbstractController
 
         // Classer les PNJ par univers/elseworld
         foreach ($npcs as $npc) {
+            if ($npc->isExcludeFromPersonalNpcs()) {
+                continue;
+            }
+
             $universe = $npc->getUniverse();
             $elseworld = $npc->getElseworld();
 
@@ -127,6 +133,10 @@ class NpcController extends AbstractController
         // Vérifier que l'utilisateur est propriétaire ou modérateur
         if ($npc->getUser() !== $user && !$this->isGranted('ROLE_MODERATOR')) {
             return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($response = $this->blockOwnerAccessFactionDefinitionNpc($npc, $user)) {
+            return $response;
         }
 
         return new JsonResponse($this->serializeNpc($npc, true));
@@ -269,6 +279,10 @@ class NpcController extends AbstractController
             return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
         }
 
+        if ($response = $this->blockOwnerAccessFactionDefinitionNpc($npc, $user)) {
+            return $response;
+        }
+
         $data = json_decode($request->getContent(), true);
 
         // Mettre à jour les propriétés
@@ -403,10 +417,32 @@ class NpcController extends AbstractController
             return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
         }
 
+        if ($response = $this->blockOwnerAccessFactionDefinitionNpc($npc, $user)) {
+            return $response;
+        }
+
         $this->entityManager->remove($npc);
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'PNJ supprimé avec succès']);
+    }
+
+    /**
+     * Les PNJ créés comme « définition de faction » ne sont pas modifiables comme des fiches perso (sauf modération).
+     */
+    private function blockOwnerAccessFactionDefinitionNpc(Npc $npc, $user): ?JsonResponse
+    {
+        if ($this->isGranted('ROLE_MODERATOR')) {
+            return null;
+        }
+
+        if ($npc->isExcludeFromPersonalNpcs() && $npc->getUser() === $user) {
+            return new JsonResponse([
+                'error' => 'Ce PNJ est géré au niveau de la fiche de faction, pas dans « Mes PNJ ».',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
     }
 
     private function serializeNpc(Npc $npc, bool $detailed = false): array
@@ -416,7 +452,7 @@ class NpcController extends AbstractController
             'name' => $npc->getName(),
             'status' => $npc->getStatus(),
             'statusMessage' => $npc->getStatusMessage(),
-            'avatar' => $npc->getAvatar(),
+            'avatar' => $this->s3MediaUrlResolver->resolve($npc->getAvatar()),
             'universe' => $npc->getUniverse() ? [
                 'id' => $npc->getUniverse()->getId(),
                 'name' => $npc->getUniverse()->getName(),
@@ -427,6 +463,7 @@ class NpcController extends AbstractController
                 'name' => $npc->getElseworld()->getName(),
                 'slug' => $npc->getElseworld()->getSlug(),
             ] : null,
+            'excludeFromPersonalNpcs' => $npc->isExcludeFromPersonalNpcs(),
         ];
 
         if ($detailed) {

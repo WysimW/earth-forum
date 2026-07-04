@@ -207,9 +207,11 @@ class MessageController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$message->getId(), $request->request->get('_token'))) {
             // On ne supprime pas réellement, on marque comme supprimé
             $message->setIsDeleted(true);
-            $message->setContent('[Message supprimé]');
+            $message->setContent(
+                $isAuthor ? Message::CONTENT_PLACEHOLDER_USER_DELETED : Message::CONTENT_PLACEHOLDER_MODERATED
+            );
             $message->setAttachments(null);
-            
+
             $this->entityManager->flush();
             
             $this->addFlash('success', 'Message supprimé avec succès.');

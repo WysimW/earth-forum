@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout/Layout';
 import Loading from '../../components/Loading/Loading';
@@ -8,6 +8,7 @@ import CharacterCard from '../../components/CharacterCard/CharacterCard';
 import { useAuth } from '../../contexts/AuthContext';
 import factionService from '../../services/factionService';
 import { npcApi } from '../../services/characterApi';
+import api from '../../services/api';
 import styles from './Factions.module.css';
 
 const flattenNpcs = (data) => {
@@ -37,6 +38,12 @@ const FactionDetail = () => {
   const [applicantSearch, setApplicantSearch] = useState('');
   const [applications, setApplications] = useState([]);
   const [selectedNpc, setSelectedNpc] = useState('');
+  const [newNpcName, setNewNpcName] = useState('');
+  const [newNpcOccupation, setNewNpcOccupation] = useState('');
+  const [newNpcAvatarUrl, setNewNpcAvatarUrl] = useState('');
+  const [uploadingNpcAvatar, setUploadingNpcAvatar] = useState(false);
+  const createNpcAvatarInputRef = useRef(null);
+  const [createNpcModalOpen, setCreateNpcModalOpen] = useState(false);
   const [characterSearch, setCharacterSearch] = useState('');
   const [npcSearch, setNpcSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -74,6 +81,51 @@ const FactionDetail = () => {
   }, [id]);
 
   useEffect(() => {
+    if (!createNpcModalOpen) {
+      return undefined;
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setCreateNpcModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [createNpcModalOpen]);
+
+  const openCreateNpcModal = () => {
+    setNewNpcName('');
+    setNewNpcOccupation('');
+    setNewNpcAvatarUrl('');
+    setCreateNpcModalOpen(true);
+  };
+
+  const handleNpcAvatarFile = async (file) => {
+    if (!file || !file.type.startsWith('image/')) {
+      return;
+    }
+    setUploadingNpcAvatar(true);
+    setFeedback('');
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await api.post('/api/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (response.data?.url) {
+        setNewNpcAvatarUrl(response.data.url);
+      }
+    } catch (err) {
+      setFeedback(err.response?.data?.error || 'Erreur lors de l’upload de l’image.');
+    } finally {
+      setUploadingNpcAvatar(false);
+      if (createNpcAvatarInputRef.current) {
+        createNpcAvatarInputRef.current.value = '';
+      }
+    }
+  };
+
+  useEffect(() => {
     if (loading) return;
     if (window.location.hash !== '#postuler') return;
     const applySection = document.getElementById('faction-apply-section');
@@ -102,10 +154,18 @@ const FactionDetail = () => {
   }, [npcs, faction, npcSearch]);
 
   const applicableCharacters = useMemo(() => {
-    return (myApplicableCharacters || []).filter((character) =>
-      character.name.toLowerCase().includes(applicantSearch.toLowerCase())
-    );
-  }, [myApplicableCharacters, applicantSearch]);
+    const factionUId = faction?.universe?.id ?? null;
+    return (myApplicableCharacters || [])
+      .filter((character) => character.kind !== 'event')
+      .filter((character) => {
+        if (factionUId == null) return true;
+        const uid = character.universe?.id;
+        return uid != null && Number(uid) === Number(factionUId);
+      })
+      .filter((character) =>
+        character.name.toLowerCase().includes(applicantSearch.toLowerCase())
+      );
+  }, [myApplicableCharacters, applicantSearch, faction?.universe?.id]);
 
   const filteredFactionCharacters = useMemo(() => {
     return (faction?.characters || []).filter((character) =>
@@ -158,6 +218,43 @@ const FactionDetail = () => {
       await loadData();
     } catch (err) {
       setFeedback(err.response?.data?.error || 'Erreur lors de l’ajout du PNJ.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCreateAndAddNpc = async () => {
+    const name = newNpcName.trim();
+    if (!name) {
+      setFeedback('Indique un nom pour le PNJ.');
+      return;
+    }
+    try {
+      setActionLoading(true);
+      setFeedback('');
+      const payload = { name };
+      const occ = newNpcOccupation.trim();
+      if (occ) {
+        payload.occupation = occ;
+      }
+      const avatar = newNpcAvatarUrl.trim();
+      if (avatar) {
+        payload.avatar = avatar;
+      }
+      const created = await factionService.createFactionNpc(id, payload);
+      const npcId = created?.id;
+      if (!npcId) {
+        setFeedback('Réponse serveur inattendue lors de la création du PNJ.');
+        return;
+      }
+      setNewNpcName('');
+      setNewNpcOccupation('');
+      setNewNpcAvatarUrl('');
+      setCreateNpcModalOpen(false);
+      setFeedback('PNJ de faction créé et validé (utilisable en mission RP). Il n’apparaît pas dans « Mes PNJ ».');
+      await loadData();
+    } catch (err) {
+      setFeedback(err.response?.data?.error || 'Erreur lors de la création ou de l’ajout du PNJ.');
     } finally {
       setActionLoading(false);
     }
@@ -373,89 +470,6 @@ const FactionDetail = () => {
           </article>
         </section>
 
-        {faction.canEdit && (
-          <section className={styles.memberSection}>
-            <div className={styles.memberHeader}>
-              <h2>Postulants</h2>
-            </div>
-            {applications.length === 0 ? (
-              <p className={styles.memberMeta}>Aucune candidature en attente.</p>
-            ) : (
-              <ul className={styles.list}>
-                {applications.map((application) => (
-                  <li key={application.id} className={styles.listItem}>
-                    <div>
-                      <strong>{application.character?.name || 'Personnage inconnu'}</strong>
-                      {application.character?.user?.pseudo && (
-                        <p className={styles.memberMeta}>Joueur: {application.character.user.pseudo}</p>
-                      )}
-                    </div>
-                    <div className={styles.detailActions}>
-                      <button
-                        type="button"
-                        className={styles.primaryBtn}
-                        onClick={() => handleAcceptApplication(application.id)}
-                        disabled={actionLoading}
-                      >
-                        Accepter
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.dangerBtn}
-                        onClick={() => handleRejectApplication(application.id)}
-                        disabled={actionLoading}
-                      >
-                        Refuser
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
-
-        {showApplySection && (
-          <section className={styles.memberSection} id="faction-apply-section">
-            <div className={styles.memberHeader}>
-              <h2>Postuler à cette faction</h2>
-            </div>
-            {faction.status !== 'open' && (
-              <p className={styles.memberMeta}>Les candidatures sont fermées pour cette faction.</p>
-            )}
-            <div className={styles.inlineForm}>
-              <input
-                className={styles.input}
-                value={applicantSearch}
-                onChange={(event) => setApplicantSearch(event.target.value)}
-                placeholder="Rechercher mon personnage..."
-                disabled={faction.status !== 'open'}
-              />
-              <select
-                value={selectedApplicantCharacter}
-                onChange={(event) => setSelectedApplicantCharacter(event.target.value)}
-                className={styles.input}
-                disabled={faction.status !== 'open'}
-              >
-                <option value="">Sélectionner un personnage</option>
-                {applicableCharacters.map((character) => (
-                  <option key={character.id} value={character.id}>
-                    {character.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className={styles.primaryBtn}
-                onClick={handleApplyToFaction}
-                disabled={actionLoading || faction.status !== 'open' || applicableCharacters.length === 0}
-              >
-                Postuler
-              </button>
-            </div>
-          </section>
-        )}
-
         <section className={styles.memberSection}>
           <div className={styles.memberHeader}>
             <h2>Membres personnages</h2>
@@ -535,6 +549,91 @@ const FactionDetail = () => {
           )}
         </section>
 
+        {(faction.canEdit || showApplySection) && (
+          <section className={styles.memberSection} id="faction-apply-section">
+            <div className={styles.memberHeader}>
+              <h2>Candidatures</h2>
+            </div>
+
+            {faction.canEdit && applications.length > 0 && (
+              <div className={styles.candidatureBlock}>
+                <h3 className={styles.candidatureSubTitle}>Demandes en attente</h3>
+                <ul className={styles.list}>
+                  {applications.map((application) => (
+                    <li key={application.id} className={styles.listItem}>
+                      <div>
+                        <strong>{application.character?.name || 'Personnage inconnu'}</strong>
+                        {application.character?.user?.pseudo && (
+                          <p className={styles.memberMeta}>Joueur : {application.character.user.pseudo}</p>
+                        )}
+                      </div>
+                      <div className={styles.detailActions}>
+                        <button
+                          type="button"
+                          className={styles.primaryBtn}
+                          onClick={() => handleAcceptApplication(application.id)}
+                          disabled={actionLoading}
+                        >
+                          Accepter
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.dangerBtn}
+                          onClick={() => handleRejectApplication(application.id)}
+                          disabled={actionLoading}
+                        >
+                          Refuser
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {faction.canEdit && applications.length > 0 && showApplySection && <hr className={styles.candidatureDivider} aria-hidden="true" />}
+
+            {showApplySection && (
+              <div className={styles.candidatureBlock}>
+                {faction.canEdit && <h3 className={styles.candidatureSubTitle}>Envoyer une candidature</h3>}
+                {faction.status !== 'open' && (
+                  <p className={styles.memberMeta}>Les candidatures sont fermées pour cette faction.</p>
+                )}
+                <div className={styles.inlineForm}>
+                  <input
+                    className={styles.input}
+                    value={applicantSearch}
+                    onChange={(event) => setApplicantSearch(event.target.value)}
+                    placeholder="Rechercher mon personnage..."
+                    disabled={faction.status !== 'open'}
+                  />
+                  <select
+                    value={selectedApplicantCharacter}
+                    onChange={(event) => setSelectedApplicantCharacter(event.target.value)}
+                    className={styles.input}
+                    disabled={faction.status !== 'open'}
+                  >
+                    <option value="">Sélectionner un personnage</option>
+                    {applicableCharacters.map((character) => (
+                      <option key={character.id} value={character.id}>
+                        {character.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className={styles.primaryBtn}
+                    onClick={handleApplyToFaction}
+                    disabled={actionLoading || faction.status !== 'open' || applicableCharacters.length === 0}
+                  >
+                    Postuler
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
         <section className={styles.memberSection}>
           <div className={styles.memberHeader}>
             <h2>Membres PNJ</h2>
@@ -546,17 +645,30 @@ const FactionDetail = () => {
             />
           </div>
           {faction.canEdit && (
-            <div className={styles.inlineForm}>
-              <select value={selectedNpc} onChange={(e) => setSelectedNpc(e.target.value)} className={styles.input}>
-                <option value="">Sélectionner un PNJ</option>
-                {availableNpcs.map((npc) => (
-                  <option key={npc.id} value={npc.id}>{npc.name}</option>
-                ))}
-              </select>
-              <button className={styles.primaryBtn} onClick={handleAddNpc} disabled={actionLoading}>
-                Ajouter
-              </button>
-            </div>
+            <>
+              <p className={styles.memberMeta} style={{ marginBottom: '0.5rem' }}>
+                Crée un PNJ de faction (dédié à cette fiche, absent de « Mes PNJ ») ou ajoute un PNJ déjà présent dans ton compte.
+              </p>
+              <div className={`${styles.inlineForm} ${styles.npcInlineForm}`}>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={openCreateNpcModal}
+                  disabled={actionLoading}
+                >
+                  Créer un PNJ
+                </button>
+                <select value={selectedNpc} onChange={(e) => setSelectedNpc(e.target.value)} className={styles.input}>
+                  <option value="">Sélectionner un PNJ</option>
+                  {availableNpcs.map((npc) => (
+                    <option key={npc.id} value={npc.id}>{npc.name}</option>
+                  ))}
+                </select>
+                <button type="button" className={styles.primaryBtn} onClick={handleAddNpc} disabled={actionLoading}>
+                  Ajouter
+                </button>
+              </div>
+            </>
           )}
           <ul className={styles.list}>
             {filteredFactionNpcs.map((npc) => (
@@ -575,6 +687,125 @@ const FactionDetail = () => {
           </ul>
         </section>
       </div>
+
+      {faction?.canEdit && createNpcModalOpen && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => !actionLoading && setCreateNpcModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="faction-create-npc-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2 id="faction-create-npc-title" className={styles.modalTitle}>
+                Créer un PNJ pour cette faction
+              </h2>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => !actionLoading && setCreateNpcModalOpen(false)}
+                aria-label="Fermer"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.memberMeta}>
+                Ce PNJ est rattaché à l’univers de la faction lorsqu’il est défini, enregistré comme PNJ de faction
+                (il n’apparaît pas dans « Mes PNJ ») et ajouté aux membres PNJ de cette fiche.
+              </p>
+              <div className={styles.createNpcModalFields}>
+                <label className={styles.modalField}>
+                  <span className={styles.modalLabel}>Nom</span>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    value={newNpcName}
+                    onChange={(e) => setNewNpcName(e.target.value)}
+                    placeholder="Nom du PNJ *"
+                    disabled={actionLoading}
+                    autoComplete="off"
+                  />
+                </label>
+                <label className={styles.modalField}>
+                  <span className={styles.modalLabel}>Rôle / fonction</span>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    value={newNpcOccupation}
+                    onChange={(e) => setNewNpcOccupation(e.target.value)}
+                    placeholder="Optionnel"
+                    disabled={actionLoading}
+                    autoComplete="off"
+                  />
+                </label>
+                <div className={styles.modalField}>
+                  <span className={styles.modalLabel}>Portrait</span>
+                  <div className={styles.npcAvatarUploadRow}>
+                    <input
+                      ref={createNpcAvatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className={styles.npcAvatarFileInput}
+                      disabled={actionLoading || uploadingNpcAvatar}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) void handleNpcAvatarFile(f);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className={styles.secondaryBtn}
+                      disabled={actionLoading || uploadingNpcAvatar}
+                      onClick={() => createNpcAvatarInputRef.current?.click()}
+                    >
+                      {uploadingNpcAvatar ? 'Upload…' : 'Choisir une image'}
+                    </button>
+                    {newNpcAvatarUrl && (
+                      <button
+                        type="button"
+                        className={styles.modalBtnCancel}
+                        disabled={actionLoading || uploadingNpcAvatar}
+                        onClick={() => setNewNpcAvatarUrl('')}
+                      >
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                  {newNpcAvatarUrl && (
+                    <div className={styles.npcAvatarPreview}>
+                      <img src={newNpcAvatarUrl} alt="" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                className={styles.modalBtnCancel}
+                onClick={() => setCreateNpcModalOpen(false)}
+                disabled={actionLoading}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className={styles.modalBtnConfirm}
+                onClick={handleCreateAndAddNpc}
+                disabled={actionLoading || uploadingNpcAvatar || !newNpcName.trim()}
+              >
+                {actionLoading ? 'Création...' : 'Créer et ajouter'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

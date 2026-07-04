@@ -144,8 +144,74 @@
   padding: var(--spacing-sm);
 }
 
-.messageItem p {
-  margin: var(--spacing-xs) 0 0 0;
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.messageAuthor {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.messageAvatar,
+.messageAvatarFallback {
+  width: 42px;
+  height: 42px;
+  border: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.messageAvatar {
+  object-fit: cover;
+}
+
+.messageAvatarFallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.messageAuthorMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.messageAuthorName {
+  line-height: var(--line-height-tight);
+}
+
+.messageDate {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.commonThreadsBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border: var(--border-width) solid var(--primary-color);
+  background-color: color-mix(in srgb, var(--primary-color) 16%, transparent);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.messageContent {
+  margin: var(--spacing-sm) 0 0 0;
+  color: var(--text-secondary);
 }
 
 .messageForm {
@@ -188,6 +254,15 @@
   .topThreadItem {
     flex-direction: column;
     gap: 0;
+  }
+
+  .messageHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .commonThreadsBadge {
+    align-self: flex-start;
   }
 }
 

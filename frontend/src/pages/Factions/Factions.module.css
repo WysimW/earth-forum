@@ -409,6 +409,182 @@
   margin-bottom: 0.8rem;
 }
 
+.npcInlineForm {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.npcInlineForm .input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.createNpcModalFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.modalLabel {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.npcAvatarUploadRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.npcAvatarFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.npcAvatarPreview {
+  margin-top: 0.5rem;
+}
+
+.npcAvatarPreview img {
+  display: block;
+  max-width: 140px;
+  max-height: 140px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+/* Modale (création PNJ) */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: var(--z-index-modal-backdrop, 1000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg, 1rem);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background-color: var(--bg-dropdown);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: var(--z-index-modal, 1001);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg, 1rem);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.modalTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold, 600);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs, 0.25rem);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base, 0.2s);
+}
+
+.modalClose:hover {
+  color: var(--text-primary);
+}
+
+.modalBody {
+  padding: var(--spacing-lg, 1rem);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md, 0.75rem);
+  padding: var(--spacing-lg, 1rem);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.modalBtnCancel,
+.modalBtnConfirm {
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-lg, 1rem);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-md, 8px);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium, 500);
+  cursor: pointer;
+  transition: all var(--transition-base, 0.2s);
+}
+
+.modalBtnCancel {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.modalBtnCancel:hover:not(:disabled) {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modalBtnConfirm {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary, var(--text-primary));
+  border-color: var(--primary-color);
+}
+
+.modalBtnConfirm:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.modalBtnCancel:disabled,
+.modalBtnConfirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -676,6 +852,28 @@
   margin: 0;
   color: var(--text-secondary);
   white-space: pre-wrap;
+}
+
+.candidatureBlock {
+  margin-top: var(--spacing-md);
+}
+
+.candidatureBlock:first-child {
+  margin-top: 0;
+}
+
+.candidatureSubTitle {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.candidatureDivider {
+  margin: var(--spacing-lg) 0;
+  border: none;
+  border-top: var(--border-width) solid var(--border-color);
 }
 
 @media (max-width: 1024px) {

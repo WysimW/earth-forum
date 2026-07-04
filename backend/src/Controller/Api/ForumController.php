@@ -6,7 +6,9 @@ namespace App\Controller\Api;
 
 use App\Entity\Forum;
 use App\Entity\ForumCategory;
+use App\Entity\User;
 use App\Repository\ForumRepository;
+use App\Repository\ReadPostRepository;
 use App\Repository\UniversRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\ForumCategoryRepository;
@@ -17,6 +19,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\BreadcrumbService;
 use App\Service\LastPostService;
+use App\Service\S3MediaUrlResolver;
 use App\Repository\ThreadRepository;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -31,7 +34,9 @@ class ForumController extends AbstractController
     private $breadcrumbService;
     private $lastPostService;
     private $threadRepository;
+    private ReadPostRepository $readPostRepository;
     private SluggerInterface $slugger;
+    private S3MediaUrlResolver $s3MediaUrlResolver;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -40,7 +45,9 @@ class ForumController extends AbstractController
         BreadcrumbService $breadcrumbService,
         LastPostService $lastPostService,
         ThreadRepository $threadRepository,
-        SluggerInterface $slugger
+        ReadPostRepository $readPostRepository,
+        SluggerInterface $slugger,
+        S3MediaUrlResolver $s3MediaUrlResolver
     ) 
     {
         $this->entityManager = $entityManager;
@@ -49,7 +56,9 @@ class ForumController extends AbstractController
         $this->breadcrumbService = $breadcrumbService;
         $this->lastPostService = $lastPostService;
         $this->threadRepository = $threadRepository;
+        $this->readPostRepository = $readPostRepository;
         $this->slugger = $slugger;
+        $this->s3MediaUrlResolver = $s3MediaUrlResolver;
     }
 
     #[Route('/api/forumslist', name: 'get_forum_listing', methods: ['GET'])]
@@ -64,7 +73,7 @@ class ForumController extends AbstractController
                 'id' => $forum->getId(),
                 'name' => $forum->getName(),
                 'description' => $forum->getDescription(),
-                'banner' => $forum->getBanner(),
+                'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
                 'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
                 'parent_forum_id' => $forum->getParent() ? $forum->getParent()->getId() : null,
             ];
@@ -139,7 +148,7 @@ class ForumController extends AbstractController
                 'id' => $forum->getId(),
                 'name' => $forum->getName(),
                 'description' => $forum->getDescription(),
-                'banner' => $forum->getBanner(),
+                'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
                 'universe_id' => $forum->getUniverse() ? $forum->getUniverse()->getId() : null,
                 'universe_name' => $forum->getUniverse() ? $forum->getUniverse()->getName() : null,
                 'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
@@ -197,8 +206,25 @@ class ForumController extends AbstractController
         return $this->getForumDetailData($forum);
     }
 
+    #[Route('/api/forums/{id}/mark-read', name: 'api_forum_mark_read', methods: ['POST'])]
+    public function markForumRead(Forum $forum): JsonResponse
+    {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentification requise'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $forumIds = $this->collectForumTreeIds($forum);
+        $this->readPostRepository->markForumsAsRead($currentUser, $forumIds);
+
+        return new JsonResponse(['status' => 'ok']);
+    }
+
     private function getForumDetailData(Forum $forum): JsonResponse
     {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
         $subForums = [];
     
         foreach ($forum->getSubforums() as $subForum) {
@@ -233,8 +259,10 @@ class ForumController extends AbstractController
                 'slug' => $subForum->getSlug(),
                 'name' => $subForum->getName(),
                 'description' => $subForum->getDescription(),
-                'banner' => $subForum->getBanner(),
+                'banner' => $this->s3MediaUrlResolver->resolve($subForum->getBanner()),
                 'type' => $subForum->getType(),
+                'hasUnreadThreads' => false,
+                'hasParticipatingUnreadThreads' => false,
                 'lastPost' => $lastPostInfo ? [
                     'threadId' => $lastPostInfo['threadId'] ?? null,
                     'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
@@ -249,6 +277,18 @@ class ForumController extends AbstractController
                 'stats' => $statsData,
                 'latestThreads' => $latestThreadsData,
             ];
+        }
+
+        if ($currentUser && $subForums !== []) {
+            $subForumIds = array_map(static fn (array $subForum): int => (int) $subForum['id'], $subForums);
+            $unreadByForumId = $this->readPostRepository->getUnreadCountsForUserAndForums($currentUser, $subForumIds);
+            $participatingUnreadByForumId = $this->readPostRepository->getParticipatingUnreadCountsForUserAndForums($currentUser, $subForumIds);
+            foreach ($subForums as &$subForumData) {
+                $forumId = (int) ($subForumData['id'] ?? 0);
+                $subForumData['hasUnreadThreads'] = (($unreadByForumId[$forumId] ?? 0) > 0);
+                $subForumData['hasParticipatingUnreadThreads'] = (($participatingUnreadByForumId[$forumId] ?? 0) > 0);
+            }
+            unset($subForumData);
         }
     
         // Sort threads by the most recent post date
@@ -273,6 +313,15 @@ class ForumController extends AbstractController
     
         $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
         
+        $threadIds = array_map(static fn ($thread) => $thread->getId(), $threads);
+        $unreadCountsByThreadId = $currentUser
+            ? $this->readPostRepository->getUnreadCountsForUserAndThreads($currentUser, $threadIds)
+            : [];
+        $participatingThreadIds = $currentUser
+            ? $this->threadRepository->findParticipatingThreadIdsForUser($currentUser, $threadIds)
+            : [];
+        $participatingThreadLookup = array_fill_keys($participatingThreadIds, true);
+
         $threadsData = [];
         foreach ($threads as $thread) {
             // Utiliser LastPostService pour récupérer les informations du dernier post du thread
@@ -311,12 +360,14 @@ class ForumController extends AbstractController
                 }
             }
             
+            $threadId = $thread->getId();
+            $unreadCount = (int) ($unreadCountsByThreadId[$threadId] ?? 0);
             $threadsData[] = [
-                'threadId' => $thread->getId(),
+                'threadId' => $threadId,
                 'threadSlug' => $thread->getSlug(),
                 'title' => $thread->getTitle(),
                 'author' => $character ? $character : $author,
-                'authorAvatar' => $avatar,
+                'authorAvatar' => $this->s3MediaUrlResolver->resolve($avatar),
                 'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
                 'character' => $character,
                 'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
@@ -325,6 +376,9 @@ class ForumController extends AbstractController
                 'status' => $thread->getStatus(),
                 'pinned' => $thread->getSticky(),
                 'locked' => $thread->getStatus() === 'closed', // Un thread est verrouillé s'il est fermé
+                'isUnread' => $unreadCount > 0,
+                'unreadCount' => $unreadCount,
+                'isParticipant' => isset($participatingThreadLookup[$threadId]),
                 'createdAt' => $thread->getCreatedAt()->format('d/m/y H:i'),
                 'replies' => $thread->getPosts()->count() - 1,
                 'lastPost' => $lastPostInfo ? [
@@ -357,7 +411,7 @@ class ForumController extends AbstractController
             'forumName' => $forum->getName(),
             'type' => $forum->getType(),
             'description' => $forum->getDescription(),
-            'bannerImage' => $forum->getBanner(),
+            'bannerImage' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
             'isRoleplay' => $isRoleplay,
             'breadcrumb' => $breadcrumbs,
             'stats' => $statsData,
@@ -375,6 +429,8 @@ class ForumController extends AbstractController
 
     private function getForumDetailDataWithPagination(Forum $forum, Request $request): JsonResponse
     {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
         // Récupérer les paramètres de pagination et filtres
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 10);
@@ -413,7 +469,9 @@ class ForumController extends AbstractController
                 'slug' => $subForum->getSlug(),
                 'name' => $subForum->getName(),
                 'description' => $subForum->getDescription(),
-                'banner' => $subForum->getBanner(),
+                'banner' => $this->s3MediaUrlResolver->resolve($subForum->getBanner()),
+                'hasUnreadThreads' => false,
+                'hasParticipatingUnreadThreads' => false,
                 'lastPost' => $lastPostInfo ? [
                     'threadId' => $lastPostInfo['threadId'] ?? null,
                     'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
@@ -429,8 +487,28 @@ class ForumController extends AbstractController
             ];
         }
 
+        if ($currentUser && $subForums !== []) {
+            $subForumIds = array_map(static fn (array $subForum): int => (int) $subForum['id'], $subForums);
+            $unreadByForumId = $this->readPostRepository->getUnreadCountsForUserAndForums($currentUser, $subForumIds);
+            $participatingUnreadByForumId = $this->readPostRepository->getParticipatingUnreadCountsForUserAndForums($currentUser, $subForumIds);
+            foreach ($subForums as &$subForumData) {
+                $forumId = (int) ($subForumData['id'] ?? 0);
+                $subForumData['hasUnreadThreads'] = (($unreadByForumId[$forumId] ?? 0) > 0);
+                $subForumData['hasParticipatingUnreadThreads'] = (($participatingUnreadByForumId[$forumId] ?? 0) > 0);
+            }
+            unset($subForumData);
+        }
+
         // Serialiser les threads
         $isRoleplay = $this->forumRepository->isForumOrParentInCategoryType($forum, 'roleplay');
+        $threadIds = array_map(static fn ($thread) => $thread->getId(), $result['threads']);
+        $unreadCountsByThreadId = $currentUser
+            ? $this->readPostRepository->getUnreadCountsForUserAndThreads($currentUser, $threadIds)
+            : [];
+        $participatingThreadIds = $currentUser
+            ? $this->threadRepository->findParticipatingThreadIdsForUser($currentUser, $threadIds)
+            : [];
+        $participatingThreadLookup = array_fill_keys($participatingThreadIds, true);
         $threadsData = [];
         
         foreach ($result['threads'] as $thread) {
@@ -465,12 +543,14 @@ class ForumController extends AbstractController
                 }
             }
             
+            $threadId = $thread->getId();
+            $unreadCount = (int) ($unreadCountsByThreadId[$threadId] ?? 0);
             $threadsData[] = [
-                'threadId' => $thread->getId(),
+                'threadId' => $threadId,
                 'threadSlug' => $thread->getSlug(),
                 'title' => $thread->getTitle(),
                 'author' => $character ? $character : $author,
-                'authorAvatar' => $avatar,
+                'authorAvatar' => $this->s3MediaUrlResolver->resolve($avatar),
                 'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
                 'character' => $character,
                 'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
@@ -480,6 +560,9 @@ class ForumController extends AbstractController
                 'status' => $thread->getStatus(),
                 'pinned' => $thread->getSticky(),
                 'locked' => $thread->getStatus() === 'closed', // Un thread est verrouillé s'il est fermé
+                'isUnread' => $unreadCount > 0,
+                'unreadCount' => $unreadCount,
+                'isParticipant' => isset($participatingThreadLookup[$threadId]),
                 'createdAt' => $thread->getCreatedAt()->format('d/m/y H:i'),
                 'replies' => $thread->getPosts()->count() - 1, // -1 pour exclure le premier post
                 'lastPost' => $lastPostInfo ? [
@@ -512,7 +595,7 @@ class ForumController extends AbstractController
             'forumName' => $forum->getName(),
             'type' => $forum->getType(),
             'description' => $forum->getDescription(),
-            'bannerImage' => $forum->getBanner(),
+            'bannerImage' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
             'isRoleplay' => $isRoleplay,
             'breadcrumb' => $breadcrumbs,
             'stats' => $statsData,
@@ -551,7 +634,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
             'id' => $forum->getId(),
             'name' => $forum->getName(),
             'description' => $forum->getDescription(),
-            'banner' => $forum->getBanner(),
+            'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
             'category_id' => $forum->getCategory() ? $forum->getCategory()->getId() : null,
             'parent_forum_id' => $forum->getParent() ? $forum->getParent()->getId() : null,
         ],
@@ -948,6 +1031,19 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * @return int[]
+     */
+    private function collectForumTreeIds(Forum $forum): array
+    {
+        $ids = [$forum->getId()];
+        foreach ($forum->getSubforums() as $subforum) {
+            $ids = array_merge($ids, $this->collectForumTreeIds($subforum));
+        }
+
+        return array_values(array_unique(array_filter($ids)));
     }
 
     private function generateUniqueSlug(string $name): string

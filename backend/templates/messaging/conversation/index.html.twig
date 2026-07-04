@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const reportBtn = actionsEl.querySelector('.report-message-btn');
                 reportBtn.classList.remove('d-none');
-                reportBtn.href = `/messaging/moderation/messages/${message.id}/report`;
+                reportBtn.href = `/messagerie/${currentConversationId}`;
                 reportBtn.title = 'Signaler ce message';
             }
         }

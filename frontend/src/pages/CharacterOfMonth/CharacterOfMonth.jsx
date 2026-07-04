@@ -4,6 +4,7 @@ import Layout from '../../components/Layout/Layout';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import importantService from '../../services/importantService';
 import styles from './CharacterOfMonth.module.css';
 
@@ -31,6 +32,7 @@ const getAlignmentMeta = (rawAlignment) => {
 const CharacterOfMonth = () => {
   const { universeSlug: routeUniverseSlug } = useParams();
   const { currentUniverse } = useUniverseTheme();
+  const { isAuthenticated } = useAuth();
   const universeSlug = routeUniverseSlug || (currentUniverse !== 'portal' ? currentUniverse : '');
 
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,14 @@ const CharacterOfMonth = () => {
   useEffect(() => {
     loadData();
   }, [universeSlug]);
+
+  useEffect(() => {
+    if (!universeSlug || !isAuthenticated) {
+      return;
+    }
+
+    importantService.markCharacterOfMonthSeen(universeSlug).catch(() => {});
+  }, [universeSlug, isAuthenticated]);
 
   if (loading) {
     return (

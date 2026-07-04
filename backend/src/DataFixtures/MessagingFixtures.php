@@ -358,7 +358,7 @@ class MessagingFixtures extends Fixture implements FixtureGroupInterface
             // 5% de chance d'avoir un message supprimé
             if (mt_rand(1, 20) === 1) {
                 $message->setIsDeleted(true);
-                $message->setContent('[Message supprimé]');
+                $message->setContent(Message::CONTENT_PLACEHOLDER_USER_DELETED);
             }
 
             $manager->persist($message);
