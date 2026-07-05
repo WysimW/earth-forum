@@ -6,6 +6,8 @@ import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import importantService from '../../services/importantService';
+import seoService from '../../services/seoService';
+import SeoHead from '../../components/Seo/SeoHead';
 import styles from './MemberOfMonth.module.css';
 
 const MemberOfMonth = () => {
@@ -21,6 +23,7 @@ const MemberOfMonth = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [seo, setSeo] = useState(null);
   const formatStatsDate = (isoDate) => {
     if (!isoDate) {
       return '';
@@ -66,14 +69,16 @@ const MemberOfMonth = () => {
     try {
       setLoading(true);
       setError('');
-      const [latest, historyResponse] = await Promise.all([
+      const [latest, historyResponse, seoData] = await Promise.all([
         importantService.getMemberOfMonth(universeSlug),
         importantService.getMemberOfMonthHistory(universeSlug),
+        seoService.getUniverse(universeSlug),
       ]);
 
       const latestEntry = latest?.entry || null;
       setEntry(latestEntry);
       setHistory(Array.isArray(historyResponse?.items) ? historyResponse.items : []);
+      setSeo(seoData?.memberOfMonthSeo || null);
 
       if (latestEntry?.id) {
         const messagesResponse = await importantService.getMemberMessages(latestEntry.id);
@@ -144,6 +149,7 @@ const MemberOfMonth = () => {
 
   return (
     <Layout>
+      <SeoHead seo={seo} />
       <div className={styles.page}>
         <h1 className={styles.title}>Membre du mois</h1>
         {entry ? (

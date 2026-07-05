@@ -6,6 +6,9 @@ import './MediaLibrary.css';
 
 const { Search } = Input;
 
+/** URL stable pour enregistrement en base (sans signature S3). */
+export const getMediaStorageUrl = (media) => media?.storageUrl || media?.url;
+
 const MediaLibrary = ({ open, onClose, onSelect, value }) => {
   const [media, setMedia] = useState([]);
   const [filteredMedia, setFilteredMedia] = useState([]);

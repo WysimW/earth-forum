@@ -113,6 +113,7 @@ const Forums = () => {
   const [organizedForums, setOrganizedForums] = useState([]);
   const [treeForums, setTreeForums] = useState([]);
   const [editMode, setEditMode] = useState(false);
+  const [hideSubforums, setHideSubforums] = useState(false);
   const [viewMode, setViewMode] = useState('all');
   const [sortMode, setSortMode] = useState('position');
 
@@ -338,8 +339,17 @@ const Forums = () => {
   useEffect(() => {
     if (editMode) {
       setSortMode('position');
+    } else {
+      setHideSubforums(false);
     }
   }, [editMode]);
+
+  const displayedOrganizedForums = React.useMemo(() => {
+    if (!editMode || !hideSubforums) {
+      return organizedForums;
+    }
+    return organizedForums.filter((forum) => forum.level === 0);
+  }, [editMode, hideSubforums, organizedForums]);
 
   const savePositions = async (positions) => {
     try {
@@ -404,8 +414,41 @@ const Forums = () => {
     }
 
     if (active.id !== over?.id) {
-      // Trouver les indices dans la liste complète filtrée (pas seulement la page actuelle)
-      const allFiltered = organizeForums(filteredForums, 'position');
+      if (hideSubforums) {
+        const parents = organizedForums.filter((forum) => forum.level === 0);
+        const oldIndex = parents.findIndex((item) => item.id === active.id);
+        const newIndex = parents.findIndex((item) => item.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) {
+          return;
+        }
+
+        const reorderedParents = arrayMove(parents, oldIndex, newIndex);
+        const children = organizedForums.filter((forum) => forum.level > 0);
+        const rebuilt = [];
+
+        reorderedParents.forEach((parent) => {
+          rebuilt.push(parent);
+          children
+            .filter((child) => child.parent_forum_id === parent.id)
+            .forEach((subforum) => rebuilt.push(subforum));
+        });
+
+        children
+          .filter((child) => !reorderedParents.some((parent) => parent.id === child.parent_forum_id))
+          .forEach((orphan) => rebuilt.push(orphan));
+
+        const updatedPositions = rebuilt.map((item, index) => ({
+          id: item.id,
+          position: index,
+        }));
+
+        await savePositions(updatedPositions);
+        setOrganizedForums(rebuilt);
+        return;
+      }
+
+      const allFiltered = displayedOrganizedForums;
       const oldGlobalIndex = allFiltered.findIndex((item) => item.id === active.id);
       const newGlobalIndex = allFiltered.findIndex((item) => item.id === over.id);
       
@@ -413,19 +456,14 @@ const Forums = () => {
         return;
       }
       
-      // Créer une nouvelle liste avec les éléments réorganisés
       const reordered = arrayMove(allFiltered, oldGlobalIndex, newGlobalIndex);
       
-      // Mettre à jour les positions en fonction de l'ordre global
       const updatedPositions = reordered.map((item, index) => ({
         id: item.id,
         position: index,
       }));
       
-      // Sauvegarder les positions
       await savePositions(updatedPositions);
-      
-      // Mettre à jour l'état local pour refléter les changements
       setOrganizedForums(reordered);
     }
   };
@@ -671,6 +709,17 @@ const Forums = () => {
             checkedChildren={<EditFilled />}
             unCheckedChildren="OFF"
           />
+          {editMode && (
+            <>
+              <span>Masquer sous-forums:</span>
+              <Switch
+                checked={hideSubforums}
+                onChange={setHideSubforums}
+                checkedChildren="ON"
+                unCheckedChildren="OFF"
+              />
+            </>
+          )}
         </Space>
       }
     >
@@ -707,7 +756,7 @@ const Forums = () => {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={organizedForums.map((f) => f.id)}
+              items={displayedOrganizedForums.map((f) => f.id)}
               strategy={verticalListSortingStrategy}
             >
               <Table
@@ -716,7 +765,7 @@ const Forums = () => {
                     row: SortableRow,
                   },
                 }}
-                dataSource={organizedForums}
+                dataSource={displayedOrganizedForums}
                 columns={displayColumns}
                 loading={loading}
                 rowKey="id"

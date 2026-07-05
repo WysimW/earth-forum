@@ -57,12 +57,17 @@ security:
         - { path: ^/api/member-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/character-of-month, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/footer/live-stats$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/media/file, roles: PUBLIC_ACCESS, methods: [GET, OPTIONS] }
+        - { path: ^/api/seo/, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/forums, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/threads, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/ajax/characters/available, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin/site-settings, roles: ROLE_ADMIN }
         - { path: ^/api/admin/member-of-month, roles: ROLE_ADMIN }
         - { path: ^/api/admin/character-of-month, roles: ROLE_ADMIN }
         - { path: ^/api/admin/users, roles: ROLE_ADMIN }
         - { path: ^/api/admin/forums, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/categories, roles: ROLE_ADMIN }
         - { path: ^/api/admin/characters, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
         - { path: ^/api/admin/media, roles: ROLE_ADMIN }
         - { path: ^/api/admin/media/proxy, roles: ROLE_ADMIN }

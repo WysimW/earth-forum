@@ -4,6 +4,7 @@ import Layout from '../../components/Layout/Layout';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import AvatarCropper from '../../components/AvatarCropper/AvatarCropper';
+import RichTextComposer from '../../components/RichTextComposer/RichTextComposerTiptap';
 import { characterApi } from '../../services/characterApi';
 import api from '../../services/api';
 import universeService from '../../services/universeService';
@@ -28,6 +29,7 @@ const CharacterForm = () => {
   const [universes, setUniverses] = useState([]);
   const [elseworlds, setElseworlds] = useState([]);
   const [avatarCropperOpen, setAvatarCropperOpen] = useState(false);
+  const [characterStatus, setCharacterStatus] = useState('draft');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -126,6 +128,7 @@ const CharacterForm = () => {
       // L'API retourne directement l'objet character (pas dans une propriété character)
       const character = response;
       
+      setCharacterStatus(character.status || 'draft');
       setFormData({
         name: character.name || '',
         firstName: character.firstName || '',
@@ -162,18 +165,27 @@ const CharacterForm = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const buildUpdatePayload = (statusOverride = null) => {
+    const payload = { ...formData };
+    if (statusOverride !== null) {
+      payload.status = statusOverride;
+    }
+    return payload;
+  };
+
+  const shouldSubmitForValidation = () => {
+    return ['draft', 'editing', 'rejected'].includes(characterStatus);
+  };
+
   const handleSaveDraft = async () => {
     try {
       setSaving(true);
-      const payload = {
-        ...formData,
-        status: 'draft', // Utiliser status au lieu de isDraft
-      };
 
       if (id) {
+        const payload = buildUpdatePayload(characterStatus === 'draft' ? 'draft' : null);
         await characterApi.updateCharacter(id, payload);
       } else {
-        await characterApi.createCharacter(payload, true);
+        await characterApi.createCharacter(buildUpdatePayload('draft'), true);
       }
       
       alert('Brouillon sauvegardé avec succès');
@@ -193,18 +205,14 @@ const CharacterForm = () => {
 
     try {
       setSaving(true);
-      const payload = {
-        ...formData,
-        status: 'pending', // Utiliser status au lieu de isDraft
-      };
 
       if (id) {
-        // Pour l'édition, mettre à jour puis soumettre
-        await characterApi.updateCharacter(id, payload);
-        await characterApi.submitCharacter(id);
+        await characterApi.updateCharacter(id, buildUpdatePayload());
+        if (shouldSubmitForValidation()) {
+          await characterApi.submitCharacter(id);
+        }
       } else {
-        // Pour la création, créer directement avec le statut pending
-        await characterApi.createCharacter(payload, false);
+        await characterApi.createCharacter(buildUpdatePayload('pending'), false);
       }
       
       navigate('/characters');
@@ -214,6 +222,20 @@ const CharacterForm = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const getSubmitLabel = () => {
+    if (saving) {
+      return shouldSubmitForValidation() ? 'Soumission...' : 'Enregistrement...';
+    }
+    return shouldSubmitForValidation() ? 'Soumettre pour validation' : 'Enregistrer';
+  };
+
+  const getDraftSaveLabel = () => {
+    if (saving) {
+      return 'Sauvegarde...';
+    }
+    return characterStatus === 'draft' || !id ? 'Sauvegarder en brouillon' : 'Enregistrer';
   };
 
   const handleAvatarSelect = (media) => {
@@ -231,6 +253,10 @@ const CharacterForm = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const goToStep = (stepId) => {
+    setCurrentStep(stepId);
   };
 
   if (loading) {
@@ -258,19 +284,22 @@ const CharacterForm = () => {
           </h1>
         </header>
 
-        <div className={styles.steps}>
+        <nav className={styles.steps} aria-label="Étapes du formulaire">
           {STEPS.map((step) => (
-            <div
+            <button
               key={step.id}
+              type="button"
               className={`${styles.step} ${
                 step.id === currentStep ? styles.active : ''
               } ${step.id < currentStep ? styles.completed : ''}`}
+              onClick={() => goToStep(step.id)}
+              aria-current={step.id === currentStep ? 'step' : undefined}
             >
-              <div className={styles.stepNumber}>{step.id}</div>
-              <div className={styles.stepTitle}>{step.title}</div>
-            </div>
+              <span className={styles.stepNumber}>{step.id}</span>
+              <span className={styles.stepTitle}>{step.title}</span>
+            </button>
           ))}
-        </div>
+        </nav>
 
         <div className={styles.formContainer}>
           {/* Étape 1: Informations de base */}
@@ -491,32 +520,32 @@ const CharacterForm = () => {
               
               <div className={styles.formGroup}>
                 <label>Biographie</label>
-                <textarea
-                  value={formData.biography}
-                  onChange={(e) => handleChange('biography', e.target.value)}
-                  rows={8}
-                  placeholder="Histoire, passé et description de votre personnage"
-                />
+                <div className={styles.richTextField}>
+                  <RichTextComposer
+                    value={formData.biography}
+                    onChange={(value) => handleChange('biography', value)}
+                  />
+                </div>
               </div>
 
               <div className={styles.formGroup}>
                 <label>Personnalité</label>
-                <textarea
-                  value={formData.personality}
-                  onChange={(e) => handleChange('personality', e.target.value)}
-                  rows={6}
-                  placeholder="Traits de caractère, comportement, attitude..."
-                />
+                <div className={styles.richTextField}>
+                  <RichTextComposer
+                    value={formData.personality}
+                    onChange={(value) => handleChange('personality', value)}
+                  />
+                </div>
               </div>
 
               <div className={styles.formGroup}>
                 <label>Apparence</label>
-                <textarea
-                  value={formData.appearance}
-                  onChange={(e) => handleChange('appearance', e.target.value)}
-                  rows={6}
-                  placeholder="Description physique de votre personnage"
-                />
+                <div className={styles.richTextField}>
+                  <RichTextComposer
+                    value={formData.appearance}
+                    onChange={(value) => handleChange('appearance', value)}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -565,7 +594,7 @@ const CharacterForm = () => {
               onClick={handleSaveDraft}
               disabled={saving}
             >
-              {saving ? 'Sauvegarde...' : 'Sauvegarder en brouillon'}
+              {getDraftSaveLabel()}
             </button>
             
             <div className={styles.navigation}>
@@ -593,7 +622,7 @@ const CharacterForm = () => {
                   onClick={handleSubmit}
                   disabled={saving || !formData.name}
                 >
-                  {saving ? 'Soumission...' : 'Soumettre pour validation'}
+                  {getSubmitLabel()}
                 </button>
               )}
             </div>

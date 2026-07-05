@@ -485,24 +485,89 @@
   background-color: var(--bg-card);
 }
 
-/* Responsive pour RP */
+/* Responsive pour HRP et RP */
+@media (max-width: 1023px) {
+  .postCardHRP,
+  .postCardRP {
+    padding: var(--spacing-md);
+  }
+
+  .postCardRP .characterSidebar {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: none;
+  }
+}
+
 @media (max-width: 768px) {
+  .postCardHRP {
+    padding: var(--spacing-md);
+  }
+
+  .postCardHRP .postHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .postCardHRP .postActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .postCardHRP .actionButton {
+    flex: 1 1 calc(50% - var(--spacing-xs));
+    text-align: center;
+  }
+
+  .postCardHRP .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
   .postCardRP {
     flex-direction: column;
-  }  .postCardRP .characterSidebar {
+  }
+
+  .postCardRP .characterSidebar {
     min-width: auto;
+    max-width: none;
+    width: 100%;
     padding-right: 0;
-    padding-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
     border-right: none;
     border-bottom: var(--border-width) solid var(--border-color);
     flex-direction: row;
     align-items: flex-start;
     text-align: left;
-  }  .postCardRP .characterDetails {
+    gap: var(--spacing-md);
+  }
+
+  .postCardRP .avatarLarge {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+  }
+
+  .postCardRP .characterDetails {
     text-align: left;
     flex: 1;
-  }  .postCardRP .factionsList {
+    min-width: 0;
+  }
+
+  .postCardRP .factionsList {
     flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .postCardRP .postHeader {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .postCardRP .postActions {
+    width: 100%;
     flex-wrap: wrap;
   }
 }

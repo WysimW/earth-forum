@@ -53,7 +53,7 @@ const ForumDetailHeader = () => {
       <Breadcrumb items={breadcrumbItems} />
       <div 
         className={styles.heroBanner}
-        style={{ backgroundImage: `url(${mockForum.banner})` }}
+        style={{ backgroundImage: `url("${mockForum.banner}")` }}
       >
         <div className={styles.heroOverlay} />
         <div className={styles.headerContent}>
@@ -110,7 +110,7 @@ const ForumDetailHeader = () => {
       <Breadcrumb items={breadcrumbItems} />
       <div 
         className={styles.bannerContainer}
-        style={{ backgroundImage: `url(${mockForum.banner})` }}
+        style={{ backgroundImage: `url("${mockForum.banner}")` }}
       >
         <div className={styles.darkOverlay} />
         <div className={styles.headerContent}>

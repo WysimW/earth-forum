@@ -1,4 +1,5 @@
 import React from 'react';
+import FilterToggle from '../../../components/FilterToggle/FilterToggle';
 import styles from '../Dashboard.module.css';
 
 const TYPE_OPTIONS = [
@@ -18,34 +19,12 @@ const DashboardThreadFilters = ({ threadType, threadStatus, onTypeChange, onStat
   <div className={styles.filtersContainer}>
     <div className={styles.filtersGroup}>
       <span className={styles.filtersGroupLabel}>Type</span>
-      <div className={styles.tabsRow}>
-        {TYPE_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`${styles.tab} ${threadType === option.value ? styles.tabActive : ''}`}
-            onClick={() => onTypeChange(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      <FilterToggle options={TYPE_OPTIONS} value={threadType} onChange={onTypeChange} ariaLabel="Type de thread" />
     </div>
 
     <div className={styles.filtersGroup}>
       <span className={styles.filtersGroupLabel}>Statut</span>
-      <div className={styles.tabsRow}>
-        {STATUS_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`${styles.tab} ${threadStatus === option.value ? styles.tabActive : ''}`}
-            onClick={() => onStatusChange(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      <FilterToggle options={STATUS_OPTIONS} value={threadStatus} onChange={onStatusChange} ariaLabel="Statut du thread" />
     </div>
 
     {universeLabel && (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import footerStatsService from '../../services/footerStatsService';
@@ -8,7 +8,7 @@ import UniverseSidebar from '../UniverseSidebar/UniverseSidebar';
 import UserMenu from '../UserMenu/UserMenu';
 import styles from './Layout.module.css';
 
-const Layout = ({ children }) => {
+const Layout = ({ children, wide = false }) => {
   const { user } = useAuth();
   const [footerStatsLoading, setFooterStatsLoading] = useState(true);
   const [footerStats, setFooterStats] = useState({
@@ -30,12 +30,27 @@ const Layout = ({ children }) => {
 
     return localStorage.getItem('universe-sidebar-collapsed') === '1';
   });
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const closeMobileSidebar = useCallback(() => setSidebarMobileOpen(false), []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('universe-sidebar-collapsed', sidebarCollapsed ? '1' : '0');
     }
   }, [sidebarCollapsed]);
+
+  useEffect(() => {
+    if (!sidebarMobileOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarMobileOpen]);
 
   useEffect(() => {
     let mounted = true;
@@ -130,30 +145,45 @@ const Layout = ({ children }) => {
       <UniverseSidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+        mobileOpen={sidebarMobileOpen}
+        onMobileClose={closeMobileSidebar}
       />
       <div className={styles.topBar}>
-        <div className={styles.topBarContent}>
+        <div className={`${styles.topBarContent} ${wide ? styles.topBarContentWide : ''}`}>
           <UniverseSelector />
         </div>
       </div>
       <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link to="/" className={styles.logo}>
-            <img 
-              src={`${process.env.PUBLIC_URL}/images/comics earth logo.png`} 
-              alt="Earth Forum" 
-              className={styles.logoImage}
-            />
-          </Link>
+        <div className={`${styles.headerContent} ${wide ? styles.headerContentWide : ''}`}>
+          <div className={styles.headerLeading}>
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => setSidebarMobileOpen((prev) => !prev)}
+              aria-label={sidebarMobileOpen ? 'Fermer le menu Important' : 'Ouvrir le menu Important'}
+              aria-expanded={sidebarMobileOpen}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.menuIcon}>
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </button>
+            <Link to="/" className={styles.logo}>
+              <img
+                src={`${process.env.PUBLIC_URL}/images/comics earth logo.png`}
+                alt="Earth Forum"
+                className={styles.logoImage}
+              />
+            </Link>
+          </div>
           <nav className={styles.nav}>
-            <Link to="/forums" className={styles.navLink}>
+            <Link to="/forums" className={`${styles.navLink} ${styles.headerNavLink}`}>
               Forums
             </Link>
-            <Link to="/qui-sommes-nous" className={styles.navLink}>
+            <Link to="/qui-sommes-nous" className={`${styles.navLink} ${styles.headerNavLink}`}>
               Qui sommes-nous
             </Link>
             {process.env.NODE_ENV === 'development' && (
-              <Link to="/components" className={styles.navLink}>
+              <Link to="/components" className={`${styles.navLink} ${styles.headerNavLink}`}>
                 Composants
               </Link>
             )}
@@ -161,10 +191,10 @@ const Layout = ({ children }) => {
               <UserMenu />
             ) : (
               <>
-                <Link to="/login" className={styles.navLink}>
+                <Link to="/login" className={`${styles.navLink} ${styles.headerNavLink}`}>
                   Connexion
                 </Link>
-                <Link to="/register" className={styles.navLink}>
+                <Link to="/register" className={`${styles.navLink} ${styles.headerNavLink}`}>
                   Inscription
                 </Link>
               </>
@@ -174,7 +204,7 @@ const Layout = ({ children }) => {
       </header>
 
       <main className={styles.main}>
-        <div className={styles.mainContent}>{children}</div>
+        <div className={`${styles.mainContent} ${wide ? styles.mainContentWide : ''}`}>{children}</div>
       </main>
 
       <footer className={styles.footer}>

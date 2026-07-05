@@ -1,0 +1,62 @@
+{
+    "_comment": "Import de la structure forums DC-Earth (share/forums-dcearth.json). Les slugs source ForumActif (f123-xxx) sont convertis en xxx, sauf slug_overrides.",
+    "universe_slug": "dc",
+    "skip_categories": [
+        "plateforme-visiteurs",
+        "multivers"
+    ],
+    "skip_forum_slugs": [
+        "f13-presentations"
+    ],
+    "slug_overrides": {
+        "f73-lex-corps": "lexcorp",
+        "f219-gcpd-central": "gcpd",
+        "f68-wayne-techs": "wayne-enterprises",
+        "f250-manoir-wayne-batcave": "batcave",
+        "f231-watchtower-hall-de-justice": "tour-de-garde"
+    },
+    "categories": {
+        "plateforme-joueurs": {
+            "category_slug": "informations",
+            "default_type": "hrp",
+            "default_is_roleplay": false
+        },
+        "jours-passes": {
+            "category_slug": "terre",
+            "default_type": "roleplay",
+            "default_is_roleplay": true
+        },
+        "la-terre": {
+            "category_slug": "terre",
+            "default_type": "roleplay",
+            "default_is_roleplay": true
+        },
+        "espaces": {
+            "category_slug": "univers",
+            "default_type": "roleplay",
+            "default_is_roleplay": true
+        },
+        "plateforme-partage": {
+            "category_slug": "jeux",
+            "default_type": "hrp",
+            "default_is_roleplay": false
+        }
+    },
+    "forum_overrides": {
+        "f21-role-play": {
+            "type": "player_platform"
+        },
+        "f5-hors-jeu": {
+            "type": "hrp",
+            "category_slug": "informations"
+        },
+        "f183-l-univers-comics": {
+            "type": "hrp",
+            "category_slug": "informations"
+        },
+        "f33-aire-de-jeux": {
+            "type": "hrp",
+            "category_slug": "jeux"
+        }
+    }
+}

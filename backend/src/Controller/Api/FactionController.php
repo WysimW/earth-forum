@@ -926,6 +926,7 @@ class FactionController extends AbstractController
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'status' => $character->getStatus(),
                 'roleRp' => $membership->getRoleRp(),
+                'sheetThreadSlug' => $character->getMainCharacterSheetThread()?->getSlug(),
                 'universe' => $character->getUniverse() ? [
                     'id' => $character->getUniverse()?->getId(),
                     'name' => $character->getUniverse()?->getName(),
@@ -952,6 +953,7 @@ class FactionController extends AbstractController
                 'moralAffiliation' => $character->getMoralAffiliation(),
                 'status' => $character->getStatus(),
                 'roleRp' => null,
+                'sheetThreadSlug' => $character->getMainCharacterSheetThread()?->getSlug(),
                 'universe' => $character->getUniverse() ? [
                     'id' => $character->getUniverse()?->getId(),
                     'name' => $character->getUniverse()?->getName(),

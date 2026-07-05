@@ -123,10 +123,48 @@
   margin: 0.5rem 0;
 }
 
+.backdrop {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-index-modal-backdrop);
+    border: none;
+    padding: 0;
+    margin: 0;
+    background-color: color-mix(in srgb, var(--bg-dark) 72%, transparent);
+    cursor: pointer;
+  }
+
   .dropdown {
-    right: -1rem;
-    min-width: 180px;
+    position: fixed;
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    bottom: var(--spacing-md);
+    top: auto;
+    min-width: 0;
+    max-height: min(75vh, 520px);
+    overflow-y: auto;
+    z-index: var(--z-index-modal);
+    border-radius: var(--border-radius);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--bg-dark) 45%, transparent);
+    animation: slideUp 0.22s ease-out;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -4,6 +4,15 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    forumactif.base_url: 'https://dc-earth.fra.co'
+    forumactif.delay_ms: 1000
+    forumactif.output_dir: '%kernel.project_dir%/var/forumactif'
+    forumactif.state_file: '%kernel.project_dir%/var/forumactif/state.json'
+    forumactif.mapping_file: '%kernel.project_dir%/config/forumactif/forum-mapping.json'
+    dcearth.forum_import_config: '%kernel.project_dir%/config/dcearth/forum-import.json'
+    dcearth.forum_import_source: '%kernel.project_dir%/../share/forums-dcearth.json'
+    app.frontend_base_url: '%env(default:app_frontend_base_url_default:FRONTEND_BASE_URL)%'
+    app_frontend_base_url_default: 'http://localhost:3003'
 
 services:
     # default configuration for services in *this* file
@@ -22,3 +31,29 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\Seo\SeoService:
+        arguments:
+            $frontendBaseUrl: '%app.frontend_base_url%'
+
+    App\Service\ForumActif\ForumActifClient:
+        arguments:
+            $baseUrl: '%forumactif.base_url%'
+            $delayMs: '%forumactif.delay_ms%'
+
+    App\Service\ForumActif\ForumActifImporter:
+        arguments:
+            $mappingFile: '%forumactif.mapping_file%'
+
+    App\Command\ImportForumactifCommand:
+        arguments:
+            $outputDir: '%forumactif.output_dir%'
+            $stateFile: '%forumactif.state_file%'
+
+    App\Service\DcEarth\DcEarthForumImporter:
+        arguments:
+            $configFile: '%dcearth.forum_import_config%'
+
+    App\Command\ImportDcEarthForumsCommand:
+        arguments:
+            $defaultSourceFile: '%dcearth.forum_import_source%'

@@ -477,7 +477,7 @@
   color: color-mix(in srgb, var(--text-light) 68%, transparent);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .cardContent {
     flex-direction: column;
   }

@@ -1,0 +1,261 @@
+{
+    "categories": [
+      {
+        "type": "plateforme-visiteurs",
+        "titre": "Plateforme visiteurs",
+        "forums": [
+          {
+            "titre": "Règlement",
+            "slug": "f1-reglement",
+            "sous_forums": [
+              { "titre": "Mode d'emploi et Règlement", "slug": "f86-mode-d-emploi-et-reglement", "parent": "f1-reglement" }
+            ]
+          },
+          {
+            "titre": "L'univers",
+            "slug": "f3-l-univers",
+            "sous_forums": [
+              { "titre": "Les personnages", "slug": "f8-les-personnages", "parent": "f3-l-univers" },
+              { "titre": "Les Factions & Groupes RP", "slug": "f9-les-factions-groupes-rp", "parent": "f3-l-univers" },
+              { "titre": "Contexte du Forum", "slug": "f81-contexte-du-forum", "parent": "f3-l-univers" }
+            ]
+          },
+          {
+            "titre": "Espace invités",
+            "slug": "f4-espace-invites",
+            "sous_forums": []
+          },
+          {
+            "titre": "Coups de Cœur et Partenaires",
+            "slug": "f34-coups-de-coeur-et-partenaires",
+            "sous_forums": [
+              { "titre": "Devenir partenaire", "slug": "f69-devenir-partenaire", "parent": "f34-coups-de-coeur-et-partenaires" },
+              { "titre": "Forums RPG", "slug": "f36-forums-rpg", "parent": "f34-coups-de-coeur-et-partenaires" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "plateforme-joueurs",
+        "titre": "Plateforme joueurs",
+        "forums": [
+          {
+            "titre": "Présentations",
+            "slug": "f13-presentations",
+            "sous_forums": [
+              { "titre": "Candidatures", "slug": "f14-candidatures", "parent": "f13-presentations" },
+              { "titre": "Présentations validées", "slug": "f15-presentations-validees", "parent": "f13-presentations" },
+              { "titre": "Présentations PNJ", "slug": "f247-presentations-pnj", "parent": "f13-presentations" },
+              { "titre": "Présentations non-joueurs", "slug": "f103-presentations-non-joueurs", "parent": "f13-presentations" }
+            ]
+          },
+          {
+            "titre": "Rôle-Play",
+            "slug": "f21-role-play",
+            "sous_forums": [
+              { "titre": "Fiches RP", "slug": "f93-fiches-rp", "parent": "f21-role-play" },
+              { "titre": "Demandes de RP", "slug": "f246-demandes-de-rp", "parent": "f21-role-play" },
+              { "titre": "Relations", "slug": "f182-relations", "parent": "f21-role-play" },
+              { "titre": "Missions et Events", "slug": "f80-missions-et-events", "parent": "f21-role-play" },
+              { "titre": "Parlons de nos RP", "slug": "f94-parlons-de-nos-rp", "parent": "f21-role-play" }
+            ]
+          },
+          {
+            "titre": "Hors-jeu",
+            "slug": "f5-hors-jeu",
+            "sous_forums": [
+              { "titre": "Annonces du Staff", "slug": "f10-annonces-du-staff", "parent": "f5-hors-jeu" },
+              { "titre": "Annonces des Factions & Groupes RP", "slug": "f244-annonces-des-factions-groupes-rp", "parent": "f5-hors-jeu" },
+              { "titre": "Absences, départs, changements", "slug": "f11-absences-departs-changements", "parent": "f5-hors-jeu" },
+              { "titre": "Demandes", "slug": "f17-demandes", "parent": "f5-hors-jeu" },
+              { "titre": "Parlons du Forum et du RPG", "slug": "f105-parlons-du-forum-et-du-rpg", "parent": "f5-hors-jeu" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "jours-passes",
+        "titre": "Jours Passés",
+        "forums": [
+          {
+            "titre": "Chroniques",
+            "slug": "f54-chroniques",
+            "sous_forums": []
+          }
+        ]
+      },
+      {
+        "type": "la-terre",
+        "titre": "La Terre",
+        "forums": [
+          {
+            "titre": "Metropolis",
+            "slug": "f27-metropolis",
+            "sous_forums": [
+              { "titre": "Daily Planet", "slug": "f72-daily-planet", "parent": "f27-metropolis" },
+              { "titre": "Lex Corps", "slug": "f73-lex-corps", "parent": "f27-metropolis" },
+              { "titre": "Pénitencier Stryker", "slug": "f76-penitencier-stryker", "parent": "f27-metropolis" },
+              { "titre": "Superman Memorial", "slug": "f77-superman-memorial", "parent": "f27-metropolis" },
+              { "titre": "Suicide Slums", "slug": "f229-suicide-slums", "parent": "f27-metropolis" },
+              { "titre": "CADMUS", "slug": "f230-cadmus", "parent": "f27-metropolis" }
+            ]
+          },
+          {
+            "titre": "Gotham City",
+            "slug": "f26-gotham-city",
+            "sous_forums": [
+              { "titre": "Asile d'Arkham", "slug": "f66-asile-d-arkham", "parent": "f26-gotham-city" },
+              { "titre": "Iceberg Lounge", "slug": "f89-iceberg-lounge", "parent": "f26-gotham-city" },
+              { "titre": "Amusement Mile", "slug": "f67-amusement-mile", "parent": "f26-gotham-city" },
+              { "titre": "East End", "slug": "f70-east-end", "parent": "f26-gotham-city" },
+              { "titre": "GCPD Central", "slug": "f219-gcpd-central", "parent": "f26-gotham-city" },
+              { "titre": "Wayne Techs", "slug": "f68-wayne-techs", "parent": "f26-gotham-city" },
+              { "titre": "Université de Gotham", "slug": "f71-universite-de-gotham", "parent": "f26-gotham-city" },
+              { "titre": "Manoir Wayne-Batcave", "slug": "f250-manoir-wayne-batcave", "parent": "f26-gotham-city" }
+            ]
+          },
+          {
+            "titre": "Central City",
+            "slug": "f23-central-city",
+            "sous_forums": [
+              { "titre": "Flash Museum", "slug": "f39-flash-museum", "parent": "f23-central-city" },
+              { "titre": "Central City Rail Station", "slug": "f40-central-city-rail-station", "parent": "f23-central-city" },
+              { "titre": "Keystone City", "slug": "f42-keystone-city", "parent": "f23-central-city" },
+              { "titre": "Star Labs", "slug": "f41-star-labs", "parent": "f23-central-city" },
+              { "titre": "GBS News", "slug": "f111-gbs-news", "parent": "f23-central-city" },
+              { "titre": "Combines Arena", "slug": "f232-combines-arena", "parent": "f23-central-city" }
+            ]
+          },
+          {
+            "titre": "Ivy Town",
+            "slug": "f222-ivy-town",
+            "sous_forums": [
+              { "titre": "Ivy University", "slug": "f223-ivy-university", "parent": "f222-ivy-town" },
+              { "titre": "Titans Academy", "slug": "f224-titans-academy", "parent": "f222-ivy-town" },
+              { "titre": "Kord Industries", "slug": "f225-kord-industries", "parent": "f222-ivy-town" },
+              { "titre": "Estuaire L.I.S", "slug": "f235-estuaire-l-i-s", "parent": "f222-ivy-town" },
+              { "titre": "Time Pool", "slug": "f226-time-pool", "parent": "f222-ivy-town" },
+              { "titre": "Atom Building", "slug": "f85-atom-building", "parent": "f222-ivy-town" }
+            ]
+          },
+          {
+            "titre": "Coast City",
+            "slug": "f24-coast-city",
+            "sous_forums": [
+              { "titre": "Airforce Base", "slug": "f46-airforce-base", "parent": "f24-coast-city" },
+              { "titre": "Angels coliseum", "slug": "f49-angels-coliseum", "parent": "f24-coast-city" },
+              { "titre": "Ferris Aircraft", "slug": "f50-ferris-aircraft", "parent": "f24-coast-city" },
+              { "titre": "Porte Avion U.S. Navy", "slug": "f48-porte-avion-u-s-navy", "parent": "f24-coast-city" },
+              { "titre": "St Camillus Hospital", "slug": "f18-st-camillus-hospital", "parent": "f24-coast-city" },
+              { "titre": "Mosaïc", "slug": "f175-mosaic", "parent": "f24-coast-city" }
+            ]
+          },
+          {
+            "titre": "Star City",
+            "slug": "f91-star-city",
+            "sous_forums": [
+              { "titre": "Queen Industries", "slug": "f92-queen-industries", "parent": "f91-star-city" },
+              { "titre": "The Glades", "slug": "f118-the-glades", "parent": "f91-star-city" },
+              { "titre": "Forêt", "slug": "f117-foret", "parent": "f91-star-city" },
+              { "titre": "Verdant", "slug": "f116-verdant", "parent": "f91-star-city" },
+              { "titre": "Belle Reve", "slug": "f115-belle-reve", "parent": "f91-star-city" }
+            ]
+          },
+          {
+            "titre": "Ailleurs",
+            "slug": "f31-ailleurs",
+            "sous_forums": [
+              { "titre": "Amérique du Nord", "slug": "f95-amerique-du-nord", "parent": "f31-ailleurs" },
+              { "titre": "Amérique du Sud", "slug": "f96-amerique-du-sud", "parent": "f31-ailleurs" },
+              { "titre": "Europe", "slug": "f97-europe", "parent": "f31-ailleurs" },
+              { "titre": "Asie", "slug": "f98-asie", "parent": "f31-ailleurs" },
+              { "titre": "Afrique", "slug": "f101-afrique", "parent": "f31-ailleurs" },
+              { "titre": "Océanie", "slug": "f99-oceanie", "parent": "f31-ailleurs" }
+            ]
+          },
+          {
+            "titre": "Lieux spéciaux",
+            "slug": "f51-lieux-speciaux",
+            "sous_forums": [
+              { "titre": "Zone 51", "slug": "f180-zone-51", "parent": "f51-lieux-speciaux" },
+              { "titre": "Nexus des Réalités", "slug": "f181-nexus-des-realites", "parent": "f51-lieux-speciaux" },
+              { "titre": "Forteresse de Solitude", "slug": "f217-forteresse-de-solitude", "parent": "f51-lieux-speciaux" },
+              { "titre": "Themyscira", "slug": "f266-themyscira", "parent": "f51-lieux-speciaux" },
+              { "titre": "Atlantis", "slug": "f267-atlantis", "parent": "f51-lieux-speciaux" },
+              { "titre": "Sanctuaire", "slug": "f52-sanctuaire", "parent": "f51-lieux-speciaux" },
+              { "titre": "Oblivion Bar", "slug": "f53-oblivion-bar", "parent": "f51-lieux-speciaux" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "espaces",
+        "titre": "Espaces",
+        "forums": [
+          {
+            "titre": "Espace",
+            "slug": "f100-espace",
+            "sous_forums": [
+              { "titre": "Watchtower - Hall de Justice", "slug": "f231-watchtower-hall-de-justice", "parent": "f100-espace" },
+              { "titre": "Satellite \"abandonné\"", "slug": "f236-satellite-abandonne", "parent": "f100-espace" }
+            ]
+          },
+          {
+            "titre": "Les autres planètes",
+            "slug": "f19-les-autres-planetes",
+            "sous_forums": [
+              { "titre": "La Lune", "slug": "f156-la-lune", "parent": "f19-les-autres-planetes" },
+              { "titre": "Mars", "slug": "f157-mars", "parent": "f19-les-autres-planetes" },
+              { "titre": "Oa", "slug": "f161-oa", "parent": "f19-les-autres-planetes" },
+              { "titre": "Korugar", "slug": "f162-korugar", "parent": "f19-les-autres-planetes" },
+              { "titre": "Zamaron", "slug": "f164-zamaron", "parent": "f19-les-autres-planetes" },
+              { "titre": "Ysmault", "slug": "f163-ysmault", "parent": "f19-les-autres-planetes" },
+              { "titre": "Odym", "slug": "f165-odym", "parent": "f19-les-autres-planetes" },
+              { "titre": "Okaara", "slug": "f166-okaara", "parent": "f19-les-autres-planetes" },
+              { "titre": "Nok", "slug": "f167-nok", "parent": "f19-les-autres-planetes" },
+              { "titre": "Rann", "slug": "f158-rann", "parent": "f19-les-autres-planetes" },
+              { "titre": "Thanagar", "slug": "f159-thanagar", "parent": "f19-les-autres-planetes" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "multivers",
+        "titre": "Multivers",
+        "forums": [
+          {
+            "titre": "Elseworlds",
+            "slug": "f119-elseworlds",
+            "sous_forums": [
+              { "titre": "DC-Earth 2050", "slug": "f120-dc-earth-2050", "parent": "f119-elseworlds" },
+              { "titre": "DC-Medieval Earth", "slug": "f143-dc-medieval-earth", "parent": "f119-elseworlds" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "plateforme-partage",
+        "titre": "Plateforme partage",
+        "forums": [
+          {
+            "titre": "L'Univers Comics",
+            "slug": "f183-l-univers-comics",
+            "sous_forums": [
+              { "titre": "Comics", "slug": "f188-comics", "parent": "f183-l-univers-comics" },
+              { "titre": "Films", "slug": "f187-films", "parent": "f183-l-univers-comics" },
+              { "titre": "Séries", "slug": "f186-series", "parent": "f183-l-univers-comics" },
+              { "titre": "Jeux vidéos", "slug": "f185-jeux-videos", "parent": "f183-l-univers-comics" }
+            ]
+          },
+          {
+            "titre": "Aire de jeux",
+            "slug": "f33-aire-de-jeux",
+            "sous_forums": [
+              { "titre": "Jeux HRP", "slug": "f37-jeux-hrp", "parent": "f33-aire-de-jeux" },
+              { "titre": "Jeux RP", "slug": "f113-jeux-rp", "parent": "f33-aire-de-jeux" }
+            ]
+          }
+        ]
+      }
+    ]
+  }

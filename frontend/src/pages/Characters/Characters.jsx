@@ -8,6 +8,7 @@ import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import CharacterCard from '../../components/CharacterCard/CharacterCard';
 import AvatarEditor from '../../components/AvatarEditor/AvatarEditor';
 import { characterApi, npcApi } from '../../services/characterApi';
+import { getCharacterSheetPath } from '../../utils/characterPaths';
 import styles from './Characters.module.css';
 
 const Characters = () => {
@@ -86,6 +87,18 @@ const Characters = () => {
     };
   }, [npcsData, currentUniverse]);
 
+  const charactersCount = useMemo(() => {
+    const byUniverse = filteredCharactersData?.contentByUniverse?.reduce((sum, u) => sum + u.total, 0) || 0;
+    const without = filteredCharactersData?.contentWithoutUniverse?.total || 0;
+    return byUniverse + without;
+  }, [filteredCharactersData]);
+
+  const npcsCount = useMemo(() => {
+    const byUniverse = filteredNpcsData?.contentByUniverse?.reduce((sum, u) => sum + u.total, 0) || 0;
+    const without = filteredNpcsData?.contentWithoutUniverse?.total || 0;
+    return byUniverse + without;
+  }, [filteredNpcsData]);
+
   const getTotalCount = () => {
     const charactersCount = filteredCharactersData?.contentByUniverse?.reduce((sum, universe) => sum + universe.total, 0) || 0;
     const charactersWithoutUniverse = filteredCharactersData?.contentWithoutUniverse?.total || 0;
@@ -94,13 +107,15 @@ const Characters = () => {
     return charactersCount + charactersWithoutUniverse + npcsCount + npcsWithoutUniverse;
   };
 
-  const handleDeleteCharacter = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')) {
+  const handleAbandonCharacter = async (id) => {
+    if (window.confirm(
+      'Abandonner ce personnage ? Vous perdrez le contrôle du personnage, mais son historique RP sera conservé. Cette action est irréversible pour vous.'
+    )) {
       try {
-        await characterApi.deleteCharacter(id);
+        await characterApi.abandonCharacter(id);
         fetchData();
       } catch (err) {
-        alert('Erreur lors de la suppression');
+        alert(err.response?.data?.error || 'Erreur lors de l\'abandon du personnage');
         console.error(err);
       }
     }
@@ -192,6 +207,19 @@ const Characters = () => {
 
   const totalCount = getTotalCount();
 
+  const cardProps = {
+    variant: 'row',
+    onAbandon: handleAbandonCharacter,
+    onEditAvatar: (char) => handleEditAvatar(char, false),
+    onThemeChange: handleThemeChange,
+  };
+
+  const npcCardProps = {
+    variant: 'row',
+    onDelete: handleDeleteNpc,
+    onEditAvatar: (char) => handleEditAvatar(char, true),
+  };
+
   const breadcrumbItems = [
     { name: 'Accueil', url: '/', icon: 'home' },
     { name: 'Mes Personnages', url: null, icon: 'character' },
@@ -202,7 +230,24 @@ const Characters = () => {
       <div className={styles.content}>
         <Breadcrumb items={breadcrumbItems} />
         <header className={styles.header}>
-          <h1 className={styles.title}>Mes Personnages</h1>
+          <div className={styles.headerMain}>
+            <h1 className={styles.title}>Mes Personnages</h1>
+            <p className={styles.subtitle}>Gérez vos personnages joueurs et vos PNJ</p>
+            {totalCount > 0 && (
+              <div className={styles.stats}>
+                {charactersCount > 0 && (
+                  <span className={styles.statPill}>
+                    <strong>{charactersCount}</strong> personnage{charactersCount > 1 ? 's' : ''}
+                  </span>
+                )}
+                {npcsCount > 0 && (
+                  <span className={styles.statPill}>
+                    <strong>{npcsCount}</strong> PNJ
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           <div className={styles.actions}>
             <button
               className={styles.btnPrimary}
@@ -239,51 +284,48 @@ const Characters = () => {
         ) : (
           <>
             {/* Personnages par univers */}
-            {filteredCharactersData?.contentByUniverse?.map((universeData) => (
+            {filteredCharactersData?.contentByUniverse?.map((universeData) => {
+              const sectionCount = universeData.total;
+              return (
               <div key={universeData.universe.id} className={styles.universeSection}>
-                <h2 className={styles.universeTitle}>
-                  {universeData.universe.name}
-                </h2>
+                <div className={styles.universeSectionHeader}>
+                  <h2 className={styles.universeTitle}>{universeData.universe.name}</h2>
+                  <span className={styles.universeCount}>{sectionCount} personnage{sectionCount > 1 ? 's' : ''}</span>
+                </div>
 
-                {/* Personnages principaux */}
                 {universeData.mainContent.characters.length > 0 && (
                   <div className={styles.section}>
                     <h3 className={styles.sectionTitle}>Personnages</h3>
-                    <div className={styles.grid}>
+                    <div className={styles.list}>
                       {universeData.mainContent.characters.map((character) => (
                         <CharacterCard
                           key={character.id}
                           character={character}
-                          viewPath={`/characters/${character.id}`}
+                          viewPath={getCharacterSheetPath(character)}
                           editPath={`/characters/${character.id}/edit`}
-                          onDelete={handleDeleteCharacter}
-                          onEditAvatar={(char) => handleEditAvatar(char, false)}
-                          onThemeChange={handleThemeChange}
-                          showUniverse={true}
+                          showUniverse={false}
+                          {...cardProps}
                         />
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Elseworlds */}
                 {Object.values(universeData.elseworlds || {}).map((elseworldData) => (
                   <div key={elseworldData.elseworld.id} className={styles.elseworldSection}>
                     <h3 className={styles.elseworldTitle}>
-                      Elseworld: {elseworldData.elseworld.name}
+                      Elseworld · {elseworldData.elseworld.name}
                     </h3>
                     {elseworldData.characters.length > 0 && (
-                      <div className={styles.grid}>
+                      <div className={styles.list}>
                         {elseworldData.characters.map((character) => (
                           <CharacterCard
                             key={character.id}
                             character={character}
-                            viewPath={`/characters/${character.id}`}
+                            viewPath={getCharacterSheetPath(character)}
                             editPath={`/characters/${character.id}/edit`}
-                            onDelete={handleDeleteCharacter}
-                            onEditAvatar={(char) => handleEditAvatar(char, false)}
-                            onThemeChange={handleThemeChange}
-                            showUniverse={true}
+                            showUniverse={false}
+                            {...cardProps}
                           />
                         ))}
                       </div>
@@ -291,72 +333,76 @@ const Characters = () => {
                   </div>
                 ))}
               </div>
-            ))}
+            );})}
 
             {/* Personnages sans univers */}
             {filteredCharactersData?.contentWithoutUniverse?.characters?.length > 0 && (
               <div className={styles.universeSection}>
-                <h2 className={styles.universeTitle}>Sans univers</h2>
-                <div className={styles.grid}>
+                <div className={styles.universeSectionHeader}>
+                  <h2 className={styles.universeTitle}>Sans univers</h2>
+                  <span className={styles.universeCount}>
+                    {filteredCharactersData.contentWithoutUniverse.total} personnage
+                    {filteredCharactersData.contentWithoutUniverse.total > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className={styles.list}>
                   {filteredCharactersData.contentWithoutUniverse.characters.map((character) => (
                     <CharacterCard
                       key={character.id}
                       character={character}
-                      viewPath={`/characters/${character.id}`}
+                      viewPath={getCharacterSheetPath(character)}
                       editPath={`/characters/${character.id}/edit`}
-                      onDelete={handleDeleteCharacter}
-                      onEditAvatar={(char) => handleEditAvatar(char, false)}
-                      onThemeChange={handleThemeChange}
-                      showUniverse={true}
+                      showUniverse={false}
+                      {...cardProps}
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* PNJ par univers */}
-            {filteredNpcsData?.contentByUniverse?.map((universeData) => (
+            {filteredNpcsData?.contentByUniverse?.map((universeData) => {
+              const sectionCount = universeData.total;
+              return (
               <div key={`npc-${universeData.universe.id}`} className={styles.universeSection}>
-                <h2 className={styles.universeTitle}>
-                  PNJ - {universeData.universe.name}
-                </h2>
+                <div className={styles.universeSectionHeader}>
+                  <h2 className={styles.universeTitle}>PNJ · {universeData.universe.name}</h2>
+                  <span className={styles.universeCount}>{sectionCount} PNJ</span>
+                </div>
 
-                {/* PNJ principaux */}
                 {universeData.mainContent.npcs.length > 0 && (
-                  <div className={styles.section}>
-                    <h3 className={styles.sectionTitle}>PNJ</h3>
-                    <div className={styles.grid}>
-                      {universeData.mainContent.npcs.map((npc) => (
-                        <CharacterCard
-                          key={npc.id}
-                          character={npc}
-                          viewPath={`/characters/npc/${npc.id}`}
-                          editPath={`/characters/npc/${npc.id}/edit`}
-                          onDelete={handleDeleteNpc}
-                          onEditAvatar={(char) => handleEditAvatar(char, true)}
-                          showUniverse={true}
-                        />
-                      ))}
-                    </div>
+                  <div className={styles.list}>
+                    {universeData.mainContent.npcs.map((npc) => (
+                      <CharacterCard
+                        key={npc.id}
+                        character={npc}
+                        viewPath={undefined}
+                        editPath={`/characters/npc/${npc.id}/edit`}
+                        showUniverse={false}
+                        {...npcCardProps}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
-            ))}
+            );})}
 
-            {/* PNJ sans univers */}
             {filteredNpcsData?.contentWithoutUniverse?.npcs?.length > 0 && (
               <div className={styles.universeSection}>
-                <h2 className={styles.universeTitle}>PNJ - Sans univers</h2>
-                <div className={styles.grid}>
+                <div className={styles.universeSectionHeader}>
+                  <h2 className={styles.universeTitle}>PNJ · Sans univers</h2>
+                  <span className={styles.universeCount}>
+                    {filteredNpcsData.contentWithoutUniverse.total} PNJ
+                  </span>
+                </div>
+                <div className={styles.list}>
                   {filteredNpcsData.contentWithoutUniverse.npcs.map((npc) => (
                     <CharacterCard
                       key={npc.id}
                       character={npc}
-                      viewPath={`/characters/npc/${npc.id}`}
+                      viewPath={undefined}
                       editPath={`/characters/npc/${npc.id}/edit`}
-                      onDelete={handleDeleteNpc}
-                      onEditAvatar={(char) => handleEditAvatar(char, true)}
-                      showUniverse={true}
+                      showUniverse={false}
+                      {...npcCardProps}
                     />
                   ))}
                 </div>

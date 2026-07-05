@@ -14,6 +14,11 @@ import {
   StarOutlined,
   TrophyOutlined,
   HighlightOutlined,
+  SearchOutlined,
+  HomeOutlined,
+  InfoCircleOutlined,
+  FolderOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -55,6 +60,11 @@ const MainLayout = ({ children }) => {
       label: 'Forums',
     },
     {
+      key: '/forum-categories',
+      icon: <FolderOutlined />,
+      label: 'Catégories forums',
+    },
+    {
       key: '/characters',
       icon: <TeamOutlined />,
       label: 'Personnages',
@@ -65,10 +75,30 @@ const MainLayout = ({ children }) => {
       label: 'Factions',
     },
     {
+      key: '/univers',
+      icon: <AppstoreOutlined />,
+      label: 'Univers',
+    },
+    {
       key: '/important',
       icon: <StarOutlined />,
       label: 'Important',
       children: [
+        {
+          key: '/important/portal-seo',
+          icon: <HomeOutlined />,
+          label: 'Page d’accueil (SEO)',
+        },
+        {
+          key: '/important/about',
+          icon: <InfoCircleOutlined />,
+          label: 'Qui sommes-nous',
+        },
+        {
+          key: '/important/universe-seo',
+          icon: <SearchOutlined />,
+          label: 'SEO Univers',
+        },
         {
           key: '/important/regulation',
           icon: <FileTextOutlined />,

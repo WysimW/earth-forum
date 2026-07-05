@@ -257,7 +257,9 @@
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <div class="thread-author-info d-flex align-items-center">
-                                    {% if thread.author.avatar %}
+                                    {% if thread.type == 'roleplay' and thread.characterCreator and thread.characterCreator.avatar %}
+                                        <img src="{{ thread.characterCreator.avatar }}" alt="{{ thread.characterCreator.name }}" class="thread-author-avatar me-2">
+                                    {% elseif thread.author and thread.author.avatar %}
                                         <img src="{{ thread.author.avatar }}" alt="{{ thread.author.pseudo }}" class="thread-author-avatar me-2">
                                     {% else %}
                                         <div class="thread-author-avatar-placeholder me-2">
@@ -268,10 +270,12 @@
                                         <div class="thread-author-details">
                                             <i class="fas fa-user me-1 text-muted"></i> Créée par : 
                                             {% if thread.type == 'roleplay' and thread.characterCreator %}
-                                                <span class="thread-show--character-name text-primary">{{ thread.characterCreator.name }}</span> 
-                                                <span class="text-muted">({{ thread.author.pseudo }})</span>
+                                                <span class="thread-show--character-name text-primary">{{ thread.characterCreator.name }}</span>
+                                                {% if thread.author %}
+                                                    <span class="text-muted">({{ thread.author.pseudo }})</span>
+                                                {% endif %}
                                             {% else %}
-                                                <span class="thread-author-name">{{ thread.author.pseudo }}</span>
+                                                <span class="thread-author-name">{{ thread.author ? thread.author.pseudo : 'Anonyme' }}</span>
                                             {% endif %}
                                         </div>
                                         <div class="thread-date text-muted">
@@ -482,11 +486,13 @@
                             {% if post.character.actualPseudo %}
                                 <div class="character-alias">{{ post.character.actualPseudo }}</div>
                             {% endif %}
+                            {% if post.author %}
                             <div class="player-name">Joueur: {{ post.author.pseudo }}</div>
+                            {% endif %}
                         </div>
                     {% else %}
                         <div class="avatar-container">
-                            {% if post.author.avatar %}
+                            {% if post.author and post.author.avatar %}
                                 <img src="{{ post.author.avatar }}" alt="{{ post.author.pseudo }}" class="img-fluid rounded">
                             {% else %}
                                 <div class="default-avatar">
@@ -496,8 +502,10 @@
                         </div>
                         
                         <div class="post-user-info">
-                            <div class="name-label">{{ post.author.pseudo }}</div>
+                            <div class="name-label">{{ post.author ? post.author.pseudo : 'Anonyme' }}</div>
+                            {% if post.author %}
                             <div class="player-since">Membre depuis {{ post.author.createdAt|date('d/m/Y') }}</div>
+                            {% endif %}
                         </div>
                     {% endif %}
 

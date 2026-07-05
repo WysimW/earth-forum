@@ -10,12 +10,14 @@ use Psr\Log\LoggerInterface;
 final class S3MediaUrlResolver
 {
     private string $bucket;
+    private string $apiPublicUrl;
 
     public function __construct(
         private readonly S3Service $s3Service,
         private readonly LoggerInterface $logger,
     ) {
         $this->bucket = trim((string) ($_ENV['AWS_S3_BUCKET'] ?? ''));
+        $this->apiPublicUrl = rtrim((string) ($_ENV['API_PUBLIC_URL'] ?? 'https://api.comics-earth.fr'), '/');
     }
 
     public function resolve(?string $url): ?string
@@ -32,28 +34,33 @@ final class S3MediaUrlResolver
             return $url;
         }
 
-        if (!$this->looksLikeSignedAwsHttpUrl($url)) {
-            return $url;
-        }
-
-        if (!$this->isPresignedUrlExpired($url)) {
-            return $url;
-        }
-
         $key = $this->extractObjectKey($url);
         if ($key === null) {
             return $url;
         }
 
-        try {
-            return $this->s3Service->getPresignedUrl($key, 604800);
-        } catch (\Throwable $e) {
-            $this->logger->warning('S3MediaUrlResolver: échec régénération URL', [
-                'message' => $e->getMessage(),
-            ]);
+        // Proxy API : URL stable sans &, lisible en background-image CSS
+        return $this->buildMediaProxyUrl($key);
+    }
 
-            return $url;
+    private function buildMediaProxyUrl(string $key): string
+    {
+        $encoded = implode('/', array_map('rawurlencode', explode('/', $key)));
+
+        return $this->apiPublicUrl . '/api/media/file/' . $encoded;
+    }
+
+    /** Stocke l'URL S3 sans paramètres de signature (query string). */
+    public function normalizeStoredUrl(?string $url): ?string
+    {
+        if ($url === null || trim($url) === '') {
+            return null;
         }
+
+        $url = trim($url);
+        $withoutQuery = preg_split('/[?#]/', $url)[0] ?? $url;
+
+        return $withoutQuery !== '' ? $withoutQuery : null;
     }
 
     private function looksLikeAwsS3HttpUrl(string $url): bool

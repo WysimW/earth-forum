@@ -2,6 +2,14 @@
 .env
 docker/mysql/data/
 
+# Frontend (secrets / URLs locales)
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+frontend-backoffice/.env.local
+frontend-backoffice/.env.development.local
+frontend-backoffice/.env.production.local
+
 # Symfony
 /backend/var/
 /backend/vendor/

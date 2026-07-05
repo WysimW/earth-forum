@@ -4,6 +4,7 @@ import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import { sanitizeHtml } from '../../utils/sanitize';
 import importantService from '../../services/importantService';
+import SeoHead from '../../components/Seo/SeoHead';
 import styles from './Regulation.module.css';
 
 const Regulation = () => {
@@ -139,6 +140,7 @@ const Regulation = () => {
 
   return (
     <Layout>
+      <SeoHead seo={data.seo} />
       <div className={styles.page}>
         <h1 className={styles.title}>Règlement</h1>
         <div className={styles.regulationLayout}>

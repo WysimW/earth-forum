@@ -6,9 +6,9 @@ const DashboardQuickActions = ({ canCreateFaction, universeSlug }) => {
   const forumsLink = universeSlug ? `/univers/${universeSlug}` : '/forums';
 
   return (
-    <section className={styles.section}>
-      <header className={`${styles.sectionHeader} ${styles.sectionHeaderMuted}`}>
-        <h2 className={styles.sectionTitle}>Actions rapides</h2>
+    <section className={styles.quickActionsSection}>
+      <header className={styles.quickActionsHeader}>
+        <h2 className={styles.quickActionsTitle}>Actions rapides</h2>
       </header>
       <div className={styles.quickActions}>
         <Link to="/characters/new" className={styles.quickAction}>Créer un personnage</Link>

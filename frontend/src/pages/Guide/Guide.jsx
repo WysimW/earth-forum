@@ -4,6 +4,7 @@ import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import { sanitizeHtml } from '../../utils/sanitize';
 import importantService from '../../services/importantService';
+import SeoHead from '../../components/Seo/SeoHead';
 import styles from '../Regulation/Regulation.module.css';
 
 const structureHtmlByH1 = (html) => {
@@ -141,6 +142,7 @@ const Guide = () => {
   const [error, setError] = useState('');
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [content, setContent] = useState('');
+  const [seo, setSeo] = useState(null);
 
   const safeHtml = useMemo(() => sanitizeHtml(content || ''), [content]);
   const structuredContent = useMemo(() => structureHtmlByH1(safeHtml), [safeHtml]);
@@ -151,6 +153,7 @@ const Guide = () => {
       setError('');
       const response = await importantService.getGuide();
       setContent(response?.content || '');
+      setSeo(response?.seo || null);
     } catch (err) {
       setError('Impossible de charger le mode d’emploi');
     } finally {
@@ -180,6 +183,7 @@ const Guide = () => {
 
   return (
     <Layout>
+      <SeoHead seo={seo} />
       <div className={styles.page}>
         <h1 className={styles.title}>Mode d’emploi</h1>
         <div className={styles.regulationLayout}>

@@ -8,6 +8,7 @@ import CharacterCard from '../../components/CharacterCard/CharacterCard';
 import { useAuth } from '../../contexts/AuthContext';
 import factionService from '../../services/factionService';
 import { npcApi } from '../../services/characterApi';
+import { getCharacterSheetPath } from '../../utils/characterPaths';
 import api from '../../services/api';
 import styles from './Factions.module.css';
 
@@ -507,7 +508,7 @@ const FactionDetail = () => {
                 <div key={character.id} className={styles.memberCardWrapper}>
                   <CharacterCard
                     character={character}
-                    viewPath={`/characters/${character.id}`}
+                    viewPath={getCharacterSheetPath(character)}
                     editPath={canEditCharacterSheet(character) ? `/characters/${character.id}/edit` : undefined}
                     onDelete={faction.canEdit ? handleRemoveCharacter : undefined}
                     showUniverse={false}

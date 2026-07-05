@@ -3,8 +3,26 @@ import { Form, Input, Select, Button, message, Card, Space, Image } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import api from '../../services/api';
-import MediaLibrary from '../../components/MediaLibrary/MediaLibrary';
+import MediaLibrary, { getMediaStorageUrl } from '../../components/MediaLibrary/MediaLibrary';
+import SeoFieldsPanel from '../../components/Seo/SeoFieldsPanel';
+import { EMPTY_SEO } from '../../components/Seo/seoConstants';
 import './ForumForm.css';
+
+const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3003';
+
+const getDescendantIds = (forumId, forumsList) => {
+  const descendants = new Set();
+  const collect = (id) => {
+    forumsList
+      .filter((forum) => forum.parent_forum_id === id)
+      .forEach((forum) => {
+        descendants.add(forum.id);
+        collect(forum.id);
+      });
+  };
+  collect(forumId);
+  return descendants;
+};
 
 const ForumForm = () => {
   const [form] = Form.useForm();
@@ -20,9 +38,12 @@ const ForumForm = () => {
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [forumData, setForumData] = useState(null);
+  const [seo, setSeo] = useState(EMPTY_SEO);
 
   const parentForumId = searchParams.get('parentId');
   const forumId = id || searchParams.get('id'); // ID du forum à éditer
+  const selectedParentForumId = Form.useWatch('parent_forum_id', form);
+  const hasParentForum = !!(selectedParentForumId || parentForumId);
 
   useEffect(() => {
     fetchUniverses();
@@ -111,6 +132,8 @@ const ForumForm = () => {
         if (forum.banner) {
           setSelectedBanner({ url: forum.banner, originalFilename: 'Bannière actuelle' });
         }
+
+        setSeo({ ...EMPTY_SEO, ...(forum.seo || {}) });
       }
     } catch (error) {
       console.error('Error fetching forum data:', error);
@@ -130,12 +153,15 @@ const ForumForm = () => {
       };
 
       if (isEditing) {
-        // Mode édition : autoriser le changement d'univers uniquement pour les forums parents
-        if (!forumData?.parent_forum_id) {
+        data.parent_forum_id = values.parent_forum_id ?? null;
+
+        if (!data.parent_forum_id) {
           data.universe_id = values.universe_id === '__none__'
             ? null
             : (values.universe_id ?? null);
+          data.category_id = values.category_id ?? null;
         }
+        data.seo = seo;
 
         await api.put(`/api/admin/forums/${forumId}`, data);
         message.success('Forum modifié avec succès');
@@ -153,6 +179,8 @@ const ForumForm = () => {
           setLoading(false);
           return;
         }
+
+        data.seo = seo;
 
         await api.post('/api/admin/forums', data);
         message.success(data.parent_forum_id ? 'Sous-forum créé avec succès' : 'Forum créé avec succès');
@@ -196,7 +224,6 @@ const ForumForm = () => {
             status: 'open',
           }}
           onValuesChange={(changedValues) => {
-            // Désactiver univers et catégorie si un forum parent est sélectionné
             if (changedValues.parent_forum_id) {
               form.setFieldsValue({
                 universe_id: undefined,
@@ -302,7 +329,7 @@ const ForumForm = () => {
                   }
                 >
                   {forums
-                    .filter(f => !f.parent_forum_id) // Seulement les forums parents
+                    .filter(f => !f.parent_forum_id)
                     .map((forum) => (
                       <Select.Option key={forum.id} value={forum.id}>
                         {forum.name}
@@ -331,7 +358,7 @@ const ForumForm = () => {
                 <Select 
                   placeholder="Sélectionnez un univers"
                   allowClear
-                  disabled={!!form.getFieldValue('parent_forum_id') || !!parentForumId}
+                  disabled={hasParentForum}
                 >
                   {universes.map((universe) => (
                     <Select.Option key={universe.id} value={universe.id}>
@@ -349,7 +376,7 @@ const ForumForm = () => {
                 <Select 
                   placeholder="Sélectionnez une catégorie (optionnel)"
                   allowClear
-                  disabled={!!form.getFieldValue('parent_forum_id') || !!parentForumId}
+                  disabled={hasParentForum}
                 >
                   {categories.map((category) => (
                     <Select.Option key={category.id} value={category.id}>
@@ -362,27 +389,96 @@ const ForumForm = () => {
           )}
 
           {isEditing && (
-            <Form.Item
-              name="universe_id"
-              label="Univers"
-              tooltip={forumData?.parent_forum_id
-                ? "L'univers d'un sous-forum est hérité de son forum parent"
-                : "Sélectionnez l'univers de ce forum"}
-            >
-              <Select
-                placeholder="Sélectionnez un univers"
-                allowClear
-                disabled={!!forumData?.parent_forum_id}
+            <>
+              <Form.Item
+                name="parent_forum_id"
+                label="Forum parent"
+                tooltip="Sélectionnez un forum parent, ou laissez vide pour un forum racine"
               >
-                <Select.Option value="__none__">Aucun (global)</Select.Option>
-                {universes.map((universe) => (
-                  <Select.Option key={universe.id} value={universe.id}>
-                    {universe.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+                <Select
+                  placeholder="Aucun (forum racine)"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {forums
+                    .filter((forum) => {
+                      if (forum.parent_forum_id) {
+                        return false;
+                      }
+                      const currentForumId = parseInt(forumId, 10);
+                      if (forum.id === currentForumId) {
+                        return false;
+                      }
+                      const descendantIds = getDescendantIds(currentForumId, forums);
+                      return !descendantIds.has(forum.id);
+                    })
+                    .map((forum) => (
+                      <Select.Option key={forum.id} value={forum.id}>
+                        {forum.name}
+                      </Select.Option>
+                    ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="universe_id"
+                label="Univers"
+                tooltip={hasParentForum
+                  ? "L'univers d'un sous-forum est hérité de son forum parent"
+                  : "Sélectionnez l'univers de ce forum"}
+              >
+                <Select
+                  placeholder="Sélectionnez un univers"
+                  allowClear
+                  disabled={hasParentForum}
+                >
+                  <Select.Option value="__none__">Aucun (global)</Select.Option>
+                  {universes.map((universe) => (
+                    <Select.Option key={universe.id} value={universe.id}>
+                      {universe.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="category_id"
+                label="Catégorie"
+                tooltip={hasParentForum
+                  ? "La catégorie n'est pas applicable aux sous-forums"
+                  : "Sélectionnez une catégorie pour ce forum"}
+              >
+                <Select
+                  placeholder="Sélectionnez une catégorie (optionnel)"
+                  allowClear
+                  disabled={hasParentForum}
+                >
+                  {categories.map((category) => (
+                    <Select.Option key={category.id} value={category.id}>
+                      {category.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </>
           )}
+
+          <SeoFieldsPanel
+              value={seo}
+              onChange={setSeo}
+              pageUrl={
+                forumData?.slug
+                  ? `${FRONTEND_URL}/forums/${forumData.slug}`
+                  : `${FRONTEND_URL}/forums/`
+              }
+              defaults={{
+                metaTitle: form.getFieldValue('name') ? `${form.getFieldValue('name')} | Earth Forum` : '',
+                metaDescription: form.getFieldValue('description') || '',
+              }}
+            />
 
           <Form.Item>
             <Space>
@@ -402,7 +498,7 @@ const ForumForm = () => {
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={(media) => {
           setSelectedBanner(media);
-          form.setFieldsValue({ banner: media.url });
+          form.setFieldsValue({ banner: getMediaStorageUrl(media) });
         }}
         value={selectedBanner}
       />

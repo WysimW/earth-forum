@@ -30,6 +30,7 @@ class ImportantController extends AbstractController
     private const SETTING_GUIDE_CONTENT = 'guide_content';
     private const SETTING_GUIDE_VERSION = 'guide_version';
     private const SETTING_VOTE_URL = 'vote_url';
+    private const SETTING_ABOUT_CONTENT = 'about_content';
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -41,6 +42,7 @@ class ImportantController extends AbstractController
         private readonly MemberOfMonthMessageRepository $memberMessageRepository,
         private readonly UserImportantSeenRepository $importantSeenRepository,
         private readonly S3MediaUrlResolver $s3MediaUrlResolver,
+        private readonly \App\Service\Seo\SeoService $seoService,
     ) {
     }
 
@@ -108,6 +110,12 @@ class ImportantController extends AbstractController
             'version' => $version,
             'content' => $content,
             'accepted' => $accepted,
+            'seo' => $this->seoService->resolveSitePage(
+                'regulation',
+                'Règlement',
+                'Consultez le règlement d\'Earth Forum.',
+                '/reglement'
+            ),
         ]);
     }
 
@@ -137,6 +145,12 @@ class ImportantController extends AbstractController
         return new JsonResponse([
             'version' => $this->siteSettingRepository->getValue(self::SETTING_GUIDE_VERSION, '1'),
             'content' => $this->siteSettingRepository->getValue(self::SETTING_GUIDE_CONTENT, ''),
+            'seo' => $this->seoService->resolveSitePage(
+                'guide',
+                'Mode d\'emploi',
+                'Guide et mode d\'emploi d\'Earth Forum.',
+                '/mode-emploi'
+            ),
         ]);
     }
 

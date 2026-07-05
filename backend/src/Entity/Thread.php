@@ -507,35 +507,39 @@ class Thread implements TimestampableInterface
         }
     
         if ($lastPost) {
-            // Check if the post was made by a character
-            if ($lastPost->getCharacter()) {
+            $author = $lastPost->getAuthor();
+            $character = $lastPost->getCharacter();
+
+            if ($character) {
+                $avatar = $character->getAvatar() ?: ($author ? $author->getAvatar() : null);
+
                 return [
                     'id' => $lastPost->getId(),
                     'threadId' => $this->getId(),
                     'threadSlug' => $this->getSlug(),
                     'title' => $this->getTitle(),
-                    'author' => $lastPost->getCharacter()->getName(),
+                    'author' => $character->getName(),
                     'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
                     'excerpt' => substr($lastPost->getContent(), 0, 50),
-                    'avatar' => $lastPost->getCharacter()->getAvatar() ?: $lastPost->getAuthor()->getAvatar(),
+                    'avatar' => $avatar,
                     'isCharacter' => true,
-                    'characterId' => $lastPost->getCharacter()->getId(),
-                    'character' => $lastPost->getCharacter()->getName() // Add the character name
-                ];
-            } else {
-                return [
-                    'id' => $lastPost->getId(),
-                    'threadId' => $this->getId(),
-                    'threadSlug' => $this->getSlug(),
-                    'title' => $this->getTitle(),
-                    'author' => $lastPost->getAuthor() ? $lastPost->getAuthor()->getPseudo() : 'Anonymous',
-                    'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
-                    'excerpt' => substr($lastPost->getContent(), 0, 50),
-                    'avatar' => $lastPost->getAuthor() ? $lastPost->getAuthor()->getAvatar() : null,
-                    'isCharacter' => false,
-                    'character' => null // Add a null character for consistency
+                    'characterId' => $character->getId(),
+                    'character' => $character->getName(),
                 ];
             }
+
+            return [
+                'id' => $lastPost->getId(),
+                'threadId' => $this->getId(),
+                'threadSlug' => $this->getSlug(),
+                'title' => $this->getTitle(),
+                'author' => $author ? $author->getPseudo() : 'Anonyme',
+                'date' => $lastPost->getCreatedAt()->format('Y-m-d H:i:s'),
+                'excerpt' => substr($lastPost->getContent(), 0, 50),
+                'avatar' => $author ? $author->getAvatar() : null,
+                'isCharacter' => false,
+                'character' => null,
+            ];
         }
     
         return null;

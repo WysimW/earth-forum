@@ -1,0 +1,92 @@
+services:
+  database:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    container_name: earth-forum-database
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-!ChangeMe!}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - database_data:/var/lib/mysql:rw
+    networks:
+      - earth-forum-network
+
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: earth-forum-php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - php_vendor:/var/www/html/vendor
+    environment:
+      - DATABASE_URL=mysql://${MYSQL_USER:-app}:${MYSQL_PASSWORD:-!ChangeMe!}@database:3306/${MYSQL_DATABASE:-app}?serverVersion=mariadb-11.4.5&charset=utf8mb4
+      - APP_ENV=${APP_ENV:-prod}
+      - APP_SECRET=${APP_SECRET:-change-this-secret}
+      - JWT_PASSPHRASE=${JWT_PASSPHRASE:-change-this-jwt-passphrase}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-'^https?://.*$'}
+      - MAILER_DSN=${MAILER_DSN:-null://null}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - earth-forum-network
+
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: earth-forum-nginx
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8050:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - earth-forum-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8050}
+    container_name: earth-forum-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    networks:
+      - earth-forum-network
+
+  frontend-backoffice:
+    build:
+      context: ./frontend-backoffice
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8050}
+    container_name: earth-forum-backoffice
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3004:80"
+    networks:
+      - earth-forum-network
+
+volumes:
+  database_data:
+  php_vendor:
+
+networks:
+  earth-forum-network:
+    driver: bridge

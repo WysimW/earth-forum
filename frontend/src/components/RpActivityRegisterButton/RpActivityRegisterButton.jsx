@@ -91,10 +91,6 @@ const RpActivityRegisterButton = ({
     }
   };
 
-  if (!isAuthenticated) {
-    return <p className={styles.authHint}>Connecte-toi pour t’inscrire avec un personnage.</p>;
-  }
-
   const groupedRegistrations = useMemo(() => {
     const approved = [];
     const pending = [];
@@ -107,6 +103,10 @@ const RpActivityRegisterButton = ({
     });
     return { approved, pending };
   }, [registrationsData]);
+
+  if (!isAuthenticated) {
+    return <p className={styles.authHint}>Connecte-toi pour t’inscrire avec un personnage.</p>;
+  }
 
   return (
     <div className={styles.wrapper}>

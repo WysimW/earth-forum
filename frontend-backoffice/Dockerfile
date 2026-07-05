@@ -16,7 +16,8 @@ COPY . .
 ARG REACT_APP_API_URL=http://localhost:8050
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
-# Build the app
+# Build the app (limite mémoire pour petits serveurs)
+ENV NODE_OPTIONS=--max-old-space-size=768
 RUN npm run build
 
 # Production stage

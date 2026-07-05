@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Media;
 use App\Entity\User;
 use App\Repository\MediaRepository;
+use App\Service\S3MediaUrlResolver;
 use App\Service\S3Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +20,8 @@ class MediaController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MediaRepository $mediaRepository,
-        private S3Service $s3Service
+        private S3Service $s3Service,
+        private S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
 
@@ -44,31 +46,8 @@ class MediaController extends AbstractController
             return new JsonResponse(['media' => []]);
         }
 
-        $data = array_map(function (Media $media) {
-            // Régénérer l'URL si elle est expirée
-            if ($media->isUrlExpired() && $media->getS3Key()) {
-                try {
-                    $newUrl = $this->s3Service->getPresignedUrl($media->getS3Key(), 604800); // 7 jours
-                    $media->setUrl($newUrl);
-                    $this->entityManager->persist($media);
-                } catch (\Exception $e) {
-                    // En cas d'erreur, continuer avec l'URL existante
-                }
-            }
+        $data = array_map(fn (Media $media) => $this->serializeMedia($media), $media);
 
-            return [
-                'id' => $media->getId(),
-                'filename' => $media->getFilename(),
-                'originalFilename' => $media->getOriginalFilename(),
-                'mimeType' => $media->getMimeType(),
-                'size' => $media->getSize(),
-                'url' => $media->getUrl(),
-                'type' => $media->getType(),
-                'uploadedAt' => $media->getUploadedAt()?->format('Y-m-d H:i:s'),
-            ];
-        }, $media);
-
-        // Sauvegarder les URLs régénérées
         $this->entityManager->flush();
 
         return new JsonResponse(['media' => $data]);
@@ -142,7 +121,7 @@ class MediaController extends AbstractController
             $media->setOriginalFilename($originalFilename);
             $media->setMimeType($mimeType);
             $media->setSize($file->getSize());
-            $media->setUrl($url);
+            $media->setUrl($this->s3MediaUrlResolver->normalizeStoredUrl($url));
             $media->setS3Key($s3Key);
             $media->setType('image');
             
@@ -153,15 +132,7 @@ class MediaController extends AbstractController
             $this->entityManager->persist($media);
             $this->entityManager->flush();
 
-            return new JsonResponse([
-                'id' => $media->getId(),
-                'filename' => $media->getFilename(),
-                'originalFilename' => $media->getOriginalFilename(),
-                'url' => $media->getUrl(),
-                'mimeType' => $media->getMimeType(),
-                'size' => $media->getSize(),
-                'type' => $media->getType(),
-            ], Response::HTTP_CREATED);
+            return new JsonResponse($this->serializeMedia($media), Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(
                 ['error' => 'Erreur lors de l\'upload: ' . $e->getMessage()],
@@ -226,19 +197,11 @@ class MediaController extends AbstractController
             $errors = [];
 
             foreach ($allMedia as $media) {
-                if ($media->isUrlExpired() && $media->getS3Key()) {
-                    try {
-                        $newUrl = $this->s3Service->getPresignedUrl($media->getS3Key(), 604800); // 7 jours
-                        $media->setUrl($newUrl);
-                        $this->entityManager->persist($media);
-                        $refreshedCount++;
-                    } catch (\Exception $e) {
-                        $errors[] = [
-                            'id' => $media->getId(),
-                            'filename' => $media->getFilename(),
-                            'error' => $e->getMessage()
-                        ];
-                    }
+                $normalizedUrl = $this->s3MediaUrlResolver->normalizeStoredUrl($media->getUrl());
+                if ($normalizedUrl !== $media->getUrl()) {
+                    $media->setUrl($normalizedUrl);
+                    $this->entityManager->persist($media);
+                    $refreshedCount++;
                 }
             }
 
@@ -256,6 +219,30 @@ class MediaController extends AbstractController
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeMedia(Media $media): array
+    {
+        $normalizedUrl = $this->s3MediaUrlResolver->normalizeStoredUrl($media->getUrl());
+        if ($normalizedUrl !== $media->getUrl()) {
+            $media->setUrl($normalizedUrl);
+            $this->entityManager->persist($media);
+        }
+
+        return [
+            'id' => $media->getId(),
+            'filename' => $media->getFilename(),
+            'originalFilename' => $media->getOriginalFilename(),
+            'mimeType' => $media->getMimeType(),
+            'size' => $media->getSize(),
+            'url' => $this->s3MediaUrlResolver->resolve($media->getUrl()),
+            'storageUrl' => $media->getUrl(),
+            'type' => $media->getType(),
+            'uploadedAt' => $media->getUploadedAt()?->format('Y-m-d H:i:s'),
+        ];
     }
 }
 

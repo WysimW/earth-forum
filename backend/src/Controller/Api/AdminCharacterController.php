@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\CharacterRepository;
 use App\Repository\UniversRepository;
 use App\Repository\UserRepository;
+use App\Service\CharacterMergeService;
 use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,6 +24,7 @@ class AdminCharacterController extends AbstractController
         private EntityManagerInterface $entityManager,
         private UniversRepository $universRepository,
         private UserRepository $userRepository,
+        private CharacterMergeService $characterMergeService,
         private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
@@ -220,6 +222,13 @@ class AdminCharacterController extends AbstractController
             }
         }
         if (isset($data['user_id'])) {
+            $assigningUser = $data['user_id'] !== null;
+            if ($assigningUser && $character->getStatus() === Character::STATUS_ABANDONED && !isset($data['status'])) {
+                return new JsonResponse([
+                    'error' => 'Pour assigner un personnage abandonné, précisez aussi un nouveau statut (ex. validated ou draft).',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
             if ($data['user_id'] === null) {
                 $character->setUser(null);
             } else {
@@ -235,6 +244,56 @@ class AdminCharacterController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Personnage mis à jour avec succès']);
+    }
+
+    #[Route('/merge', name: 'api_admin_characters_merge', methods: ['POST'])]
+    public function merge(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $survivorId = (int) ($data['survivorId'] ?? 0);
+        $absorbedId = (int) ($data['absorbedId'] ?? 0);
+
+        if ($survivorId <= 0 || $absorbedId <= 0) {
+            return new JsonResponse(['error' => 'survivorId et absorbedId sont requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $survivor = $this->characterRepository->find($survivorId);
+        $absorbed = $this->characterRepository->find($absorbedId);
+
+        if (!$survivor || !$absorbed) {
+            return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        if (!$isSuperAdmin) {
+            $allowedUniverseIds = array_map(
+                static fn ($universe) => $universe->getId(),
+                $user->getAdminUniverses()->toArray()
+            );
+            foreach ([$survivor, $absorbed] as $character) {
+                $characterUniverseId = $character->getUniverse()?->getId();
+                if (!$characterUniverseId || !in_array($characterUniverseId, $allowedUniverseIds, true)) {
+                    return new JsonResponse(['error' => 'Univers non autorisé'], Response::HTTP_FORBIDDEN);
+                }
+            }
+        }
+
+        try {
+            $reassignedCounts = $this->characterMergeService->merge($survivor, $absorbed);
+        } catch (\InvalidArgumentException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        return new JsonResponse([
+            'message' => 'Personnages fusionnés avec succès',
+            'survivorId' => $survivor->getId(),
+            'reassignedCounts' => $reassignedCounts,
+        ]);
     }
 
     #[Route('/{id}', name: 'api_admin_characters_delete', methods: ['DELETE'])]
@@ -287,6 +346,10 @@ class AdminCharacterController extends AbstractController
             return new JsonResponse(['error' => 'Le nom est requis'], Response::HTTP_BAD_REQUEST);
         }
 
+        if (empty($data['user_id'])) {
+            return new JsonResponse(['error' => 'L\'utilisateur est requis'], Response::HTTP_BAD_REQUEST);
+        }
+
         $character = new Character();
         $character->setName($data['name']);
         $character->setStatus($data['status'] ?? Character::STATUS_DRAFT);
@@ -306,17 +369,11 @@ class AdminCharacterController extends AbstractController
             }
         }
 
-        if (isset($data['user_id'])) {
-            $characterUser = $this->userRepository->find($data['user_id']);
-            if ($characterUser) {
-                $character->setUser($characterUser);
-            } else {
-                return new JsonResponse(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
-            }
-        } else {
-            // Par défaut, assigner à l'utilisateur admin qui crée
-            $character->setUser($user);
+        $characterUser = $this->userRepository->find((int) $data['user_id']);
+        if (!$characterUser) {
+            return new JsonResponse(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
+        $character->setUser($characterUser);
 
         $this->entityManager->persist($character);
         $this->entityManager->flush();

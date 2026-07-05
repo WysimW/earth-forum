@@ -17,9 +17,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\AuthorDisplayResolver;
 use App\Service\BreadcrumbService;
 use App\Service\LastPostService;
 use App\Service\S3MediaUrlResolver;
+use App\Service\Seo\SeoService;
 use App\Repository\ThreadRepository;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -37,6 +39,8 @@ class ForumController extends AbstractController
     private ReadPostRepository $readPostRepository;
     private SluggerInterface $slugger;
     private S3MediaUrlResolver $s3MediaUrlResolver;
+    private SeoService $seoService;
+    private AuthorDisplayResolver $authorDisplayResolver;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -47,7 +51,9 @@ class ForumController extends AbstractController
         ThreadRepository $threadRepository,
         ReadPostRepository $readPostRepository,
         SluggerInterface $slugger,
-        S3MediaUrlResolver $s3MediaUrlResolver
+        S3MediaUrlResolver $s3MediaUrlResolver,
+        SeoService $seoService,
+        AuthorDisplayResolver $authorDisplayResolver,
     ) 
     {
         $this->entityManager = $entityManager;
@@ -59,6 +65,8 @@ class ForumController extends AbstractController
         $this->readPostRepository = $readPostRepository;
         $this->slugger = $slugger;
         $this->s3MediaUrlResolver = $s3MediaUrlResolver;
+        $this->seoService = $seoService;
+        $this->authorDisplayResolver = $authorDisplayResolver;
     }
 
     #[Route('/api/forumslist', name: 'get_forum_listing', methods: ['GET'])]
@@ -159,6 +167,7 @@ class ForumController extends AbstractController
                 'position' => $forum->getPosition(),
                 'subforums_count' => count($subforums),
                 'is_parent' => $forum->getParent() === null,
+                'seo' => $this->seoService->serializeMetadata($forum->getSeo()),
             ];
         }
 
@@ -248,7 +257,7 @@ class ForumController extends AbstractController
                 $latestThreadsData[] = [
                     'id' => $thread->getId(),
                     'title' => $thread->getTitle(),
-                    'author' => $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme',
+                    'author' => $this->authorDisplayResolver->resolveThreadAuthor($thread)['displayName'],
                     'createdAt' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
                     // Add more fields as necessary
                 ];
@@ -327,38 +336,10 @@ class ForumController extends AbstractController
             // Utiliser LastPostService pour récupérer les informations du dernier post du thread
             $lastPostInfo = $this->lastPostService->getLastPostInfoForThread($thread->getId());
             
-            // Pour l'auteur du thread, utiliser les informations du personnage si c'est un thread RP
-            $author = $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme';
-            $avatar = $thread->getAuthor() ? $thread->getAuthor()->getAvatar() : null;
-            $character = null;
-            
-            // Vérifier si c'est un thread RP
-            $isThreadRoleplay = $thread->getType() === 'roleplay';
-            
-            if ($isThreadRoleplay) {
-                // D'abord essayer avec characterCreator
-                if ($thread->getCharacterCreator()) {
-                    $characterCreator = $thread->getCharacterCreator();
-                    $character = $characterCreator->getName();
-                    $characterAvatar = $characterCreator->getAvatar();
-                    if ($characterAvatar) {
-                        $avatar = $characterAvatar;
-                    }
-                } else {
-                    // Si pas de characterCreator, chercher le premier post avec un personnage
-                    foreach ($thread->getPosts() as $post) {
-                        if ($post->getCharacter()) {
-                            $postCharacter = $post->getCharacter();
-                            $character = $postCharacter->getName();
-                            $characterAvatar = $postCharacter->getAvatar();
-                            if ($characterAvatar) {
-                                $avatar = $characterAvatar;
-                            }
-                            break; // Prendre le premier post avec un personnage
-                        }
-                    }
-                }
-            }
+            $threadAuthor = $this->authorDisplayResolver->resolveThreadAuthor($thread);
+            $author = $threadAuthor['displayName'];
+            $avatar = $threadAuthor['avatar'];
+            $character = $threadAuthor['characterName'];
             
             $threadId = $thread->getId();
             $unreadCount = (int) ($unreadCountsByThreadId[$threadId] ?? 0);
@@ -366,9 +347,9 @@ class ForumController extends AbstractController
                 'threadId' => $threadId,
                 'threadSlug' => $thread->getSlug(),
                 'title' => $thread->getTitle(),
-                'author' => $character ? $character : $author,
+                'author' => $author,
                 'authorAvatar' => $this->s3MediaUrlResolver->resolve($avatar),
-                'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
+                'authorId' => $threadAuthor['userId'],
                 'character' => $character,
                 'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
                     ? $thread->getCharacterCreator()->getUser()->getId() 
@@ -422,6 +403,7 @@ class ForumController extends AbstractController
                 'name' => $forum->getUniverse()->getName(),
                 'slug' => $forum->getUniverse()->getSlug(),
             ] : null,
+            'seo' => $this->buildForumSeo($forum),
         ];
     
         return new JsonResponse($data);
@@ -514,34 +496,10 @@ class ForumController extends AbstractController
         foreach ($result['threads'] as $thread) {
             $lastPostInfo = $this->lastPostService->getLastPostInfoForThread($thread->getId());
             
-            $author = $thread->getAuthor() ? $thread->getAuthor()->getPseudo() : 'Anonyme';
-            $avatar = $thread->getAuthor() ? $thread->getAuthor()->getAvatar() : null;
-            $character = null;
-            
-            $isThreadRoleplay = $thread->getType() === 'roleplay';
-            
-            if ($isThreadRoleplay) {
-                if ($thread->getCharacterCreator()) {
-                    $characterCreator = $thread->getCharacterCreator();
-                    $character = $characterCreator->getName();
-                    $characterAvatar = $characterCreator->getAvatar();
-                    if ($characterAvatar) {
-                        $avatar = $characterAvatar;
-                    }
-                } else {
-                    foreach ($thread->getPosts() as $post) {
-                        if ($post->getCharacter()) {
-                            $postCharacter = $post->getCharacter();
-                            $character = $postCharacter->getName();
-                            $characterAvatar = $postCharacter->getAvatar();
-                            if ($characterAvatar) {
-                                $avatar = $characterAvatar;
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
+            $threadAuthor = $this->authorDisplayResolver->resolveThreadAuthor($thread);
+            $author = $threadAuthor['displayName'];
+            $avatar = $threadAuthor['avatar'];
+            $character = $threadAuthor['characterName'];
             
             $threadId = $thread->getId();
             $unreadCount = (int) ($unreadCountsByThreadId[$threadId] ?? 0);
@@ -549,9 +507,9 @@ class ForumController extends AbstractController
                 'threadId' => $threadId,
                 'threadSlug' => $thread->getSlug(),
                 'title' => $thread->getTitle(),
-                'author' => $character ? $character : $author,
+                'author' => $author,
                 'authorAvatar' => $this->s3MediaUrlResolver->resolve($avatar),
-                'authorId' => $thread->getAuthor() ? $thread->getAuthor()->getId() : null,
+                'authorId' => $threadAuthor['userId'],
                 'character' => $character,
                 'characterCreatorId' => $thread->getCharacterCreator() && $thread->getCharacterCreator()->getUser() 
                     ? $thread->getCharacterCreator()->getUser()->getId() 
@@ -613,9 +571,24 @@ class ForumController extends AbstractController
                 'name' => $forum->getUniverse()->getName(),
                 'slug' => $forum->getUniverse()->getSlug(),
             ] : null,
+            'seo' => $this->buildForumSeo($forum),
         ];
     
         return new JsonResponse($data);
+    }
+
+    /**
+     * @return array{metaTitle: string, metaDescription: string, ogImage: ?string, robotsIndex: bool, canonical: string}
+     */
+    private function buildForumSeo(Forum $forum): array
+    {
+        return $this->seoService->resolveFromMetadata(
+            $forum->getSeo(),
+            $forum->getName() . ' | Earth Forum',
+            $forum->getDescription(),
+            $forum->getBanner() ?? $forum->getHeroLogo(),
+            '/forums/' . ($forum->getSlug() ?? (string) $forum->getId())
+        );
     }
 
 
@@ -678,7 +651,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         $forum->setName($data['name']);
         $forum->setSlug($this->generateUniqueSlug((string) $data['name']));
         $forum->setDescription($data['description'] ?? null);
-        $forum->setBanner($data['banner'] ?? null);
+        $forum->setBanner($this->normalizeMediaUrl($data['banner'] ?? null));
         if (isset($data['type'])) {
             $forum->setType($data['type']);
         }
@@ -720,7 +693,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         $forum->setName($data['name']);
         $forum->setSlug($this->generateUniqueSlug((string) $data['name']));
         $forum->setDescription($data['description'] ?? null);
-        $forum->setBanner($data['banner'] ?? null);
+        $forum->setBanner($this->normalizeMediaUrl($data['banner'] ?? null));
         $forum->setType($data['type'] ?? 'hrp');
         if (isset($data['status'])) {
             $status = (string) $data['status'];
@@ -775,6 +748,10 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
                 ->getQuery()
                 ->getSingleScalarResult() ?? 0;
             $forum->setPosition($lastPosition + 1);
+        }
+
+        if (isset($data['seo']) && is_array($data['seo'])) {
+            $this->seoService->applySeoInput($forum->getSeo(), $data['seo']);
         }
 
         $this->entityManager->persist($forum);
@@ -844,7 +821,7 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
             $forum->setDescription($data['description']);
         }
         if (isset($data['banner'])) {
-            $forum->setBanner($data['banner']);
+            $forum->setBanner($this->normalizeMediaUrl($data['banner']));
         }
         if (isset($data['type'])) {
             $forum->setType($data['type']);
@@ -918,6 +895,10 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
                 }
                 $forum->setUniverse($universe);
             }
+        }
+
+        if (isset($data['seo']) && is_array($data['seo'])) {
+            $this->seoService->applySeoInput($forum->getSeo(), $data['seo']);
         }
     
         // Save changes
@@ -1061,6 +1042,11 @@ public function getForumEditData(Forum $forum, ForumCategoryRepository $category
         }
 
         return $candidate;
+    }
+
+    private function normalizeMediaUrl(mixed $value): ?string
+    {
+        return $this->s3MediaUrlResolver->normalizeStoredUrl(is_string($value) ? $value : null);
     }
 
 }

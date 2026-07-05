@@ -39,9 +39,9 @@ export const characterApi = {
     return response.data;
   },
 
-  // Supprimer un personnage
-  deleteCharacter: async (id) => {
-    const response = await api.delete(`/api/characters/${id}`);
+  // Abandonner un personnage (détache l'utilisateur, conserve l'historique RP)
+  abandonCharacter: async (id) => {
+    const response = await api.post(`/api/characters/${id}/abandon`);
     return response.data;
   },
 

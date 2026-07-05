@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UniverseThemeProvider } from './contexts/UniverseThemeContext';
 import Login from './pages/Login/Login';
@@ -43,7 +44,27 @@ import ThreadPostRP from './pages/Components/ThreadPostRP/ThreadPostRP';
 import RpActivityCardComponent from './pages/Components/RpActivityCard/RpActivityCard';
 import Components from './pages/Components/Components';
 import Loading from './components/Loading/Loading';
+import SeoHead from './components/Seo/SeoHead';
+import { isPrivateRoute } from './hooks/useSeo';
 import './styles/global.css';
+
+const RouteSeoGuard = () => {
+  const location = useLocation();
+
+  if (!isPrivateRoute(location.pathname)) {
+    return null;
+  }
+
+  return (
+    <SeoHead
+      seo={{
+        metaTitle: 'Earth Forum',
+        metaDescription: '',
+        robotsIndex: false,
+      }}
+    />
+  );
+};
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -113,13 +134,16 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <UniverseThemeProvider>
-      <AuthProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
-    </UniverseThemeProvider>
+    <HelmetProvider>
+      <UniverseThemeProvider>
+        <AuthProvider>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <RouteSeoGuard />
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </UniverseThemeProvider>
+    </HelmetProvider>
   );
 }
 

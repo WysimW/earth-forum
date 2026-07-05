@@ -1,0 +1,20 @@
+{
+    "_comment": "Clé = slug ForumActif (partie après f{id}-), valeur = slug du forum earth-forum",
+    "asile-d-arkham": "arkham-asylum",
+    "gotham-city": "gotham-city",
+    "gcpd-central": "gcpd",
+    "wayne-techs": "wayne-enterprises",
+    "manoir-wayne-batcave": "batcave",
+    "iceberg-lounge": "gotham-city",
+    "metropolis": "metropolis",
+    "daily-planet": "daily-planet",
+    "lex-corps": "lexcorp",
+    "central-city": "central-city",
+    "star-labs": "central-city",
+    "role-play": "gotham-city",
+    "presentations-validees": "gotham-city",
+    "hors-jeu": "gotham-city",
+    "chroniques": "gotham-city",
+    "watchtower-hall-de-justice": "tour-de-garde",
+    "espace": "tour-de-garde"
+}

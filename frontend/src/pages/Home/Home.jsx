@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import universeService from '../../services/universeService';
+import seoService from '../../services/seoService';
 import Layout from '../../components/Layout/Layout';
+import SeoHead from '../../components/Seo/SeoHead';
 import UniverseCard from '../../components/UniverseCard/UniverseCard';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
@@ -11,7 +13,12 @@ const Home = () => {
   const [universes, setUniverses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [seo, setSeo] = useState(null);
   const { favoriteUniverseId, toggleFavorite, isFavorite } = useFavorites();
+
+  useEffect(() => {
+    seoService.getPortal().then(setSeo).catch(() => setSeo(null));
+  }, []);
 
   useEffect(() => {
     const fetchUniverses = async () => {
@@ -68,6 +75,7 @@ const Home = () => {
 
   return (
     <Layout>
+      <SeoHead seo={seo} />
       <div className={styles.content}>
         <header className={styles.header}>
           <h1 className={styles.title}>Choisissez votre univers</h1>
@@ -83,20 +91,10 @@ const Home = () => {
         ) : (
           <div className={styles.universesGrid}>
             {sortedUniverses.map((universe, index) => {
-              // Exemple d'image de fond selon le slug (à remplacer par les vraies images de l'API)
-              let backgroundImage = universe.banner || universe.backgroundImage;
-              
-              // Images par défaut selon le slug pour démonstration
-              const defaultImages = {
-                'dc': 'https://static0.srcdn.com/wordpress/wp-content/uploads/2024/04/batman-and-the-justice-league-vs-amazos-featured.jpg',
-                'marvel': 'https://cdn.mos.cms.futurecdn.net/3CXE6xN4tqV3LrVv2VEvUV.jpg',
-                'dc-absolute': 'https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/08/dc-s-absolute-comics-explained.jpg?w=1200&h=675&fit=crop',
-                'star-wars-earth': 'https://images.unsplash.com/photo-1533616688419-b7a585564566?w=1200&h=600&fit=crop',
-              };
-              
-              if (!backgroundImage && universe.slug) {
-                backgroundImage = defaultImages[universe.slug] || null;
-              }
+              const backgroundImage = universe.portalBanner
+                || universe.banner
+                || universe.backgroundImage
+                || null;
 
               const isUniverseFavorite = isFavorite(universe.id);
               const isFullWidth = isUniverseFavorite && index === 0;

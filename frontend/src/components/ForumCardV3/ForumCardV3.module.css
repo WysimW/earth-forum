@@ -534,20 +534,30 @@
   letter-spacing: 0.05em;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive — tablette et mobile (< 1024px) */
+@media (max-width: 1023px) {
   .forumCard {
     flex-direction: column;
     min-height: auto;
   }
 
+  .cardContent {
+    flex-direction: column;
+  }
+
   .cardInfo {
     padding: var(--spacing-lg);
+    flex: none;
+    width: 100%;
   }
 
   .cardSidebar {
     width: 100%;
+    flex-shrink: 0;
     flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
     padding: var(--spacing-md);
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -567,18 +577,36 @@
     display: none;
   }
 
+  .forumCard:not(:has(.cardBanner)) .cardSidebar {
+    border-top-color: var(--border-color);
+  }
+
+  .noActivityIcon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+  }
+
   .forumCardCompact .compactRow {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .forumCardCompact .compactMain {
+    flex: none;
+    width: 100%;
+  }
+
   .forumCardCompact .compactLastPost,
   .forumCardCompact .compactLastPostMuted {
+    flex: none;
+    width: 100%;
     border-left: none;
     border-top: var(--border-width) solid var(--border-color);
     padding-left: 0;
     padding-top: var(--spacing-sm);
     max-width: none;
+    min-width: 0;
   }
 
   .forumCardCompact .compactLastPost {

@@ -1,0 +1,45 @@
+.track {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  padding: var(--spacing-xs);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-sm, 4px);
+  overflow-x: auto;
+}
+
+.indicator {
+  position: absolute;
+  top: var(--spacing-xs);
+  bottom: var(--spacing-xs);
+  left: 0;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-sm, 4px);
+  transition: transform var(--transition-slow), width var(--transition-slow);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-base);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tabActive {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}

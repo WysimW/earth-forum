@@ -5,7 +5,6 @@ namespace App\Service;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use RuntimeException;
 
 class S3Service
@@ -16,21 +15,29 @@ class S3Service
     private string $acl;
 
     public function __construct(
-        ParameterBagInterface $params,
         private LoggerInterface $logger
     ) {
         $this->bucket = $_ENV['AWS_S3_BUCKET'] ?? '';
-        $this->region = $_ENV['AWS_REGION'] ?? 'eu-north-1';
-        $this->acl = $_ENV['AWS_S3_ACL'] ?? 'private';
+        $this->region = $_ENV['AWS_REGION'] ?? 'eu-west-3';
+        $acl = $_ENV['AWS_S3_ACL'] ?? 'private';
+        $this->acl = $acl !== '' ? $acl : 'private';
 
-        $this->s3Client = new S3Client([
+        $config = [
             'version' => 'latest',
             'region' => $this->region,
-            'credentials' => [
-                'key' => $_ENV['AWS_ACCESS_KEY_ID'] ?? '',
-                'secret' => $_ENV['AWS_SECRET_ACCESS_KEY'] ?? '',
-            ],
-        ]);
+        ];
+
+        $accessKey = trim((string) ($_ENV['AWS_ACCESS_KEY_ID'] ?? ''));
+        $secretKey = trim((string) ($_ENV['AWS_SECRET_ACCESS_KEY'] ?? ''));
+        // Sans clés explicites : chaîne par défaut AWS (rôle EC2, ~/.aws/credentials en dev)
+        if ($accessKey !== '' && $secretKey !== '') {
+            $config['credentials'] = [
+                'key' => $accessKey,
+                'secret' => $secretKey,
+            ];
+        }
+
+        $this->s3Client = new S3Client($config);
     }
 
     /**
@@ -90,6 +97,29 @@ class S3Service
         } catch (AwsException $e) {
             $this->logger->error('S3 Presigned URL Error: ' . $e->getMessage());
             throw new \RuntimeException('Erreur lors de la génération de l\'URL pré-signée: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Télécharge un objet S3 (pour le proxy media public).
+     *
+     * @return array{body: string, contentType: string}
+     */
+    public function getObjectContent(string $s3Key): array
+    {
+        try {
+            $result = $this->s3Client->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $s3Key,
+            ]);
+
+            return [
+                'body' => (string) $result['Body'],
+                'contentType' => $result['ContentType'] ?? 'application/octet-stream',
+            ];
+        } catch (AwsException $e) {
+            $this->logger->error('S3 GetObject Error: ' . $e->getMessage());
+            throw new RuntimeException('Impossible de lire le fichier S3: ' . $e->getMessage(), 0, $e);
         }
     }
 

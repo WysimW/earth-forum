@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Embeddable\SeoMetadata;
 use App\Repository\UniversRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,6 +32,24 @@ class Univers
 
     #[ORM\Column(length: 255, unique: true)]
     private ?string $slug = "default";
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $forumsTitle = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $portalBanner = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $forumsHeaderBanner = null;
+
+    #[ORM\Embedded(class: SeoMetadata::class, columnPrefix: 'seo_')]
+    private SeoMetadata $seo;
+
+    #[ORM\Embedded(class: SeoMetadata::class, columnPrefix: 'member_of_month_seo_')]
+    private SeoMetadata $memberOfMonthSeo;
+
+    #[ORM\Embedded(class: SeoMetadata::class, columnPrefix: 'character_of_month_seo_')]
+    private SeoMetadata $characterOfMonthSeo;
 
     /**
      * @var Collection<int, Character>
@@ -81,7 +100,10 @@ class Univers
     private Collection $rpActivities;
 
     public function __construct()
-    {   
+    {
+        $this->seo = new SeoMetadata();
+        $this->memberOfMonthSeo = new SeoMetadata();
+        $this->characterOfMonthSeo = new SeoMetadata();
         $this->createdAt = new \DateTimeImmutable();  // Set the default value when the entity is created
         $this->characters = new ArrayCollection();
         $this->npcs = new ArrayCollection();
@@ -142,6 +164,78 @@ class Univers
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+        return $this;
+    }
+
+    public function getForumsTitle(): ?string
+    {
+        return $this->forumsTitle;
+    }
+
+    public function setForumsTitle(?string $forumsTitle): static
+    {
+        $this->forumsTitle = $forumsTitle;
+
+        return $this;
+    }
+
+    public function getPortalBanner(): ?string
+    {
+        return $this->portalBanner;
+    }
+
+    public function setPortalBanner(?string $portalBanner): static
+    {
+        $this->portalBanner = $portalBanner;
+
+        return $this;
+    }
+
+    public function getForumsHeaderBanner(): ?string
+    {
+        return $this->forumsHeaderBanner;
+    }
+
+    public function setForumsHeaderBanner(?string $forumsHeaderBanner): static
+    {
+        $this->forumsHeaderBanner = $forumsHeaderBanner;
+
+        return $this;
+    }
+
+    public function getSeo(): SeoMetadata
+    {
+        return $this->seo;
+    }
+
+    public function setSeo(SeoMetadata $seo): static
+    {
+        $this->seo = $seo;
+
+        return $this;
+    }
+
+    public function getMemberOfMonthSeo(): SeoMetadata
+    {
+        return $this->memberOfMonthSeo;
+    }
+
+    public function setMemberOfMonthSeo(SeoMetadata $memberOfMonthSeo): static
+    {
+        $this->memberOfMonthSeo = $memberOfMonthSeo;
+
+        return $this;
+    }
+
+    public function getCharacterOfMonthSeo(): SeoMetadata
+    {
+        return $this->characterOfMonthSeo;
+    }
+
+    public function setCharacterOfMonthSeo(SeoMetadata $characterOfMonthSeo): static
+    {
+        $this->characterOfMonthSeo = $characterOfMonthSeo;
+
         return $this;
     }
 

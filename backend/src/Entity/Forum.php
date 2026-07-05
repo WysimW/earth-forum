@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Embeddable\SeoMetadata;
 use App\Repository\ForumRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -83,6 +84,9 @@ class Forum implements TimestampableInterface
     #[ORM\Column(length: 20)]
     private string $type = 'hrp'; // important, roleplay, hrp
 
+    #[ORM\Embedded(class: SeoMetadata::class, columnPrefix: 'seo_')]
+    private SeoMetadata $seo;
+
      /**
      * @var mixed|null
      */
@@ -101,7 +105,8 @@ class Forum implements TimestampableInterface
     public $tempSubforums = null;
 
     public function __construct()
-    {   
+    {
+        $this->seo = new SeoMetadata();
         $this->threads = new ArrayCollection();
         $this->subforums = new ArrayCollection();
     }
@@ -360,5 +365,17 @@ class Forum implements TimestampableInterface
     public function isHrp(): bool
     {
         return $this->type === 'hrp';
+    }
+
+    public function getSeo(): SeoMetadata
+    {
+        return $this->seo;
+    }
+
+    public function setSeo(SeoMetadata $seo): static
+    {
+        $this->seo = $seo;
+
+        return $this;
     }
 }

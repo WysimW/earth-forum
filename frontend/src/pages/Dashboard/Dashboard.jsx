@@ -117,7 +117,6 @@ const Dashboard = () => {
           <div className={styles.column}>
             <DashboardSection
               title="Mes personnages"
-              accent="primary"
               actionLabel="+ Nouveau"
               actionTo="/characters/new"
               isEmpty={!data?.characters?.length}
@@ -135,9 +134,8 @@ const Dashboard = () => {
 
             <DashboardSection
               title="Mes participations récentes"
-              accent="success"
-              actionLabel="participations"
-              actionTo="/forums"
+              actionLabel="Explorer"
+              actionTo={universeSlug ? `/univers/${universeSlug}` : '/forums'}
               isEmpty={!data?.participatingThreads?.length}
               emptyTitle="Vous ne participez à aucune scène"
               emptyMessage="Rejoignez une scène existante ou créez-en une nouvelle."
@@ -153,9 +151,8 @@ const Dashboard = () => {
 
             <DashboardSection
               title="Mes factions"
-              accent="primary"
-              actionLabel={canCreateFaction ? '+ Nouvelle' : undefined}
-              actionTo={canCreateFaction ? '/factions/new' : undefined}
+              actionLabel={canCreateFaction ? '+ Nouvelle' : 'Tout voir'}
+              actionTo={canCreateFaction ? '/factions/new' : '/factions'}
               isEmpty={!data?.factions?.length}
               emptyTitle="Vous n'appartenez à aucune faction"
               emptyMessage="Rejoignez une faction existante ou créez la vôtre."
@@ -173,8 +170,7 @@ const Dashboard = () => {
           <div className={styles.column}>
             <DashboardSection
               title="Mes créations"
-              accent="info"
-              actionLabel="nouvelle scène"
+              actionLabel="Nouvelle scène"
               actionTo={universeSlug ? `/univers/${universeSlug}` : '/forums'}
               isEmpty={!data?.createdThreads?.length}
               emptyTitle="Vous n'avez pas encore créé de scène"
@@ -191,8 +187,7 @@ const Dashboard = () => {
 
             <DashboardSection
               title="Scènes récentes"
-              accent="secondary"
-              actionLabel="scènes"
+              actionLabel="Tout voir"
               actionTo={universeSlug ? `/univers/${universeSlug}` : '/forums'}
               isEmpty={!data?.recentThreads?.length}
               emptyTitle="Aucune scène récente"

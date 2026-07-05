@@ -8,16 +8,23 @@ import UserForm from './pages/Users/UserForm';
 import UserDetail from './pages/Users/UserDetail';
 import Forums from './pages/Forums/Forums';
 import ForumForm from './pages/Forums/ForumForm';
+import Categories from './pages/Categories/Categories';
+import CategoryForm from './pages/Categories/CategoryForm';
 import Characters from './pages/Characters/Characters';
 import CharacterForm from './pages/Characters/CharacterForm';
 import CharacterDetail from './pages/Characters/CharacterDetail';
 import Factions from './pages/Factions/Factions';
 import FactionForm from './pages/Factions/FactionForm';
+import Univers from './pages/Univers/Univers';
+import UniverseForm from './pages/Univers/UniverseForm';
 import ImportantRegulation from './pages/Important/ImportantRegulation';
 import ImportantGuide from './pages/Important/ImportantGuide';
 import ImportantVote from './pages/Important/ImportantVote';
 import ImportantMemberOfMonth from './pages/Important/ImportantMemberOfMonth';
 import ImportantCharacterOfMonth from './pages/Important/ImportantCharacterOfMonth';
+import ImportantSeoPortal from './pages/Important/ImportantSeoPortal';
+import ImportantAbout from './pages/Important/ImportantAbout';
+import ImportantSeoUniverses from './pages/Important/ImportantSeoUniverses';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UniverseProvider } from './contexts/UniverseContext';
 
@@ -53,6 +60,9 @@ const AppRoutes = () => {
                 <Route path="/forums" element={<Forums />} />
                 <Route path="/forums/new" element={<ForumForm />} />
                 <Route path="/forums/edit/:id" element={<ForumForm />} />
+                <Route path="/forum-categories" element={<Categories />} />
+                <Route path="/forum-categories/new" element={<CategoryForm />} />
+                <Route path="/forum-categories/edit/:id" element={<CategoryForm />} />
                 <Route path="/characters" element={<Characters />} />
                 <Route path="/characters/new" element={<CharacterForm />} />
                 <Route path="/characters/edit/:id" element={<CharacterForm />} />
@@ -60,8 +70,13 @@ const AppRoutes = () => {
                 <Route path="/factions" element={<Factions />} />
                 <Route path="/factions/new" element={<FactionForm />} />
                 <Route path="/factions/edit/:id" element={<FactionForm />} />
+                <Route path="/univers" element={<Univers />} />
+                <Route path="/univers/edit/:id" element={<UniverseForm />} />
                 <Route path="/important/regulation" element={<ImportantRegulation />} />
                 <Route path="/important/guide" element={<ImportantGuide />} />
+                <Route path="/important/portal-seo" element={<ImportantSeoPortal />} />
+                <Route path="/important/about" element={<ImportantAbout />} />
+                <Route path="/important/universe-seo" element={<ImportantSeoUniverses />} />
                 <Route path="/important/vote" element={<ImportantVote />} />
                 <Route path="/important/member-of-month" element={<ImportantMemberOfMonth />} />
                 <Route path="/important/character-of-month" element={<ImportantCharacterOfMonth />} />

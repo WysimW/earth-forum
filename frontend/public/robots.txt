@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /tableau-de-bord
+Disallow: /messagerie
+Disallow: /profil
+Disallow: /characters
+Disallow: /mes-factions
+Disallow: /factions
+Disallow: /components
+Disallow: /test
+Disallow: /rp-activities/new
+
+Sitemap: /sitemap.xml

@@ -134,6 +134,7 @@
   --container-lg: 960px;
   --container-xl: 1140px;
   --container-xxl: 1320px;
+  --container-forum: 1440px;
   
   /* Hauteurs */
   --header-height: 60px;

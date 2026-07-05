@@ -2,15 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../Dashboard.module.css';
 
-const STATUS_LABELS = {
-  pending: 'En attente',
-  validated: 'Validé',
-  rejected: 'Refusé',
-  draft: 'Brouillon',
-  editing: 'En édition',
-  abandoned: 'Abandonné',
-};
-
 const DashboardStats = ({ stats }) => {
   if (!stats) return null;
 

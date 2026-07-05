@@ -2,8 +2,10 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Forum;
 use App\Entity\Univers;
 use App\Entity\User;
+use App\Repository\ForumCategoryRepository;
 use App\Repository\UniversRepository;
 use App\Repository\ForumRepository;
 use App\Repository\ReadPostRepository;
@@ -23,6 +25,7 @@ class UniversController extends AbstractController
     private $forumStatsService;
     private ReadPostRepository $readPostRepository;
     private S3MediaUrlResolver $s3MediaUrlResolver;
+    private ForumCategoryRepository $forumCategoryRepository;
 
     public function __construct(
         UniversRepository $universRepository, 
@@ -30,7 +33,8 @@ class UniversController extends AbstractController
         LastPostService $lastPostService,
         ForumStatisticsService $forumStatsService,
         ReadPostRepository $readPostRepository,
-        S3MediaUrlResolver $s3MediaUrlResolver
+        S3MediaUrlResolver $s3MediaUrlResolver,
+        ForumCategoryRepository $forumCategoryRepository,
     )
     {
         $this->universRepository = $universRepository;
@@ -39,6 +43,7 @@ class UniversController extends AbstractController
         $this->forumStatsService = $forumStatsService;
         $this->readPostRepository = $readPostRepository;
         $this->s3MediaUrlResolver = $s3MediaUrlResolver;
+        $this->forumCategoryRepository = $forumCategoryRepository;
     }
 
     #[Route('', name: 'api_universes_list', methods: ['GET'])]
@@ -58,15 +63,7 @@ class UniversController extends AbstractController
                 $threadCount += $forum->getThreads()->count();
             }
 
-            $data[] = [
-                'id' => $univers->getId(),
-                'name' => $univers->getName(),
-                'description' => $univers->getDescription(),
-                'slug' => $univers->getSlug(),
-                'createdAt' => $univers->getCreatedAt() ? $univers->getCreatedAt()->format('Y-m-d H:i:s') : null,
-                'forumCount' => $forumCount,
-                'threadCount' => $threadCount,
-            ];
+            $data[] = $this->serializeUniversPublic($univers, $forumCount, $threadCount);
         }
 
         return new JsonResponse(['universes' => $data]);
@@ -83,17 +80,7 @@ class UniversController extends AbstractController
             $threadCount += $forum->getThreads()->count();
         }
 
-        $data = [
-            'id' => $univers->getId(),
-            'name' => $univers->getName(),
-            'description' => $univers->getDescription(),
-            'slug' => $univers->getSlug(),
-            'createdAt' => $univers->getCreatedAt() ? $univers->getCreatedAt()->format('Y-m-d H:i:s') : null,
-            'forumCount' => $forumCount,
-            'threadCount' => $threadCount,
-        ];
-
-        return new JsonResponse($data);
+        return new JsonResponse($this->serializeUniversPublic($univers, $forumCount, $threadCount));
     }
 
     #[Route('/{slug}/forums', name: 'api_univers_forums', methods: ['GET'])]
@@ -128,103 +115,25 @@ class UniversController extends AbstractController
         $currentUser = $this->getUser() instanceof User ? $this->getUser() : null;
         $allForumIds = $this->collectForumIdsWithChildren($universeForums);
 
-        // Organiser les forums par type
+        // Organiser les forums par type (rétrocompatibilité) et par catégorie
         $forumsByType = [
             'important' => [],
             'player_platform' => [],
             'roleplay' => [],
             'hrp' => []
         ];
+        $forumsDataByCategoryId = [];
 
         foreach ($universeForums as $forum) {
-            // Ajouter les informations du dernier post
-            $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($forum->getId());
-            
-            // Ajouter les statistiques cumulées
-            $stats = $this->forumStatsService->getForumStats($forum->getId());
-            
-            // Charger explicitement les sous-forums triés par type et position
-            $subforums = $this->forumRepository->createQueryBuilder('sf')
-                ->where('sf.parent = :parent')
-                ->andWhere('sf.status != :archivedStatus')
-                ->setParameter('parent', $forum)
-                ->setParameter('archivedStatus', 'archived')
-                ->orderBy('CASE sf.type 
-                    WHEN \'important\' THEN 1 
-                    WHEN \'player_platform\' THEN 2
-                    WHEN \'roleplay\' THEN 3 
-                    WHEN \'hrp\' THEN 4 
-                    ELSE 5 END', 'ASC')
-                ->addOrderBy('sf.position', 'ASC')
-                ->getQuery()
-                ->getResult();
+            $forumData = $this->buildForumDataArray($forum);
 
-            // Enrichir les sous-forums
-            $subforumsData = [];
-            foreach ($subforums as $subforum) {
-                $subLastPostInfo = $this->lastPostService->getLastPostInfoForForum($subforum->getId());
-                $subStats = $this->forumStatsService->getForumStats($subforum->getId());
-                
-                $subforumsData[] = [
-                    'id' => $subforum->getId(),
-                    'slug' => $subforum->getSlug(),
-                    'name' => $subforum->getName(),
-                    'description' => $subforum->getDescription(),
-                    'banner' => $this->s3MediaUrlResolver->resolve($subforum->getBanner()),
-                    'heroLogo' => $this->s3MediaUrlResolver->resolve($subforum->getHeroLogo()),
-                    'type' => $subforum->getType(),
-                    'isRoleplay' => $subforum->isRoleplay(),
-                    'stats' => [
-                        'totalThreads' => $subStats['thread_count'] ?? 0,
-                        'totalPosts' => $subStats['post_count'] ?? 0,
-                    ],
-                    'hasUnreadThreads' => false,
-                    'hasParticipatingUnreadThreads' => false,
-                    'lastPost' => $subLastPostInfo ? [
-                        'threadId' => $subLastPostInfo['threadId'] ?? null,
-                        'threadSlug' => $subLastPostInfo['threadSlug'] ?? null,
-                        'threadTitle' => $subLastPostInfo['threadTitle'] ?? null,
-                        'author' => $subLastPostInfo['author'] ?? null,
-                        'character' => $subLastPostInfo['character'] ?? null,
-                        'avatar' => $subLastPostInfo['avatar'] ?? null,
-                        'date' => $subLastPostInfo['date'] instanceof \DateTimeInterface 
-                            ? $subLastPostInfo['date']->format('Y-m-d H:i:s') 
-                            : ($subLastPostInfo['date'] ?? null),
-                    ] : null,
-                ];
+            if ($forum->getType() === 'roleplay' || $forum->isRoleplay()) {
+                $categoryId = $forum->getCategory()?->getId();
+                if ($categoryId !== null) {
+                    $forumsDataByCategoryId[$categoryId][] = $forumData;
+                }
             }
 
-            $forumData = [
-                'id' => $forum->getId(),
-                'slug' => $forum->getSlug(),
-                'name' => $forum->getName(),
-                'description' => $forum->getDescription(),
-                'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
-                'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
-                'type' => $forum->getType(),
-                'isRoleplay' => $forum->isRoleplay(),
-                'stats' => [
-                    'totalThreads' => $stats['thread_count'] ?? 0,
-                    'totalPosts' => $stats['post_count'] ?? 0,
-                    'subforumCount' => count($subforums),
-                ],
-                'hasUnreadThreads' => false,
-                'hasParticipatingUnreadThreads' => false,
-                'subforums' => $subforumsData,
-                'lastPost' => $lastPostInfo ? [
-                    'threadId' => $lastPostInfo['threadId'] ?? null,
-                    'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
-                    'threadTitle' => $lastPostInfo['threadTitle'] ?? null,
-                    'author' => $lastPostInfo['author'] ?? null,
-                    'character' => $lastPostInfo['character'] ?? null,
-                    'avatar' => $lastPostInfo['avatar'] ?? null,
-                    'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
-                        ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
-                        : ($lastPostInfo['date'] ?? null),
-                ] : null,
-            ];
-
-            // Ajouter au bon type
             $forumType = $forum->getType();
             if ($forumType === 'important') {
                 $forumsByType['important'][] = $forumData;
@@ -236,6 +145,8 @@ class UniversController extends AbstractController
                 $forumsByType['hrp'][] = $forumData;
             }
         }
+
+        $roleplayCategories = $this->buildRoleplayCategoriesWithForums($forumsDataByCategoryId);
 
         // Récupérer les elseworlds
         $elseworlds = $univers->getElseworlds();
@@ -261,87 +172,7 @@ class UniversController extends AbstractController
             if (count($elseworldForums) > 0) {
                 $elseworldForumsData = [];
                 foreach ($elseworldForums as $forum) {
-                    $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($forum->getId());
-                    $stats = $this->forumStatsService->getForumStats($forum->getId());
-                    
-                    $subforums = $this->forumRepository->createQueryBuilder('sf')
-                        ->where('sf.parent = :parent')
-                        ->andWhere('sf.status != :archivedStatus')
-                        ->setParameter('parent', $forum)
-                        ->setParameter('archivedStatus', 'archived')
-                        ->orderBy('CASE sf.type 
-                            WHEN \'important\' THEN 1 
-                            WHEN \'player_platform\' THEN 2
-                            WHEN \'roleplay\' THEN 3 
-                            WHEN \'hrp\' THEN 4 
-                            ELSE 5 END', 'ASC')
-                        ->addOrderBy('sf.position', 'ASC')
-                        ->getQuery()
-                        ->getResult();
-
-                    $subforumsData = [];
-                    foreach ($subforums as $subforum) {
-                        $subLastPostInfo = $this->lastPostService->getLastPostInfoForForum($subforum->getId());
-                        $subStats = $this->forumStatsService->getForumStats($subforum->getId());
-                        
-                        $subforumsData[] = [
-                            'id' => $subforum->getId(),
-                            'slug' => $subforum->getSlug(),
-                            'name' => $subforum->getName(),
-                            'description' => $subforum->getDescription(),
-                            'banner' => $this->s3MediaUrlResolver->resolve($subforum->getBanner()),
-                            'heroLogo' => $this->s3MediaUrlResolver->resolve($subforum->getHeroLogo()),
-                            'type' => $subforum->getType(),
-                            'isRoleplay' => $subforum->isRoleplay(),
-                            'stats' => [
-                                'totalThreads' => $subStats['thread_count'] ?? 0,
-                                'totalPosts' => $subStats['post_count'] ?? 0,
-                            ],
-                            'hasUnreadThreads' => false,
-                            'hasParticipatingUnreadThreads' => false,
-                            'lastPost' => $subLastPostInfo ? [
-                                'threadId' => $subLastPostInfo['threadId'] ?? null,
-                                'threadSlug' => $subLastPostInfo['threadSlug'] ?? null,
-                                'threadTitle' => $subLastPostInfo['threadTitle'] ?? null,
-                                'author' => $subLastPostInfo['author'] ?? null,
-                                'character' => $subLastPostInfo['character'] ?? null,
-                                'avatar' => $subLastPostInfo['avatar'] ?? null,
-                                'date' => $subLastPostInfo['date'] instanceof \DateTimeInterface 
-                                    ? $subLastPostInfo['date']->format('Y-m-d H:i:s') 
-                                    : ($subLastPostInfo['date'] ?? null),
-                            ] : null,
-                        ];
-                    }
-
-                    $elseworldForumsData[] = [
-                        'id' => $forum->getId(),
-                        'slug' => $forum->getSlug(),
-                        'name' => $forum->getName(),
-                        'description' => $forum->getDescription(),
-                        'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
-                        'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
-                        'type' => $forum->getType(),
-                        'isRoleplay' => $forum->isRoleplay(),
-                        'stats' => [
-                            'totalThreads' => $stats['thread_count'] ?? 0,
-                            'totalPosts' => $stats['post_count'] ?? 0,
-                            'subforumCount' => count($subforums),
-                        ],
-                        'hasUnreadThreads' => false,
-                        'hasParticipatingUnreadThreads' => false,
-                        'subforums' => $subforumsData,
-                        'lastPost' => $lastPostInfo ? [
-                            'threadId' => $lastPostInfo['threadId'] ?? null,
-                            'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
-                            'threadTitle' => $lastPostInfo['threadTitle'] ?? null,
-                            'author' => $lastPostInfo['author'] ?? null,
-                            'character' => $lastPostInfo['character'] ?? null,
-                            'avatar' => $lastPostInfo['avatar'] ?? null,
-                            'date' => $lastPostInfo['date'] instanceof \DateTimeInterface 
-                                ? $lastPostInfo['date']->format('Y-m-d H:i:s') 
-                                : ($lastPostInfo['date'] ?? null),
-                        ] : null,
-                    ];
+                    $elseworldForumsData[] = $this->buildForumDataArray($forum);
                 }
 
                 $elseworldsData[] = [
@@ -379,6 +210,14 @@ class UniversController extends AbstractController
             }
             unset($forumsOfType);
 
+            foreach ($roleplayCategories as &$categoryItem) {
+                foreach ($categoryItem['forums'] as &$forumItem) {
+                    $applyFlags($forumItem);
+                }
+                unset($forumItem);
+            }
+            unset($categoryItem);
+
             foreach ($elseworldsData as &$elseworldItem) {
                 foreach ($elseworldItem['forums'] as &$forumItem) {
                     $applyFlags($forumItem);
@@ -394,8 +233,12 @@ class UniversController extends AbstractController
                 'name' => $univers->getName(),
                 'slug' => $univers->getSlug(),
                 'description' => $univers->getDescription(),
+                'forumsTitle' => $univers->getForumsTitle(),
+                'forumsHeaderBanner' => $this->s3MediaUrlResolver->resolve($univers->getForumsHeaderBanner()),
+                'portalBanner' => $this->s3MediaUrlResolver->resolve($univers->getPortalBanner()),
             ],
             'forums' => $forumsByType,
+            'roleplayCategories' => $roleplayCategories,
             'elseworlds' => $elseworldsData,
         ]);
     }
@@ -463,6 +306,159 @@ class UniversController extends AbstractController
         }
 
         return array_values(array_unique(array_filter($ids)));
+    }
+
+    /**
+     * @param array<int, array<int, array<string, mixed>>> $forumsDataByCategoryId
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildRoleplayCategoriesWithForums(array $forumsDataByCategoryId): array
+    {
+        $roleplayCategories = [];
+        $allCategories = $this->forumCategoryRepository->findBy([], ['homeOrder' => 'ASC', 'id' => 'ASC']);
+
+        foreach ($allCategories as $category) {
+            if ($category->getType()?->getSlug() !== 'roleplay') {
+                continue;
+            }
+
+            $categoryForums = $forumsDataByCategoryId[$category->getId()] ?? [];
+            if ($categoryForums === []) {
+                continue;
+            }
+
+            $roleplayCategories[] = [
+                'id' => $category->getId(),
+                'name' => $category->getName(),
+                'description' => $category->getDescription(),
+                'slug' => $category->getSlug(),
+                'order' => $category->getHomeOrder(),
+                'forums' => $categoryForums,
+            ];
+        }
+
+        return $roleplayCategories;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildForumDataArray(Forum $forum): array
+    {
+        $lastPostInfo = $this->lastPostService->getLastPostInfoForForum($forum->getId());
+        $stats = $this->forumStatsService->getForumStats($forum->getId());
+        $subforums = $this->forumRepository->createQueryBuilder('sf')
+            ->where('sf.parent = :parent')
+            ->andWhere('sf.status != :archivedStatus')
+            ->setParameter('parent', $forum)
+            ->setParameter('archivedStatus', 'archived')
+            ->orderBy('CASE sf.type 
+                WHEN \'important\' THEN 1 
+                WHEN \'player_platform\' THEN 2
+                WHEN \'roleplay\' THEN 3 
+                WHEN \'hrp\' THEN 4 
+                ELSE 5 END', 'ASC')
+            ->addOrderBy('sf.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $subforumsData = [];
+        foreach ($subforums as $subforum) {
+            $subforumsData[] = $this->buildSubforumDataArray($subforum);
+        }
+
+        return [
+            'id' => $forum->getId(),
+            'slug' => $forum->getSlug(),
+            'name' => $forum->getName(),
+            'description' => $forum->getDescription(),
+            'banner' => $this->s3MediaUrlResolver->resolve($forum->getBanner()),
+            'heroLogo' => $this->s3MediaUrlResolver->resolve($forum->getHeroLogo()),
+            'type' => $forum->getType(),
+            'isRoleplay' => $forum->isRoleplay(),
+            'stats' => [
+                'totalThreads' => $stats['thread_count'] ?? 0,
+                'totalPosts' => $stats['post_count'] ?? 0,
+                'subforumCount' => count($subforums),
+            ],
+            'hasUnreadThreads' => false,
+            'hasParticipatingUnreadThreads' => false,
+            'subforums' => $subforumsData,
+            'lastPost' => $this->formatLastPostPayload($lastPostInfo),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildSubforumDataArray(Forum $subforum): array
+    {
+        $subLastPostInfo = $this->lastPostService->getLastPostInfoForForum($subforum->getId());
+        $subStats = $this->forumStatsService->getForumStats($subforum->getId());
+
+        return [
+            'id' => $subforum->getId(),
+            'slug' => $subforum->getSlug(),
+            'name' => $subforum->getName(),
+            'description' => $subforum->getDescription(),
+            'banner' => $this->s3MediaUrlResolver->resolve($subforum->getBanner()),
+            'heroLogo' => $this->s3MediaUrlResolver->resolve($subforum->getHeroLogo()),
+            'type' => $subforum->getType(),
+            'isRoleplay' => $subforum->isRoleplay(),
+            'stats' => [
+                'totalThreads' => $subStats['thread_count'] ?? 0,
+                'totalPosts' => $subStats['post_count'] ?? 0,
+            ],
+            'hasUnreadThreads' => false,
+            'hasParticipatingUnreadThreads' => false,
+            'lastPost' => $this->formatLastPostPayload($subLastPostInfo),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed>|null $lastPostInfo
+     * @return array<string, mixed>|null
+     */
+    private function formatLastPostPayload(?array $lastPostInfo): ?array
+    {
+        if (!$lastPostInfo) {
+            return null;
+        }
+
+        return [
+            'threadId' => $lastPostInfo['threadId'] ?? null,
+            'threadSlug' => $lastPostInfo['threadSlug'] ?? null,
+            'threadTitle' => $lastPostInfo['threadTitle'] ?? null,
+            'author' => $lastPostInfo['author'] ?? null,
+            'character' => $lastPostInfo['character'] ?? null,
+            'avatar' => $lastPostInfo['avatar'] ?? null,
+            'date' => $lastPostInfo['date'] instanceof \DateTimeInterface
+                ? $lastPostInfo['date']->format('Y-m-d H:i:s')
+                : ($lastPostInfo['date'] ?? null),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeUniversPublic(Univers $univers, int $forumCount, int $threadCount): array
+    {
+        $portalBanner = $this->s3MediaUrlResolver->resolve($univers->getPortalBanner());
+
+        return [
+            'id' => $univers->getId(),
+            'name' => $univers->getName(),
+            'description' => $univers->getDescription(),
+            'slug' => $univers->getSlug(),
+            'forumsTitle' => $univers->getForumsTitle(),
+            'forumsHeaderBanner' => $this->s3MediaUrlResolver->resolve($univers->getForumsHeaderBanner()),
+            'portalBanner' => $portalBanner,
+            'banner' => $portalBanner,
+            'backgroundImage' => $portalBanner,
+            'createdAt' => $univers->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'forumCount' => $forumCount,
+            'threadCount' => $threadCount,
+        ];
     }
 }
 

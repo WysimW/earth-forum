@@ -29,13 +29,16 @@ const iconMap = {
   ),
 };
 
-const Breadcrumb = ({ items }) => {
+const Breadcrumb = ({ items, variant = 'default' }) => {
   if (!items || items.length === 0) {
     return null;
   }
 
   return (
-    <nav className={styles.breadcrumb} aria-label="Fil d'Ariane">
+    <nav
+      className={`${styles.breadcrumb} ${variant === 'compact' ? styles.compact : ''}`}
+      aria-label="Fil d'Ariane"
+    >
       <ol className={styles.list}>
         {items.map((item, index) => {
           const isLast = index === items.length - 1;

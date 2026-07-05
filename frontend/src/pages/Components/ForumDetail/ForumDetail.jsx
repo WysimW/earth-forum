@@ -486,7 +486,7 @@ const ForumDetail = () => {
             to={`/forums/${forum.slug}`}
             className={styles.forumCard}
             style={forum.banner ? {
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url(${forum.banner})`,
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url("${forum.banner}")`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             } : {}}
@@ -547,7 +547,7 @@ const ForumDetail = () => {
             to={`/forums/${forum.slug}`}
             className={styles.forumCard}
             style={forum.banner ? {
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url(${forum.banner})`,
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url("${forum.banner}")`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             } : {}}
@@ -628,7 +628,7 @@ const ForumDetail = () => {
             {forum.banner && (
               <div 
                 className={styles.cardBanner}
-                style={{ backgroundImage: `url(${forum.banner})` }}
+                style={{ backgroundImage: `url("${forum.banner}")` }}
               />
             )}
             <div className={styles.cardOverlay} />

@@ -8,6 +8,7 @@ use App\Repository\ForumRepository;
 use App\Repository\ForumCategoryRepository;
 use App\Repository\PostRepository;
 use App\Repository\UniversRepository;
+use App\Service\AuthorDisplayResolver;
 use App\Service\S3MediaUrlResolver;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,6 +26,7 @@ class CategoryController extends AbstractController
         ForumRepository $forumRepository,
         PostRepository $postRepository,
         UniversRepository $universRepository,
+        private AuthorDisplayResolver $authorDisplayResolver,
         private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
         $this->forumRepository = $forumRepository;
@@ -68,11 +70,12 @@ class CategoryController extends AbstractController
                     if ($lastPost) {
                         $lastPostDate = $lastPost->getCreatedAt()->format('H\hi \l\e d/m/y');
                         $formattedDate = 'Posté à ' . $lastPostDate;
+                        $threadAuthor = $this->authorDisplayResolver->resolveThreadAuthor($latestThread);
                         $lastThreadData = [
                             'id' => $latestThread->getId(),
                             'title' => $latestThread->getTitle(),
-                            'author' => $latestThread->getAuthor()->getPseudo(),
-                            'avatar' => $this->s3MediaUrlResolver->resolve($latestThread->getAuthor()->getAvatar()),
+                            'author' => $threadAuthor['displayName'],
+                            'avatar' => $this->s3MediaUrlResolver->resolve($threadAuthor['avatar']),
                             'date' => $formattedDate,
                         ];
                     } else {

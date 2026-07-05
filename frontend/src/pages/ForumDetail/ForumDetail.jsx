@@ -12,14 +12,17 @@ import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useThreadFilters from '../../hooks/useThreadFilters';
 import Layout from '../../components/Layout/Layout';
+import SeoHead from '../../components/Seo/SeoHead';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import ForumCardV3 from '../../components/ForumCardV3/ForumCardV3';
+import FilterToggle from '../../components/FilterToggle/FilterToggle';
 import Pagination from '../../components/Pagination/Pagination';
 import ThreadFilters from '../../components/ThreadFilters/ThreadFilters';
 import RpActivityCard from '../../components/RpActivityCard/RpActivityCard';
 import { normalizeForum } from '../../utils/forumUtils';
+import seoService from '../../services/seoService';
 import styles from './ForumDetail.module.css';
 
 const FILTER_ALL = 'all';
@@ -36,6 +39,23 @@ const ACTIVITY_FILTER_EVENT = 'event';
 const ACTIVITY_FILTER_MISSION = 'mission';
 /** Une carte d’activité RP par slide (carrousel). */
 const ACTIVITY_CARDS_PER_SLIDE = 1;
+
+const FORUM_TYPE_OPTIONS = [
+  { value: FILTER_ALL, label: 'Tous' },
+  { value: FILTER_IMPORTANT, label: 'Importants' },
+  { value: FILTER_RP, label: 'RP' },
+  { value: FILTER_HRP, label: 'HRP' },
+];
+
+const FORUM_LAYOUT_OPTIONS = [
+  { value: FORUM_LAYOUT_SINGLE, label: '1 col.' },
+  { value: FORUM_LAYOUT_DOUBLE, label: '2 col.' },
+];
+
+const FORUM_VARIANT_OPTIONS = [
+  { value: FORUM_CARD_VARIANT_DEFAULT, label: 'Bannière' },
+  { value: FORUM_CARD_VARIANT_COMPACT, label: 'Compact' },
+];
 
 const MultiSelectField = ({
   label,
@@ -166,6 +186,7 @@ const ForumDetail = () => {
   const [activeDialogueThemeId, setActiveDialogueThemeId] = useState('');
   const [rpActivities, setRpActivities] = useState([]);
   const [rpActivitiesLoading, setRpActivitiesLoading] = useState(false);
+  const [pageSeo, setPageSeo] = useState(null);
   const [rpActivityFilter, setRpActivityFilter] = useState(ACTIVITY_FILTER_ALL);
   const [activitySlideIndex, setActivitySlideIndex] = useState(0);
   const [activitySelectableCharacters, setActivitySelectableCharacters] = useState([]);
@@ -236,6 +257,30 @@ const ForumDetail = () => {
 
     fetchData();
   }, [id, slug, currentUniverse, currentPage, apiFilters]);
+
+  useEffect(() => {
+    const loadUniverseSeo = async () => {
+      if (id || slug) {
+        setPageSeo(null);
+        return;
+      }
+
+      const universeSlug = currentUniverse !== 'portal' ? currentUniverse : null;
+      if (!universeSlug) {
+        setPageSeo(null);
+        return;
+      }
+
+      try {
+        const data = await seoService.getUniverse(universeSlug);
+        setPageSeo(data?.seo || null);
+      } catch (err) {
+        setPageSeo(null);
+      }
+    };
+
+    loadUniverseSeo();
+  }, [id, slug, currentUniverse]);
 
   useEffect(() => {
     const fetchActivityCharacters = async () => {
@@ -440,9 +485,38 @@ const ForumDetail = () => {
     }
   };
 
-  // Filtrer les forums selon le filtre actif et la recherche
+  const filterRoleplayCategories = React.useCallback((categories) => {
+    const applySearch = (forums) => {
+      if (!searchQuery.trim()) {
+        return forums;
+      }
+
+      const query = searchQuery.toLowerCase();
+      return (forums || []).filter((forum) => {
+        const name = (forum.name || '').toLowerCase();
+        const description = (forum.description || '').toLowerCase();
+        return name.includes(query) || description.includes(query);
+      });
+    };
+
+    return (categories || [])
+      .map((category) => ({
+        ...category,
+        forums: applySearch(category.forums),
+      }))
+      .filter((category) => category.forums.length > 0)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [searchQuery]);
+
+  const filteredRoleplayCategories = useMemo(() => {
+    if (activeFilter === FILTER_HRP || activeFilter === FILTER_IMPORTANT) {
+      return [];
+    }
+    return filterRoleplayCategories(forumData?.roleplayCategories);
+  }, [forumData, activeFilter, filterRoleplayCategories]);
+
   const filteredForums = useMemo(() => {
-    if (!forumData?.forums) return { important: [], playerPlatform: [], roleplay: [], hrp: [] };
+    if (!forumData?.forums) return { important: [], playerPlatform: [], hrp: [] };
 
     const filterByType = (forums, type) => {
       if (activeFilter !== FILTER_ALL && activeFilter !== type) {
@@ -454,7 +528,7 @@ const ForumDetail = () => {
       }
 
       const query = searchQuery.toLowerCase();
-      return forums.filter(forum => {
+      return forums.filter((forum) => {
         const name = (forum.name || '').toLowerCase();
         const description = (forum.description || '').toLowerCase();
         return name.includes(query) || description.includes(query);
@@ -464,7 +538,6 @@ const ForumDetail = () => {
     return {
       important: filterByType(forumData.forums.important || [], 'important'),
       playerPlatform: filterByType(forumData.forums.player_platform || [], 'player_platform'),
-      roleplay: filterByType(forumData.forums.roleplay || [], 'roleplay'),
       hrp: filterByType(forumData.forums.hrp || [], 'hrp'),
     };
   }, [forumData, activeFilter, searchQuery]);
@@ -557,6 +630,28 @@ const ForumDetail = () => {
     return subforums.some((subforum) => hasUnreadInForumTree(subforum));
   };
 
+  const universeStats = useMemo(() => {
+    if (!forumData?.forums) return null;
+
+    const mainForums = [
+      ...(forumData.forums.important || []),
+      ...(forumData.forums.player_platform || []),
+      ...(forumData.roleplayCategories || []).flatMap((category) => category.forums || []),
+      ...(forumData.forums.hrp || []),
+    ];
+    const elseworldForums = (forumData.elseworlds || []).flatMap((elseworld) => elseworld.forums || []);
+    const allForums = [...mainForums, ...elseworldForums];
+
+    return allForums.reduce(
+      (acc, forum) => ({
+        forums: acc.forums + 1 + (forum.subforums?.length || 0),
+        threads: acc.threads + (forum.stats?.totalThreads || 0),
+        posts: acc.posts + (forum.stats?.totalPosts || 0),
+      }),
+      { forums: 0, threads: 0, posts: 0 }
+    );
+  }, [forumData]);
+
   const filteredActivities = useMemo(() => {
     if (rpActivityFilter === ACTIVITY_FILTER_ALL) return rpActivities;
     return rpActivities.filter((activity) => activity.kind === rpActivityFilter);
@@ -595,7 +690,7 @@ const ForumDetail = () => {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout wide>
         <Loading message="Chargement du forum..." />
       </Layout>
     );
@@ -603,7 +698,7 @@ const ForumDetail = () => {
 
   if (error) {
     return (
-      <Layout>
+      <Layout wide>
         <ErrorMessage
           message={error || 'Forum introuvable'}
           onRetry={handleRetry}
@@ -628,7 +723,8 @@ const ForumDetail = () => {
         ];
 
     return (
-      <Layout>
+      <Layout wide>
+        <SeoHead seo={singleForumData.seo} />
         <div className={styles.content}>
           <Breadcrumb items={breadcrumbItems} />
 
@@ -959,7 +1055,7 @@ const ForumDetail = () => {
   // Affichage de la liste des forums de l'univers (comportement existant)
   if (!forumData) {
     return (
-      <Layout>
+      <Layout wide>
         <ErrorMessage
           message="Forum introuvable"
           onRetry={handleRetry}
@@ -975,27 +1071,113 @@ const ForumDetail = () => {
 
   const hasImportantForums = filteredForums.important.length > 0;
   const hasPlayerPlatformForums = filteredForums.playerPlatform.length > 0;
-  const hasRoleplayForums = filteredForums.roleplay.length > 0;
+  const hasRoleplayCategories = filteredRoleplayCategories.length > 0;
   const hasHrpForums = filteredForums.hrp.length > 0;
   const hasElseworlds = filteredElseworlds.length > 0;
-  const hasAnyContent = hasImportantForums || hasPlayerPlatformForums || hasRoleplayForums || hasHrpForums || hasElseworlds;
+  const hasAnyContent = hasImportantForums || hasPlayerPlatformForums || hasRoleplayCategories || hasHrpForums || hasElseworlds;
+
+  const renderForumCard = (forum) => (
+    <ForumCardV3
+      key={forum.id}
+      compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
+      variant={forumCardVariant}
+      hasUnread={hasUnreadInForumTree(forum)}
+      hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
+      forum={normalizeForum({
+        ...forum,
+        lastThread: forum.lastPost ? {
+          id: forum.lastPost.threadId,
+          title: forum.lastPost.threadTitle,
+          author: forum.lastPost.author || forum.lastPost.character,
+          date: forum.lastPost.date,
+        } : null,
+        stats: forum.stats,
+        subForums: forum.subforums || [],
+      })}
+    />
+  );
+
+  const renderRoleplayCategoryBlock = (category) => {
+    const forumCount = category.forums?.length ?? 0;
+    const forumCountLabel = `${forumCount} forum${forumCount > 1 ? 's' : ''}`;
+
+    return (
+      <div
+        key={category.id}
+        className={styles.roleplayCategoryBlock}
+        id={`category-${category.slug}`}
+      >
+        <div className={styles.roleplayCategoryHeader}>
+          <div className={styles.roleplayCategoryHeading}>
+            <span className={styles.roleplayCategoryEyebrow}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Forums Roleplay
+            </span>
+            <h3 className={styles.roleplayCategoryTitle}>{category.name}</h3>
+            {category.description && (
+              <p className={styles.roleplayCategoryDescription}>{category.description}</p>
+            )}
+          </div>
+          <span className={styles.roleplayCategoryCount}>{forumCountLabel}</span>
+        </div>
+        <div
+          className={`${styles.forumsList} ${
+            forumLayout === FORUM_LAYOUT_DOUBLE ? styles.forumsListTwoColumns : ''
+          }`}
+        >
+          {category.forums.map((forum) => renderForumCard(forum))}
+        </div>
+      </div>
+    );
+  };
+
+  const headerBannerUrl = forumData.universe.forumsHeaderBanner;
+  const forumsPageTitle = forumData.universe.forumsTitle?.trim()
+    || `Forums de ${forumData.universe.name}`;
+  const headerContentClassName = headerBannerUrl
+    ? `${styles.headerContent} ${styles.headerContentBanner}`
+    : styles.headerContent;
 
   return (
-    <Layout>
+    <Layout wide>
+      <SeoHead seo={pageSeo} />
       <div className={styles.content}>
-        {/* Breadcrumb amélioré */}
-        <Breadcrumb items={breadcrumbItems} />
-
         {/* Header */}
         <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Forums de {forumData.universe.name}</h1>
+          <div
+            className={headerContentClassName}
+            style={headerBannerUrl ? { '--header-banner-image': `url(${headerBannerUrl})` } : undefined}
+          >
+            <Breadcrumb items={breadcrumbItems} variant="compact" />
+            <h1 className={styles.title}>{forumsPageTitle}</h1>
             {forumData.universe.description && (
               <p className={styles.description}>{forumData.universe.description}</p>
+            )}
+            {universeStats && (
+              <div className={styles.headerStats}>
+                <span className={styles.headerStat}>
+                  <strong>{universeStats.forums}</strong> forums
+                </span>
+                <span className={styles.headerStatSeparator}>•</span>
+                <span className={styles.headerStat}>
+                  <strong>{universeStats.threads}</strong> discussions
+                </span>
+                <span className={styles.headerStatSeparator}>•</span>
+                <span className={styles.headerStat}>
+                  <strong>{universeStats.posts}</strong> messages
+                </span>
+              </div>
             )}
           </div>
         </header>
 
+        {/* Section masquée quand aucun event/mission n'existe */}
+        {(rpActivitiesLoading || rpActivities.length > 0) && (
         <section className={styles.activitiesSection}>
           <div className={styles.sectionHeader}>
             <div>
@@ -1088,6 +1270,7 @@ const ForumDetail = () => {
             </div>
           )}
         </section>
+        )}
 
         {/* Système de filtres */}
         <div className={styles.filtersSection}>
@@ -1095,92 +1278,41 @@ const ForumDetail = () => {
             <div className={styles.filtersControls}>
               <div className={styles.controlGroup}>
                 <span className={styles.controlLabel}>Type</span>
-                <div className={styles.filterButtons}>
-                  <button
-                    className={`${styles.filterButton} ${activeFilter === FILTER_ALL ? styles.active : ''}`}
-                    onClick={() => setActiveFilter(FILTER_ALL)}
-                    type="button"
-                  >
-                    Tous
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${activeFilter === FILTER_IMPORTANT ? styles.active : ''}`}
-                    onClick={() => setActiveFilter(FILTER_IMPORTANT)}
-                    type="button"
-                  >
-                    Importants
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${activeFilter === FILTER_PLAYER_PLATFORM ? styles.active : ''}`}
-                    onClick={() => setActiveFilter(FILTER_PLAYER_PLATFORM)}
-                    type="button"
-                  >
-                    Plateforme joueur
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${activeFilter === FILTER_RP ? styles.active : ''}`}
-                    onClick={() => setActiveFilter(FILTER_RP)}
-                    type="button"
-                  >
-                    Roleplay
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${activeFilter === FILTER_HRP ? styles.active : ''}`}
-                    onClick={() => setActiveFilter(FILTER_HRP)}
-                    type="button"
-                  >
-                    Hors RP
-                  </button>
-                </div>
+                <FilterToggle
+                  options={FORUM_TYPE_OPTIONS}
+                  value={activeFilter}
+                  onChange={setActiveFilter}
+                  ariaLabel="Type de forum"
+                />
               </div>
               <div className={styles.controlGroup}>
                 <span className={styles.controlLabel}>Vue</span>
-                <div className={styles.viewButtons}>
-                  <button
-                    className={`${styles.filterButton} ${forumLayout === FORUM_LAYOUT_SINGLE ? styles.active : ''}`}
-                    onClick={() => setForumLayout(FORUM_LAYOUT_SINGLE)}
-                    type="button"
-                  >
-                    1 colonne
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${forumLayout === FORUM_LAYOUT_DOUBLE ? styles.active : ''}`}
-                    onClick={() => setForumLayout(FORUM_LAYOUT_DOUBLE)}
-                    type="button"
-                  >
-                    2 colonnes
-                  </button>
-                </div>
+                <FilterToggle
+                  options={FORUM_LAYOUT_OPTIONS}
+                  value={forumLayout}
+                  onChange={setForumLayout}
+                  ariaLabel="Disposition des forums"
+                />
               </div>
               <div className={styles.controlGroup}>
-                <span className={styles.controlLabel}>Présentation</span>
-                <div className={styles.viewButtons}>
-                  <button
-                    className={`${styles.filterButton} ${forumCardVariant === FORUM_CARD_VARIANT_DEFAULT ? styles.active : ''}`}
-                    onClick={() => setForumCardVariant(FORUM_CARD_VARIANT_DEFAULT)}
-                    type="button"
-                  >
-                    Bannière
-                  </button>
-                  <button
-                    className={`${styles.filterButton} ${forumCardVariant === FORUM_CARD_VARIANT_COMPACT ? styles.active : ''}`}
-                    onClick={() => setForumCardVariant(FORUM_CARD_VARIANT_COMPACT)}
-                    type="button"
-                  >
-                    Compact
-                  </button>
-                </div>
+                <span className={styles.controlLabel}>Affichage</span>
+                <FilterToggle
+                  options={FORUM_VARIANT_OPTIONS}
+                  value={forumCardVariant}
+                  onChange={setForumCardVariant}
+                  ariaLabel="Présentation des cartes"
+                />
               </div>
             </div>
             <div className={styles.toolbarActions}>
               <div className={styles.searchBox}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
                 <input
                   type="text"
-                  placeholder="Rechercher un forum..."
+                  placeholder="Rechercher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={styles.searchInput}
@@ -1203,8 +1335,13 @@ const ForumDetail = () => {
                 type="button"
                 className={styles.markAllReadButton}
                 onClick={() => { void markAllAsRead(); }}
+                aria-label="Tout marquer comme lu"
+                title="Tout marquer comme lu"
               >
-                Tout marquer comme lu
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
               </button>
             </div>
           </div>
@@ -1227,26 +1364,7 @@ const ForumDetail = () => {
                 forumLayout === FORUM_LAYOUT_DOUBLE ? styles.forumsListTwoColumns : ''
               }`}
             >
-              {filteredForums.important.map((forum) => (
-                <ForumCardV3 
-                  key={forum.id} 
-                  compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  variant={forumCardVariant}
-                  hasUnread={hasUnreadInForumTree(forum)}
-                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
-                  forum={normalizeForum({
-                    ...forum,
-                    lastThread: forum.lastPost ? {
-                      id: forum.lastPost.threadId,
-                      title: forum.lastPost.threadTitle,
-                      author: forum.lastPost.author || forum.lastPost.character,
-                      date: forum.lastPost.date,
-                    } : null,
-                    stats: forum.stats,
-                    subForums: forum.subforums || [],
-                  })} 
-                />
-              ))}
+              {filteredForums.important.map((forum) => renderForumCard(forum))}
             </div>
           </section>
         )}
@@ -1271,32 +1389,13 @@ const ForumDetail = () => {
                 forumLayout === FORUM_LAYOUT_DOUBLE ? styles.forumsListTwoColumns : ''
               }`}
             >
-              {filteredForums.playerPlatform.map((forum) => (
-                <ForumCardV3
-                  key={forum.id}
-                  compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  variant={forumCardVariant}
-                  hasUnread={hasUnreadInForumTree(forum)}
-                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
-                  forum={normalizeForum({
-                    ...forum,
-                    lastThread: forum.lastPost ? {
-                      id: forum.lastPost.threadId,
-                      title: forum.lastPost.threadTitle,
-                      author: forum.lastPost.author || forum.lastPost.character,
-                      date: forum.lastPost.date,
-                    } : null,
-                    stats: forum.stats,
-                    subForums: forum.subforums || [],
-                  })}
-                />
-              ))}
+              {filteredForums.playerPlatform.map((forum) => renderForumCard(forum))}
             </div>
           </section>
         )}
 
-        {/* Forums Roleplay */}
-        {hasRoleplayForums && (
+        {/* Forums Roleplay par catégorie */}
+        {hasRoleplayCategories && (
           <section className={styles.forumTypeSection} id="rp-forums">
             <div className={styles.sectionHeader}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1307,34 +1406,13 @@ const ForumDetail = () => {
               </svg>
               <div>
                 <h2 className={styles.sectionTitle}>Forums Roleplay</h2>
-                <p className={styles.sectionSubtitle}>Incarnez vos personnages dans l'univers {forumData.universe.name}</p>
+                <p className={styles.sectionSubtitle}>
+                  Incarnez vos personnages dans l&apos;univers {forumData.universe.name}
+                </p>
               </div>
             </div>
-            <div
-              className={`${styles.forumsList} ${
-                forumLayout === FORUM_LAYOUT_DOUBLE ? styles.forumsListTwoColumns : ''
-              }`}
-            >
-              {filteredForums.roleplay.map((forum) => (
-                <ForumCardV3 
-                  key={forum.id} 
-                  compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  variant={forumCardVariant}
-                  hasUnread={hasUnreadInForumTree(forum)}
-                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
-                  forum={normalizeForum({
-                    ...forum,
-                    lastThread: forum.lastPost ? {
-                      id: forum.lastPost.threadId,
-                      title: forum.lastPost.threadTitle,
-                      author: forum.lastPost.author || forum.lastPost.character,
-                      date: forum.lastPost.date,
-                    } : null,
-                    stats: forum.stats,
-                    subForums: forum.subforums || [],
-                  })} 
-                />
-              ))}
+            <div className={styles.roleplayCategoriesList}>
+              {filteredRoleplayCategories.map((category) => renderRoleplayCategoryBlock(category))}
             </div>
           </section>
         )}
@@ -1356,26 +1434,7 @@ const ForumDetail = () => {
                 forumLayout === FORUM_LAYOUT_DOUBLE ? styles.forumsListTwoColumns : ''
               }`}
             >
-              {filteredForums.hrp.map((forum) => (
-                <ForumCardV3 
-                  key={forum.id} 
-                  compactSubforums={forumLayout === FORUM_LAYOUT_DOUBLE}
-                  variant={forumCardVariant}
-                  hasUnread={hasUnreadInForumTree(forum)}
-                  hasParticipatingHighlight={hasParticipatingUnreadInForumTree(forum)}
-                  forum={normalizeForum({
-                    ...forum,
-                    lastThread: forum.lastPost ? {
-                      id: forum.lastPost.threadId,
-                      title: forum.lastPost.threadTitle,
-                      author: forum.lastPost.author || forum.lastPost.character,
-                      date: forum.lastPost.date,
-                    } : null,
-                    stats: forum.stats,
-                    subForums: forum.subforums || [],
-                  })} 
-                />
-              ))}
+              {filteredForums.hrp.map((forum) => renderForumCard(forum))}
             </div>
           </section>
         )}

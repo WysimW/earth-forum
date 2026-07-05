@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Descriptions, Tag, Button, Space, message, Spin, Avatar } from 'antd';
-import { EditOutlined, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
+import { EditOutlined, ArrowLeftOutlined, UserOutlined, MergeCellsOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import AssignUserModal from './AssignUserModal';
+import CharacterMergeModal from './CharacterMergeModal';
 import './CharacterDetail.css';
 
 const CharacterDetail = () => {
@@ -10,6 +12,8 @@ const CharacterDetail = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [character, setCharacter] = useState(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [mergeModalOpen, setMergeModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCharacterData();
@@ -53,6 +57,14 @@ const CharacterDetail = () => {
     return labels[status] || status;
   };
 
+  const handleMerged = (result) => {
+    if (result?.survivorId && String(result.survivorId) !== String(id)) {
+      navigate(`/characters/${result.survivorId}`);
+      return;
+    }
+    fetchCharacterData();
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -80,13 +92,27 @@ const CharacterDetail = () => {
           </Space>
         }
         extra={
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => navigate(`/characters/edit/${id}`)}
-          >
-            Modifier
-          </Button>
+          <Space>
+            <Button
+              icon={<UserAddOutlined />}
+              onClick={() => setAssignModalOpen(true)}
+            >
+              Assigner à un utilisateur
+            </Button>
+            <Button
+              icon={<MergeCellsOutlined />}
+              onClick={() => setMergeModalOpen(true)}
+            >
+              Fusionner
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => navigate(`/characters/edit/${id}`)}
+            >
+              Modifier
+            </Button>
+          </Space>
         }
       >
         <div style={{ marginBottom: 24, textAlign: 'center' }}>
@@ -126,7 +152,7 @@ const CharacterDetail = () => {
           </Descriptions.Item>
           <Descriptions.Item label="Utilisateur" span={2}>
             <div>
-              <div>{character.user_pseudo || '-'}</div>
+              <div>{character.user_pseudo || 'Aucun (sans propriétaire)'}</div>
               {character.user_email && (
                 <div style={{ fontSize: '12px', color: '#999' }}>{character.user_email}</div>
               )}
@@ -147,14 +173,22 @@ const CharacterDetail = () => {
           )}
         </Descriptions>
       </Card>
+
+      <AssignUserModal
+        open={assignModalOpen}
+        character={character}
+        onClose={() => setAssignModalOpen(false)}
+        onAssigned={fetchCharacterData}
+      />
+
+      <CharacterMergeModal
+        open={mergeModalOpen}
+        character={character}
+        onClose={() => setMergeModalOpen(false)}
+        onMerged={handleMerged}
+      />
     </div>
   );
 };
 
 export default CharacterDetail;
-
-
-
-
-
-

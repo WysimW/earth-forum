@@ -38,7 +38,7 @@ class Media
     #[Groups(['media_list'])]
     private ?int $size = null;
 
-    #[ORM\Column(length: 500)]
+    #[ORM\Column(type: Types::TEXT)]
     #[Groups(['media_list'])]
     private ?string $url = null;
 

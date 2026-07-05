@@ -446,16 +446,15 @@ class CharacterController extends AbstractController
 
         // Gérer le statut
         if (isset($data['status'])) {
+            if ($data['status'] === Character::STATUS_ABANDONED && !$this->isGranted('ROLE_MODERATOR')) {
+                return new JsonResponse([
+                    'error' => 'Utilisez POST /api/characters/{id}/abandon pour abandonner un personnage',
+                ], Response::HTTP_BAD_REQUEST);
+            }
             $character->setStatus($data['status']);
             if ($data['status'] === Character::STATUS_VALIDATED && $oldStatus !== Character::STATUS_VALIDATED) {
                 $character->setValidatedAt(new \DateTimeImmutable());
             }
-        }
-
-        // Si le personnage était validé et qu'on le modifie, passer en editing
-        if ($oldStatus === Character::STATUS_VALIDATED && isset($data['status']) && $data['status'] !== Character::STATUS_VALIDATED) {
-            $character->setStatus(Character::STATUS_EDITING);
-            $character->setStatusMessage('Modifications en cours');
         }
 
         // Univers et Elseworld
@@ -519,6 +518,12 @@ class CharacterController extends AbstractController
     #[Route('/{id}', name: 'api_characters_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse([
+                'error' => 'La suppression de personnage est réservée aux administrateurs. Utilisez l\'abandon pour libérer un personnage.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $user = $this->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
@@ -532,15 +537,58 @@ class CharacterController extends AbstractController
             return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
         }
 
-        // Vérifier que l'utilisateur est propriétaire ou modérateur
-        if ($character->getUser() !== $user && !$this->isGranted('ROLE_MODERATOR')) {
-            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
-        }
-
         $this->entityManager->remove($character);
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Personnage supprimé avec succès']);
+    }
+
+    #[Route('/{id}/abandon', name: 'api_characters_abandon', methods: ['POST'])]
+    public function abandon(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $character = $this->characterRepository->find($id);
+        if (!$character) {
+            return new JsonResponse(['error' => 'Personnage non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+        if ($character->isEventCharacter()) {
+            return new JsonResponse(['error' => 'Ce personnage est réservé au contexte event'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($character->getUser() === null) {
+            return new JsonResponse(['error' => 'Ce personnage n\'a déjà plus de propriétaire'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($character->getUser() !== $user) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($character->getStatus() === Character::STATUS_ABANDONED) {
+            return new JsonResponse(['error' => 'Ce personnage est déjà abandonné'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $character->setStatus(Character::STATUS_ABANDONED);
+        $character->setStatusMessage('Personnage abandonné');
+        $character->setUser(null);
+
+        $characterSheetThread = $character->getMainCharacterSheetThread();
+        if ($characterSheetThread) {
+            $targetForum = $this->getForumByCharacterStatus(Character::STATUS_ABANDONED, $character->getUniverse());
+            if ($targetForum) {
+                $characterSheetThread->setForum($targetForum);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'Personnage abandonné avec succès',
+            'characterId' => $character->getId(),
+        ]);
     }
 
     #[Route('/{id}/submit', name: 'api_characters_submit', methods: ['POST'])]
@@ -958,6 +1006,8 @@ class CharacterController extends AbstractController
             'factions' => $character->getFactions(),
             'moralAffiliation' => $character->getMoralAffiliation(),
             'sheetTheme' => $character->getSheetTheme(),
+            'alias' => $character->getAlias(),
+            'sheetThreadSlug' => $character->getMainCharacterSheetThread()?->getSlug(),
         ];
 
         if ($detailed) {

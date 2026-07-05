@@ -17,6 +17,44 @@
   background-color: var(--primary-color);
 }
 
+/* Variante compacte : petit fil d'Ariane discret, sans encadré */
+.compact {
+  margin-bottom: var(--spacing-sm);
+  padding: 0;
+  background-color: transparent;
+  border: none;
+}
+
+.compact::before {
+  display: none;
+}
+
+.compact .item {
+  font-size: var(--font-size-xs);
+  min-height: auto;
+}
+
+.compact .link {
+  padding: 0;
+}
+
+.compact .current {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.compact .icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.compact .separator svg {
+  width: 10px;
+  height: 10px;
+}
+
 .list {
   display: flex;
   flex-wrap: wrap;

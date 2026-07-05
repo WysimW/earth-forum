@@ -15,6 +15,7 @@ use App\Entity\Thread;
 use App\Repository\PostRepository;
 use App\Repository\ReadPostRepository;
 use App\Repository\ThreadRepository;
+use App\Service\AuthorDisplayResolver;
 use App\Service\S3MediaUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +29,7 @@ class ThreadController extends AbstractController
         private ThreadRepository $threadRepository,
         private PostRepository $postRepository,
         private ReadPostRepository $readPostRepository,
+        private AuthorDisplayResolver $authorDisplayResolver,
         private readonly S3MediaUrlResolver $s3MediaUrlResolver,
     ) {
     }
@@ -77,14 +79,16 @@ class ThreadController extends AbstractController
         );
 
         $allowedActors = $this->buildAllowedActors($thread);
+        $threadAuthor = $this->authorDisplayResolver->resolveThreadAuthor($thread);
 
         $data = [
             'threadId' => $thread->getId(),
             'slug' => $thread->getSlug(),
             'title' => $thread->getTitle(),
-            'author' => $thread->getAuthor()->getPseudo(),
-            'authorId' => $thread->getAuthor()->getId(),
-            'authorAvatar' => $this->s3MediaUrlResolver->resolve($thread->getAuthor()->getAvatar()),
+            'author' => $threadAuthor['displayName'],
+            'authorId' => $threadAuthor['userId'],
+            'authorAvatar' => $this->s3MediaUrlResolver->resolve($threadAuthor['avatar']),
+            'characterName' => $threadAuthor['characterName'],
             'date' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
             'createdAt' => $thread->getCreatedAt()->format('Y-m-d H:i:s'),
             'type' => $thread->getType(),
@@ -297,9 +301,10 @@ class ThreadController extends AbstractController
     {
         $postAuthor = $post->getAuthor();
         $postCharacter = $post->getCharacter();
+        $resolvedAuthor = $this->authorDisplayResolver->resolvePostAuthor($post, $isRoleplay);
 
-        $author = $postAuthor ? $postAuthor->getPseudo() : 'Anonyme';
-        $avatar = $postAuthor ? $postAuthor->getAvatar() : null;
+        $author = $resolvedAuthor['displayName'];
+        $avatar = $resolvedAuthor['avatar'];
         $character = null;
 
         if ($isRoleplay && $postCharacter) {

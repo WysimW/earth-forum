@@ -57,7 +57,7 @@
                                                     <div class="thread-list--thread-actions">
                            
                             
-                            {% if is_granted('ROLE_MODERATOR') or (is_granted('IS_AUTHENTICATED_FULLY') and app.user.id == thread.author.id) %}
+                            {% if is_granted('ROLE_MODERATOR') or (is_granted('IS_AUTHENTICATED_FULLY') and thread.author and app.user.id == thread.author.id) %}
                                 <div class="thread-actions">
                                     <a href="{{ path('app_thread_edit', {'universeSlug': univers.slug, 'id': thread.id}) }}" class="btn btn-sm action-btn" title="Modifier">
                                         <i class="fas fa-edit"></i>
@@ -98,7 +98,7 @@
                             <i class="fas fa-user-edit"></i>  Créé par :               {% if thread.type == 'roleplay' and thread.characterCreator %}
                                 <span class="thread-list--character-name">{{ thread.characterCreator.name }}</span>
                             {% else %}
-                                <span>{{ thread.author.pseudo }}</span>
+                                <span>{{ thread.author ? thread.author.pseudo : 'Anonyme' }}</span>
                             {% endif %}
                         </div>
                         
@@ -127,7 +127,7 @@
                                         {% if thread.lastPost.character %}
                                             <span class="character-name">{{ thread.lastPost.character.name }}</span>
                                         {% else %}
-                                            {{ thread.lastPost.author.pseudo }}
+                                            {{ thread.lastPost.author ? thread.lastPost.author.pseudo : 'Anonyme' }}
                                         {% endif %}
                                     </small>
                                 </div>

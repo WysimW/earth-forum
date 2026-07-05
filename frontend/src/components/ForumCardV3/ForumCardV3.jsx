@@ -178,7 +178,7 @@ const ForumCardV3 = ({
       {forum.banner && (
         <div 
           className={styles.cardBanner}
-          style={{ backgroundImage: `url(${forum.banner})` }}
+          style={{ backgroundImage: `url("${forum.banner}")` }}
         />
       )}
       <div className={styles.cardOverlay} />

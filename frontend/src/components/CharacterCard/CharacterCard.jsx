@@ -4,7 +4,8 @@ import styles from './CharacterCard.module.css';
 
 const CharacterCard = ({ 
   character, 
-  onDelete, 
+  onDelete,
+  onAbandon,
   editPath,
   viewPath,
   onEditAvatar,
@@ -15,6 +16,7 @@ const CharacterCard = ({
   roleRpPlaceholder = 'Non défini',
   onRoleRpClick,
   roleRpEditor = null,
+  variant = 'grid',
 }) => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -63,6 +65,15 @@ const CharacterCard = ({
     }
   };
 
+  const handleAbandon = () => {
+    if (onAbandon && window.confirm(
+      'Abandonner ce personnage ? Vous perdrez le contrôle du personnage, mais son historique RP sera conservé.'
+    )) {
+      onAbandon(character.id);
+      setDropdownOpen(false);
+    }
+  };
+
   const handleDelete = () => {
     if (onDelete && window.confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')) {
       onDelete(character.id);
@@ -79,6 +90,7 @@ const CharacterCard = ({
       pending: 'En attente',
       validated: 'Validé',
       rejected: 'Rejeté',
+      abandoned: 'Abandonné',
       editing: 'En édition'
     };
     return statusMap[character.status] || character.status;
@@ -87,9 +99,24 @@ const CharacterCard = ({
   const shouldShowRoleRp = showRoleRp || roleRp !== undefined || !!roleRpEditor;
   const roleRpText = roleRp && roleRp.trim().length > 0 ? roleRp : roleRpPlaceholder;
 
+  const isRow = variant === 'row';
+
   return (
-    <div className={styles.card}>
-      {character.avatar && (
+    <div className={`${styles.card} ${isRow ? styles.cardRow : ''} ${dropdownOpen ? styles.cardDropdownOpen : ''}`}>
+      {isRow ? (
+        <div className={styles.rowAvatar}>
+          {character.avatar ? (
+            <img src={character.avatar} alt={character.name} className={styles.rowAvatarImage} />
+          ) : (
+            <div className={styles.rowAvatarPlaceholder} aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+          )}
+        </div>
+      ) : character.avatar && (
         <div className={styles.cardImageContainer}>
           <img
             src={character.avatar}
@@ -106,11 +133,38 @@ const CharacterCard = ({
       )}
       <div className={styles.cardBody}>
         <div className={styles.cardHeader}>
-          <h4 className={styles.cardTitle}>{character.name}</h4>
-          {(character.firstName || character.lastName) && (
-            <p className={styles.cardSubtitle}>
-              {[character.firstName, character.lastName].filter(Boolean).join(' ')}
-            </p>
+          {isRow ? (
+            <>
+              <h4 className={styles.cardTitle}>{character.name}</h4>
+              {((character.firstName || character.lastName) || character.status) && (
+                <p className={styles.cardMeta}>
+                  {(character.firstName || character.lastName) && (
+                    <span>{[character.firstName, character.lastName].filter(Boolean).join(' ')}</span>
+                  )}
+                  {(character.firstName || character.lastName) && character.status && (
+                    <span className={styles.metaSep} aria-hidden="true">·</span>
+                  )}
+                  {character.status && (
+                    <span className={styles.statusText}>
+                      <span className={`${styles.statusDot} ${styles[character.status]}`} aria-hidden="true" />
+                      {getStatusMessage()}
+                    </span>
+                  )}
+                </p>
+              )}
+              {character.alias && (
+                <p className={styles.cardAlias}>{character.alias}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <h4 className={styles.cardTitle}>{character.name}</h4>
+              {(character.firstName || character.lastName) && (
+                <p className={styles.cardSubtitle}>
+                  {[character.firstName, character.lastName].filter(Boolean).join(' ')}
+                </p>
+              )}
+            </>
           )}
         </div>
         
@@ -249,6 +303,19 @@ const CharacterCard = ({
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                     <span>Modifier</span>
+                  </button>
+                )}
+                {onAbandon && (
+                  <button
+                    className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                    onClick={handleAbandon}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    <span>Abandonner</span>
                   </button>
                 )}
                 {onDelete && (

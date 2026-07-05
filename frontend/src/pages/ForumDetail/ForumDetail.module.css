@@ -1,6 +1,6 @@
 .content {
   width: 100%;
-  max-width: var(--container-xl);
+  max-width: var(--container-forum);
   margin: 0 auto;
   padding: var(--section-padding);
   display: flex;
@@ -16,20 +16,47 @@
 .headerContent {
   padding: var(--spacing-xl);
   background-color: var(--bg-card);
-  border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);
   position: relative;
   overflow: hidden;
 }
 
-.headerContent::before {
+.headerContentBanner {
+  background-image: var(--header-banner-image);
+  background-size: cover;
+  background-position: center;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.headerContentBanner::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  height: var(--border-width);
-  background-color: var(--primary-color);
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.78) 42%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  z-index: 0;
+}
+
+.headerContentBanner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.headerContentBanner .title {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+}
+
+.headerContentBanner .description,
+.headerContentBanner .headerStat,
+.headerContentBanner .headerStatSeparator {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 .headerTop {
@@ -106,6 +133,32 @@
   max-width: var(--container-md);
 }
 
+/* Stats discrètes dans le header de la liste des forums */
+.headerStats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.headerStat {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.headerStat strong {
+  color: var(--primary-color);
+  font-weight: var(--font-weight-bold);
+}
+
+.headerStatSeparator {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
 .statsSection {
   display: flex;
   gap: var(--spacing-lg);
@@ -137,9 +190,8 @@
 /* Système de filtres */
 .filtersSection {
   margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--bg-card);
-  border: var(--border-width) solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -147,40 +199,32 @@
   overflow: hidden;
 }
 
-.filtersSection::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--border-width);
-  background-color: var(--primary-color);
-}
-
 .filtersToolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: var(--spacing-md);
+  display: flex;
   align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 .toolbarActions {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
 }
 
 .filtersControls {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm) var(--spacing-md);
 }
 
 .controlGroup {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
   min-height: auto;
   padding: 0;
   background-color: transparent;
@@ -190,11 +234,10 @@
 .controlLabel {
   color: var(--text-muted);
   font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
   padding: 0;
   line-height: var(--line-height-tight);
+  white-space: nowrap;
 }
 
 .filterButtons {
@@ -204,7 +247,6 @@
   flex-wrap: wrap;
   padding: 2px;
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
 }
 
 .filterButton {
@@ -212,8 +254,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-xs);
-  padding: 0 var(--spacing-md);
-  height: 34px;
+  padding: 0 var(--spacing-sm);
+  height: 32px;
   background-color: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary);
@@ -242,31 +284,34 @@
 .searchBox {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   padding: 0 var(--spacing-sm);
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
   position: relative;
-  min-height: 42px;
+  min-height: 34px;
+  width: 160px;
 }
 
 .markAllReadButton {
-  min-height: 34px;
-  padding: 0 var(--spacing-sm);
-  border: var(--border-width) solid var(--primary-color);
-  background-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
-  color: var(--text-primary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm, 4px);
+  background-color: var(--bg-secondary);
+  color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: color var(--transition-base), background-color var(--transition-base);
 }
 
 .markAllReadButton:hover {
-  background-color: color-mix(in srgb, var(--primary-color) 28%, transparent);
-  color: var(--text-light);
+  color: var(--primary-color);
+  background-color: var(--bg-card-hover);
 }
 
 .viewButtons {
@@ -275,7 +320,6 @@
   flex-wrap: wrap;
   padding: 2px;
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
 }
 
 .searchBox svg {
@@ -331,6 +375,82 @@
 
 .forumTypeSection:last-child {
   margin-bottom: 0;
+}
+
+.roleplayCategoriesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxl);
+}
+
+.roleplayCategoryBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.roleplayCategoryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--primary-color);
+}
+
+.roleplayCategoryHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.roleplayCategoryEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.roleplayCategoryEyebrow svg {
+  width: 11px;
+  height: 11px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.roleplayCategoryTitle {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.roleplayCategoryDescription {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.roleplayCategoryCount {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .elseworldsSection {
@@ -395,11 +515,11 @@
   font-size: var(--font-size-h2);
   font-family: var(--font-family-title);
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 var(--spacing-sm) 0;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
+  line-height: 1.35;
 }
 
 .sectionSubtitle {
@@ -582,8 +702,8 @@
   filter: brightness(var(--brightness-hover));
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive — tablette et mobile (< 1024px) */
+@media (max-width: 1023px) {
   .content {
     padding: var(--spacing-lg);
     gap: var(--spacing-md);
@@ -614,15 +734,20 @@
 
   .filtersSection {
     padding: var(--spacing-md);
+    overflow: hidden;
   }
 
   .filtersToolbar {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--spacing-sm);
   }
 
   .toolbarActions {
     width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .filtersControls {
@@ -633,6 +758,8 @@
 
   .controlGroup {
     width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--spacing-xs);
   }
 
@@ -694,9 +821,28 @@
 
   .lastPostSection {
     width: 100%;
+    min-width: 0;
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-sm);
     border-top: 1px solid var(--border-color);
+  }
+
+  .threadTitleRow {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .threadTitleRowWithBadges {
+    max-width: 100%;
+  }
+
+  .threadStateBadges {
+    position: static;
+    padding-left: 0;
+    height: auto;
+    margin-top: var(--spacing-xs);
+    white-space: normal;
+    flex-wrap: wrap;
   }
 
   .lastPostContent {
@@ -705,6 +851,96 @@
 
   .lastPostIndicator {
     margin-left: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: var(--spacing-md);
+  }
+
+  .threadsSection .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .sectionHeaderActions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .addThreadButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .threadItem {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .threadMainContent {
+    align-items: flex-start;
+  }
+
+  .threadAvatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .threadHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .threadBadges {
+    height: auto;
+  }
+
+  .threadTitle {
+    font-size: var(--font-size-sm);
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .threadAuthorInfo {
+    flex-wrap: wrap;
+    row-gap: 2px;
+    font-size: var(--font-size-xs);
+  }
+
+  .threadAuthorInfo .separator:nth-of-type(2) {
+    display: none;
+  }
+
+  .lastPostSection {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .lastPostContent {
+    min-width: 0;
+  }
+
+  .lastPostAuthor {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .lastPostIndicator {
+    display: none;
+  }
+
+  .createThreadActions {
+    justify-content: stretch;
+  }
+
+  .createThreadActions .addThreadButton {
+    width: 100%;
   }
 }
 
@@ -1192,7 +1428,6 @@
 .activitiesSection {
   margin: var(--spacing-md) 0 var(--spacing-xl);
   padding: var(--spacing-md);
-  border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);
   background-color: var(--bg-card);
 }

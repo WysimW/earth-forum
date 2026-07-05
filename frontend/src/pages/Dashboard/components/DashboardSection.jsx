@@ -4,11 +4,9 @@ import styles from '../Dashboard.module.css';
 
 const DashboardSection = ({
   title,
-  accent = 'primary',
   actionLabel,
   actionTo,
   onAction,
-  emptyIcon,
   emptyTitle,
   emptyMessage,
   emptyActionLabel,
@@ -17,7 +15,7 @@ const DashboardSection = ({
   isEmpty,
 }) => (
   <section className={styles.section}>
-    <header className={`${styles.sectionHeader} ${styles[`sectionHeader${accent}`]}`}>
+    <header className={styles.sectionHeader}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       {actionLabel && actionTo && (
         <Link to={actionTo} className={styles.sectionAction}>
@@ -34,8 +32,7 @@ const DashboardSection = ({
     <div className={styles.sectionBody}>
       {isEmpty ? (
         <div className={styles.emptyState}>
-          {emptyIcon && <div className={styles.emptyIcon}>{emptyIcon}</div>}
-          {emptyTitle && <h3 className={styles.emptyTitle}>{emptyTitle}</h3>}
+          {emptyTitle && <p className={styles.emptyTitle}>{emptyTitle}</p>}
           {emptyMessage && <p className={styles.emptyMessage}>{emptyMessage}</p>}
           {emptyActionLabel && emptyActionTo && (
             <Link to={emptyActionTo} className={styles.emptyAction}>
@@ -47,14 +44,6 @@ const DashboardSection = ({
         children
       )}
     </div>
-
-    {actionLabel && actionTo && !isEmpty && (
-      <footer className={styles.sectionFooter}>
-        <Link to={actionTo} className={styles.sectionFooterLink}>
-          Voir tout {actionLabel.replace(/^\+?\s*/, '').toLowerCase()} →
-        </Link>
-      </footer>
-    )}
   </section>
 );
 

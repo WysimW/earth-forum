@@ -19,7 +19,9 @@ import {
   FaCloudArrowUp,
   FaCommentDots,
   FaEraser,
+  FaFont,
   FaImage,
+  FaPlus,
   FaIndent,
   FaItalic,
   FaLink,
@@ -27,6 +29,7 @@ import {
   FaListUl,
   FaMinus,
   FaOutdent,
+  FaPalette,
   FaQuoteLeft,
   FaStrikethrough,
   FaUnderline,
@@ -53,6 +56,8 @@ const INLINE_COMMANDS = [
   { id: 'underline', icon: FaUnderline, title: 'Souligné' },
   { id: 'strike', icon: FaStrikethrough, title: 'Barré' },
 ];
+
+const COMPACT_TOOLBAR_WIDTH = 560;
 
 const stripBackgroundStyles = (html) => {
   if (!html) return '';
@@ -206,8 +211,12 @@ const RichTextComposerTiptap = ({
   activeDialogueThemeId = '',
   onActiveDialogueThemeIdChange = null,
 }) => {
+  const wrapperRef = useRef(null);
   const sourcePreviewRef = useRef(null);
   const imageFileInputRef = useRef(null);
+  const colorInputRef = useRef(null);
+  const [isCompactToolbar, setIsCompactToolbar] = useState(false);
+  const [openToolbarSection, setOpenToolbarSection] = useState(null);
   const [textColor, setTextColor] = useState('#ffffff');
   const [fontSizePx, setFontSizePx] = useState('16');
   const [imageUploading, setImageUploading] = useState(false);
@@ -263,6 +272,20 @@ const RichTextComposerTiptap = ({
       editor.commands.setContent(incoming, false);
     }
   }, [editor, value, isSourceMode]);
+
+  useEffect(() => {
+    const node = wrapperRef.current;
+    if (!node) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      const compact = entry.contentRect.width < COMPACT_TOOLBAR_WIDTH;
+      setIsCompactToolbar(compact);
+      if (!compact) {
+        setOpenToolbarSection(null);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!editor) return undefined;
@@ -510,6 +533,12 @@ const RichTextComposerTiptap = ({
 
   const getToolbarButtonClass = (isActive = false) => `${styles.toolbarButton} ${isActive ? styles.toolbarButtonActive : ''}`;
 
+  const toggleToolbarSection = (sectionId) => {
+    setOpenToolbarSection((current) => (current === sectionId ? null : sectionId));
+  };
+
+  const getSectionToggleClass = (sectionId) => `${styles.sectionToggle} ${openToolbarSection === sectionId ? styles.sectionToggleActive : ''}`;
+
   const currentBlockFormat = useMemo(() => {
     if (!editor) return '';
     if (editor.isActive('heading', { level: 2 })) return 'h2';
@@ -520,273 +549,383 @@ const RichTextComposerTiptap = ({
     return 'p';
   }, [editor, editorUiVersion, value]);
 
+  const historyGroup = (
+    <div className={styles.toolbarGroup}>
+      <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().undo().run()} title="Annuler" aria-label="Annuler">
+        <FaArrowRotateLeft className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().redo().run()} title="Rétablir" aria-label="Rétablir">
+        <FaArrowRotateRight className={styles.toolbarIcon} aria-hidden />
+      </button>
+    </div>
+  );
+
+  const blockGroup = (
+    <div className={styles.toolbarGroup}>
+      <select
+        className={`${styles.toolbarSelect} ${styles.selectBlock}`}
+        onChange={applyBlockFormat}
+        value={currentBlockFormat}
+        title="Style de bloc"
+        aria-label="Style de bloc"
+      >
+        <option value="p">Paragraphe</option>
+        <option value="h2">Titre 2</option>
+        <option value="h3">Titre 3</option>
+        <option value="h4">Titre 4</option>
+        <option value="blockquote">Citation</option>
+        <option value="pre">Code bloc</option>
+      </select>
+      <select
+        className={`${styles.toolbarSelect} ${styles.selectSize}`}
+        value={fontSizePx}
+        onChange={(event) => applyFontSize(event.target.value)}
+        title="Taille de police"
+        aria-label="Taille de police"
+      >
+        {FONT_SIZE_OPTIONS.map((size) => (
+          <option key={size} value={size}>
+            {size}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const inlineGroup = (
+    <div className={styles.toolbarGroup}>
+      {INLINE_COMMANDS.map((command) => {
+        const isActive = editor?.isActive(command.id === 'strike' ? 'strike' : command.id);
+        return (
+          <button
+            key={command.id}
+            type="button"
+            className={getToolbarButtonClass(isActive)}
+            onClick={() => executeInline(command.id)}
+            title={command.title}
+            aria-label={command.title}
+            aria-pressed={Boolean(isActive)}
+          >
+            <command.icon className={styles.toolbarIcon} aria-hidden />
+          </button>
+        );
+      })}
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        onClick={() => colorInputRef.current?.click()}
+        title="Couleur du texte"
+        aria-label="Couleur du texte"
+      >
+        <FaPalette className={styles.toolbarIcon} style={{ color: textColor }} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} title="Nettoyer le format" aria-label="Nettoyer le format">
+        <FaEraser className={styles.toolbarIcon} aria-hidden />
+      </button>
+    </div>
+  );
+
+  const listGroup = (
+    <div className={styles.toolbarGroup}>
+      <button
+        type="button"
+        className={getToolbarButtonClass(editor?.isActive('bulletList'))}
+        onClick={() => editor?.chain().focus().toggleBulletList().run()}
+        title="Liste à puces"
+        aria-label="Liste à puces"
+        aria-pressed={editor?.isActive('bulletList')}
+      >
+        <FaListUl className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={getToolbarButtonClass(editor?.isActive('orderedList'))}
+        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+        title="Liste numérotée"
+        aria-label="Liste numérotée"
+        aria-pressed={editor?.isActive('orderedList')}
+      >
+        <FaListOl className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().liftListItem('listItem').run()} title="Diminuer le retrait" aria-label="Diminuer le retrait">
+        <FaOutdent className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().sinkListItem('listItem').run()} title="Augmenter le retrait" aria-label="Augmenter le retrait">
+        <FaIndent className={styles.toolbarIcon} aria-hidden />
+      </button>
+    </div>
+  );
+
+  const alignGroup = (
+    <div className={styles.toolbarGroup}>
+      <button
+        type="button"
+        className={getToolbarButtonClass(editor?.isActive({ textAlign: 'left' }))}
+        onClick={() => editor?.chain().focus().setTextAlign('left').run()}
+        title="Aligner à gauche"
+        aria-label="Aligner à gauche"
+        aria-pressed={editor?.isActive({ textAlign: 'left' })}
+      >
+        <FaAlignLeft className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={getToolbarButtonClass(editor?.isActive({ textAlign: 'center' }))}
+        onClick={() => editor?.chain().focus().setTextAlign('center').run()}
+        title="Centrer"
+        aria-label="Centrer"
+        aria-pressed={editor?.isActive({ textAlign: 'center' })}
+      >
+        <FaAlignCenter className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={getToolbarButtonClass(editor?.isActive({ textAlign: 'right' }))}
+        onClick={() => editor?.chain().focus().setTextAlign('right').run()}
+        title="Aligner à droite"
+        aria-label="Aligner à droite"
+        aria-pressed={editor?.isActive({ textAlign: 'right' })}
+      >
+        <FaAlignRight className={styles.toolbarIcon} aria-hidden />
+      </button>
+    </div>
+  );
+
+  const insertGroup = (
+    <div className={styles.toolbarGroup}>
+      <button type="button" className={styles.toolbarButton} onClick={insertLink} title="Insérer un lien" aria-label="Insérer un lien">
+        <FaLink className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={insertImage} title="Insérer une image depuis une URL" aria-label="Insérer une image depuis une URL">
+        <FaImage className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        onClick={() => imageFileInputRef.current?.click()}
+        title="Uploader puis insérer une image"
+        aria-label="Uploader puis insérer une image"
+        disabled={imageUploading}
+      >
+        <FaCloudArrowUp className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={styles.toolbarButton} onClick={insertHr} title="Insérer un séparateur horizontal" aria-label="Insérer un séparateur horizontal">
+        <FaMinus className={styles.toolbarIcon} aria-hidden />
+      </button>
+      <button type="button" className={`${styles.toolbarButton} ${styles.toolbarButtonText}`} onClick={insertSpacer} title="Insérer un espace vertical" aria-label="Insérer un espace vertical">
+        Espace
+      </button>
+    </div>
+  );
+
+  const dialogueGroup = (
+    <div className={styles.toolbarGroup}>
+      {onQuote && (
+        <button type="button" className={styles.toolbarButton} onClick={onQuote} title="Insérer une citation RP" aria-label="Insérer une citation RP">
+          <FaQuoteLeft className={styles.toolbarIcon} aria-hidden />
+        </button>
+      )}
+      {dialogueThemes.length > 0 && (
+        <>
+          <select
+            className={`${styles.toolbarSelect} ${styles.selectBlock}`}
+            value={activeDialogueThemeId || ''}
+            onChange={(event) => onActiveDialogueThemeIdChange?.(event.target.value)}
+            title="Thème de dialogue actif"
+            aria-label="Thème de dialogue actif"
+          >
+            <option value="">Theme dialogue</option>
+            {dialogueThemes.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.name}{theme.isDefault ? ' (defaut)' : ''}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={styles.toolbarButton}
+            onClick={applyDialogueTheme}
+            title="Appliquer le thème sur la sélection"
+            aria-label="Appliquer le thème sur la sélection"
+            disabled={!selectedDialogueTheme}
+          >
+            <FaCommentDots className={styles.toolbarIcon} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={styles.toolbarButton}
+            onClick={clearDialogueTheme}
+            title="Retirer le style dialogue de la sélection"
+            aria-label="Retirer le style dialogue de la sélection"
+          >
+            <FaBan className={styles.toolbarIcon} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={styles.toolbarButton}
+            onClick={runDialogueAutoDetect}
+            title="Auto-détecter les dialogues entre guillemets"
+            aria-label="Auto-détecter les dialogues entre guillemets"
+            disabled={!selectedDialogueTheme}
+          >
+            <FaWandMagicSparkles className={styles.toolbarIcon} aria-hidden />
+          </button>
+        </>
+      )}
+    </div>
+  );
+
+  const showDialogueSection = dialogueThemes.length > 0 || Boolean(onQuote);
+
+  const compactSections = [
+    {
+      id: 'text',
+      label: 'Texte',
+      icon: FaFont,
+      content: (
+        <>
+          {blockGroup}
+          <span className={styles.toolbarDivider} aria-hidden="true" />
+          {inlineGroup}
+        </>
+      ),
+    },
+    {
+      id: 'layout',
+      label: 'Mise en page',
+      icon: FaAlignLeft,
+      content: (
+        <>
+          {listGroup}
+          <span className={styles.toolbarDivider} aria-hidden="true" />
+          {alignGroup}
+        </>
+      ),
+    },
+    {
+      id: 'insert',
+      label: 'Insertion',
+      icon: FaPlus,
+      content: insertGroup,
+    },
+    ...(showDialogueSection ? [{ id: 'dialogue', label: 'Dialogue', icon: FaCommentDots, content: dialogueGroup }] : []),
+  ];
+
+  const imageContextBar = isImageSelected && !isSourceMode && (
+    <div className={styles.imageContextBar} role="group" aria-label="Réglages de l'image sélectionnée">
+      <span className={styles.imageContextLabel}>
+        <FaImage className={styles.toolbarIcon} aria-hidden />
+        Image
+      </span>
+      <select
+        className={styles.toolbarSelect}
+        value={imageDisplayMode}
+        onChange={(event) => setImageDisplayMode(event.target.value)}
+        title="Mode d'affichage de l'image"
+        aria-label="Mode d'affichage de l'image"
+      >
+        <option value="block">Bloc</option>
+        <option value="inline">Inline</option>
+      </select>
+      <select
+        className={styles.toolbarSelect}
+        value={imageAlign}
+        onChange={(event) => setImageAlign(event.target.value)}
+        title="Alignement de l'image"
+        aria-label="Alignement de l'image"
+        disabled={imageDisplayMode === 'inline'}
+      >
+        <option value="left">Gauche</option>
+        <option value="center">Centre</option>
+        <option value="right">Droite</option>
+      </select>
+      <label className={styles.imageSizeLabel}>
+        Largeur
+        <input
+          type="number"
+          className={styles.imageSizeInput}
+          min={20}
+          max={75}
+          step={5}
+          value={imageMaxWidthPercent}
+          onChange={(event) => setImageMaxWidthPercent(clampImageMaxWidth(event.target.value))}
+          title="Largeur maximale de l'image en %"
+        />
+        %
+      </label>
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        onClick={() => {
+          setIsImageSelected(false);
+          setSelectedImagePos(null);
+        }}
+        title="Fermer les réglages de l'image"
+        aria-label="Fermer les réglages de l'image"
+      >
+        <FaXmark className={styles.toolbarIcon} aria-hidden />
+      </button>
+    </div>
+  );
+
   return (
-    <div className={styles.wrapper}>
+    <div ref={wrapperRef} className={styles.wrapper}>
       <div className={styles.toolbar}>
         {!isSourceMode && (
-          <>
-            <div className={styles.toolbarRow}>
-              <div className={styles.toolbarSection}>
-                <span className={styles.toolbarLabel}>Texte</span>
-                <select className={styles.toolbarSelect} onChange={applyBlockFormat} value={currentBlockFormat}>
-                  <option value="p">Paragraphe</option>
-                  <option value="h2">Titre 2</option>
-                  <option value="h3">Titre 3</option>
-                  <option value="h4">Titre 4</option>
-                  <option value="blockquote">Citation</option>
-                  <option value="pre">Code bloc</option>
-                </select>
-                <select
-                  className={styles.toolbarSelect}
-                  value={fontSizePx}
-                  onChange={(event) => applyFontSize(event.target.value)}
-                  title="Taille de police"
-                >
-                  {FONT_SIZE_OPTIONS.map((size) => (
-                    <option key={size} value={size}>
-                      {size}px
-                    </option>
-                  ))}
-                </select>
-                {INLINE_COMMANDS.map((command) => {
-                  const isActive = editor?.isActive(command.id === 'strike' ? 'strike' : command.id);
-                  return (
-                    <button
-                      key={command.id}
-                      type="button"
-                      className={getToolbarButtonClass(isActive)}
-                      onClick={() => executeInline(command.id)}
-                      title={command.title}
-                      aria-label={command.title}
-                      aria-pressed={Boolean(isActive)}
-                    >
-                      <command.icon className={styles.toolbarIcon} aria-hidden />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.toolbarSection}>
-                <span className={styles.toolbarLabel}>Mise en page</span>
-                <button
-                  type="button"
-                  className={getToolbarButtonClass(editor?.isActive('bulletList'))}
-                  onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                  title="Liste à puces"
-                  aria-label="Liste à puces"
-                  aria-pressed={editor?.isActive('bulletList')}
-                >
-                  <FaListUl className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={getToolbarButtonClass(editor?.isActive('orderedList'))}
-                  onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                  title="Liste numérotée"
-                  aria-label="Liste numérotée"
-                  aria-pressed={editor?.isActive('orderedList')}
-                >
-                  <FaListOl className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().liftListItem('listItem').run()} title="Diminuer le retrait" aria-label="Diminuer le retrait">
-                  <FaOutdent className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().sinkListItem('listItem').run()} title="Augmenter le retrait" aria-label="Augmenter le retrait">
-                  <FaIndent className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={getToolbarButtonClass(editor?.isActive({ textAlign: 'left' }))}
-                  onClick={() => editor?.chain().focus().setTextAlign('left').run()}
-                  title="Aligner à gauche"
-                  aria-label="Aligner à gauche"
-                  aria-pressed={editor?.isActive({ textAlign: 'left' })}
-                >
-                  <FaAlignLeft className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={getToolbarButtonClass(editor?.isActive({ textAlign: 'center' }))}
-                  onClick={() => editor?.chain().focus().setTextAlign('center').run()}
-                  title="Centrer"
-                  aria-label="Centrer"
-                  aria-pressed={editor?.isActive({ textAlign: 'center' })}
-                >
-                  <FaAlignCenter className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={getToolbarButtonClass(editor?.isActive({ textAlign: 'right' }))}
-                  onClick={() => editor?.chain().focus().setTextAlign('right').run()}
-                  title="Aligner à droite"
-                  aria-label="Aligner à droite"
-                  aria-pressed={editor?.isActive({ textAlign: 'right' })}
-                >
-                  <FaAlignRight className={styles.toolbarIcon} aria-hidden />
-                </button>
-              </div>
-
-            </div>
-
-            <div className={styles.toolbarRow}>
-              <div className={styles.toolbarSection}>
-                <span className={styles.toolbarLabel}>Actions</span>
-                <button type="button" className={styles.toolbarButton} onClick={insertLink} title="Insérer un lien" aria-label="Insérer un lien">
-                  <FaLink className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={insertHr} title="Insérer un séparateur" aria-label="Insérer un séparateur">
-                  <FaMinus className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={insertSpacer} title="Insérer un espace" aria-label="Insérer un espace">
-                  Espace
-                </button>
-                <label className={styles.colorPickerLabel} title="Couleur du texte">
-                  A
-                  <input type="color" className={styles.colorPickerInput} value={textColor} onChange={(event) => applyTextColor(event.target.value)} />
-                </label>
-                <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().undo().run()} title="Annuler" aria-label="Annuler">
-                  <FaArrowRotateLeft className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().redo().run()} title="Rétablir" aria-label="Rétablir">
-                  <FaArrowRotateRight className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button type="button" className={styles.toolbarButton} onClick={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} title="Nettoyer le format" aria-label="Nettoyer le format">
-                  <FaEraser className={styles.toolbarIcon} aria-hidden />
-                </button>
-              </div>
-
-              <div className={styles.toolbarSection}>
-                <span className={styles.toolbarLabel}>Images</span>
-                <button type="button" className={styles.toolbarButton} onClick={insertImage} title="Insérer une image" aria-label="Insérer une image">
-                  <FaImage className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={styles.toolbarButton}
-                  onClick={() => imageFileInputRef.current?.click()}
-                  title="Uploader puis insérer une image"
-                  aria-label="Uploader puis insérer une image"
-                  disabled={imageUploading}
-                >
-                  <FaCloudArrowUp className={styles.toolbarIcon} aria-hidden />
-                </button>
-                <div className={styles.imageControls}>
-                  <label className={styles.imageControlLabel} htmlFor="rich-text-image-mode">
-                    Img
-                  </label>
-                  <select
-                    id="rich-text-image-mode"
-                    className={styles.toolbarSelect}
-                    value={imageDisplayMode}
-                    onChange={(event) => setImageDisplayMode(event.target.value)}
-                    title="Mode d'insertion de l'image"
-                  >
-                    <option value="block">Bloc</option>
-                    <option value="inline">Inline</option>
-                  </select>
-                  <select
-                    className={styles.toolbarSelect}
-                    value={imageAlign}
-                    onChange={(event) => setImageAlign(event.target.value)}
-                    title="Alignement des nouvelles images"
-                    disabled={imageDisplayMode === 'inline'}
-                  >
-                    <option value="left">Gauche</option>
-                    <option value="center">Centre</option>
-                    <option value="right">Droite</option>
-                  </select>
-                  <label className={styles.imageSizeLabel}>
-                    Max
-                    <input
-                      type="number"
-                      className={styles.imageSizeInput}
-                      min={20}
-                      max={75}
-                      step={5}
-                      value={imageMaxWidthPercent}
-                      onChange={(event) => setImageMaxWidthPercent(clampImageMaxWidth(event.target.value))}
-                      title="Largeur maximale de l'image en %"
-                    />
-                    %
-                  </label>
-                </div>
-                {isImageSelected && (
+          isCompactToolbar ? (
+            <>
+              <div className={styles.toolbarCompactNav} role="toolbar" aria-label="Barre de mise en forme">
+                {historyGroup}
+                <span className={styles.toolbarDivider} aria-hidden="true" />
+                {compactSections.map((section) => (
                   <button
+                    key={section.id}
                     type="button"
-                    className={styles.toolbarButton}
-                    onClick={() => {
-                      setIsImageSelected(false);
-                      setSelectedImagePos(null);
-                    }}
-                    title="Désélectionner l'image active"
-                    aria-label="Désélectionner l'image active"
+                    className={getSectionToggleClass(section.id)}
+                    onClick={() => toggleToolbarSection(section.id)}
+                    title={section.label}
+                    aria-label={section.label}
+                    aria-expanded={openToolbarSection === section.id}
+                    aria-controls={`toolbar-panel-${section.id}`}
                   >
-                    <span className={styles.buttonLabel}>
-                      <FaXmark className={styles.toolbarIcon} aria-hidden />
-                      image
-                    </span>
+                    <section.icon className={styles.toolbarIcon} aria-hidden />
                   </button>
-                )}
+                ))}
               </div>
-              {(dialogueThemes.length > 0 || onQuote) && (
-                <div className={styles.toolbarSection}>
-                  <span className={styles.toolbarLabel}>Dialogue</span>
-                  {onQuote && (
-                    <button type="button" className={styles.toolbarButton} onClick={onQuote} title="Insérer une citation RP" aria-label="Insérer une citation RP">
-                      <FaQuoteLeft className={styles.toolbarIcon} aria-hidden />
-                    </button>
-                  )}
-                  {dialogueThemes.length > 0 && (
-                    <>
-                      <select
-                        className={styles.toolbarSelect}
-                        value={activeDialogueThemeId || ''}
-                        onChange={(event) => onActiveDialogueThemeIdChange?.(event.target.value)}
-                        title="Thème de dialogue actif"
-                      >
-                        <option value="">Theme dialogue</option>
-                        {dialogueThemes.map((theme) => (
-                          <option key={theme.id} value={theme.id}>
-                            {theme.name}{theme.isDefault ? ' (defaut)' : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className={styles.toolbarButton}
-                        onClick={applyDialogueTheme}
-                        title="Appliquer ou retirer le thème sur la sélection"
-                        aria-label="Appliquer ou retirer le thème sur la sélection"
-                        disabled={!selectedDialogueTheme}
-                      >
-                        <FaCommentDots className={styles.toolbarIcon} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.toolbarButton}
-                        onClick={clearDialogueTheme}
-                        title="Retirer le style dialogue de la sélection"
-                        aria-label="Retirer le style dialogue de la sélection"
-                      >
-                        <FaBan className={styles.toolbarIcon} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.toolbarButton}
-                        onClick={runDialogueAutoDetect}
-                        title="Auto-détecter les dialogues entre guillemets"
-                        aria-label="Auto-détecter les dialogues entre guillemets"
-                        disabled={!selectedDialogueTheme}
-                      >
-                        <FaWandMagicSparkles className={styles.toolbarIcon} aria-hidden />
-                      </button>
-                    </>
-                  )}
+              {openToolbarSection && (
+                <div
+                  id={`toolbar-panel-${openToolbarSection}`}
+                  className={styles.toolbarCompactPanel}
+                  role="group"
+                  aria-label={compactSections.find((section) => section.id === openToolbarSection)?.label}
+                >
+                  {compactSections.find((section) => section.id === openToolbarSection)?.content}
                 </div>
               )}
+            </>
+          ) : (
+            <div className={styles.toolbarRow} role="toolbar" aria-label="Barre de mise en forme">
+              {historyGroup}
+              <span className={styles.toolbarDivider} aria-hidden="true" />
+              {blockGroup}
+              <span className={styles.toolbarDivider} aria-hidden="true" />
+              {inlineGroup}
+              <span className={styles.toolbarDivider} aria-hidden="true" />
+              {listGroup}
+              <span className={styles.toolbarDivider} aria-hidden="true" />
+              {alignGroup}
+              <span className={styles.toolbarDivider} aria-hidden="true" />
+              {insertGroup}
+              {showDialogueSection && (
+                <>
+                  <span className={styles.toolbarDivider} aria-hidden="true" />
+                  {dialogueGroup}
+                </>
+              )}
             </div>
-          </>
+          )
         )}
+        {imageContextBar}
       </div>
 
       {isSourceMode ? (
@@ -821,6 +960,15 @@ const RichTextComposerTiptap = ({
         accept="image/*"
         className={styles.hiddenFileInput}
         onChange={(event) => uploadAndInsertImage(event.target.files?.[0])}
+      />
+      <input
+        ref={colorInputRef}
+        type="color"
+        className={styles.hiddenFileInput}
+        value={textColor}
+        onChange={(event) => applyTextColor(event.target.value)}
+        tabIndex={-1}
+        aria-hidden="true"
       />
       {imageError && <div className={styles.error}>{imageError}</div>}
       {dialogueThemes.length > 0 && (

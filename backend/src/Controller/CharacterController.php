@@ -309,18 +309,10 @@ class CharacterController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas éditer ce personnage.');
         }
         
-        $oldStatus = $character->getStatus();
-        
         $form = $this->createForm(CharacterType::class, $character);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
-            // If character was validated before, set to editing status
-            if ($oldStatus === Character::STATUS_VALIDATED) {
-                $character->setStatus(Character::STATUS_EDITING);
-                $character->setStatusMessage('Modifications en cours');
-            }
-            
             // Update character sheet thread if it exists
             $characterSheetThread = $character->getMainCharacterSheetThread();
             if ($characterSheetThread) {

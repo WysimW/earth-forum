@@ -84,6 +84,39 @@ const ICONS_BY_KEY = {
       <path d="M6 3h12v18l-6-4-6 4V3z" />
     </svg>
   ),
+  forums: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6h16v12H4z" />
+      <path d="M8 10h8M8 14h5" />
+    </svg>
+  ),
+  about: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 10v6M12 7h.01" />
+    </svg>
+  ),
+  login: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15 3h4v18h-4" />
+      <path d="M10 12H3M7 8l-4 4 4 4" />
+    </svg>
+  ),
+  register: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M19 8v6M22 11h-6" />
+    </svg>
+  ),
+  components: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  ),
 };
 
 const SIDEBAR_PARTITION_KEYS = new Set([
@@ -103,12 +136,27 @@ const ACCOUNT_LINKS = [
   { key: 'my_factions', url: '/mes-factions', label: 'Mes Factions' },
 ];
 
-const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
+const SITE_NAV_LINKS = [
+  { key: 'forums', url: '/forums', label: 'Forums' },
+  { key: 'about', url: '/qui-sommes-nous', label: 'Qui sommes-nous' },
+];
+
+const GUEST_NAV_LINKS = [
+  { key: 'login', url: '/login', label: 'Connexion' },
+  { key: 'register', url: '/register', label: 'Inscription' },
+];
+
+const UniverseSidebar = ({
+  collapsed = false,
+  onToggleCollapse,
+  mobileOpen = false,
+  onMobileClose,
+}) => {
   const location = useLocation();
   const { user } = useAuth();
   const { currentUniverse } = useUniverseTheme();
   const [items, setItems] = useState([]);
-  const [openMobile, setOpenMobile] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [memberOfMonthUnread, setMemberOfMonthUnread] = useState(false);
   const [characterOfMonthUnread, setCharacterOfMonthUnread] = useState(false);
   const [rpActivitiesUnread, setRpActivitiesUnread] = useState(false);
@@ -157,8 +205,24 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
   }, [universeSlug]);
 
   useEffect(() => {
-    setOpenMobile(false);
-  }, [location.pathname]);
+    onMobileClose?.();
+  }, [location.pathname, onMobileClose]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
+
+    syncViewport();
+    mediaQuery.addEventListener('change', syncViewport);
+
+    return () => mediaQuery.removeEventListener('change', syncViewport);
+  }, []);
+
+  const effectiveCollapsed = isMobileViewport ? false : collapsed;
 
   useEffect(() => {
     const syncMemberOfMonthUnread = async () => {
@@ -265,6 +329,47 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
     };
   }, [user, location.pathname]);
 
+  const isSiteNavActive = (item) => {
+    switch (item.key) {
+      case 'forums':
+        return location.pathname === '/forums'
+          || location.pathname.startsWith('/forums/')
+          || location.pathname.startsWith('/univers/');
+      case 'about':
+        return location.pathname.startsWith('/qui-sommes-nous');
+      case 'login':
+        return location.pathname.startsWith('/login');
+      case 'register':
+        return location.pathname.startsWith('/register');
+      case 'components':
+        return location.pathname.startsWith('/components');
+      default:
+        return location.pathname === item.url;
+    }
+  };
+
+  const renderSiteNavLink = (item) => {
+    const icon = ICONS_BY_KEY[item.key] || (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1" />
+        <path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1" />
+      </svg>
+    );
+
+    return (
+      <Link
+        to={item.url}
+        className={`${styles.link} ${isSiteNavActive(item) ? styles.linkActive : ''}`}
+        title={item.label}
+      >
+        <span className={styles.icon} aria-hidden="true">
+          {icon}
+        </span>
+        <span className={styles.label}>{item.label}</span>
+      </Link>
+    );
+  };
+
   const isLinkActive = (item) => {
     switch (item.key) {
       case 'factions':
@@ -319,7 +424,7 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
           {icon}
           {unread && <span className={styles.unreadDot} />}
         </span>
-        {!collapsed && <span className={styles.label}>{item.label}</span>}
+        {!effectiveCollapsed && <span className={styles.label}>{item.label}</span>}
       </>
     );
 
@@ -360,17 +465,21 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
 
   return (
     <>
-      <button
-        type="button"
-        className={styles.mobileToggle}
-        onClick={() => setOpenMobile((prev) => !prev)}
-      >
-        Important
-      </button>
+      {mobileOpen && (
+        <button
+          type="button"
+          className={styles.backdrop}
+          aria-label="Fermer le menu Important"
+          onClick={onMobileClose}
+        />
+      )}
 
-      <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''} ${openMobile ? styles.sidebarMobileOpen : ''}`}>
+      <aside
+        className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''} ${mobileOpen ? styles.sidebarMobileOpen : ''}`}
+        aria-hidden={isMobileViewport && !mobileOpen}
+      >
         <div className={styles.header}>
-          {!collapsed && (
+          {!effectiveCollapsed && (
             <div>
               <span className={styles.kicker}>Univers</span>
               <h3 className={styles.title}>Important</h3>
@@ -387,9 +496,38 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
               <path d="M15 6l-6 6 6 6" />
             </svg>
           </button>
+          {isMobileViewport && (
+            <button
+              type="button"
+              className={styles.mobileCloseButton}
+              onClick={onMobileClose}
+              aria-label="Fermer le menu Important"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          )}
         </div>
         <div className={styles.scroll}>
           <div className={styles.links}>
+          <section className={`${styles.category} ${styles.siteNav}`} aria-label="Navigation">
+            <h4 className={styles.categoryTitle}>Navigation</h4>
+            <div className={styles.categoryLinks}>
+              {SITE_NAV_LINKS.map((item) => (
+                <div key={item.key}>{renderSiteNavLink(item)}</div>
+              ))}
+              {process.env.NODE_ENV === 'development' && (
+                <div key="components">
+                  {renderSiteNavLink({ key: 'components', url: '/components', label: 'Composants' })}
+                </div>
+              )}
+              {!user && GUEST_NAV_LINKS.map((item) => (
+                <div key={item.key}>{renderSiteNavLink(item)}</div>
+              ))}
+            </div>
+          </section>
+
           {guidanceItems.length > 0 && (
             <section className={styles.category} aria-label="Règlement et liens">
               <div className={styles.categoryLinks}>
@@ -402,7 +540,7 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
 
           {hasForumSection && (
             <section className={styles.category} aria-label="Forum">
-              {!collapsed && <h4 className={styles.categoryTitle}>Forum</h4>}
+              {!effectiveCollapsed && <h4 className={styles.categoryTitle}>Forum</h4>}
               <div className={styles.categoryLinks}>
                 {itemsByKey.get('rp_activities') && (
                   <div key="rp_activities">{renderLink(itemsByKey.get('rp_activities'))}</div>
@@ -427,7 +565,7 @@ const UniverseSidebar = ({ collapsed = false, onToggleCollapse }) => {
 
           {user && (
             <section className={styles.category} aria-label="Mon compte">
-              {!collapsed && <h4 className={styles.categoryTitle}>Mon compte</h4>}
+              {!effectiveCollapsed && <h4 className={styles.categoryTitle}>Mon compte</h4>}
               <div className={styles.categoryLinks}>
                 {ACCOUNT_LINKS.map((item) => (
                   <div key={item.key}>{renderLink(item)}</div>

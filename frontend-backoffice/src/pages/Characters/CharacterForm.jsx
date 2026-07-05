@@ -84,13 +84,14 @@ const CharacterForm = () => {
         status: values.status || 'draft',
         avatar: selectedAvatar?.url || null,
         universe_id: values.universe_id || null,
-        user_id: values.user_id || null,
       };
 
       if (isEditing) {
+        data.user_id = values.user_id ?? null;
         await api.put(`/api/admin/characters/${id}`, data);
         message.success('Personnage mis à jour avec succès');
       } else {
+        data.user_id = values.user_id;
         await api.post('/api/admin/characters', data);
         message.success('Personnage créé avec succès');
       }
@@ -223,11 +224,16 @@ const CharacterForm = () => {
           <Form.Item
             name="user_id"
             label="Utilisateur"
-            rules={[{ required: true, message: 'L\'utilisateur est requis' }]}
+            rules={
+              isEditing
+                ? []
+                : [{ required: true, message: 'L\'utilisateur est requis' }]
+            }
           >
             <Select 
-              placeholder="Sélectionnez un utilisateur"
+              placeholder={isEditing ? 'Aucun propriétaire (optionnel)' : 'Sélectionnez un utilisateur'}
               showSearch
+              allowClear={isEditing}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }

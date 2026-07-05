@@ -55,13 +55,34 @@ const UserMenu = () => {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (!isMobile) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
     setIsOpen(false);
   };
 
-  const isAdmin = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_MODERATOR');
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN')
+    || user?.roles?.includes('ROLE_MODERATOR')
+    || user?.roles?.includes('ROLE_SUPER_ADMIN');
+  const backofficeUrl = process.env.REACT_APP_BACKOFFICE_URL || 'http://localhost:3004';
 
   if (!user) return null;
 
@@ -90,7 +111,14 @@ const UserMenu = () => {
       </button>
 
       {isOpen && (
-        <div className={styles.dropdown}>
+        <>
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="Fermer le menu utilisateur"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className={styles.dropdown} role="menu">
           <Link
             to="/tableau-de-bord"
             className={styles.menuItem}
@@ -160,8 +188,8 @@ const UserMenu = () => {
           </Link>
 
           {isAdmin && (
-            <Link
-              to="/admin"
+            <a
+              href={backofficeUrl}
               className={styles.menuItem}
               onClick={() => setIsOpen(false)}
             >
@@ -169,7 +197,7 @@ const UserMenu = () => {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
               Administration
-            </Link>
+            </a>
           )}
 
           <div className={styles.divider} />
@@ -185,7 +213,8 @@ const UserMenu = () => {
             </svg>
             Déconnexion
           </button>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

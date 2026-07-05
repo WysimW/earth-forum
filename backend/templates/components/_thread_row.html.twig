@@ -24,10 +24,12 @@
                 {% if thread.type == 'roleplay' and thread.characterCreator %}
                     <span class="character-name">
                         {{ thread.characterCreator.name }}
-                    </span> 
+                    </span>
+                    {% if thread.author %}
                     <span class="text-muted">({{ thread.author.pseudo }})</span>
+                    {% endif %}
                 {% else %}
-                    {{ thread.author.pseudo }}
+                    {{ thread.author ? thread.author.pseudo : 'Anonyme' }}
                 {% endif %}
             </span>
             {% if thread.location %}
@@ -66,7 +68,7 @@
                 {% if thread.lastPost.character %}
                     <span class="character-name">{{ thread.lastPost.character.name }}</span>
                 {% else %}
-                    {{ thread.lastPost.author.pseudo }}
+                    {{ thread.lastPost.author ? thread.lastPost.author.pseudo : 'Anonyme' }}
                 {% endif %}
             </small>
             <a href="{{ path('app_thread_show', {'id': thread.id}) }}#post-{{ thread.lastPost.id }}" class="btn btn-sm btn-outline-secondary mt-1">

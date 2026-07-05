@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { PictureOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Form, Image, Input, Select, Space, Table, message } from 'antd';
 import { useUniverse } from '../../contexts/UniverseContext';
-import MediaLibrary from '../../components/MediaLibrary/MediaLibrary';
+import MediaLibrary, { getMediaStorageUrl } from '../../components/MediaLibrary/MediaLibrary';
 import importantAdminService from '../../services/importantAdminService';
 
 const ALIGNMENT_OPTIONS = [
@@ -181,7 +181,7 @@ const ImportantCharacterOfMonth = () => {
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={(media) => {
           setSelectedImage(media);
-          form.setFieldsValue({ image_url: media.url });
+          form.setFieldsValue({ image_url: getMediaStorageUrl(media) });
         }}
         value={selectedImage}
       />

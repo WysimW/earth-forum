@@ -6,6 +6,8 @@ import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import { useUniverseTheme } from '../../contexts/UniverseThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import importantService from '../../services/importantService';
+import seoService from '../../services/seoService';
+import SeoHead from '../../components/Seo/SeoHead';
 import styles from './CharacterOfMonth.module.css';
 
 const ALIGNMENT_META = {
@@ -39,6 +41,7 @@ const CharacterOfMonth = () => {
   const [error, setError] = useState('');
   const [entry, setEntry] = useState(null);
   const [history, setHistory] = useState([]);
+  const [seo, setSeo] = useState(null);
 
   const loadData = async () => {
     if (!universeSlug) {
@@ -49,12 +52,14 @@ const CharacterOfMonth = () => {
     try {
       setLoading(true);
       setError('');
-      const [latest, historyResponse] = await Promise.all([
+      const [latest, historyResponse, seoData] = await Promise.all([
         importantService.getCharacterOfMonth(universeSlug),
         importantService.getCharacterOfMonthHistory(universeSlug),
+        seoService.getUniverse(universeSlug),
       ]);
       setEntry(latest?.entry || null);
       setHistory(Array.isArray(historyResponse?.items) ? historyResponse.items : []);
+      setSeo(seoData?.characterOfMonthSeo || null);
     } catch (err) {
       setError('Erreur lors du chargement du personnage du mois');
     } finally {
@@ -105,6 +110,7 @@ const CharacterOfMonth = () => {
 
   return (
     <Layout>
+      <SeoHead seo={seo} />
       <div className={styles.page}>
         <h1 className={styles.title}>Personnage du mois</h1>
         {entry ? (

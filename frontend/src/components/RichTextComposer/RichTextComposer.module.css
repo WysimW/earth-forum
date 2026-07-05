@@ -4,10 +4,18 @@
   background-color: var(--bg-card);
   overflow: hidden;
   box-shadow: 0 var(--spacing-sm) var(--spacing-lg) color-mix(in srgb, var(--bg-dark) 55%, transparent);
+  min-width: 0;
+  max-width: 100%;
+  container-type: inline-size;
+  container-name: rich-text-composer;
+  --toolbar-control-radius: 6px;
+  --toolbar-hover-bg: color-mix(in srgb, var(--bg-dark) 50%, transparent);
+  --toolbar-active-bg: color-mix(in srgb, var(--primary-color) 22%, transparent);
 }
 
 .toolbar {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: var(--border-width) solid var(--border-color);
@@ -16,6 +24,7 @@
   position: sticky;
   top: 0;
   z-index: var(--z-index-sticky);
+  min-width: 0;
 }
 
 .toolbarRow {
@@ -23,29 +32,109 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-xs);
+  width: 100%;
+  min-width: 0;
 }
 
-.toolbarSection {
+.toolbarGroup {
   display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  min-height: calc(var(--spacing-lg) + var(--spacing-md));
-  padding: var(--spacing-xs);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 85%, transparent);
-  background-color: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.toolbarDivider {
+  flex-shrink: 0;
+  width: 1px;
+  height: calc(var(--spacing-md) + var(--spacing-xs));
+  margin: 0 var(--spacing-xs);
+  background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
 }
 
 .toolbarLabel {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
-  padding: 0 var(--spacing-sm);
+  min-height: calc(var(--spacing-lg) + var(--spacing-sm));
+  padding-right: var(--spacing-xs);
   color: var(--text-muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.3px;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.toolbarCompactNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.sectionToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--spacing-lg) + var(--spacing-sm));
+  min-height: calc(var(--spacing-lg) + var(--spacing-sm));
+  padding: var(--spacing-xs);
+  border: none;
+  border-radius: var(--toolbar-control-radius);
+  background-color: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sectionToggle:hover {
+  background-color: var(--toolbar-hover-bg);
+  color: var(--text-primary);
+}
+
+.sectionToggleActive {
+  background-color: var(--toolbar-active-bg);
+  color: var(--primary-color);
+}
+
+.sectionToggle:focus-visible {
+  outline: none;
+  background-color: var(--toolbar-hover-bg);
+}
+
+.toolbarCompactPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-width: 0;
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.imageContextBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-width: 0;
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.imageContextLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-xs);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .toolbarStatus {
@@ -76,27 +165,35 @@
 }
 
 .toolbarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: calc(var(--spacing-lg) + var(--spacing-sm));
   min-height: calc(var(--spacing-lg) + var(--spacing-sm));
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 95%, transparent);
-  background-color: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
+  padding: var(--spacing-xs);
+  border: none;
+  border-radius: var(--toolbar-control-radius);
+  background-color: transparent;
   color: var(--text-primary);
   cursor: pointer;
   text-align: center;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .toolbarIcon {
+  display: block;
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
+}
+
+.toolbarButtonText {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .buttonLabel {
@@ -106,23 +203,18 @@
 }
 
 .toolbarButton:hover {
-  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
-  background-color: color-mix(in srgb, var(--primary-color) 14%, var(--bg-card));
-  color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 var(--spacing-xs) var(--spacing-sm) color-mix(in srgb, var(--primary-color) 20%, transparent);
+  background-color: var(--toolbar-hover-bg);
+  color: var(--text-primary);
 }
 
 .toolbarButtonActive {
-  border-color: var(--primary-color);
-  background-color: var(--primary-color);
-  color: var(--text-light);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-light) 20%, transparent);
+  background-color: var(--toolbar-active-bg);
+  color: var(--primary-color);
 }
 
 .toolbarButton:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
-  outline-offset: 1px;
+  outline: none;
+  background-color: var(--toolbar-hover-bg);
 }
 
 .toolbarButton:disabled {
@@ -130,71 +222,52 @@
   cursor: not-allowed;
 }
 
+.toolbarButton:disabled:hover {
+  background-color: transparent;
+}
+
 .toolbarSelect {
   min-height: calc(var(--spacing-lg) + var(--spacing-sm));
-  padding: 0 var(--spacing-sm);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 95%, transparent);
-  background-color: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
+  min-width: 0;
+  max-width: 160px;
+  flex: 0 1 auto;
+  padding: 0 var(--spacing-xs);
+  border: none;
+  border-radius: var(--toolbar-control-radius);
+  background-color: transparent;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.selectBlock {
+  width: 118px;
+}
+
+.selectSize {
+  width: 54px;
 }
 
 .toolbarSelect:hover {
-  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
-  background-color: color-mix(in srgb, var(--primary-color) 10%, var(--bg-card));
+  background-color: var(--toolbar-hover-bg);
 }
 
 .toolbarSelect:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
-  outline-offset: 1px;
+  outline: none;
+  background-color: var(--toolbar-hover-bg);
 }
 
-.colorPickerLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: calc(var(--spacing-lg) + var(--spacing-sm));
-  padding: 0 var(--spacing-xs);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 95%, transparent);
-  background-color: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.colorPickerLabel:hover {
-  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
-  background-color: color-mix(in srgb, var(--primary-color) 10%, var(--bg-card));
-  color: var(--primary-color);
-  transform: translateY(-1px);
-}
-
-.colorPickerInput {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+.hiddenFileInput {
+  display: none;
 }
 
 .imageControls {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 0 var(--spacing-xs);
-  border-left: var(--border-width) solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  min-width: 0;
 }
 
 .imageControlLabel {
@@ -209,19 +282,25 @@
   gap: var(--spacing-xs);
   min-height: calc(var(--spacing-lg) + var(--spacing-sm));
   padding: 0 var(--spacing-xs);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 95%, transparent);
-  background-color: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
 }
 
 .imageSizeInput {
   width: 56px;
-  min-height: 26px;
-  border: var(--border-width) solid var(--border-color);
-  background-color: var(--bg-card);
-  color: var(--text-primary);
+  min-height: calc(var(--spacing-lg) + var(--spacing-sm));
   padding: 0 var(--spacing-xs);
+  border: none;
+  border-radius: var(--toolbar-control-radius);
+  background-color: transparent;
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.imageSizeInput:hover,
+.imageSizeInput:focus {
+  outline: none;
+  background-color: var(--toolbar-hover-bg);
 }
 
 .editor {
@@ -383,22 +462,14 @@
   font-size: var(--font-size-xs);
 }
 
-@media (max-width: 960px) {
+@container rich-text-composer (max-width: 560px) {
   .toolbar {
     padding: var(--spacing-xs);
   }
 
-  .toolbarSection {
-    width: 100%;
+  .imageSizeInput {
+    width: 48px;
   }
-
-  .toolbarLabel {
-    padding-right: var(--spacing-xs);
-  }
-}
-
-.hiddenFileInput {
-  display: none;
 }
 
 .error {
@@ -425,32 +496,31 @@
 .metaSwitchButton {
   min-height: calc(var(--spacing-md) + var(--spacing-sm));
   margin-right: var(--spacing-xs);
-  padding: 0 var(--spacing-sm);
-  border: var(--border-width) solid color-mix(in srgb, var(--border-color) 95%, transparent);
-  background-color: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--toolbar-control-radius);
+  background-color: transparent;
   color: var(--text-muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .metaSwitchButton:hover {
-  border-color: color-mix(in srgb, var(--primary-color) 65%, var(--border-color));
-  background-color: color-mix(in srgb, var(--primary-color) 10%, var(--bg-card));
-  color: var(--primary-color);
+  background-color: var(--toolbar-hover-bg);
+  color: var(--text-primary);
 }
 
 .metaSwitchButton:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
-  outline-offset: 1px;
+  outline: none;
+  background-color: var(--toolbar-hover-bg);
 }
 
 .metaSwitchButtonActive {
-  border-color: var(--primary-color);
-  background-color: var(--primary-color);
-  color: var(--text-light);
+  background-color: var(--toolbar-active-bg);
+  color: var(--primary-color);
 }
 
 .dialogueMeta {

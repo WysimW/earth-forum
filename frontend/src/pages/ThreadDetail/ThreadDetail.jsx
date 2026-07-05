@@ -6,7 +6,9 @@ import postService from '../../services/postService';
 import dialogueThemeService from '../../services/dialogueThemeService';
 import rpActivityService from '../../services/rpActivityService';
 import Layout from '../../components/Layout/Layout';
+import SeoHead from '../../components/Seo/SeoHead';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
+import seoService from '../../services/seoService';
 import Loading from '../../components/Loading/Loading';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import PostCard from '../../components/PostCard/PostCard';
@@ -59,6 +61,7 @@ const ThreadDetail = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [seo, setSeo] = useState(null);
   const [posting, setPosting] = useState(false);
   const [editingPostId, setEditingPostId] = useState(null);
   const [inlineEditingPostId, setInlineEditingPostId] = useState(null);
@@ -109,6 +112,11 @@ const ThreadDetail = () => {
     setPosts([]);
     setAutoCharacterPrefillDone(false);
     fetchThread(1, true);
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+    seoService.getThread(slug).then(setSeo).catch(() => setSeo(null));
   }, [slug]);
 
   useEffect(() => {
@@ -344,7 +352,7 @@ const ThreadDetail = () => {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout wide>
         <Loading message="Chargement de la discussion..." />
       </Layout>
     );
@@ -352,7 +360,7 @@ const ThreadDetail = () => {
 
   if (error || !thread) {
     return (
-      <Layout>
+      <Layout wide>
         <ErrorMessage
           message={error || 'Discussion introuvable'}
           onRetry={() => {
@@ -586,104 +594,107 @@ const ThreadDetail = () => {
     const canEditCharacter = user && (user.id === thread.authorId || user.roles?.includes('ROLE_MODERATOR') || user.roles?.includes('ROLE_ADMIN'));
 
     return (
-      <Layout>
+      <Layout wide>
+        <SeoHead seo={seo} />
         <div className={styles.content}>
           <Breadcrumb items={breadcrumbItems} />
 
           <div className={styles.characterHeader}>
-            <div className={styles.characterHeaderCompact}>
-              <div className={styles.characterHeaderRow}>
-                <div className={styles.characterTitleSection}>
-                  <h1 className={styles.characterTitle}>{character.name}</h1>
-                  {(character.firstName || character.lastName) && (
-                    <p className={styles.characterSubtitle}>
-                      {[character.firstName, character.lastName].filter(Boolean).join(' ')}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.characterMetaRow}>
-                  {character.universe && (
-                    <div className={styles.metaTag}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                      </svg>
-                      {character.universe.name}
-                    </div>
-                  )}
-                  {character.moralAffiliation && (
-                    <div className={styles.metaTag}>
-                      {character.moralAffiliation}
-                    </div>
-                  )}
-                  {character.elseworld && (
-                    <div className={styles.metaTag}>
-                      {character.elseworld.name}
-                    </div>
-                  )}
-                  {character.status && (
-                    <div className={`${styles.statusTag} ${styles[`status${character.status.charAt(0).toUpperCase() + character.status.slice(1)}`]}`}>
-                      {character.status === 'pending' ? 'En attente' : 
-                       character.status === 'editing' ? 'Points à modifier' : 
-                       character.status === 'rejected' ? 'Refusée' : 
-                       character.status === 'draft' ? 'Brouillon' : 
-                       character.status === 'validated' ? 'Validée' : character.statusMessage || character.status}
-                    </div>
-                  )}
-                  {canEditCharacter && (
-                    <Link 
-                      to={`/characters/${character.id}/edit`} 
-                      className={styles.actionBtnCompact}
-                      title="Modifier la fiche"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </Link>
-                  )}
-                  {canModerateCharacterSheet && (
-                    <>
-                      <button
-                        type="button"
-                        className={`${styles.moderationBtn} ${styles.moderationBtnValidate}`}
-                        title="Valider la fiche"
-                        onClick={() => openModerationForm('validate')}
-                        disabled={moderatingCharacter}
-                      >
-                        Valider
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.moderationBtn}
-                        title="Demander des modifications"
-                        onClick={() => openModerationForm('needsRevision')}
-                        disabled={moderatingCharacter}
-                      >
-                        Corriger
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.moderationBtn} ${styles.moderationBtnReject}`}
-                        title="Refuser la fiche"
-                        onClick={() => openModerationForm('reject')}
-                        disabled={moderatingCharacter}
-                      >
-                        Refuser
-                      </button>
-                    </>
-                  )}
-                </div>
+            <div className={styles.characterHeaderWithAvatar}>
+              <div className={styles.characterHeaderAvatar}>
+                {character.avatar ? (
+                  <img src={character.avatar} alt={character.name} />
+                ) : (
+                  <div className={styles.characterHeaderAvatarPlaceholder} aria-hidden="true">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                )}
               </div>
-              {character.alias && (
-                <div className={styles.aliasRow}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <span>{character.alias}</span>
+              <div className={styles.characterHeaderBody}>
+                <div className={styles.characterHeaderTop}>
+                  <div className={styles.characterTitleSection}>
+                    <h1 className={styles.characterTitle}>{character.name}</h1>
+                    {(character.firstName || character.lastName) && (
+                      <p className={styles.characterSubtitle}>
+                        {[character.firstName, character.lastName].filter(Boolean).join(' ')}
+                      </p>
+                    )}
+                    {character.alias && (
+                      <p className={styles.characterAlias}>{character.alias}</p>
+                    )}
+                  </div>
+                  <div className={styles.characterHeaderActions}>
+                    {character.status && (
+                      <span className={`${styles.statusTag} ${styles[`status${character.status.charAt(0).toUpperCase() + character.status.slice(1)}`]}`}>
+                        {character.status === 'pending' ? 'En attente' :
+                         character.status === 'editing' ? 'Points à modifier' :
+                         character.status === 'rejected' ? 'Refusée' :
+                         character.status === 'draft' ? 'Brouillon' :
+                         character.status === 'validated' ? 'Validée' : character.statusMessage || character.status}
+                      </span>
+                    )}
+                    {canEditCharacter && (
+                      <Link
+                        to={`/characters/${character.id}/edit`}
+                        className={styles.actionBtnCompact}
+                        title="Modifier la fiche"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </Link>
+                    )}
+                    {canModerateCharacterSheet && (
+                      <>
+                        <button
+                          type="button"
+                          className={`${styles.moderationBtn} ${styles.moderationBtnValidate}`}
+                          title="Valider la fiche"
+                          onClick={() => openModerationForm('validate')}
+                          disabled={moderatingCharacter}
+                        >
+                          Valider
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.moderationBtn}
+                          title="Demander des modifications"
+                          onClick={() => openModerationForm('needsRevision')}
+                          disabled={moderatingCharacter}
+                        >
+                          Corriger
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.moderationBtn} ${styles.moderationBtnReject}`}
+                          title="Refuser la fiche"
+                          onClick={() => openModerationForm('reject')}
+                          disabled={moderatingCharacter}
+                        >
+                          Refuser
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              )}
+                {(character.universe || character.moralAffiliation || character.elseworld) && (
+                  <div className={styles.characterMetaRow}>
+                    {character.universe && (
+                      <span className={styles.metaTag}>{character.universe.name}</span>
+                    )}
+                    {character.moralAffiliation && (
+                      <span className={styles.metaTag}>{character.moralAffiliation}</span>
+                    )}
+                    {character.elseworld && (
+                      <span className={styles.metaTag}>{character.elseworld.name}</span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -747,109 +758,60 @@ const ThreadDetail = () => {
           )}
 
           <div className={styles.characterSheet} data-theme={currentTheme}>
-            {character.avatar && (
-              <div className={styles.characterAvatar}>
-                <img src={character.avatar} alt={character.name} />
-              </div>
-            )}
-
             <div className={styles.characterInfo}>
-              {/* Informations générales en dehors des onglets */}
-              <div className={styles.characterSection}>
-                <h2 className={styles.sectionTitle}>Informations générales</h2>
-                <div className={styles.infoGrid}>
-                  {character.universe && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Univers</span>
-                      <span className={styles.infoValue}>{character.universe.name}</span>
-                    </div>
-                  )}
-                  {character.elseworld && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Elseworld</span>
-                      <span className={styles.infoValue}>{character.elseworld.name}</span>
-                    </div>
-                  )}
-                  {character.age && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Âge</span>
-                      <span className={styles.infoValue}>{character.age}</span>
-                    </div>
-                  )}
-                  {character.gender && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Genre</span>
-                      <span className={styles.infoValue}>{character.gender}</span>
-                    </div>
-                  )}
-                  {character.moralAffiliation && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Affiliation morale</span>
-                      <span className={styles.infoValue}>{character.moralAffiliation}</span>
-                    </div>
-                  )}
-                  {character.occupation && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Occupation</span>
-                      <span className={styles.infoValue}>{character.occupation}</span>
-                    </div>
-                  )}
-                  {character.sexualOrientation && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Orientation sexuelle</span>
-                      <span className={styles.infoValue}>{character.sexualOrientation}</span>
-                    </div>
-                  )}
-                  {character.civilStatus && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Statut civil</span>
-                      <span className={styles.infoValue}>{character.civilStatus}</span>
-                    </div>
-                  )}
-                  {character.factions && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Factions</span>
-                      <span className={styles.infoValue}>{character.factions}</span>
-                    </div>
-                  )}
-                  {character.actualPseudo && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Pseudonyme actuel</span>
-                      <span className={styles.infoValue}>{character.actualPseudo}</span>
-                    </div>
-                  )}
-                  {character.pseudonyms && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Autres alias</span>
-                      <span className={styles.infoValue}>{character.pseudonyms}</span>
-                    </div>
-                  )}
-                  {character.alias && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Alias</span>
-                      <span className={styles.infoValue}>{character.alias}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {(() => {
+                const generalInfoFields = [
+                  character.universe && { label: 'Univers', value: character.universe.name },
+                  character.elseworld && { label: 'Elseworld', value: character.elseworld.name },
+                  character.age && { label: 'Âge', value: character.age },
+                  character.gender && { label: 'Genre', value: character.gender },
+                  character.moralAffiliation && { label: 'Affiliation morale', value: character.moralAffiliation },
+                  character.occupation && { label: 'Occupation', value: character.occupation },
+                  character.sexualOrientation && { label: 'Orientation sexuelle', value: character.sexualOrientation },
+                  character.civilStatus && { label: 'Statut civil', value: character.civilStatus },
+                  character.factions && { label: 'Factions', value: character.factions },
+                  character.actualPseudo && { label: 'Pseudonyme actuel', value: character.actualPseudo },
+                  character.pseudonyms && { label: 'Autres alias', value: character.pseudonyms },
+                  character.alias && { label: 'Alias', value: character.alias },
+                ].filter(Boolean);
 
-              {/* Onglets */}
+                if (generalInfoFields.length === 0) return null;
+
+                return (
+                  <section className={styles.generalInfoSection}>
+                    <h2 className={styles.generalInfoTitle}>Informations générales</h2>
+                    <dl className={styles.infoList}>
+                      {generalInfoFields.map((field) => (
+                        <div key={field.label} className={styles.infoListRow}>
+                          <dt className={styles.infoLabel}>{field.label}</dt>
+                          <dd className={styles.infoValue}>{field.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+                );
+              })()}
+
               {tabs.length > 0 && (
                 <>
-                  <div className={styles.tabs}>
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        className={`${styles.tab} ${currentActiveTab === tab.id ? styles.tabActive : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
+                  <div className={styles.tabsWrapper}>
+                    <div className={styles.tabs} role="tablist">
+                      {tabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={currentActiveTab === tab.id}
+                          className={`${styles.tab} ${currentActiveTab === tab.id ? styles.tabActive : ''}`}
+                          onClick={() => setActiveTab(tab.id)}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Contenu des onglets */}
-                  <div className={styles.tabContent}>
+                  <div className={styles.tabContent} role="tabpanel">
                     {currentActiveTab === 'biography' && character.biography && (
                       <div className={styles.characterSection}>
                         <div className={styles.sectionContent} dangerouslySetInnerHTML={{ __html: character.biography }} />
@@ -932,7 +894,8 @@ const ThreadDetail = () => {
   }
 
   return (
-    <Layout>
+    <Layout wide>
+      <SeoHead seo={seo} />
       <div className={styles.content}>
         <Breadcrumb items={breadcrumbItems} />
 
